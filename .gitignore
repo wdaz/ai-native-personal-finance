@@ -1,0 +1,18 @@
+# dependencies / builds
+node_modules/
+dist/
+.next/
+.nx/
+coverage/
+playwright-report/
+test-results/
+
+# env & OS
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Frontend Mentor design files must never be committed
+*.fig
+*.sketch
