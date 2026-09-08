@@ -19,6 +19,7 @@ solutions.
 
 - `inputs/challenge-brief.md` — the Frontend Mentor challenge text (functional expectations, bonus tracks).
 - `inputs/data.json` — seed data the challenge ships with.
+- `inputs/design/` — Claude Design exports: rendered style guide and interactive app prototype (see its README for what they are and their gaps).
 - Figma file `personal-finance-app.fig` — kept outside the repo. Do not copy it in.
 
 ## Not allowed in this phase
