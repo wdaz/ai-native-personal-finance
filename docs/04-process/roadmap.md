@@ -1,6 +1,6 @@
 # Roadmap
 
-Status: Approved (Phase 0) · Current phase: **0 → 1**
+Status: Approved · Current phase: **1 — Discovery** (Phase 0 exit approved 2026-09-08)
 
 The roadmap is a sequence of phases with gates, not a calendar. A phase is
 entered only when the previous phase's exit gate is recorded in
