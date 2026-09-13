@@ -1,6 +1,6 @@
 # Roadmap
 
-Status: Approved · Current phase: **1 — Discovery** (Phase 0 exit approved 2026-09-08)
+Status: Approved · Current phase: **3 — Architecture** (Phase 2 exit approved 2026-09-13)
 
 The roadmap is a sequence of phases with gates, not a calendar. A phase is
 entered only when the previous phase's exit gate is recorded in
@@ -15,7 +15,7 @@ requirement), but the return trip is logged.
 - **Exit gate:** owner reviews `AGENTS.md` and `governance.md` and agrees to
   work by them.
 
-## Phase 1 — Discovery
+## Phase 1 — Discovery ✅
 
 - **Goal:** know why we are building this, for whom, and what "good" means.
 - **Activities:** write the problem statement together (owner answers,
@@ -28,7 +28,7 @@ requirement), but the return trip is logged.
   blocks writing requirements.
 - **Agent role:** interviewer, researcher, scribe. Not: decision-maker.
 
-## Phase 2 — Requirements
+## Phase 2 — Requirements ✅
 
 - **Goal:** an unambiguous, testable statement of what must be true.
 - **Activities:** derive user stories from the challenge brief and the

@@ -1,6 +1,6 @@
 # 00 — Discovery
 
-Status: **Not started**
+Status: **Complete** — exit gate met 2026-09-08 (problem statement approved; A1, A4, A5 confirmed; Q1–Q3 settled; Q4 deferred to Phase 3, Q5 to Phase 2)
 
 Purpose: understand the problem, the users and the constraints well enough to
 write requirements — and no further. This phase produces reasons, not

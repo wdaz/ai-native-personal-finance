@@ -1,6 +1,6 @@
 # Problem statement — AI-Native Personal Finance
 
-Status: Draft (v0.2, owner-reviewed)
+Status: **Approved** (v1.0, owner approval 2026-09-08)
 Author(s): Owner (Ruslan Haqverdi, answers) · Agent (Claude, structure and wording) · Date: 2026-09-08 · Process log: `../04-process/process-log.md` (entries of 2026-09-08)
 
 ## 1. The problem
@@ -101,24 +101,29 @@ time is available to do so.
 - Multi-user and team features: one dataset per deployed instance; no
   sharing, roles or permissions.
 - Internationalisation: English only, as in the design.
-- *(Assumed, to confirm)* Real bank or payment integrations; data comes from
-  the seed file and manual entry.
-- *(Assumed, to confirm)* Native mobile apps; responsive web only.
+- Real bank or payment integrations; data comes from the seed file and
+  manual entry.
+- Native mobile apps; responsive web only.
 
 ## 7. Assumptions
 
 See `assumptions-and-questions.md`. The main ones: WebMCP support in
 browsers and frameworks stays experimental for the life of the project;
 free-tier hosting is sufficient for a resetting demo; the challenge's
-"current month" (August 2024) is kept as fixed business time.
+"current month" is kept as fixed business time. *Erratum 2026-09-13: the
+fixed month is August 2026 (today = 19 Aug 2026), per PRD OQ-4; this
+approved document is not otherwise changed.*
 
 ## 8. Open questions
 
-- **Q1 — Authentication versus single-user.** The brief's bonus adds sign-up
-  and login, but multi-user is out of scope. Options: a demo login with a
-  shared dataset; per-visitor sandboxes; or no auth. Decide in Requirements.
-- **Q2 — Reset semantics.** What exactly resets every 10 days: everything to
-  seed data, or only user-created records? Decide in Requirements.
+- **Q1 — Authentication versus single-user.** *Decided 2026-09-08:* a
+  **demo login** — the login and sign-up screens exist and are functional as
+  UI, but the deployed instance has one demo account over one shared
+  dataset. Exact behaviour of sign-up on the demo instance is a Requirements
+  detail.
+- **Q2 — Reset semantics.** *Decided 2026-09-08:* the deployed instance
+  resets **fully to seed data** (`data.json`) every 10 days and whenever
+  storage fills up; user-created records are not preserved.
 - **Q3 — What "any modern browser" means for WebMCP.** Which browsers get the
   native path, which the polyfill, and how the difference is shown to the
   user. Research note needed before Requirements.
