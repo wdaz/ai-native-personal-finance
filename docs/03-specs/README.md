@@ -1,6 +1,6 @@
 # 03 — Feature specs and plan
 
-Status: **Not started** (blocked by Architecture exit gate)
+Status: **In progress** (entered 2026-09-13)
 
 Purpose: turn requirements plus architecture into feature specifications an
 agent can implement and a test can verify, then decompose the work into

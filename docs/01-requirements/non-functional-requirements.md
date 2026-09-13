@@ -1,6 +1,6 @@
 # Non-functional requirements
 
-Status: **Approved** (v1.0, owner approval 2026-09-13) · Author(s): Agent (draft) · Date: 2026-09-08
+Status: **Approved** (v1.1 — amendment 2026-09-13: T9 withdrawn by owner decision in ADR-0003; v1.0 approved 2026-09-13) · Author(s): Agent (draft) · Date: 2026-09-08
 Traces to: problem statement S1–S4 and constraints; research note `webmcp-status.md`
 Every requirement is measurable; each names how it is verified.
 
@@ -16,7 +16,7 @@ Every requirement is measurable; each names how it is verified.
 | T6 | Locators prefer accessible roles and names; `data-testid` only where the accessible tree is ambiguous, listed in one shared file | Review |
 | T7 | No time-based waits; assertions are web-first; no `.first()` to dodge ambiguity | Lint rule / review |
 | T8 | WebMCP tools have unit tests (schema + execute) and E2E tests that wait for the readiness signal (US-38 AC3), then call `getTools()`/`executeTool()` from the page and assert both result and UI state; CI runs polyfill and off modes; native mode is a headed runbook step (R-13, R-15) | Test suite + runbook |
-| T9 | Visual regression baseline for each page at 1440/768/375, Chromium only, generated in CI | Snapshot job |
+| T9 | *Withdrawn 2026-09-13 (owner, ADR-0003): no visual snapshot testing. Design fidelity is verified by manual review against `inputs/design/` and the layout assertions of US-33.* | — |
 | T10 | The testing strategy is written as an ADR with the pyramid and rules above | ADR exists |
 
 ## NFR-W — WebMCP (S2)

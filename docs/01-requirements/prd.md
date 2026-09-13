@@ -1,6 +1,6 @@
 # PRD — AI-Native Personal Finance
 
-Status: **Approved** (v1.0, owner approval 2026-09-13)
+Status: **Approved** (v1.1 — amendment 2026-09-13: visual regression baseline removed from Release 3 per ADR-0003)
 Author(s): Agent (Claude, draft) · Owner (decisions) · Date: 2026-09-13 · Process log: `../04-process/process-log.md`
 Traces to: `../00-discovery/problem-statement.md` (v1.0), `../00-discovery/inputs/challenge-brief.md`, `../00-discovery/research/webmcp-status.md`
 
@@ -82,8 +82,7 @@ mutating WebMCP tools with safeguards (US-40); sidebar minimise (US-35).
 ### Release 3 — quality and narrative
 
 No new stories. Accessibility audit and fixes (NFR-A), performance budget
-(NFR-P), visual regression baseline (T9), deployment hardening, retrospective
-and portfolio write-up.
+(NFR-P), deployment hardening, retrospective and portfolio write-up.
 
 ## 6. Functional requirements
 

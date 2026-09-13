@@ -1,6 +1,6 @@
 # Roadmap
 
-Status: Approved · Current phase: **3 — Architecture** (Phase 2 exit approved 2026-09-13)
+Status: Approved · Current phase: **4 — Specs & plan** (Phase 3 exit approved 2026-09-13)
 
 The roadmap is a sequence of phases with gates, not a calendar. A phase is
 entered only when the previous phase's exit gate is recorded in
@@ -41,7 +41,7 @@ requirement), but the return trip is logged.
   ambiguity and its findings are resolved.
 - **Agent role:** drafter and adversarial reviewer.
 
-## Phase 3 — Architecture
+## Phase 3 — Architecture ✅
 
 - **Goal:** the decisions that shape the system, each justified.
 - **Activities:** re-evaluate the prior Angular/Nx/NestJS proposal against

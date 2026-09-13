@@ -244,3 +244,20 @@ Append-only. Newest entry at the bottom. Template:
 - **Carried forward with credit:** the prior attempt's testing and WebMCP thinking (2026-09-01) informs ADR-0003/0004.
 - **Agent choices flagged for the owner:** iron-session over Auth.js (0006); Prisma over Drizzle (0005); no workspace tooling (0002); focus-indicator token added beyond the style guide (design-tokens).
 - **Next:** owner reviews and accepts ADR-0002…0007 (each individually) and the three documents → Phase 3 exit → Phase 4 specs.
+
+---
+
+## 2026-09-13 — Phase 3: ADR-0002…0007 accepted
+
+- **Owner decisions:** 0002 A; 0003 accepted **minus visual snapshot testing** ("not needed"); 0004 A; 0005 A; 0006 A; 0007 recommendation (A).
+- **Consequence handled:** NFR-T9 withdrawn → `non-functional-requirements.md` v1.1 and `prd.md` v1.1 (Release 3 item removed). Approved documents are amended by version bump + this entry, per the Phase 2 exit note.
+- **Still awaiting owner:** `system-overview.md`, `data-model.md`, `design-tokens.md` (incl. the agent-added focus-indicator token).
+- **Commit state:** `5fae839` discovery; requirements staged, commit blocked by a git lock the sandbox cannot delete — owner to run the two-line cleanup + commit.
+
+---
+
+## 2026-09-13 — Phase 3 exit approved
+
+- **Gate:** all seven ADRs Accepted; system overview, data model and design tokens approved (focus-indicator token kept). NFR → ADR mapping: T→0003, W→0004, A→0003/tokens, B→0003/0007, P→0001/0007, S→0006, D→0005/0007, Q→0002.
+- **Process change:** owner granted the agent delete permission in the repo folder for this session, so the agent can now clean git lock files and make commits itself (commits remain attributed to the owner; the owner still approves content).
+- **Next:** Phase 4 — feature specs (`03-specs/`), `definition-of-done.md`, `backlog.md`; first slice Auth + Overview.

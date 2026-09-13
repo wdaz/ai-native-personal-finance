@@ -1,6 +1,6 @@
 # 02 — Architecture
 
-Status: **Not started** (blocked by Requirements exit gate)
+Status: **Complete** — exit gate met 2026-09-13 (ADR-0001…0007 Accepted; system overview, data model, design tokens approved)
 
 Purpose: make and record the decisions that shape the system, each against
 real alternatives and traced to the requirements that forced it.
