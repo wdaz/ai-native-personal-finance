@@ -1,6 +1,6 @@
 # 01 — Requirements
 
-Status: **Not started** (blocked by Discovery exit gate)
+Status: **Complete** — exit gate met 2026-09-13 (PRD, user stories, NFRs approved v1.0 after adversarial review)
 
 Purpose: state precisely what must be true for the product to be done, in a
 form both a human reviewer and a coding agent can verify.

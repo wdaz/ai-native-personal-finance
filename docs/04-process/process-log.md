@@ -116,3 +116,131 @@ Append-only. Newest entry at the bottom. Template:
   "owner's team and lead" audience in §2. Reason: work context does not
   belong in a public portfolio document. Audience is now the owner and a
   public technical audience. Status → v0.2.
+
+---
+
+## 2026-09-08 — Phase 1: research note on WebMCP status
+
+- **Phase:** 1 — Discovery
+- **Participants:** Owner (supplied three source URLs), Agent (Claude)
+- **Produced:** `docs/00-discovery/research/webmcp-status.md` (12 dated
+  findings, 6 implications). Updated `assumptions-and-questions.md`: A1
+  confirmed, Q3 answered, Q5 mechanism identified.
+- **Key facts:** spec draft 2026-09-04; API is `document.modelContext`
+  (renamed from `navigator.*` on 2026-07-21); Chrome 149+/Edge 150+ origin
+  trial; Firefox/Safari reviewing; no mainstream consumer agent yet; Angular
+  v22 experimental support lags the rename; `@mcp-b` polyfill/relay ecosystem.
+- **What the agent got wrong or missed:** _(owner to fill)_
+- **Next:** owner reads the note; remaining Phase 1 items — confirm A4/A5,
+  answer Q1/Q2 (auth, reset) or push them to Requirements; then Phase 1 exit.
+- **Owner decisions (2026-09-08, later):** A4 and A5 confirmed (no bank
+  integrations, no native mobile). Q1 → **demo login** over a shared dataset.
+  Q2 → **full reset to seed data** every 10 days / on storage full. Problem
+  statement → v0.3, awaiting owner approval as the Phase 1 exit gate.
+
+---
+
+## 2026-09-08 — Phase 1 exit approved
+
+- **Phase:** 1 → 2
+- **Gate:** Owner approved `problem-statement.md` (v1.0). Inputs inventory
+  complete (brief, seed data, design exports). Research note on WebMCP
+  final. No open question blocks Requirements: Q4 (stack) deferred to
+  Architecture by decision; Q5 (tools and safeguards) is a Requirements task.
+- **Next:** Phase 2 — `prd.md`, `user-stories.md` (derived from the brief and
+  the problem statement, with Given/When/Then criteria),
+  `non-functional-requirements.md` (testing, WebMCP browser matrix and
+  safeguards, accessibility, performance, security, demo reset). Then an
+  adversarial review by a fresh agent session before owner approval.
+
+---
+
+## 2026-09-08 — Phase 2: PRD, user stories and NFRs drafted
+
+- **Phase:** 2 — Requirements
+- **Participants:** Owner (decisions: first slice = Auth + Overview; draft all three then review), Agent (Claude, drafts)
+- **Produced:** `docs/01-requirements/prd.md` (v0.1), `user-stories.md` (US-01…US-41, v0.1), `non-functional-requirements.md` (NFR-T/W/A/B/P/S/D/Q, v0.1).
+- **Method:** stories derived from the challenge brief line by line, cross-checked against seed data (bills totals 384.98 / 190.00 / 194.98 / 59.98; Dining Out over budget) and against the prototype's behaviour; prototype gaps turned into explicit stories (US-31, US-32, US-34). NFR thresholds are agent proposals, flagged.
+- **Agent additions needing owner decision:** PRD OQ-1…OQ-5 (sign-up on demo, deposit limit, reset notice, fixed business time, mutating tool set); NFR open points (coverage %, Lighthouse target, no delete tools, device testing).
+- **Owner changes and reasoning:** _(owner to fill after review)_
+- **Next:** owner review → adversarial review by a fresh agent session (ambiguity, testability, contradictions) → resolve → owner approval = Phase 2 exit.
+
+---
+
+## 2026-09-13 — Phase 2: open questions closed by owner
+
+- **Phase:** 2 — Requirements
+- **Owner decisions:** OQ-1 sign-up shows a demo notice, no accounts
+  created; OQ-2 deposit ≤ balance, withdrawal ≤ pot total; OQ-3 dismissible
+  reset banner; OQ-4 business time fixed but moved to **2026** (today =
+  2026-08-19; seed dates shifted +2 years at seed time); OQ-5 delete tools
+  exposed **with on-screen confirmation** (agent proposed not exposing them;
+  owner chose the richer option — recorded as a disagreement resolved in
+  the owner's favour).
+- **Clarification needed:** the owner did not understand OQ-5 as first
+  phrased; re-asked in plain terms ("can the browser agent delete a pot?").
+  Lesson: questions to the owner must be phrased in product terms, not in
+  spec terms.
+- **Updated:** `prd.md` §10, `user-stories.md` (header, US-25, US-37,
+  US-40), `non-functional-requirements.md` (W5, D1, D3),
+  `assumptions-and-questions.md` (A3, Q5).
+- **Remaining before Phase 2 exit:** owner accepts or changes the NFR
+  thresholds (T1 coverage 90 %, P1 Lighthouse 90, B1 manual device checks);
+  adversarial review; owner approval.
+
+---
+
+## 2026-09-13 — Phase 2: adversarial review of requirements
+
+- **Phase:** 2 — Requirements
+- **Participants:** Reviewer (fresh Claude agent session, no prior context), Agent (orchestration), Owner (decisions pending)
+- **Produced:** `docs/01-requirements/reviews/2026-09-13-adversarial-review.md` — 36 findings (3 Blocker, 18 Major, 15 Minor), 10 owner questions, full recomputation of every seed-derived figure.
+- **Most important catches:** Pots Total Saved quoted from the design ($850) instead of the seed ($920); Release 1 depends on parameterised tools whose UI is Release 2; the 2026 date decision not propagated; "copy in Figma" referenced although Figma is never in the repo; WebMCP readiness/mode/headless contradictions; delete-confirmation mechanism undefined.
+- **Disposition:** 24 findings marked "Fix" (agent applies, no decision needed); 12 marked "Owner" (need product decisions). Nothing rejected.
+- **Lesson:** the drafting agent copied a figure from the prototype rather than recomputing it from the seed — the review's numbers table is now a required step for any document quoting seed data.
+- **Next:** owner answers the 12 decisions; agent applies all fixes → v0.3 → owner approval = Phase 2 exit.
+
+---
+
+## 2026-09-13 — Phase 2: review findings applied → v0.3
+
+- **Phase:** 2 — Requirements
+- **Owner decisions (12):** data.json wins over design; Highest/Lowest signed for transactions, absolute for bills; Spent counts negatives only, Latest Spending both signs; R1 tools = `get_balance` + `get_overview_summary`; tools **page-scoped** (agent recommended global — owner chose page-scoped; recorded); delete confirmation client-side; limits 999,999,999.99 / 7-day session / 2,000 rows or 50 MB; pot % two decimals. Agent resolved R-12 (bottom nav on tablet, verified in style guide) and R-35 (logout in sidebar footer, R1).
+- **Applied:** all 36 findings — `user-stories.md` v0.3 (new ACs on 20+ stories, US-13 given an AC, US-38/39/40 rewritten for page scope, readiness signal, modes, ids; copy-table appendix), `prd.md` v0.3 (R1 scope, decisions section, dates), `non-functional-requirements.md` v0.3 (T2, T8, W1–W3, W5, B1–B2, P1, P3, S2–S4, D5; no open points), problem statement erratum for 2026, review file disposition column.
+- **Next:** owner approval of v0.3 = Phase 2 exit → Phase 3 Architecture.
+
+---
+
+## 2026-09-13 — Phase 2 exit approved
+
+- **Phase:** 2 → 3
+- **Gate:** Owner approved PRD, user stories and NFRs (v1.0) after the
+  adversarial review cycle. Requirements are frozen; changes from here go
+  through a new version with a log entry.
+- **Next:** Phase 3 — Architecture. First decision: stack (Q4), re-evaluating
+  the prior Angular 22 / Nx / NestJS proposal against NFR-W (page-scoped
+  tools, one adapter, polyfill baseline), NFR-T and NFR-D; then repo layout,
+  testing strategy, WebMCP adapter, persistence + seed/reset, auth/session,
+  hosting + reset job + origin trial; system overview; data model; design
+  tokens.
+
+---
+
+## 2026-09-13 — Phase 3: ADR-0001 stack proposed
+
+- **Phase:** 3 — Architecture
+- **Owner input:** no stack preference; "give your recommendation and justify it"; backend by requirements.
+- **Produced:** `docs/02-architecture/adr/0001-stack.md` (Proposed): Next.js full-stack on Vercel + Neon Postgres + Prisma + Zod + Vitest + Playwright. Four alternatives, the prior Angular/Nx/NestJS attempt credited as Alternative B.
+- **Key reasoning:** NFR-W1 (framework-independent adapter) neutralises Angular's first-party WebMCP advantage; solo operations (one deploy, built-in cron, non-sleeping free tier) and shared Zod schemas decide it.
+- **Next:** owner accepts/rejects ADR-0001; then ADR-0002 repo layout, 0003 testing strategy, 0004 WebMCP adapter, 0005 persistence & reset, 0006 auth/session, 0007 hosting & origin trial; system overview; data model; design tokens.
+- **ADR-0001 accepted by owner (2026-09-13)** without changes. Stack (Q4) closed: Next.js full-stack on Vercel, Neon Postgres, Prisma, Zod, Vitest, Playwright, Vercel Cron. Agent proceeds to ADR-0002…0007, system overview, data model and design tokens.
+
+---
+
+## 2026-09-13 — Phase 3: remaining architecture documents drafted
+
+- **Phase:** 3 — Architecture
+- **Produced:** ADR-0002 repository layout (single app, lint-enforced boundaries), ADR-0003 testing strategy (pyramid, traceability script, WebMCP test modes), ADR-0004 WebMCP adapter (one module, page registries, polyfill baseline, client-side delete confirmation, event bus), ADR-0005 persistence & reset (Neon, Prisma, cents, fixed clock, cron + threshold), ADR-0006 auth & session (demo account, iron-session cookie, rate limit, headers), ADR-0007 hosting & delivery (Vercel + Neon branches, GitHub Actions, previews, OT token on production); `design-tokens.md` (22 colours, 7 presets, 11 spacings, radii, breakpoints, icons, states — from the style guide export), `data-model.md` (6 entities, enums, derived functions, API surface), `system-overview.md`.
+- **Carried forward with credit:** the prior attempt's testing and WebMCP thinking (2026-09-01) informs ADR-0003/0004.
+- **Agent choices flagged for the owner:** iron-session over Auth.js (0006); Prisma over Drizzle (0005); no workspace tooling (0002); focus-indicator token added beyond the style guide (design-tokens).
+- **Next:** owner reviews and accepts ADR-0002…0007 (each individually) and the three documents → Phase 3 exit → Phase 4 specs.
