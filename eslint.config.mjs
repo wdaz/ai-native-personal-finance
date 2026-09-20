@@ -1,4 +1,9 @@
 import next from "eslint-config-next/core-web-vitals";
+// `core-web-vitals` carries the React and Next rules only. The TypeScript rules
+// (typescript-eslint recommended, 20 rules including no-unused-vars and no-explicit-any)
+// live behind a second entry point; without it every one of them sits at severity 0.
+// tests/unit/boundaries.test.ts pins that, along with the boundary policies below.
+import nextTypescript from "eslint-config-next/typescript";
 import boundaries from "eslint-plugin-boundaries";
 import prettier from "eslint-config-prettier";
 
@@ -12,6 +17,7 @@ import prettier from "eslint-config-prettier";
  */
 const config = [
   ...next,
+  ...nextTypescript,
   {
     ignores: [
       ".next/**",
@@ -123,22 +129,28 @@ const config = [
     },
   },
   {
-    // ADR-0002: "app never imports Prisma directly (only server)".
-    files: ["app/**/*.{ts,tsx}"],
+    // ADR-0002: "app never imports Prisma directly (only server)", and src/server is the
+    // only layer allowed to import Prisma at all (src/server/README.md). The layers below
+    // are every layer except `server` itself; `scripts` and `tests` are deliberately left
+    // out — scripts may need the client to seed, tests to assert on it.
+    files: [
+      "app/**/*.{ts,tsx}",
+      "src/domain/**/*.{ts,tsx}",
+      "src/ui/**/*.{ts,tsx}",
+      "src/webmcp/**/*.{ts,tsx}",
+    ],
     rules: {
       "no-restricted-imports": [
         "error",
         {
-          paths: [
-            {
-              name: "@prisma/client",
-              message: "ADR-0002: app must reach the database through src/server.",
-            },
-          ],
+          // `paths` matches exact specifiers only, so it would miss the sub-path entry
+          // points — and ADR-0007 runs on Neon, where `@prisma/client/edge` is the
+          // realistic import. Everything is therefore expressed as a pattern.
           patterns: [
             {
-              group: ["**/prisma/**", "prisma/*"],
-              message: "ADR-0002: app must reach the database through src/server.",
+              group: ["@prisma/client", "@prisma/client/**", "**/prisma/**", "prisma/*"],
+              message:
+                "ADR-0002: only src/server may import Prisma; reach the database through it.",
             },
           ],
         },
