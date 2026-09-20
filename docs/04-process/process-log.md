@@ -342,3 +342,11 @@ Append-only. Newest entry at the bottom. Template:
 - **Owner decision (via Cowork review):** accepted; the guard is split into **T-02a** so it exists *before* the first real `DATABASE_URL` and T-02 stays one-session sized. T-16 added as proposed. NFR-S5 v1.3: verification is now "secret scan in CI + full-history scan and rotation + review" instead of "review".
 - **Why the reasons live in the rows:** so a later agent does not move the guard to T-13 as "CI work", and so nobody reads a green scan as proof the history is clean — rotation is the guarantee.
 - **Delivered as PR** (branch `docs/backlog-v1.1-secret-guard`), not merged directly, by owner instruction.
+
+---
+
+## 2026-09-20 — Backlog v1.2: fixture repointing and CI concurrency (found by the T-01 agent after merge)
+
+- **Gap 1:** the boundary fixtures point at `src/{server,domain,shared}/README.md` because the layers are empty; the only record was the fixtures' README. Now T-02, T-03 and T-04 each repoint the fixtures for the layer they fill — recorded in the backlog so it cannot be forgotten.
+- **Gap 2:** CI `concurrency` with `cancel-in-progress: true` on `main` lets a follow-up merge cancel the previous commit's run, losing its verdict (raised in PR #4). T-13 splits the group.
+- **Lesson:** a constraint written only in a code-side README is invisible to the backlog; anything a *later task* must do goes in that task's row. Delivered as PR (branch `docs/backlog-v1.2-fixtures-ci`).
