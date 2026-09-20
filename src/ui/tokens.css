@@ -3,9 +3,13 @@
  * This file is the ONLY place design values are written. Do not hard-code a hex or a
  * pixel value anywhere else (design-tokens.md, header).
  *
- * Breakpoints appear twice on purpose: as custom properties for documentation and JS,
- * and literally inside `@media` conditions, because CSS custom properties are not valid
- * in a media query condition.
+ * The document states sizes in px. The presets below convert them to `rem` at the 16px
+ * default (32px = 2rem …) so that a reader who raises the browser font size scales the
+ * text with it; every other value stays in px because it is a box measurement, not type.
+ *
+ * The breakpoints are exported as custom properties for JS and for documentation only.
+ * A media query cannot read them — custom properties are not valid in a media-query
+ * condition — so any `@media` rule must repeat the literal value from this file.
  */
 
 :root {
@@ -36,7 +40,10 @@
   --color-pink: #af81ba;
 
   /* Typography — Public Sans, weights 400 and 700, loaded by next/font in app/layout.tsx */
-  --font-family-base: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  /* The inner fallback matters: if the next/font class is missing from <html>,
+     --font-public-sans is a guaranteed-invalid substitution and the whole declaration —
+     and with it every `font:` shorthand below, including size and weight — is dropped. */
+  --font-family-base: var(--font-public-sans, ui-sans-serif), ui-sans-serif, system-ui, sans-serif;
   --text-preset-1: 700 2rem / 120% var(--font-family-base);
   --text-preset-2: 700 1.25rem / 120% var(--font-family-base);
   --text-preset-3: 700 1rem / 150% var(--font-family-base);
