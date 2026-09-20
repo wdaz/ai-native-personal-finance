@@ -29,7 +29,7 @@ A portfolio project with two deliverables:
 | `docs/03-specs/` | Feature specifications precise enough for an agent to implement | You are about to build or test a feature |
 | `docs/04-process/` | Roadmap, governance (who decides what), process log | You want to see how the work was actually done |
 | `docs/templates/` | Templates for every document type above | You are creating a new document |
-| `app/`, `src/`, `prisma/`, `tests/` | Application code, laid out per ADR-0002 | You are building |
+| `app/`, `src/`, `prisma/`, `scripts/`, `tests/`, `public/` | Application code, tooling and static assets, laid out per ADR-0002 | You are building |
 
 ## The phases
 
@@ -76,8 +76,9 @@ the session. Every variable names the ADR or spec that defines it.
 
 - Challenge brief and seed data: `docs/00-discovery/inputs/`
 - Figma design file: kept **outside** the repository (Frontend Mentor licence);
-  design tokens will be extracted into `docs/02-architecture/design-tokens.md`
-  during Phase 3.
+  the tokens extracted from it are in `docs/02-architecture/design-tokens.md`
+  (Approved v1.0), and `src/ui/tokens.css` is generated from it — a unit test
+  holds the two to the same values.
 - Challenge avatars: copied into `public/avatars/` at T-01 from the Frontend Mentor
   starter; the basename is the key used by the seed (SPEC-overview §4.5).
 

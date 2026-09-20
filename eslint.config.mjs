@@ -40,6 +40,10 @@ const config = [
       // consequence is worse than the message, because a tsconfig-aliased import such as
       // `@/src/server/x` from `src/domain` is then read as an external module and
       // escapes every policy below.
+      // The same resolver reaches its native binding through unrs-resolver, whose
+      // postinstall is the repair path when the platform-specific optional dependency
+      // is missing. npm 11 blocks install scripts that package.json's `allowScripts`
+      // does not approve, so that entry is load-bearing — do not delete it.
       "boundaries/include": ["app/**/*", "src/**/*", "tests/**/*", "scripts/**/*"],
       // `partialMatch: false` makes the pattern match the whole file path. The pattern
       // must end in `/**` and not `/**/*`: the latter requires a segment after `**`, so
