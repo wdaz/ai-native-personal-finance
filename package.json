@@ -17,7 +17,11 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:api": "playwright test --project=api --pass-with-no-tests",
+    "test:e2e": "playwright test --project=chromium --project=firefox --project=webkit",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run test:api && npm run test:e2e"
   },
   "dependencies": {
     "next": "^16.3.5",
@@ -25,6 +29,7 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@types/node": "^24.13.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
