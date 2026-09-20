@@ -47,9 +47,14 @@ Requires Node 26 (see `.nvmrc`) and, from T-02 onwards, a local Postgres.
 
 ```bash
 npm ci                 # install
+npx playwright install --with-deps chromium firefox webkit
 npm run dev            # develop on http://localhost:3000
 npm run test:all       # lint, format, typecheck, unit, API and E2E
 ```
+
+`npm ci` does not download the Playwright browsers, so `playwright install` is
+a one-off after the install on each machine; without it the browser tests stop
+at *Executable doesn't exist*.
 
 `npm run test:all` builds the app and starts it before the browser tests
 (ADR-0003: E2E never runs against `next dev`). The individual commands are:

@@ -3,7 +3,9 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    # ADR-0007 names `main` as the production branch; this repository's default branch is
+    # currently `master`. Both are listed until the owner resolves which one it is.
+    branches: [main, master]
 
 concurrency:
   group: ci-${{ github.ref }}
