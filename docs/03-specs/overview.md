@@ -1,64 +1,85 @@
 # SPEC-overview — Overview page
 
-Status: Draft (v0.1) · Author(s): Agent · Date: 2026-09-20
-Implements: US-04, US-05, US-06, US-07, US-08, US-13 (n/a), US-31 (n/a), US-32, US-34 · Constrained by: ADR-0002, ADR-0005, data-model.md, design-tokens.md, NFR-A/P · Design: prototype "Overview" (desktop: 3 stat cards, then two columns — left Pots + Transactions, right Budgets + Recurring Bills; tablet/mobile: single column in the same order)
+Status: Draft (v0.2, after adversarial review 2026-09-20) · Author(s): Agent · Date: 2026-09-20
+Changelog: v0.2 — S-01 figures corrected and generated rule added; S-02 two-decimal formatting everywhere; S-03 US-04 AC2 deferred to R2; S-11 server-side data access; S-12 UTC dates; S-13 donut geometry; S-26 empty layouts; S-28 avatars; S-35 test rows.
+Implements: US-04 (AC1, AC3; AC2 tested in R2), US-05, US-06, US-07, US-08, US-32, US-34 · Constrained by: ADR-0002, ADR-0005, data-model.md, design-tokens.md, NFR-A/P · Design: prototype "Overview"
 
 ## 1. Purpose
 Everything at a glance, computed by the backend from the current dataset, with links into each page. Read-only.
 
 ## 2. Behaviour
-2.1 `GET /overview` (server component) fetches `GET /api/overview` and renders; the page is a client component only where interaction exists (links, indicator). Title "Overview".
-2.2 Stat cards: "Current Balance" (grey-900 card, white text), "Income", "Expenses" (white cards) — values formatted `$4,836.00` (thousands separators, two decimals).
-2.3 Pots card: title "Pots", link "See Details ›" → `/pots`; left tile with jar icon, "Total Saved", `$920` (whole dollars if `.00`, else two decimals — the design shows `$850`; formatting rule 4.2); right: up to four pots as "name / $total" in a 2×2 grid, each with a 4 px bar in its theme colour.
-2.4 Transactions card: title "Transactions", link "View All ›" → `/transactions`; five rows: avatar (40 px, alt = name), name (preset 4 bold), amount (green with `+` if positive, grey-900 with `-` if negative, preset 4 bold), date (`19 Aug 2026`, preset 5 grey-500). Divider between rows.
-2.5 Budgets card: title "Budgets", link "See Details ›" → `/budgets`; donut (240 px, ring 24 px, inner ring lighter tint) with centre text `$338` (preset 1) and "of $975 limit" (preset 5); legend: up to four budgets, each with a 4 px theme bar, category (preset 5 grey-500) and `$50.00` maximum (preset 4 bold).
-2.6 Recurring Bills card: title "Recurring Bills", link "See Details ›" → `/recurring-bills`; three rows on beige-100 with a 4 px left border: "Paid Bills" (green) `$190.00`, "Total Upcoming" (yellow) `$194.98`, "Due Soon" (cyan) `$59.98`.
-2.7 Empty states: no pots → tile shows `$0` and text "No pots yet" with link "Add a pot" → `/pots`; no budgets → donut `$0 of $0 limit` and "No budgets yet" + "Add a budget" → `/budgets`; fewer than five transactions → available rows; none → "No transactions yet"; no recurring → three rows at `$0.00`.
-2.8 Loading: server-rendered, so no client loading state; on `GET /api/overview` failure the page renders the shell with an error card "Couldn't load your overview" and a "Retry" button (router.refresh).
+2.1 `app/(app)/overview/page.tsx` is a server component that calls `getOverview(db, clock)` from `src/server/overview.ts` directly (no HTTP self-call). The same function backs `GET /api/overview` for tools and tests. Title "Overview".
+2.2 Stat cards: "Current Balance" (grey-900 card, white text), "Income", "Expenses" (white cards); values `$4,836.00`, `$3,814.25`, `$1,700.50`.
+2.3 Pots card: title "Pots", link "See Details ›" → `/pots`; left tile: jar icon, "Total Saved", `$920.00` (sum of **all** pots); right: the first four pots in creation order as "name / `$159.00`" in a 2×2 grid, each with a 4 px bar in its theme colour. With 1–3 pots the grid keeps its cells and the empty cells stay blank.
+2.4 Transactions card: title "Transactions", link "View All ›" → `/transactions`; five rows: avatar (40 px round, `alt` = name), name (preset 4 bold), amount (green `+$75.50` if positive, grey-900 `-$55.50` if negative, preset 4 bold), date (`19 Aug 2026`, preset 5 grey-500); 1 px grey-100 dividers.
+2.5 Budgets card: title "Budgets", link "See Details ›" → `/budgets`; donut (§4.4) with centre `$338.00` (preset 1) and "of $975.00 limit" (preset 5 grey-500); legend: first four budgets in creation order, each a 4 px theme bar, category (preset 5 grey-500) and maximum `$50.00` (preset 4 bold). Totals include all budgets.
+2.6 Recurring Bills card: title "Recurring Bills", link "See Details ›" → `/recurring-bills`; three beige-100 rows with a 4 px left border: "Paid Bills" (green) `$190.00`, "Total Upcoming" (yellow) `$194.98`, "Due Soon" (cyan) `$59.98`.
+2.7 Empty states: no pots → tile `$0.00`, grid replaced by text "No pots yet" and link "Add a pot" → `/pots`; no budgets → single grey-100 ring, centre `$0.00` / "of $0.00 limit", legend replaced by "No budgets yet" + "Add a budget" → `/budgets`; fewer than five transactions → available rows; none → "No transactions yet"; no recurring → three rows at `$0.00`.
+2.8 Error: if `getOverview` throws, the page renders inside the shell a single card (in place of the grid) "Couldn't load your overview" with a "Retry" button (`router.refresh()`); the error is logged with the request id.
 
 ## 3. States
 | State | Trigger | What the user sees | Exit |
 |-------|---------|--------------------|------|
 | Default | data | five cards | navigate |
-| Empty (per card) | no rows | per 2.7 | create data |
-| Error | API 5xx/network | error card | retry |
+| Empty (per card) | no rows | §2.7 | create data (R2) |
+| Error | server failure | §2.8 card | Retry |
 
 ## 4. Rules and boundaries
-4.1 All numbers come from `src/domain` via the API; the page performs no arithmetic.
-4.2 Money formatting (`src/shared/money.ts`): `formatMoney(cents, { compact })` — default `$1,234.56`; `compact: true` drops `.00` (used for pot tile, pot legend, donut centre, budget legend maximums keep two decimals as in the design). Negative amounts render `-$55.50`, positive with `+$75.50` only in transaction rows.
-4.3 Worked example with seed data (dates already shifted): balance 483600 → `$4,836.00`; income `$3,814.25`; expenses `$1,700.50`; pots total 92000 → `$920`; first four pots Savings `$159`, Concert Ticket `$110`, Gift `$40`, New Laptop `$10`; budgets spent 33800 of 97500 → `$338` / `of $975 limit`; legend Entertainment `$50.00`, Bills `$750.00`, Dining Out `$75.00`, Personal Care `$100.00`; bills `$190.00` / `$194.98` / `$59.98`; latest five: Emma Richardson +$75.50 (19 Aug 2026), Savory Bites Bistro −$55.50 (19 Aug 2026), Daniel Carter −$42.30 (18 Aug 2026), Sun Park +$120.00 (17 Aug 2026), Urban Services Hub −$65.00 (17 Aug 2026). Order: US-11 "Latest" (timestamp desc, then name).
-4.4 Donut: SVG, segments in budget creation order, colours from theme; `role="img"` with `aria-label="Spent $338 of $975 limit"`; legend is the accessible detail.
-4.5 Card links are real links (`<a>`), with visible focus.
+4.1 The page performs no arithmetic; all values come from `src/domain` via `getOverview`.
+4.2 Formatting (`src/shared/money.ts`, `src/shared/dates.ts`):
+
+| Element | Format | Example |
+|---------|--------|---------|
+| All money | `$` + thousands separators + two decimals; negative as `-$55.50`; transaction rows prefix positives with `+` | `$4,836.00`, `-$55.50`, `+$75.50` |
+| Dates | `d MMM yyyy`, **UTC** (`Intl.DateTimeFormat('en-GB', { day:'numeric', month:'short', year:'numeric', timeZone:'UTC' })`) | `19 Aug 2026`; `2026-08-19T20:23:11Z` → `19 Aug 2026` |
+
+4.3 Worked example (seed, generated by `scripts/seed-figures.ts` in T-03 — the table below must equal its output):
+
+| Item | Value |
+|------|-------|
+| Balance / Income / Expenses | `$4,836.00` / `$3,814.25` / `$1,700.50` |
+| Pots total | `$920.00` |
+| First four pots | Savings `$159.00`, Concert Ticket `$110.00`, Gift `$110.00`, New Laptop `$10.00` |
+| Budgets spent / limit | `$338.00` / `$975.00` (Entertainment 15.00, Bills 150.00, Dining Out 133.00, Personal Care 40.00) |
+| Legend | Entertainment `$50.00`, Bills `$750.00`, Dining Out `$75.00`, Personal Care `$100.00` |
+| Bills | Paid `$190.00`, Upcoming `$194.98`, Due Soon `$59.98` |
+| Latest five (timestamp desc, then name) | Savory Bites Bistro `-$55.50` 19 Aug 2026 · Emma Richardson `+$75.50` 19 Aug 2026 · Daniel Carter `-$42.30` 18 Aug 2026 · Urban Services Hub `-$65.00` 17 Aug 2026 · Sun Park `+$120.00` 17 Aug 2026 |
+
+4.4 Donut: SVG 240 px, ring 24 px; segments proportional to each budget's `maximum`, drawn clockwise from 12 o'clock in creation order, no gaps; an inner ring (ring 8 px, immediately inside) repeats the segments at 25 % opacity (`color-mix(in srgb, var(--color-<theme>) 25%, white)`); `role="img"`, `aria-label="Spent $338.00 of $975.00 limit"`; legend is the accessible detail.
+4.5 Card links are `<a>` elements with visible focus; avatars resolve to `/avatars/<key>.jpg` where `key` is the seed's basename (`emma-richardson`); files copied to `public/avatars/` in T-01.
+4.6 US-04 AC2 (balance changes after pot money movement) is verified in Release 2 with the deposit API; R1 asserts stored values only.
 
 ## 5. Data
 Reads Balance, Pot, Budget, Transaction (ADR-0005). No writes.
 
 ## 6. Interfaces
 ### UI
-`app/(app)/overview/page.tsx` (server) → `<StatCard>`, `<PotsCard>`, `<TransactionsCard>`, `<BudgetsCard>` (+ `<Donut>`), `<BillsCard>` in `src/ui/overview/`. Layout: CSS grid — desktop `grid-template-columns: 1fr 1fr` with row spans (Pots 1, Transactions 2, Budgets 2, Bills 1) as in the design; below 1024 px one column.
+`app/(app)/overview/page.tsx` (server) → `src/ui/overview/{StatCard,PotsCard,TransactionsCard,BudgetsCard,Donut,BillsCard}`. Grid: desktop `grid-template-columns: 1fr 1fr`, Pots (row 1 left), Transactions (rows 2–3 left), Budgets (rows 1–2 right), Bills (row 3 right); below 1024 px one column in the order Pots, Transactions, Budgets, Bills.
+### Server
+`getOverview(db, clock): Promise<OverviewDto>` in `src/server/overview.ts`, composed from `src/domain/overviewSummary`.
 ### API
-`GET /api/overview` → `OverviewDto`:
+`GET /api/overview` → `OverviewDto` (cents; dates ISO-8601 UTC):
 ```
-{ balance: { current, income, expenses },                 // cents
-  pots: { total, items: [{ id, name, total, theme }] },    // first 4
-  transactions: [{ id, name, avatar, amount, date }],      // latest 5
-  budgets: { spent, limit, items: [{ id, category, maximum, theme }] }, // first 4; totals over all
-  bills: { paid, upcoming, dueSoon } }                     // cents
+{ balance: { current, income, expenses },
+  pots: { total, items: [{ id, name, total, theme }] },                    // first 4, creation order
+  transactions: [{ id, name, avatar, amount, date }],                       // latest 5
+  budgets: { spent, limit, items: [{ id, category, maximum, spent, theme }] }, // first 4; totals over all
+  bills: { paid, upcoming, dueSoon } }
 ```
-Cache: `no-store`. 401 when no session.
+`Cache-Control: no-store`; 401 envelope per SPEC-auth §2.10 without session.
 ### WebMCP tools
-`get_balance`, `get_overview_summary` — registered by this page's client layout; definitions in SPEC-webmcp-tools §3.
+`get_balance`, `get_overview_summary` (SPEC-webmcp-tools §3).
 
 ## 7. Tests required
 | Level | What is asserted | Traces to |
 |-------|------------------|-----------|
-| Unit | `formatMoney` cases; domain `overviewSummary(seed, clock)` equals 4.3 | 4.2, 4.3 |
-| API | `GET /api/overview` DTO matches the schema and 4.3 values; 401 without session | 6.API |
-| E2E | US-04 AC1 (three values), AC2 after a deposit made through the API fixture; US-05 AC1/AC3; US-06 AC1–AC3; US-07 AC1/AC3; US-08 AC1–AC2; empty states via test seed variants; keyboard: Tab reaches all four links; axe | US-04…08 |
-| WebMCP | see SPEC-webmcp-tools §7 | US-38/39 |
+| Unit | `formatMoney` (positive/negative/zero/large); `formatDate` UTC incl. `20:23Z` case; `overviewSummary(seed, clock)` equals the generated figures of 4.3 (order included) | 4.2, 4.3 |
+| API | `GET /api/overview` matches `OverviewDtoSchema` and 4.3; 401 without session; `no-store` header | 6.API |
+| E2E | US-04 AC1; US-05 AC1/AC3 and AC2 via `empty-pots` seed variant; US-06 AC1–AC3 (`few-transactions` variant); US-07 AC1/AC3 and AC2 via `empty-budgets`; US-08 AC1–AC3 (`no-recurring`); US-32 keyboard walkthrough (skip link → nav → four card links → footer, documented in the test); US-34 hover/focus styles on the four card links (`toHaveCSS`); axe | US-04…08, US-32, US-34 |
+| WebMCP | SPEC-webmcp-tools §7 | US-38/39 |
 
 ## 8. Out of scope
-Any mutation; per-card refresh; charts beyond the donut.
+Any mutation; per-card refresh; charts beyond the donut; US-04 AC2 (R2).
 
 ## 9. Open questions
 None.

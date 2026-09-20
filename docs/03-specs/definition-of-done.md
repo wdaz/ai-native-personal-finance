@@ -7,13 +7,13 @@ A task from `backlog.md` is done only when every line below is true. The PR desc
 ## Scope and traceability
 - [ ] The PR names the task id, the spec sections and the story ids it implements; nothing outside the task is changed (drive-by fixes go to a new task).
 - [ ] No Accepted ADR is contradicted; if a decision was needed, a new ADR or an amendment with a process-log entry exists.
-- [ ] If the spec was wrong or incomplete, the spec is amended in the same PR (version bump, note in §9 or a changelog line) — the code never silently diverges.
+- [ ] If the spec was wrong or incomplete, the spec is amended in the same PR (version bump and a changelog line under the header; §9 stays empty) — the code never silently diverges.
 
 ## Code
 - [ ] TypeScript strict, lint and format pass; import-boundary rules pass (ADR-0002).
 - [ ] Domain logic is pure and clock-injected; no `new Date()` in `src/domain` or `src/server` business code.
 - [ ] Money is integer cents in code and DB; formatted only at the edge.
-- [ ] Validation uses the shared Zod schemas on client, server and tools; copy comes from `src/shared/copy.ts` (the user-stories appendix).
+- [ ] Validation uses the shared Zod schemas on client, server and tools; copy comes from `src/shared/copy.ts`, which mirrors the user-stories appendix (including its "R1 additions" table).
 - [ ] Client/server component boundary respected; WebMCP code lives only in `src/webmcp`.
 
 ## Tests (ADR-0003)
@@ -22,7 +22,7 @@ A task from `backlog.md` is done only when every line below is true. The PR desc
 - [ ] At least one E2E test per story touched, title starting with the story id; role/label locators; no time-based waits; no `.first()`.
 - [ ] axe passes on every page/modal the task touches.
 - [ ] WebMCP: tools touched have unit + E2E coverage in polyfill and off modes.
-- [ ] `npm run test:all` green locally and in CI on Chromium, Firefox, WebKit.
+- [ ] `npm run test:all` green locally and in the CI jobs that exist at that point of the backlog (minimal CI from T-01; API/E2E jobs from T-05/T-06; full matrix from T-13).
 
 ## Accessibility and design
 - [ ] Keyboard-only walkthrough of the touched UI done and noted in the PR (what was pressed, what happened).

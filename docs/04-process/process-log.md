@@ -281,3 +281,11 @@ Append-only. Newest entry at the bottom. Template:
 - **Most important catches:** the Overview worked example carried two design-vs-seed errors the drafting agent introduced *after* the previous review's lesson (Gift pot $40 → $110; latest-five order); test-support endpoints used by every E2E were never specified and scheduled too late; CI arrives after the tasks that need it; traceability script would fail until R2; tool money representation contradicts ADR-0004; several approved-doc contradictions surfaced (US-05 format, US-31 blur, US-35 release, US-03 vs ADR-0006, US-41 wording).
 - **Lesson (repeat of 2026-09-13, sharper):** "recompute from data.json" must include *ordering and every element*, not only totals; and any spec that says "equals §x" must have §x machine-checked. Action: add a `scripts/check-seed-figures` idea to T-03 so the worked example is generated, not typed.
 - **Next:** owner answers 8 questions; agent applies fixes → specs v0.2 → owner approval → Phase 5.
+
+---
+
+## 2026-09-20 — Phase 4: review findings applied → Release 1 specs v0.2
+
+- **Owner decisions (8):** `$920.00` two decimals everywhere (agent recommended the design's `$920`); sessions end on reset (agent recommended keeping ADR-0006) — both recorded as disagreements resolved for the owner; US-35 → R1; tool money in cents + currency/unit; US-04 AC2 → R2; indicator "unavailable" + "checking…"; copy additions go to the appendix for approval; US-37 AC3 → R2.
+- **Applied:** all 37 findings. `overview.md` v0.2 (generated worked example, UTC dates, donut geometry, server-side data, empty/error layouts); `webmcp-tools.md` v0.2 (ADR names, cents, env mapping, four indicator states, generation counter, single `toolchange`, defined assertions, request-id log); `auth.md` v0.2 (blur rule, route matrix, error envelope, rate-limit maths, back-nav, `next` allow-list, reset notice); `app-shell.md` v0.2; new `reset-and-test-support.md`; `backlog.md` v0.2 (CI from T-01, test support in T-02, T-03/T-07 split, traceability per release); DoD tweaks; user-stories v1.1 (appendix "R1 additions", US-35 R1); PRD v1.2; ADR-0004 clarification; ADR-0006 amendment; NFR v1.2 notes.
+- **Next:** owner reads the "R1 additions" copy table and approves specs v0.2 → Phase 4 exit (R1) → Phase 5, T-01.

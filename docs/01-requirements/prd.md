@@ -1,6 +1,6 @@
 # PRD — AI-Native Personal Finance
 
-Status: **Approved** (v1.1 — amendment 2026-09-13: visual regression baseline removed from Release 3 per ADR-0003)
+Status: **Approved** (v1.2 — amendments 2026-09-20: US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2; v1.1 2026-09-13: visual regression removed)
 Author(s): Agent (Claude, draft) · Owner (decisions) · Date: 2026-09-13 · Process log: `../04-process/process-log.md`
 Traces to: `../00-discovery/problem-statement.md` (v1.0), `../00-discovery/inputs/challenge-brief.md`, `../00-discovery/research/webmcp-status.md`
 
@@ -67,7 +67,9 @@ Overview depends on (August spent per category, pot totals, bills
 paid/upcoming/due soon) implemented and unit-tested; E2E journeys for login
 and overview; CI; first public deployment with reset job and banner.
 Stories: US-01, US-02, US-03, US-04…US-08, US-31, US-32 (for these
-screens), US-33, US-34, US-36, US-37, US-38, US-39 (R1 part), US-41.
+screens), US-33, US-34, US-35, US-36, US-37 (AC1–AC2), US-38, US-39 (R1
+part), US-41. Deferred to Release 2 with their write endpoints: US-04 AC2,
+US-37 AC3.
 
 *Consequence:* the slice is read-only, so mutating tools and their
 safeguards (US-40) are first exercised in Release 2. The domain logic is
@@ -77,7 +79,7 @@ built once here and reused by every later page.
 
 Transactions (US-09…US-13), Budgets (US-14…US-20), Pots (US-21…US-26),
 Recurring Bills (US-27…US-30); full keyboard support on these screens;
-mutating WebMCP tools with safeguards (US-40); sidebar minimise (US-35).
+mutating WebMCP tools with safeguards (US-40); US-04 AC2 and US-37 AC3.
 
 ### Release 3 — quality and narrative
 

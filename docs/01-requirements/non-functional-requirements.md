@@ -1,6 +1,6 @@
 # Non-functional requirements
 
-Status: **Approved** (v1.1 — amendment 2026-09-13: T9 withdrawn by owner decision in ADR-0003; v1.0 approved 2026-09-13) · Author(s): Agent (draft) · Date: 2026-09-08
+Status: **Approved** (v1.2 — 2026-09-20 clarifications: W2 `native` = opportunistic native with polyfill fallback; W6 structured content = DTO in cents + currency/unit; T2 traceability checked per release; v1.1 2026-09-13: T9 withdrawn) · Author(s): Agent (draft) · Date: 2026-09-08
 Traces to: problem statement S1–S4 and constraints; research note `webmcp-status.md`
 Every requirement is measurable; each names how it is verified.
 

@@ -1,6 +1,7 @@
 # 0004 — WebMCP adapter: one module, page-scoped registries, polyfill baseline, client-side confirmation
 
-- Status: **Accepted** · Date: 2026-09-13 · Author(s): Agent (proposal; carries forward the prior attempt's ADR-0003), Owner (decisions of 2026-09-13)
+- Status: **Accepted** (clarified 2026-09-20) · Date: 2026-09-13
+- Clarification 2026-09-20 (review S-08/S-21/S-22): tool `structuredContent` is the API DTO unchanged (integer cents) plus `{ currency: "USD", unit: "cents" }`; the adapter dispatches one `toolchange` per completed batch on `document` and on the `ModelContext` object; registration carries a generation counter so an unmount cancels pending registration. · Author(s): Agent (proposal; carries forward the prior attempt's ADR-0003), Owner (decisions of 2026-09-13)
 - Driven by: NFR-W1–W9, US-38–US-41, research note (F1–F3, F8, F9), owner decisions R-16 (client-side confirmation) and R-23 (page-scoped)
 
 ## Context

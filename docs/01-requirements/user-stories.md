@@ -1,6 +1,6 @@
 # User stories
 
-Status: **Approved** (v1.0, owner approval 2026-09-13) · Author(s): Agent (draft) · Date: 2026-09-08
+Status: **Approved** (v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · Author(s): Agent (draft) · Date: 2026-09-08
 Source: `../00-discovery/inputs/challenge-brief.md` (brief), `../00-discovery/problem-statement.md` (PS), `../00-discovery/inputs/design/` (design; visual reference only)
 Conventions: ids are stable; priorities Must/Should/Could; every story lists ≥1 error or boundary criterion; "Agent tool" names the WebMCP tool the story implies (final set decided in NFR-W / ADR). Business "today" is **19 Aug 2026** and the current month is **August 2026** (OQ-4); seed dates are shifted +2 years at seed time. **Where the design and `data.json` differ, `data.json` wins** (owner decision R-01). Every budget and pot has a server-generated `id`; tools take and return ids (R-26). Validation copy: see the copy table at the end of this document (R-07). Money is USD, shown with two decimals and a sign as in the design.
 
@@ -214,7 +214,7 @@ Must · Source: brief ("See hover and focus states for all interactive elements"
 - AC2 — Disabled controls have no hover state and are excluded from the tab order or announced as disabled.
 
 ### US-35 — Minimise the sidebar
-Should · Source: design
+Should · Source: design · **Release 1** (owner decision 2026-09-20, S-14)
 - AC1 — "Minimize Menu" collapses the sidebar to icons and back; the state persists for the session; the toggle has an accessible name reflecting state.
 - AC2 — Collapsed items keep accessible names (tooltip/`aria-label`); keyboard navigation is unchanged.
 
@@ -282,3 +282,24 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | Bills | no results | No bills match your search |
 | Demo banner | always | Demo data resets every 10 days · last reset <date> |
 | After reset | stale request | Data was reset — reloading |
+
+### R1 additions (2026-09-20, owner-approved with the Release 1 specs)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Login | network/server error | Something went wrong. Try again |
+| Login | rate limited | Too many attempts. Try again in {N} minutes |
+| Login | after demo reset (`?reason=reset`) | The demo data was reset — please log in again |
+| Login demo box | copy failed | Copy failed — select the text |
+| Login button | submitting | Logging in… |
+| Sign-up notice | link | Go to login |
+| Overview | load error | Couldn't load your overview · button: Retry |
+| Overview pots | empty | No pots yet · link: Add a pot |
+| Overview budgets | empty | No budgets yet · link: Add a budget |
+| Overview transactions | empty | No transactions yet |
+| Banner | dismiss button | Dismiss notice |
+| Shell | skip link | Skip to content |
+| Sidebar toggle | names | Minimize Menu / Expand Menu |
+| R2 placeholder pages | body | Coming in Release 2 |
+| Agent tools indicator | states | Agent tools: checking… / native · N / polyfill · N / unavailable (titles in SPEC-webmcp-tools §2.7) |
+| Stale write after reset (R2) | 409 | Data was reset — reloading |
