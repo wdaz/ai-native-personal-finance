@@ -16,6 +16,34 @@ Vitest's own `include` all pass them by. The test reads each file and hands it t
 classification, so the fixtures exercise the real config, the real `tsconfig.json` alias
 and the real resolver, without a single illegal file existing in the tree.
 
+## What is covered
+
+Every rule ADR-0002 and ADR-0005 state has at least one fixture that violates it, and
+every layer pair they permit has one that must stay silent. The two halves matter equally:
+a config that reported nothing would pass no violation case, and a config that reported
+everything would pass no control.
+
+| Violates                                   | Fixtures                                                                            |
+| ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `domain` → `server`, `app`, `webmcp`       | relative and `@/`-aliased server imports, plus app and webmcp                       |
+| `shared` → anything else                   | `domain`, `server`                                                                  |
+| `webmcp` → anything but `shared`           | `server`                                                                            |
+| `scripts` → anything but `shared`/`domain` | `server`                                                                            |
+| Prisma outside `src/server`                | from `app` (both `@prisma/client` and the `/edge` sub-path), `src/ui`, `src/shared` |
+| ADR-0005's clock rule                      | `new Date()` and `Date.now()`, in `src/domain` **and** `src/server`                 |
+
+| Must report nothing  | Fixture                          |
+| -------------------- | -------------------------------- |
+| `domain` → `shared`  | `domain-imports-shared-allowed`  |
+| `app` → `server`     | `app-imports-server-allowed`     |
+| `server` → `domain`  | `server-imports-domain-allowed`  |
+| `scripts` → `shared` | `scripts-imports-shared-allowed` |
+| `webmcp` → `shared`  | `webmcp-imports-shared-allowed`  |
+
+The violation cases also assert `severity === 2`. ADR-0002 says "CI must fail on
+violations"; a rule demoted to a warning would still be reported, and `eslint` would still
+exit 0 were `--max-warnings 0` ever dropped from the `lint` script.
+
 ## Why the imports point at README files
 
 `boundaries/dependencies` classifies an import by the path it _resolves to_; an import

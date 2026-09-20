@@ -1,0 +1,6 @@
+// Linted as src/webmcp/imports-shared-allowed.ts.
+// Control: shared is the one layer webmcp may import — the tools validate their input
+// with the same Zod schemas the forms and the route handlers use (NFR-Q2).
+import { WEBMCP_MODES } from "@/src/shared/env";
+
+export const modes = WEBMCP_MODES;

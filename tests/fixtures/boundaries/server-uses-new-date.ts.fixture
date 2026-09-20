@@ -1,0 +1,5 @@
+// Linted as src/server/uses-new-date.ts.
+// ADR-0005: business time is injected, never read from the wall clock — and the rule
+// covers src/server as well as src/domain, because the seed, the reset and the session
+// all decide things by date.
+export const startedAt = (): Date => new Date();

@@ -49,6 +49,36 @@ const violations = [
     message: "ADR-0002: shared must not import domain.",
   },
   {
+    fixture: "shared-imports-server.ts.fixture",
+    lintAs: "src/shared/imports-server.ts",
+    ruleId: "boundaries/dependencies",
+    message: "ADR-0002: shared must not import server.",
+  },
+  {
+    fixture: "domain-imports-app.ts.fixture",
+    lintAs: "src/domain/imports-app.ts",
+    ruleId: "boundaries/dependencies",
+    message: "ADR-0002: domain must not import app.",
+  },
+  {
+    fixture: "domain-imports-webmcp.ts.fixture",
+    lintAs: "src/domain/imports-webmcp.ts",
+    ruleId: "boundaries/dependencies",
+    message: "ADR-0002: domain must not import webmcp.",
+  },
+  {
+    fixture: "webmcp-imports-server.ts.fixture",
+    lintAs: "src/webmcp/imports-server.ts",
+    ruleId: "boundaries/dependencies",
+    message: "ADR-0002: webmcp must not import server.",
+  },
+  {
+    fixture: "scripts-imports-server.ts.fixture",
+    lintAs: "scripts/imports-server.ts",
+    ruleId: "boundaries/dependencies",
+    message: "ADR-0002: scripts must not import server.",
+  },
+  {
     fixture: "app-imports-prisma.ts.fixture",
     lintAs: "app/(app)/overview/imports-prisma.ts",
     ruleId: "no-restricted-imports",
@@ -86,12 +116,59 @@ const violations = [
     ruleId: "no-restricted-syntax",
     message: "ADR-0005: inject a Clock instead of calling Date.now().",
   },
+  {
+    // ADR-0005 names src/server as well as src/domain: the seed, the reset and the
+    // session all decide things by date, so both halves of the rule need a fixture.
+    fixture: "server-uses-new-date.ts.fixture",
+    lintAs: "src/server/uses-new-date.ts",
+    ruleId: "no-restricted-syntax",
+    message: "ADR-0005: inject a Clock instead of calling new Date()",
+  },
+  {
+    fixture: "server-uses-date-now.ts.fixture",
+    lintAs: "src/server/uses-date-now.ts",
+    ruleId: "no-restricted-syntax",
+    message: "ADR-0005: inject a Clock instead of calling Date.now().",
+  },
+];
+
+/**
+ * The legal counterparts. A rule set that rejected everything would satisfy every case
+ * above, so each layer pair ADR-0002 permits gets a fixture that must report nothing.
+ */
+const allowed = [
+  {
+    fixture: "domain-imports-shared-allowed.ts.fixture",
+    lintAs: "src/domain/imports-shared-allowed.ts",
+  },
+  {
+    fixture: "app-imports-server-allowed.ts.fixture",
+    lintAs: "app/(app)/imports-server-allowed.ts",
+  },
+  {
+    fixture: "server-imports-domain-allowed.ts.fixture",
+    lintAs: "src/server/imports-domain-allowed.ts",
+  },
+  {
+    fixture: "scripts-imports-shared-allowed.ts.fixture",
+    lintAs: "scripts/imports-shared-allowed.ts",
+  },
+  {
+    fixture: "webmcp-imports-shared-allowed.ts.fixture",
+    lintAs: "src/webmcp/imports-shared-allowed.ts",
+  },
 ];
 
 // The rules only see an import that resolves; an unresolved one is classified external
 // and every policy allows external. If one of these disappears the fixtures stop being
 // violations, so assert them separately to keep that failure legible.
-const importTargets = ["src/server/README.md", "src/domain/README.md", "src/shared/env.ts"];
+const importTargets = [
+  "src/server/README.md",
+  "src/domain/README.md",
+  "src/webmcp/README.md",
+  "app/(app)/README.md",
+  "src/shared/env.ts",
+];
 
 describe("eslint enforces ADR-0002 and ADR-0005 (tests/fixtures/boundaries)", () => {
   it.each(importTargets)("the fixtures' import target %s exists", (target) => {
@@ -102,13 +179,14 @@ describe("eslint enforces ADR-0002 and ADR-0005 (tests/fixtures/boundaries)", ()
     const messages = await lintFixture(fixture, lintAs);
     expect(messages.map((m) => m.ruleId)).toEqual([ruleId]);
     expect(messages[0]?.message).toContain(message);
+    // Severity 2, not 1: ADR-0002 says "CI must fail on violations", and `npm run lint`
+    // would exit 0 on a warning were it not for --max-warnings 0. Asserting the severity
+    // keeps the guarantee even if that flag is ever dropped.
+    expect(messages[0]?.severity).toBe(2);
   });
 
-  it("reports nothing for a legal domain → shared import", async () => {
-    const messages = await lintFixture(
-      "domain-imports-shared-allowed.ts.fixture",
-      "src/domain/imports-shared-allowed.ts",
-    );
+  it.each(allowed)("$lintAs reports nothing", async ({ fixture, lintAs }) => {
+    const messages = await lintFixture(fixture, lintAs);
     expect(messages.map((m) => `${m.ruleId}: ${m.message}`)).toEqual([]);
   });
 

@@ -1,0 +1,5 @@
+// Linted as src/webmcp/imports-server.ts.
+// ADR-0002: webmcp imports only shared and reaches everything else over the HTTP API.
+// Importing the server layer directly would let a tool bypass the route handlers, and
+// with them the session check every tool inherits from the cookie.
+import "@/src/server/README.md";
