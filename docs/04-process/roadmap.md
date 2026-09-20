@@ -1,6 +1,6 @@
 # Roadmap
 
-Status: Approved · Current phase: **4 — Specs & plan** (Phase 3 exit approved 2026-09-13)
+Status: Approved · Current phase: **5 — Build the slice** (Phase 4 exit for Release 1 approved 2026-09-20; Release 2 specs return to Phase 4 after T-15)
 
 The roadmap is a sequence of phases with gates, not a calendar. A phase is
 entered only when the previous phase's exit gate is recorded in
@@ -54,7 +54,7 @@ requirement), but the return trip is logged.
   ADR.
 - **Agent role:** proposes alternatives with trade-offs; owner decides.
 
-## Phase 4 — Specs & plan
+## Phase 4 — Specs & plan ✅ (Release 1)
 
 - **Goal:** feature specs an agent can implement without asking, and a
   backlog of agent-sized tasks.

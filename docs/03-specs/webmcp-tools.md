@@ -1,6 +1,6 @@
 # SPEC-webmcp-tools — Adapter, registries, Release 1 tools, status indicator
 
-Status: Draft (v0.2, after adversarial review 2026-09-20) · Author(s): Agent · Date: 2026-09-20
+Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
 Changelog: v0.2 — S-08 cents in tool output; S-09 env names; S-10 indicator states; S-20 observable via-marker; S-21 `toolchange` rule; S-22 registration generation; S-23 assertions defined; S-31 names aligned with ADR-0004; S-32 page-scope in descriptions; S-33 idle fallback; S-37 execute signature.
 Implements: US-38, US-39 (R1 part), US-41; reserves names for R2 · Constrained by: ADR-0004, NFR-W1–W9, NFR-T8 · Spec reference: WebMCP Draft CG Report 2026-09-04 — `document.modelContext`; `execute(input, signal)` is the draft's callback shape (research note F2); the adapter wraps whatever the runtime passes and exposes `{ input, signal }` to our tools.
 

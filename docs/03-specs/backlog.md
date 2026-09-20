@@ -1,6 +1,6 @@
 # Backlog — Release 1 (vertical slice: Auth + Overview)
 
-Status: Draft (v0.2, after adversarial review 2026-09-20) · Author(s): Agent · Date: 2026-09-20
+Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
 Changelog: v0.2 — S-04/S-05 test-support and reset moved early; S-06 traceability scoped per release; S-07 CI from T-01; S-34 T-03/T-07 split; US-35 in R1.
 Order is the intended execution order; each task is sized for one agent session and ends with the Definition of Done.
 

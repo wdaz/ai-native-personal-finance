@@ -1,6 +1,6 @@
 # SPEC-reset-and-test-support — Admin reset, scheduled reset, test-support routes
 
-Status: Draft (v0.1) · Author(s): Agent · Date: 2026-09-20 (added after review S-04/S-05/S-25)
+Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20 (added after review S-04/S-05/S-25)
 Implements: US-36 (persistence via the real backend), US-37 AC1 (AC3 in R2) · Constrained by: ADR-0003 (T3 test data via API), ADR-0005, ADR-0007, NFR-D3/D5, NFR-S4
 
 ## 1. Purpose

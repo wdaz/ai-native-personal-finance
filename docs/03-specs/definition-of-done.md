@@ -1,6 +1,6 @@
 # Definition of Done
 
-Status: Draft (v0.1) · Author(s): Agent · Date: 2026-09-20 · Constrained by: AGENTS.md, governance.md, ADR-0003, NFR-Q
+Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20 · Constrained by: AGENTS.md, governance.md, ADR-0003, NFR-Q
 
 A task from `backlog.md` is done only when every line below is true. The PR description quotes this list with each item checked.
 

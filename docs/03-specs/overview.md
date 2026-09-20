@@ -1,6 +1,6 @@
 # SPEC-overview — Overview page
 
-Status: Draft (v0.2, after adversarial review 2026-09-20) · Author(s): Agent · Date: 2026-09-20
+Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
 Changelog: v0.2 — S-01 figures corrected and generated rule added; S-02 two-decimal formatting everywhere; S-03 US-04 AC2 deferred to R2; S-11 server-side data access; S-12 UTC dates; S-13 donut geometry; S-26 empty layouts; S-28 avatars; S-35 test rows.
 Implements: US-04 (AC1, AC3; AC2 tested in R2), US-05, US-06, US-07, US-08, US-32, US-34 · Constrained by: ADR-0002, ADR-0005, data-model.md, design-tokens.md, NFR-A/P · Design: prototype "Overview"
 

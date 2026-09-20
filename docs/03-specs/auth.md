@@ -1,6 +1,6 @@
 # SPEC-auth — Demo login, sign-up screen, logout, session
 
-Status: Draft (v0.2, after adversarial review 2026-09-20) · Author(s): Agent · Date: 2026-09-20
+Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
 Changelog: v0.2 — S-15 blur rule per US-31; S-16 sessions end on reset; S-17 route matrix + error envelope; S-18 rate-limit maths; S-29 back-navigation; S-30 `next` rule.
 Implements: US-01, US-02, US-03, US-31 (for these forms), US-32 (for these screens) · Constrained by: ADR-0006, ADR-0002, NFR-S1/S2/S4/S6, NFR-A · Design: `inputs/design/app-prototype.html` "Auth" screen (illustration panel left, form card right; mobile: form only, illustration hidden)
 

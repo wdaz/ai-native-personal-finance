@@ -1,6 +1,6 @@
 # 03 — Feature specs and plan
 
-Status: **In progress** (entered 2026-09-13) — Release 1 specs v0.2 after adversarial review 2026-09-20: `auth.md`, `app-shell.md`, `overview.md`, `webmcp-tools.md`, `reset-and-test-support.md`, `definition-of-done.md`, `backlog.md` — awaiting owner approval; Release 2 specs (transactions, budgets, pots, recurring-bills) follow after the first slice
+Status: **In progress** (entered 2026-09-13) — Release 1 specs v0.2 after adversarial review 2026-09-20: `auth.md`, `app-shell.md`, `overview.md`, `webmcp-tools.md`, `reset-and-test-support.md`, `definition-of-done.md`, `backlog.md` — **approved by owner 2026-09-20 (Phase 4 exit for Release 1)**; Release 2 specs (transactions, budgets, pots, recurring-bills) follow after the first slice
 
 Purpose: turn requirements plus architecture into feature specifications an
 agent can implement and a test can verify, then decompose the work into

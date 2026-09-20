@@ -1,6 +1,6 @@
 # SPEC-app-shell — Authenticated layout: sidebar, bottom navigation, minimise, banner, footer
 
-Status: Draft (v0.2, after adversarial review 2026-09-20) · Author(s): Agent · Date: 2026-09-20
+Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
 Changelog: v0.2 — S-10 indicator owned by WebMcpProvider; S-11 server-side meta; S-14 US-35 confirmed R1 (PRD amended); S-24 meta DTO + OT meta tag; S-25 deterministic lastResetAt; S-27 names/storage; S-35 test rows.
 Implements: US-33, US-34, US-35, US-37 AC2, US-41 (indicator slot), US-03 (logout button slot) · Constrained by: ADR-0002, ADR-0004, design-tokens.md, NFR-A · Design: prototype sidebar (expanded 300 px / collapsed 88 px), tablet/mobile bottom bar; style guide "Sidebar"
 

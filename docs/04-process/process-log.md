@@ -289,3 +289,12 @@ Append-only. Newest entry at the bottom. Template:
 - **Owner decisions (8):** `$920.00` two decimals everywhere (agent recommended the design's `$920`); sessions end on reset (agent recommended keeping ADR-0006) — both recorded as disagreements resolved for the owner; US-35 → R1; tool money in cents + currency/unit; US-04 AC2 → R2; indicator "unavailable" + "checking…"; copy additions go to the appendix for approval; US-37 AC3 → R2.
 - **Applied:** all 37 findings. `overview.md` v0.2 (generated worked example, UTC dates, donut geometry, server-side data, empty/error layouts); `webmcp-tools.md` v0.2 (ADR names, cents, env mapping, four indicator states, generation counter, single `toolchange`, defined assertions, request-id log); `auth.md` v0.2 (blur rule, route matrix, error envelope, rate-limit maths, back-nav, `next` allow-list, reset notice); `app-shell.md` v0.2; new `reset-and-test-support.md`; `backlog.md` v0.2 (CI from T-01, test support in T-02, T-03/T-07 split, traceability per release); DoD tweaks; user-stories v1.1 (appendix "R1 additions", US-35 R1); PRD v1.2; ADR-0004 clarification; ADR-0006 amendment; NFR v1.2 notes.
 - **Next:** owner reads the "R1 additions" copy table and approves specs v0.2 → Phase 4 exit (R1) → Phase 5, T-01.
+
+---
+
+## 2026-09-20 — Phase 4 exit (Release 1) approved; hand-off to Claude Code
+
+- **Gate:** owner approved the R1 specs v0.2 (→ v1.0), Definition of Done and backlog by deciding to start the build. Copy "R1 additions" approved with them.
+- **Tooling change:** Phase 5 runs in **Claude Code** in the repo (reads `CLAUDE.md` → `AGENTS.md`). Cowork sessions remain for document work and reviews.
+- **Produced:** `docs/04-process/build-workflow.md` (per-task loop, rules of thumb) and the first task prompt `docs/04-process/prompts/2026-09-20-T-01-scaffold.md`.
+- **Next:** T-01 in Claude Code.
