@@ -25,9 +25,15 @@ const config = [
   },
   {
     files: ["**/*.{js,mjs,ts,tsx}"],
-    ignores: ["tests/**/*"],
     plugins: { boundaries },
     settings: {
+      // eslint-import-resolver-typescript is a direct devDependency so that it sits at
+      // the top of node_modules. eslint-config-next depends on it too, but only nested,
+      // where eslint-plugin-boundaries cannot load it. The symptom is
+      // "Resolve error: typescript with invalid interface loaded as resolver"; the
+      // consequence is worse than the message, because a tsconfig-aliased import such as
+      // `@/src/server/x` from `src/domain` is then read as an external module and
+      // escapes every policy below.
       "boundaries/include": ["app/**/*", "src/**/*", "tests/**/*", "scripts/**/*"],
       // `partialMatch: false` makes the pattern match the whole file path. The pattern
       // must end in `/**` and not `/**/*`: the latter requires a segment after `**`, so
