@@ -1,0 +1,5 @@
+// Linted as app/(app)/imports-server-allowed.ts.
+// Control: ADR-0002 routes every database access through src/server, so app → server is
+// the sanctioned path and must report nothing. Without this control, a config that
+// rejected the pair would still satisfy every violation case above.
+import "@/src/server/README.md";

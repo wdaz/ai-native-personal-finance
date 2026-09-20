@@ -1,0 +1,7 @@
+// Linted as src/shared/typescript-rules-enabled.ts.
+// Not a boundary rule: this pins that eslint-config-next/typescript is still spread into
+// the config. Without it all 20 typescript-eslint rules sit at severity 0 and both of
+// the lines below pass.
+const unused = 1;
+
+export const identity = (value: any) => value;

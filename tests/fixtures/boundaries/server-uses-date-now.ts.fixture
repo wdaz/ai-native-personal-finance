@@ -1,0 +1,4 @@
+// Linted as src/server/uses-date-now.ts.
+// ADR-0005, the millisecond form of the same rule: Date.now() in src/server would make
+// the rate limit and the session's sliding re-issue untestable against a fixed clock.
+export const nowMs = (): number => Date.now();

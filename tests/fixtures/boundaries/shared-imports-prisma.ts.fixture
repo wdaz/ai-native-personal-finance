@@ -1,0 +1,7 @@
+// Linted as src/shared/imports-prisma.ts.
+// ADR-0002 has shared "import nothing from the rest", so it is the layer that has to
+// stay dependency-free; its Zod schemas are written by hand, not derived from Prisma
+// types (T-04). Deriving them is an ADR conversation, not something the lint lets past.
+import type { Prisma } from "@prisma/client";
+
+export type Row = Prisma.JsonValue;

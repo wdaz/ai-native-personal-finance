@@ -20,3 +20,7 @@ test-results/
 # Claude Code local settings
 .claude/*.local.json
 .claude/worktrees/
+
+# next / vercel
+/.vercel
+*.tsbuildinfo

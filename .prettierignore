@@ -1,0 +1,15 @@
+.next
+node_modules
+coverage
+playwright-report
+test-results
+package-lock.json
+public
+
+# Prose is owned by the owner and its line breaks are deliberate. Prettier never
+# rewrites the process documents (AGENTS.md §2: documents are the contract).
+/docs
+/AGENTS.md
+/CLAUDE.md
+/README.md
+.superpowers

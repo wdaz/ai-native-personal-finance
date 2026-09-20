@@ -1,0 +1,4 @@
+// Linted as src/domain/imports-app.ts.
+// ADR-0002: domain imports nothing from app. The dependency runs the other way — pure
+// functions cannot know about routes, React or the request.
+import "@/app/(app)/README.md";

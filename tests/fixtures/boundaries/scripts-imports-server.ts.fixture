@@ -1,0 +1,4 @@
+// Linted as scripts/imports-server.ts.
+// ADR-0002, clarified 2026-09-20: scripts import shared and domain only. A generator that
+// reached into the server layer would pull the Prisma client into repo tooling.
+import "@/src/server/README.md";

@@ -1,0 +1,3 @@
+// Linted as src/shared/imports-domain.ts.
+// ADR-0002: shared imports nothing from the rest.
+import "@/src/domain/README.md";

@@ -1,0 +1,3 @@
+// Linted as src/domain/uses-date-now.ts.
+// ADR-0005, the second form: Date.now().
+export const startedAt = (): number => Date.now();

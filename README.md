@@ -13,9 +13,9 @@ A portfolio project with two deliverables:
    the first: it shows how an idea is analysed, specified and built *with*
    LLMs, not just that an app exists.
 
-> Status: **Phase 0 — skeleton.** No product decisions have been made yet.
-> The stack, testing approach and WebMCP design are open until
-> `docs/02-architecture/` records them.
+> Status: **Phase 5 — Build the slice (Release 1).** The stack, layout, testing approach
+> and WebMCP design are recorded in `docs/02-architecture/`; the Release 1 specs are
+> approved in `docs/03-specs/`. The backlog is `docs/03-specs/backlog.md`.
 
 ## How to read this repository
 
@@ -29,7 +29,7 @@ A portfolio project with two deliverables:
 | `docs/03-specs/` | Feature specifications precise enough for an agent to implement | You are about to build or test a feature |
 | `docs/04-process/` | Roadmap, governance (who decides what), process log | You want to see how the work was actually done |
 | `docs/templates/` | Templates for every document type above | You are creating a new document |
-| `apps/` | Application code (empty until Phase 5) | You are building |
+| `app/`, `src/`, `prisma/`, `scripts/`, `tests/`, `public/` | Application code, tooling and static assets, laid out per ADR-0002 | You are building |
 
 ## The phases
 
@@ -41,12 +41,46 @@ Each phase has an entry gate and an exit gate, defined in
 `docs/04-process/roadmap.md`. Nothing moves to the next phase until the exit
 gate is met and recorded in the process log.
 
+## Run locally
+
+Requires Node 26 (see `.nvmrc`) and, from T-02 onwards, a local Postgres.
+
+```bash
+npm ci                 # install
+npx playwright install --with-deps chromium firefox webkit
+npm run dev            # develop on http://localhost:3000
+npm run test:all       # lint, format, typecheck, unit, API and E2E
+```
+
+`npm ci` does not download the Playwright browsers, so `playwright install` is
+a one-off after the install on each machine; without it the browser tests stop
+at *Executable doesn't exist*.
+
+`npm run test:all` builds the app and starts it before the browser tests
+(ADR-0003: E2E never runs against `next dev`). The individual commands are:
+
+| Command                       | What it runs                                                      |
+| ----------------------------- | ----------------------------------------------------------------- |
+| `npm run lint`                | ESLint, including the ADR-0002 import boundaries                  |
+| `npm run format:check`        | Prettier                                                          |
+| `npm run typecheck`           | `tsc --noEmit`, strict                                            |
+| `npm test`                    | Vitest — `tests/unit`                                             |
+| `npm run test:api`            | Playwright request-context tests — `tests/api` (empty until T-05) |
+| `npm run test:e2e`            | Playwright on Chromium, Firefox and WebKit — `tests/e2e`          |
+| `npm run build` / `npm start` | Production build and server                                       |
+
+Copy `.env.example` to `.env.local` before running anything that touches the database or
+the session. Every variable names the ADR or spec that defines it.
+
 ## Inputs that already exist
 
 - Challenge brief and seed data: `docs/00-discovery/inputs/`
 - Figma design file: kept **outside** the repository (Frontend Mentor licence);
-  design tokens will be extracted into `docs/02-architecture/design-tokens.md`
-  during Phase 3.
+  the tokens extracted from it are in `docs/02-architecture/design-tokens.md`
+  (Approved v1.0), and `src/ui/tokens.css` is generated from it — a unit test
+  holds the two to the same values.
+- Challenge avatars: copied into `public/avatars/` at T-01 from the Frontend Mentor
+  starter; the basename is the key used by the seed (SPEC-overview §4.5).
 
 ## Owner
 

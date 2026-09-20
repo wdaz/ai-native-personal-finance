@@ -1,0 +1,7 @@
+// Linted as app/api/imports-prisma-edge.ts.
+// ADR-0007 runs on Neon, so the edge entry point is the realistic way to slip Prisma
+// into app/: a `no-restricted-imports` `paths` entry matches exact specifiers only and
+// would let this through.
+import { PrismaClient } from "@prisma/client/edge";
+
+export const client = new PrismaClient();

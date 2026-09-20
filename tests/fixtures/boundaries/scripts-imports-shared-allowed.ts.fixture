@@ -1,0 +1,6 @@
+// Linted as scripts/imports-shared-allowed.ts.
+// Control: ADR-0002's 2026-09-20 clarification lets scripts import shared and domain.
+// scripts/seed-figures.ts (T-03) will need exactly this to format its output.
+import { WEBMCP_MODES } from "@/src/shared/env";
+
+export const modes = WEBMCP_MODES;
