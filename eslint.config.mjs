@@ -42,8 +42,13 @@ const config = [
       // escapes every policy below.
       // The same resolver reaches its native binding through unrs-resolver, whose
       // postinstall is the repair path when the platform-specific optional dependency
-      // is missing. npm 11 blocks install scripts that package.json's `allowScripts`
-      // does not approve, so that entry is load-bearing — do not delete it.
+      // is missing. package.json's `allowScripts` records that this postinstall was
+      // reviewed and approved. It is a policy record, not a gate: npm skips a script only
+      // when the policy denies it outright (`false`), so under the default
+      // `strict-allow-scripts=false` an unlisted script still runs and merely warns. The
+      // entry becomes load-bearing the moment `strict-allow-scripts` is turned on, where
+      // an unreviewed install script fails the install instead. Keep it for that reason,
+      // not because anything is blocked today.
       "boundaries/include": ["app/**/*", "src/**/*", "tests/**/*", "scripts/**/*"],
       // `partialMatch: false` makes the pattern match the whole file path. The pattern
       // must end in `/**` and not `/**/*`: the latter requires a segment after `**`, so
