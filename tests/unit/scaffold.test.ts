@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { WEBMCP_MODES } from "@/src/shared/env";
@@ -140,6 +140,17 @@ describe("T-01 scaffold", () => {
 
     it.each([...keys].sort())("has public/avatars/%s.jpg", (key) => {
       expect(existsSync(join(repoRoot, "public/avatars", `${key}.jpg`))).toBe(true);
+    });
+
+    // The reverse direction: seed ⊆ directory alone lets an unreferenced image sit in
+    // public/avatars for ever. The copy from the Frontend Mentor starter is exactly the
+    // seed's set, so assert equality.
+    it("holds no image the seed does not reference", () => {
+      const onDisk = readdirSync(join(repoRoot, "public/avatars"))
+        .filter((file) => file.endsWith(".jpg"))
+        .map((file) => basename(file, ".jpg"));
+      expect(onDisk.filter((key) => !keys.has(key)).sort()).toEqual([]);
+      expect(onDisk.length).toBe(keys.size);
     });
   });
 
