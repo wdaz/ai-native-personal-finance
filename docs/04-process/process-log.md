@@ -350,3 +350,12 @@ Append-only. Newest entry at the bottom. Template:
 - **Gap 1:** the boundary fixtures point at `src/{server,domain,shared}/README.md` because the layers are empty; the only record was the fixtures' README. Now T-02, T-03 and T-04 each repoint the fixtures for the layer they fill — recorded in the backlog so it cannot be forgotten.
 - **Gap 2:** CI `concurrency` with `cancel-in-progress: true` on `main` lets a follow-up merge cancel the previous commit's run, losing its verdict (raised in PR #4). T-13 splits the group.
 - **Lesson:** a constraint written only in a code-side README is invisible to the backlog; anything a *later task* must do goes in that task's row. Delivered as PR (branch `docs/backlog-v1.2-fixtures-ci`).
+
+---
+
+## 2026-09-20 — Research: Frontend Mentor licence before going public
+
+- **Trigger:** the T-01 agent suggested README attribution; the owner asked what the licence means for the challenge files once the repo is public.
+- **Produced:** `docs/00-discovery/research/frontend-mentor-license.md`; backlog v1.3 (T-16 licence steps); origin note on `challenge-brief.md`; public-repo note in `inputs/design/README.md`.
+- **Conclusion:** public solutions are expected; starter assets and `data.json` stay; the two Claude Design exports are reproductions of the premium design and are removed from tree and history in T-16; a process write-up is fine, a tutorial about a premium challenge is not.
+- Delivered as PR (branch `docs/frontend-mentor-license`).

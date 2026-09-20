@@ -1,5 +1,7 @@
 # Design exports (Claude Design)
 
+> **Public-repo note (2026-09-20):** these exports reproduce the Frontend Mentor premium design and will be removed from the tree and history in T-16 before the repository goes public (see `../../research/frontend-mentor-license.md`). They remain available to the owner outside the repository.
+
 Status: Input · Added: 2026-09-08 · Source: Claude Design, built from the
 Frontend Mentor Figma file (`personal-finance-app.fig`, kept outside the repo).
 

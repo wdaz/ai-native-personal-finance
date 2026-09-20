@@ -1,3 +1,5 @@
+<!-- Origin: the README shipped with the Frontend Mentor "Personal finance app" challenge (https://www.frontendmentor.io/challenges/personal-finance-app-JfjtZgyMt1), copied unchanged as the project's functional brief. © Frontend Mentor. -->
+
 ## The challenge
 
 Your challenge is to build out this personal finance app and get it looking as close to the design as possible.
