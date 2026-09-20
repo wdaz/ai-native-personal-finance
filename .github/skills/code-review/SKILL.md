@@ -9,12 +9,12 @@ A personal-finance app built document-first: the specification is written and
 approved before the code, and the documents under `docs/` are the authority a
 review argues from. `AGENTS.md` is the entry point and gives the reading order.
 
-| Question | Document |
-| -------- | -------- |
-| What may an agent decide, and who merges? | `docs/04-process/governance.md` |
-| What is architecturally settled? | `docs/02-architecture/adr/` (Accepted ADRs bind) |
-| When is a task finished? | `docs/03-specs/definition-of-done.md` |
-| What is this task supposed to do? | `docs/03-specs/backlog.md`, by task id |
+| Question                                  | Document                                         |
+| ----------------------------------------- | ------------------------------------------------ |
+| What may an agent decide, and who merges? | `docs/04-process/governance.md`                  |
+| What is architecturally settled?          | `docs/02-architecture/adr/` (Accepted ADRs bind) |
+| When is a task finished?                  | `docs/03-specs/definition-of-done.md`            |
+| What is this task supposed to do?         | `docs/03-specs/backlog.md`, by task id           |
 
 A finding that contradicts an Accepted ADR is only useful if it cites the ADR
 and argues against it explicitly. Silent divergence is what the process exists
@@ -41,7 +41,7 @@ something was run:
   `@/`-aliased cross-layer import as an external package.
 - `eslint-config-next/typescript` was never spread into the flat config, so all
   nineteen `@typescript-eslint` rules sat at severity 0.
-- A design-token test compared token *names* rather than values, so changing
+- A design-token test compared token _names_ rather than values, so changing
   `--spacing-50` from `4px` to `400px` still passed.
 - A confident but wrong claim about npm's `allowScripts` was written into a code
   comment; npm's own source disproved it.
@@ -58,14 +58,14 @@ finding.**
 **ADR-0002 layering.** Enforced by `eslint-plugin-boundaries`; check that new
 code does not need an exception.
 
-| Layer | May import |
-| ----- | ---------- |
-| `src/domain` | `src/shared` only — never `app`, `server`, `webmcp` |
-| `src/shared` | nothing from the other layers |
-| `src/server` | `domain`, `shared`; the only layer that may touch Prisma |
-| `src/webmcp` | `shared` only; reaches data through the HTTP API |
-| `app` | `server`, `domain`, `shared`, `ui`; never Prisma directly |
-| `scripts` | `shared` and `domain` only |
+| Layer        | May import                                                |
+| ------------ | --------------------------------------------------------- |
+| `src/domain` | `src/shared` only — never `app`, `server`, `webmcp`       |
+| `src/shared` | nothing from the other layers                             |
+| `src/server` | `domain`, `shared`; the only layer that may touch Prisma  |
+| `src/webmcp` | `shared` only; reaches data through the HTTP API          |
+| `app`        | `server`, `domain`, `shared`, `ui`; never Prisma directly |
+| `scripts`    | `shared` and `domain` only                                |
 
 **ADR-0005.** No `new Date()` or `Date.now()` in `src/domain` or `src/server`
 business code — inject a clock, so time is testable.
@@ -85,7 +85,7 @@ never `.first()`, never a time-based wait.
 
 ## Governance
 
-`governance.md` states plainly: *Merging — Owner: Only, Agent: Never.* Do not
+`governance.md` states plainly: _Merging — Owner: Only, Agent: Never._ Do not
 approve pull requests and do not recommend merging. Report what you found and
 leave the decision to the owner. Noting that a Definition of Done item looks
 unmet is in scope; declaring the PR ready is not.
