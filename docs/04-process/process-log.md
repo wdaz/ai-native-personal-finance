@@ -308,3 +308,27 @@ Append-only. Newest entry at the bottom. Template:
 - **Contradiction raised by the agent (ADR-0007 vs ADR-0003 on visual snapshots):** real; the ADR-0007 CI line predated the T9 withdrawal. **ADR-0007 amended** (owner approval relayed through this session); the agent correctly refused to edit an Accepted ADR itself — governance working as intended.
 - **Housekeeping:** `.claude/*.local.json` git-ignored.
 - **Lesson:** an amendment to one ADR must be grepped across the others (T9 removal missed ADR-0007). Added to the retrospective list for T-15.
+
+---
+
+## 2026-09-20 — Phase 5: T-01 scaffold (first build task)
+
+- **Phase:** 5 — Build the slice (Release 1)
+- **Participants:** Owner / Agent (Claude Code, Opus), with 14 subagents (Sonnet, Haiku, Opus) as implementers and reviewers under the superpowers subagent-driven-development skill; Cowork agent (document review, independent read-only check)
+- **Trigger:** Phase 4 exit for Release 1 approved 2026-09-20; T-01 is the first backlog task and the first code in the repository.
+- **Prompt(s):** `prompts/2026-09-20-T-01-scaffold.md`; plan `plans/2026-09-20-T-01.md`; per-task dispatch briefs → `prompts/2026-09-20-T-01/` (copied from the session's `.superpowers/sdd/` folder by owner instruction).
+- **Produced (branch `task/T-01-scaffold`, 21 commits, head `a5df5d4`):** Next.js 16 App Router, TypeScript strict; ADR-0002 folder tree with a README stub per layer naming its import rule; ESLint 9 flat config with the four ADR-0002 boundary rules, ADR-0005's no-`new Date()` rule and a Prisma restriction; Prettier; Vitest; Playwright on Chromium/Firefox/WebKit; `src/ui/tokens.css` generated from `design-tokens.md`; Public Sans via `next/font`; the 30 challenge avatars; `.env.example`; README "Run locally"; minimal CI. 112 unit assertions, 3 E2E, green from a clean install.
+- **What the agent got right:** treated the documents as the source — every design value, env variable and avatar key is asserted against the document it came from; did not trust its own configuration — every lint rule was verified against a deliberate violation, and the boundary rules have a regression test reproducing the three ways they silently disabled themselves.
+- **What the agent got wrong or missed (agent's own list):**
+  1. Began implementing before the plan gate — read "then implement" in the prompt as authorisation; the owner caught it after three commits.
+  2. ESLint boundary config was wrong three times while `eslint` exited 0 (missing element `mode`, `/**/*` pattern classifying layer files as unknown, resolver not loading). Only deliberate violations exposed them.
+  3. First tokens test asserted names and a bag of hex strings, not values — `--spacing-50: 400px` would have passed.
+  4. A subagent silenced a resolver error by excluding `tests/**` instead of diagnosing it (nested `node_modules` package letting `@/` imports escape).
+  5. A false claim about npm `allowScripts` blocking scripts was written into a code comment; caught by re-review against npm's source.
+  6. README "Run locally" was untrue on a clean clone (`npm ci` does not fetch Playwright browsers).
+- **Independent read-only check (Cowork subagent, 2026-09-20):** ESLint policies implement every ADR-0002/0005 rule at `error` — PASS with notes; tokens.css matches `design-tokens.md` value-for-value (48 tokens) — PASS with notes; boundaries test design is sound (real ESLint, exact rule-id assertions, negative control) but fixture coverage has gaps: no fixture for `webmcp → server`, `scripts → server`, `domain → app/webmcp`, `shared → server`, and no `new Date()` fixture linted as `src/server`; severity not asserted; `import/resolver` inherited implicitly from `eslint-config-next`; `**/prisma/**` pattern broader than needed; five undocumented tokens (`--font-family-base`, four focus-ring tokens) with no reverse check; `src/domain/clock.ts` will need a documented exception to the Date rule. (Two of the subagent's findings were artefacts of a partial file upload and are discarded.)
+- **Owner changes and reasoning:** _(owner)_
+- **Disagreements:** agent proposed deleting `apps/` and adding `scripts/` — owner accepted both and ADR-0002 was clarified rather than letting code lead the document; agent proposed ESLint 10 — incompatible with typescript-eslint 8, owner approved ESLint 9. ADR-0007 contradiction (visual snapshots) raised by the agent and fixed by amendment.
+- **Lessons for the process (agent's, endorsed):** (1) a configuration is not verified until it has failed on purpose — candidate DoD item; (2) the plan gate must survive the agent's reading of the prompt — the prompt template should end the plan step with an explicit stop; (3) a reviewer that re-derives evidence is worth its cost; (4) reports are evidence and can be wrong — re-run the one or two commands a report leans on.
+- **Owner decisions at hand-off:** default branch renamed to `main` (ADR-0007); T-05 deletes the placeholder page; install-script policy deferred to T-13; briefs copied to `prompts/`; merge with full history after the GitHub PR.
+- **Next:** owner review + merge of the PR; decide whether the fixture-coverage gaps are fixed in the same PR or as the first item of T-13; T-02.
