@@ -1,0 +1,5 @@
+// Linted as src/domain/imports-server-alias.ts.
+// ADR-0002: domain imports nothing from server. Aliased form — this is the one that
+// silently stopped being caught when eslint-import-resolver-typescript could not load,
+// because an unresolved import counts as external and external is allowed.
+import "@/src/server/README.md";

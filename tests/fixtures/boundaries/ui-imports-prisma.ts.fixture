@@ -1,0 +1,6 @@
+// Linted as src/ui/imports-prisma.ts.
+// src/server is the only layer allowed to import Prisma (src/server/README.md), so the
+// restriction covers src/ui, src/domain and src/webmcp as well as app/.
+import { PrismaClient } from "@prisma/client";
+
+export const client = new PrismaClient();

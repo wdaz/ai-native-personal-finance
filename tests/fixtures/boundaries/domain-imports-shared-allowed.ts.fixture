@@ -1,0 +1,7 @@
+// Linted as src/domain/imports-shared-allowed.ts.
+// The negative control: domain may import shared, and a legal file must report nothing.
+// Without it a config that reported errors for some unrelated reason — or one that
+// classified every file as a violation — would still satisfy the tests above.
+import { WEBMCP_MODES } from "@/src/shared/env";
+
+export const modes = WEBMCP_MODES;
