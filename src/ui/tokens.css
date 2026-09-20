@@ -1,0 +1,107 @@
+/*
+ * Design tokens — generated from docs/02-architecture/design-tokens.md (Approved v1.0).
+ * This file is the ONLY place design values are written. Do not hard-code a hex or a
+ * pixel value anywhere else (design-tokens.md, header).
+ *
+ * Breakpoints appear twice on purpose: as custom properties for documentation and JS,
+ * and literally inside `@media` conditions, because CSS custom properties are not valid
+ * in a media query condition.
+ */
+
+:root {
+  /* Colours */
+  --color-beige-500: #98908b;
+  --color-beige-100: #f8f4f0;
+  --color-grey-900: #201f24;
+  --color-grey-500: #696868;
+  --color-grey-300: #b3b3b3;
+  --color-grey-100: #f2f2f2;
+  --color-white: #ffffff;
+
+  /* Theme colours — the Theme enum in src/shared/enums.ts (T-04) */
+  --color-green: #277c78;
+  --color-yellow: #f2cdac;
+  --color-cyan: #82c9d7;
+  --color-navy: #626070;
+  --color-red: #c94736;
+  --color-purple: #826cb0;
+  --color-turquoise: #597c7c;
+  --color-brown: #93674f;
+  --color-magenta: #934f6f;
+  --color-blue: #3f82b2;
+  --color-navy-grey: #97a0ac;
+  --color-army-green: #7f9161;
+  --color-gold: #cab361;
+  --color-orange: #be6c49;
+  --color-pink: #af81ba;
+
+  /* Typography — Public Sans, weights 400 and 700, loaded by next/font in app/layout.tsx */
+  --font-family-base: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  --text-preset-1: 700 2rem / 120% var(--font-family-base);
+  --text-preset-2: 700 1.25rem / 120% var(--font-family-base);
+  --text-preset-3: 700 1rem / 150% var(--font-family-base);
+  --text-preset-4: 400 0.875rem / 150% var(--font-family-base);
+  --text-preset-4-bold: 700 0.875rem / 150% var(--font-family-base);
+  --text-preset-5: 400 0.75rem / 150% var(--font-family-base);
+  --text-preset-5-bold: 700 0.75rem / 150% var(--font-family-base);
+
+  /* Spacing */
+  --spacing-50: 4px;
+  --spacing-100: 8px;
+  --spacing-150: 12px;
+  --spacing-200: 16px;
+  --spacing-250: 20px;
+  --spacing-300: 24px;
+  --spacing-400: 32px;
+  --spacing-500: 40px;
+  --spacing-600: 48px;
+  --spacing-1000: 80px;
+  --spacing-1600: 128px;
+
+  /* Radii and layout */
+  --radius-100: 8px;
+  --radius-150: 12px;
+  --radius-200: 16px;
+  --sidebar-width: 300px;
+  --sidebar-width-min: 88px;
+  --page-max-width: 1440px;
+
+  /* Breakpoints (see the note at the top of this file) */
+  --bp-tablet: 768px;
+  --bp-desktop: 1024px;
+
+  /* Focus indicator — project addition, NFR-A2 (design-tokens.md, "Component states") */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--color-grey-900);
+  --focus-ring-color-on-dark: var(--color-white);
+}
+
+.text-preset-1 {
+  font: var(--text-preset-1);
+  letter-spacing: 0;
+}
+.text-preset-2 {
+  font: var(--text-preset-2);
+  letter-spacing: 0;
+}
+.text-preset-3 {
+  font: var(--text-preset-3);
+  letter-spacing: 0;
+}
+.text-preset-4 {
+  font: var(--text-preset-4);
+  letter-spacing: 0;
+}
+.text-preset-4-bold {
+  font: var(--text-preset-4-bold);
+  letter-spacing: 0;
+}
+.text-preset-5 {
+  font: var(--text-preset-5);
+  letter-spacing: 0;
+}
+.text-preset-5-bold {
+  font: var(--text-preset-5-bold);
+  letter-spacing: 0;
+}
