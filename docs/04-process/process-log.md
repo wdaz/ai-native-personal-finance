@@ -333,3 +333,12 @@ Append-only. Newest entry at the bottom. Template:
 - **Owner decisions at hand-off:** default branch renamed to `main` (ADR-0007); T-05 deletes the placeholder page; install-script policy deferred to T-13; briefs copied to `prompts/`; merge with full history after the GitHub PR.
 - **Next:** owner review + merge of the PR; decide whether the fixture-coverage gaps are fixed in the same PR or as the first item of T-13; T-02.
 - **Process changes adopted (owner, 2026-09-20):** DoD v1.1 — rules ship with a failing fixture; `build-workflow.md` v1.1 — plan gate = `writing-plans` + explicit stop before any write, briefs copied to `prompts/<date>-<task>/`, reviews re-run commands; T-01 prompt template corrected with the stop instruction.
+
+---
+
+## 2026-09-20 — Backlog v1.1: secret guard and go-public hardening (proposed by the T-01 agent)
+
+- **Trigger:** the T-01 agent measured that Gitleaks' default rules miss live Postgres connection strings and that GitHub's free tier has no generic-entropy detector; it proposed a secret guard in T-02 and a new T-16.
+- **Owner decision (via Cowork review):** accepted; the guard is split into **T-02a** so it exists *before* the first real `DATABASE_URL` and T-02 stays one-session sized. T-16 added as proposed. NFR-S5 v1.3: verification is now "secret scan in CI + full-history scan and rotation + review" instead of "review".
+- **Why the reasons live in the rows:** so a later agent does not move the guard to T-13 as "CI work", and so nobody reads a green scan as proof the history is clean — rotation is the guarantee.
+- **Delivered as PR** (branch `docs/backlog-v1.1-secret-guard`), not merged directly, by owner instruction.

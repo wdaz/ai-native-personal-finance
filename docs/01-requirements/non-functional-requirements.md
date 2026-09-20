@@ -1,6 +1,6 @@
 # Non-functional requirements
 
-Status: **Approved** (v1.2 — 2026-09-20 clarifications: W2 `native` = opportunistic native with polyfill fallback; W6 structured content = DTO in cents + currency/unit; T2 traceability checked per release; v1.1 2026-09-13: T9 withdrawn) · Author(s): Agent (draft) · Date: 2026-09-08
+Status: **Approved** (v1.3 — 2026-09-20: S5 verification strengthened from "Review" to CI secret scan + rotation; v1.2 — 2026-09-20 clarifications: W2 `native` = opportunistic native with polyfill fallback; W6 structured content = DTO in cents + currency/unit; T2 traceability checked per release; v1.1 2026-09-13: T9 withdrawn) · Author(s): Agent (draft) · Date: 2026-09-08
 Traces to: problem statement S1–S4 and constraints; research note `webmcp-status.md`
 Every requirement is measurable; each names how it is verified.
 
@@ -71,7 +71,7 @@ Every requirement is measurable; each names how it is verified.
 | S2 | Sessions via httpOnly, secure, SameSite cookies (or equivalent), 7 days sliding; all API routes require a session except login | API tests |
 | S3 | All input validated server-side with shared schemas; amounts are integers in cents, 1 ≤ x ≤ 99,999,999,999 cents; names length-limited; categories/themes from enums; ids server-generated (R-17, R-26) | Unit + API tests |
 | S4 | Write endpoints rate-limited; reset triggered at 2,000 user-created rows or 50 MB (configurable, US-37) | Config + test |
-| S5 | No secrets in the repo; `.env.example` documents configuration | Review |
+| S5 | No secrets in the repo; `.env.example` documents configuration; every secret that was ever real is rotated before the repository goes public | Secret scan in CI (T-02a) + full-history scan and rotation checklist (T-16) + review |
 | S6 | Security headers (CSP, frame-ancestors, referrer policy); WebMCP permissions policy `tools` left at default `self` | Header check in E2E |
 | S7 | Tool descriptions and outputs are treated as untrusted content per spec guidance; no tool echoes raw HTML | Review |
 
