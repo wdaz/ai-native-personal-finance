@@ -20,27 +20,96 @@ describe("T-01 scaffold", () => {
     const tokensCss = readFileSync(join(repoRoot, "src/ui/tokens.css"), "utf8");
     const tokensDoc = readFileSync(join(repoRoot, "docs/02-architecture/design-tokens.md"), "utf8");
 
-    const documentedTokens = [...tokensDoc.matchAll(/`(--[a-z0-9-]+)`/g)]
-      .map((m) => m[1])
-      .filter((token): token is string => token !== undefined);
+    /**
+     * Each token is compared against *its own* documented value. A membership test —
+     * "every documented name appears, every documented hex appears somewhere" — passes
+     * when two colours are swapped, when 4px becomes 400px and when 2rem becomes 3rem,
+     * so it guards the token list but not the design.
+     */
+    const declaredTokens = new Map<string, string>();
+    for (const match of tokensCss
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/g)) {
+      const [, token, value] = match;
+      if (token && value) declaredTokens.set(token, value.replace(/\s+/g, " ").trim());
+    }
+
+    // Every token named in a backticked span anywhere in the document.
+    const documentedTokens = new Set(
+      [...tokensDoc.matchAll(/`(--[a-z0-9-]+)`/g)]
+        .map((m) => m[1])
+        .filter((token): token is string => token !== undefined),
+    );
+
+    // Colours: | `--color-x` | Name | `#HEX` | r, g, b | use |
+    const documentedColours = new Map<string, string>();
+    for (const match of tokensDoc.matchAll(
+      /^\|\s*`(--[a-z0-9-]+)`\s*\|[^|]*\|\s*`(#[0-9A-Fa-f]{6})`\s*\|/gm,
+    )) {
+      const [, token, hex] = match;
+      if (token && hex) documentedColours.set(token, hex.toLowerCase());
+    }
+
+    // Spacing, radii, layout and breakpoints: | `--token` | 8px | and | `--token` | 8px | use |
+    const documentedPixels = new Map<string, string>();
+    for (const match of tokensDoc.matchAll(/^\|\s*`(--[a-z0-9-]+)`\s*\|\s*(\d+px)\s*\|/gm)) {
+      const [, token, value] = match;
+      if (token && value) documentedPixels.set(token, value);
+    }
+
+    // Typography: | `--text-preset-1` | Text Preset 1 | 700 | 32px | 120% |
+    const documentedPresets = new Map<string, { weight: string; px: number; lineHeight: string }>();
+    for (const match of tokensDoc.matchAll(
+      /^\|\s*`(--text-preset[a-z0-9-]*)`\s*\|[^|]*\|\s*(\d+)\s*\|\s*(\d+)px\s*\|\s*(\d+%)\s*\|/gm,
+    )) {
+      const [, token, weight, px, lineHeight] = match;
+      if (token && weight && px && lineHeight) {
+        documentedPresets.set(token, { weight, px: Number(px), lineHeight });
+      }
+    }
+
+    // `700 2rem / 120% var(--font-family-base)`
+    const fontShorthand = /^(\d+) ([\d.]+)rem \/ (\d+%) var\(--font-family-base\)$/;
 
     it("documents at least the 22 colours, 7 presets, 11 spacings and 8 layout tokens", () => {
-      expect(new Set(documentedTokens).size).toBeGreaterThanOrEqual(48);
+      expect(documentedTokens.size).toBeGreaterThanOrEqual(48);
     });
 
-    it.each([...new Set(documentedTokens)])("declares %s", (token) => {
-      expect(tokensCss).toContain(`${token}:`);
+    it("parses a value for every documented token", () => {
+      expect(documentedColours.size).toBe(22);
+      expect(documentedPresets.size).toBe(7);
+      expect(documentedPixels.size).toBe(19);
+      // Nothing documented may escape the three value checks below — a new table in the
+      // document has to be given a parser here rather than silently going unchecked.
+      const valued = new Set([
+        ...documentedColours.keys(),
+        ...documentedPixels.keys(),
+        ...documentedPresets.keys(),
+      ]);
+      expect([...documentedTokens].filter((token) => !valued.has(token))).toEqual([]);
     });
 
-    it("declares every hex value exactly as the document spells it", () => {
-      const documentedHex = [...tokensDoc.matchAll(/`(#[0-9A-Fa-f]{6})`/g)]
-        .map((m) => m[1])
-        .filter((hex): hex is string => hex !== undefined)
-        .map((hex) => hex.toLowerCase());
-      expect(new Set(documentedHex).size).toBe(22);
-      for (const hex of new Set(documentedHex)) {
-        expect(tokensCss.toLowerCase()).toContain(hex);
-      }
+    it.each([...documentedColours])("declares %s as %s", (token, hex) => {
+      expect(declaredTokens.get(token)?.toLowerCase()).toBe(hex);
+    });
+
+    it.each([...documentedPixels])("declares %s as %s", (token, value) => {
+      expect(declaredTokens.get(token)).toBe(value);
+    });
+
+    // The document states px; tokens.css writes rem at the 16px default so that the text
+    // scales with the reader's font-size preference (tokens.css, header). Assert the
+    // conversion rather than the literal, or the rem values go unchecked.
+    it.each([...documentedPresets])("declares %s as the documented font", (token, documented) => {
+      const declared = declaredTokens.get(token);
+      const shorthand = fontShorthand.exec(declared ?? "");
+      expect(shorthand, `${token} is "${declared}", not a <weight> <size>rem / <lh> font`).not.toBe(
+        null,
+      );
+      const [, weight, rem, lineHeight] = shorthand ?? [];
+      expect(weight).toBe(documented.weight);
+      expect(Number(rem) * 16).toBe(documented.px);
+      expect(lineHeight).toBe(documented.lineHeight);
     });
   });
 
@@ -102,6 +171,12 @@ describe("T-01 scaffold", () => {
 
     it.each(required)("declares %s", (name) => {
       expect(declared.has(name)).toBe(true);
+    });
+
+    // The reverse direction: an undocumented variable added here would otherwise never
+    // be noticed, and .env.example is what a contributor copies.
+    it("declares nothing the documents do not name", () => {
+      expect([...declared].filter((name) => !required.includes(name)).sort()).toEqual([]);
     });
 
     it("does not declare NEXT_PUBLIC_* directly — next.config derives them (§2.1)", () => {
