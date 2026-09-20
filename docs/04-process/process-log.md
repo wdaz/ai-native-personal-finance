@@ -271,3 +271,13 @@ Append-only. Newest entry at the bottom. Template:
 - **Produced:** `03-specs/auth.md` (login/sign-up/logout/session, API table, states, tests), `app-shell.md` (sidebar, bottom nav, minimise, banner, skip link, `/api/meta`), `overview.md` (five cards, formatting rules, worked seed example, `OverviewDto`, empty/error states), `webmcp-tools.md` (adapter contract, modes, readiness, `defineTool` rules, result/error shape, R1 tools `get_balance` and `get_overview_summary`, reserved R2 names, test plan per mode), `definition-of-done.md`, `backlog.md` (T-01…T-15, ordered, with dependencies).
 - **Agent additions beyond the stories (flag for owner):** demo-credentials box with copy buttons on the login page (SPEC-auth 2.2); "Coming in Release 2" placeholder pages so navigation works in R1 (T-07); money in tool outputs as decimal strings (SPEC-webmcp-tools §3); skip link (SPEC-app-shell 2.8); `X-Via: webmcp` header for the "via tool" marker.
 - **Next:** owner reviews the four specs + DoD + backlog → Phase 4 exit for Release 1 → Phase 5 build starts at T-01.
+
+---
+
+## 2026-09-20 — Phase 4: adversarial review of Release 1 specs
+
+- **Participants:** Reviewer (fresh Claude session, "implementing engineer who may not ask"), Agent (orchestration), Owner (decisions pending)
+- **Produced:** `docs/03-specs/reviews/2026-09-20-adversarial-review.md` — 37 findings (7 Blocker, 18 Major, 12 Minor), coverage matrix for the 17 R1 stories, numbers check.
+- **Most important catches:** the Overview worked example carried two design-vs-seed errors the drafting agent introduced *after* the previous review's lesson (Gift pot $40 → $110; latest-five order); test-support endpoints used by every E2E were never specified and scheduled too late; CI arrives after the tasks that need it; traceability script would fail until R2; tool money representation contradicts ADR-0004; several approved-doc contradictions surfaced (US-05 format, US-31 blur, US-35 release, US-03 vs ADR-0006, US-41 wording).
+- **Lesson (repeat of 2026-09-13, sharper):** "recompute from data.json" must include *ordering and every element*, not only totals; and any spec that says "equals §x" must have §x machine-checked. Action: add a `scripts/check-seed-figures` idea to T-03 so the worked example is generated, not typed.
+- **Next:** owner answers 8 questions; agent applies fixes → specs v0.2 → owner approval → Phase 5.
