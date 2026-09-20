@@ -24,7 +24,3 @@ test-results/
 # next / vercel
 /.vercel
 *.tsbuildinfo
-
-# Claude Code project settings (ADR-0002, clarification 2026-09-20)
-.claude/settings.local.json
-.claude/worktrees/
