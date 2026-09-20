@@ -73,4 +73,39 @@ describe("T-01 scaffold", () => {
       expect(existsSync(join(repoRoot, "public/avatars", `${key}.jpg`))).toBe(true);
     });
   });
+
+  describe(".env.example lists every documented variable", () => {
+    const envExample = readFileSync(join(repoRoot, ".env.example"), "utf8");
+    const declared = new Set(
+      envExample
+        .split("\n")
+        .map((line) => line.match(/^([A-Z][A-Z0-9_]*)=/)?.[1])
+        .filter((name): name is string => Boolean(name)),
+    );
+
+    // ADR-0005/0006/0007 and SPEC-webmcp-tools §2.1, plus the R1 spec variables (D6).
+    const required = [
+      "DATABASE_URL",
+      "SESSION_SECRET",
+      "DEMO_EMAIL",
+      "DEMO_PASSWORD_HASH",
+      "DEMO_PASSWORD_DISPLAY",
+      "RESET_SECRET",
+      "WEBMCP_MODE",
+      "WEBMCP_ORIGIN_TRIAL_TOKEN",
+      "APP_ENV",
+      "CRON_SECRET",
+      "RESET_INTERVAL_DAYS",
+      "RESET_ROW_THRESHOLD",
+      "RESET_BYTES_THRESHOLD",
+    ];
+
+    it.each(required)("declares %s", (name) => {
+      expect(declared.has(name)).toBe(true);
+    });
+
+    it("does not declare NEXT_PUBLIC_* directly — next.config derives them (§2.1)", () => {
+      expect([...declared].filter((name) => name.startsWith("NEXT_PUBLIC_"))).toEqual([]);
+    });
+  });
 });
