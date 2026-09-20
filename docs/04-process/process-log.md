@@ -421,3 +421,42 @@ Append-only. Newest entry at the bottom. Template:
   history (or push the clean history into a fresh repository before going
   public); start future sessions in the swapped working copy and re-run
   `npm ci` there; T-16 keeps its remaining go-public steps.
+
+---
+
+## 2026-09-20 — Migration to a fresh repository after the history rewrite
+
+- **Phase:** cross-phase (repository hygiene, ahead of T-16)
+- **Participants:** Owner / Agent (Claude Code, Opus 5)
+- **Trigger:** the rewrite above force-pushed a clean `main`, but the original
+  repository keeps the purged commits in its object store — GitHub still serves
+  them through the merged pull requests' SHAs until it runs GC, and the owner
+  judged a fresh repository more sensible than asking Support to purge caches.
+- **Produced:** `wdaz/ai-native-personal-finance` recreated from scratch
+  (private, empty) and the rewritten history pushed into it; the original
+  renamed to `wdaz/ai-native-personal-finance-old` and kept private as the
+  archive.
+- **Evidence that the split is real:** in the archive,
+  `contents/docs/00-discovery/inputs/design?ref=ad3ae38` still lists
+  `app-prototype.html` and `style-guide.html`, and pull requests #1–#6 with
+  their review threads are intact; in the new repository `ad3ae38` does not
+  resolve at all ("No commit found for SHA") and the design folder contains only
+  `README.md`. 48 commits, default branch `main`, `delete_branch_on_merge` on.
+- **What is lost and why that is acceptable:** the pull-request trail (#1–#6:
+  descriptions, review comments, the Copilot review threads) does not migrate —
+  GitHub has no way to move it. The owner chose to keep the old repository as a
+  private archive rather than export the threads into `docs/`; the process log
+  already carries the substance of each of those reviews.
+- **Visibility:** the new repository stays **private** until T-16 — the full
+  history secret scan and the rotation of every secret that was ever real must
+  happen before the flip, exactly as T-16 states. Nothing in that task changes
+  except that it now operates on the new repository.
+- **What the agent got wrong or missed:** _(owner)_
+- **Owner changes and reasoning:** _(owner)_
+- **Lessons for the process:** a rewrite is only half the remedy on a hosted
+  forge — the host keeps the old objects reachable through pull-request and
+  commit URLs, so anything that must never be public has to leave the *hosting*
+  as well as the history.
+- **Next:** T-16 on the new repository (secret scan, rotation, public flip,
+  scanning/CodeQL/Dependabot/ruleset, README attribution and licence); the
+  archive may be deleted once the owner no longer needs the review threads.
