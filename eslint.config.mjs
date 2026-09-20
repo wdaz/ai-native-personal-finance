@@ -137,9 +137,14 @@ const config = [
     // only layer allowed to import Prisma at all (src/server/README.md). The layers below
     // are every layer except `server` itself; `scripts` and `tests` are deliberately left
     // out — scripts may need the client to seed, tests to assert on it.
+    // `shared` is listed because ADR-0002 has it "import nothing from the rest", so it is
+    // the layer that must stay dependency-free: T-04 writes its Zod schemas by hand
+    // rather than deriving them from Prisma types, and changing that is an ADR
+    // conversation rather than a silent allowance.
     files: [
       "app/**/*.{ts,tsx}",
       "src/domain/**/*.{ts,tsx}",
+      "src/shared/**/*.{ts,tsx}",
       "src/ui/**/*.{ts,tsx}",
       "src/webmcp/**/*.{ts,tsx}",
     ],

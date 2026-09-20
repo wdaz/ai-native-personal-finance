@@ -67,6 +67,14 @@ const violations = [
     message: "ADR-0002: only src/server may import Prisma",
   },
   {
+    // A type-only import counts: ADR-0002 keeps shared free of the rest, and deriving
+    // its schemas from Prisma types is an ADR conversation rather than a lint exception.
+    fixture: "shared-imports-prisma.ts.fixture",
+    lintAs: "src/shared/imports-prisma.ts",
+    ruleId: "no-restricted-imports",
+    message: "ADR-0002: only src/server may import Prisma",
+  },
+  {
     fixture: "domain-uses-new-date.ts.fixture",
     lintAs: "src/domain/uses-new-date.ts",
     ruleId: "no-restricted-syntax",
