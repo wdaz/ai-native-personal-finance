@@ -1,6 +1,6 @@
 # Definition of Done
 
-Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20 · Constrained by: AGENTS.md, governance.md, ADR-0003, NFR-Q
+Status: **Approved** (v1.1 — 2026-09-20 addition: rules ship with a failing fixture; v1.0 approved 2026-09-20) · Author(s): Agent · Date: 2026-09-20 · Constrained by: AGENTS.md, governance.md, ADR-0003, NFR-Q
 
 A task from `backlog.md` is done only when every line below is true. The PR description quotes this list with each item checked.
 
@@ -15,6 +15,7 @@ A task from `backlog.md` is done only when every line below is true. The PR desc
 - [ ] Money is integer cents in code and DB; formatted only at the edge.
 - [ ] Validation uses the shared Zod schemas on client, server and tools; copy comes from `src/shared/copy.ts`, which mirrors the user-stories appendix (including its "R1 additions" table).
 - [ ] Client/server component boundary respected; WebMCP code lives only in `src/webmcp`.
+- [ ] Any new lint rule, config guard or document-mirror test ships with a fixture that deliberately violates it and a test asserting the violation is reported — a rule is not verified until it has failed on purpose (T-01 lesson).
 
 ## Tests (ADR-0003)
 - [ ] Unit tests for every new domain/shared/webmcp function; `domain` coverage stays ≥ 90 %.
