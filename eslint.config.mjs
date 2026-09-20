@@ -25,6 +25,7 @@ const config = [
   },
   {
     files: ["**/*.{js,mjs,ts,tsx}"],
+    ignores: ["tests/**/*"],
     plugins: { boundaries },
     settings: {
       "boundaries/include": ["app/**/*", "src/**/*", "tests/**/*", "scripts/**/*"],
