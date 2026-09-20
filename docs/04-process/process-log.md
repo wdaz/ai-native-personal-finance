@@ -261,3 +261,13 @@ Append-only. Newest entry at the bottom. Template:
 - **Gate:** all seven ADRs Accepted; system overview, data model and design tokens approved (focus-indicator token kept). NFR → ADR mapping: T→0003, W→0004, A→0003/tokens, B→0003/0007, P→0001/0007, S→0006, D→0005/0007, Q→0002.
 - **Process change:** owner granted the agent delete permission in the repo folder for this session, so the agent can now clean git lock files and make commits itself (commits remain attributed to the owner; the owner still approves content).
 - **Next:** Phase 4 — feature specs (`03-specs/`), `definition-of-done.md`, `backlog.md`; first slice Auth + Overview.
+
+---
+
+## 2026-09-20 — Phase 4: Release 1 specs, Definition of Done, backlog
+
+- **Phase:** 4 — Specs & plan
+- **Owner decision:** start with the first slice's specs rather than all seven (agent proposal accepted).
+- **Produced:** `03-specs/auth.md` (login/sign-up/logout/session, API table, states, tests), `app-shell.md` (sidebar, bottom nav, minimise, banner, skip link, `/api/meta`), `overview.md` (five cards, formatting rules, worked seed example, `OverviewDto`, empty/error states), `webmcp-tools.md` (adapter contract, modes, readiness, `defineTool` rules, result/error shape, R1 tools `get_balance` and `get_overview_summary`, reserved R2 names, test plan per mode), `definition-of-done.md`, `backlog.md` (T-01…T-15, ordered, with dependencies).
+- **Agent additions beyond the stories (flag for owner):** demo-credentials box with copy buttons on the login page (SPEC-auth 2.2); "Coming in Release 2" placeholder pages so navigation works in R1 (T-07); money in tool outputs as decimal strings (SPEC-webmcp-tools §3); skip link (SPEC-app-shell 2.8); `X-Via: webmcp` header for the "via tool" marker.
+- **Next:** owner reviews the four specs + DoD + backlog → Phase 4 exit for Release 1 → Phase 5 build starts at T-01.
