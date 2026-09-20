@@ -16,3 +16,7 @@ test-results/
 # Frontend Mentor design files must never be committed
 *.fig
 *.sketch
+
+# Claude Code local settings
+.claude/*.local.json
+.claude/worktrees/

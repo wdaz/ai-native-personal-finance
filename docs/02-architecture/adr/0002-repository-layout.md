@@ -1,6 +1,7 @@
 # 0002 — Repository layout: single Next.js app with enforced internal boundaries
 
-- Status: **Accepted** · Date: 2026-09-13 · Author(s): Agent (proposal), Owner (decision)
+- Status: **Accepted** (clarified 2026-09-20) · Date: 2026-09-13
+- Clarification 2026-09-20 (T-01 plan gate, D7): the tree also contains `scripts/` (repo tooling such as `seed-figures.ts`, traceability check) — it may import from `src/shared` and `src/domain` only; and `.claude/` for Claude Code project settings (`*.local.json` git-ignored). · Author(s): Agent (proposal), Owner (decision)
 - Driven by: ADR-0001; PS decision "monorepo" (2026-09-03); NFR-Q2 (shared schemas); AGENTS.md (docs as agent context)
 
 ## Context
@@ -21,6 +22,7 @@ src/
   webmcp/             adapter, tool registry per page, polyfill loader, readiness signal
   ui/                 design-system primitives (tokens.css, Button, Input, Modal, Menu…)
 prisma/               schema, migrations, seed script
+scripts/              repo tooling (seed-figures, traceability); imports shared/domain only
 tests/
   unit/               Vitest (domain, shared, webmcp adapter)
   api/                Playwright request-context tests against route handlers

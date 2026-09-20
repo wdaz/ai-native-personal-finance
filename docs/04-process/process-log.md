@@ -298,3 +298,13 @@ Append-only. Newest entry at the bottom. Template:
 - **Tooling change:** Phase 5 runs in **Claude Code** in the repo (reads `CLAUDE.md` → `AGENTS.md`). Cowork sessions remain for document work and reviews.
 - **Produced:** `docs/04-process/build-workflow.md` (per-task loop, rules of thumb) and the first task prompt `docs/04-process/prompts/2026-09-20-T-01-scaffold.md`.
 - **Next:** T-01 in Claude Code.
+
+---
+
+## 2026-09-20 — Phase 5, T-01 plan gate: agent decisions reviewed
+
+- **Participants:** Claude Code (implementing agent, plan gate output D1–D10 + one question), Owner (relayed), Cowork agent (document review)
+- **Decisions D1–D10 reviewed against the docs:** all accepted. Notes: D2 (`apps/` removed) is what ADR-0002 prescribes; D3 (temporary `app/page.tsx`) must be deleted in T-05 when middleware owns `/` — recorded as a T-05 sub-item; D4 (TypeScript 5.9 because typescript-eslint peer range) is a tooling constraint, not an architecture change; D5 (self-checking smoke tests for tokens/avatars/env keys) is exactly the 2026-09-20 review lesson applied in code — welcome; D7 required an ADR-0002 clarification (`scripts/` added); D10 (`.nvmrc` = 26 shared by CI) accepted.
+- **Contradiction raised by the agent (ADR-0007 vs ADR-0003 on visual snapshots):** real; the ADR-0007 CI line predated the T9 withdrawal. **ADR-0007 amended** (owner approval relayed through this session); the agent correctly refused to edit an Accepted ADR itself — governance working as intended.
+- **Housekeeping:** `.claude/*.local.json` git-ignored.
+- **Lesson:** an amendment to one ADR must be grepped across the others (T9 removal missed ADR-0007). Added to the retrospective list for T-15.
