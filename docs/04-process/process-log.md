@@ -359,3 +359,65 @@ Append-only. Newest entry at the bottom. Template:
 - **Produced:** `docs/00-discovery/research/frontend-mentor-license.md`; backlog v1.3 (T-16 licence steps); origin note on `challenge-brief.md`; public-repo note in `inputs/design/README.md`.
 - **Conclusion:** public solutions are expected; starter assets and `data.json` stay; the two Claude Design exports are reproductions of the premium design and are removed from tree and history in T-16; a process write-up is fine, a tutorial about a premium challenge is not.
 - Delivered as PR (branch `docs/frontend-mentor-license`).
+
+---
+
+## 2026-09-20 — History rewrite: Claude Design exports purged before going public
+
+- **Phase:** cross-phase (repository hygiene, ahead of T-16)
+- **Participants:** Owner / Agent (Claude Code, Opus 5)
+- **Trigger:** the licence research of the same day
+  (`docs/00-discovery/research/frontend-mentor-license.md`, § "What is in this
+  repository today" and § "Implications" item 1) concluded that
+  `docs/00-discovery/inputs/design/app-prototype.html` and `style-guide.html`
+  are rendered reproductions of the Frontend Mentor **premium** design and fall
+  under "don't distribute the design files". The repository is about to be made
+  public, so the owner ordered the purge as a one-off rewrite rather than as a
+  step inside T-16.
+- **Prompt(s):** owner's session instruction (plan gate → "go"); no task prompt
+  file — this is not a backlog task.
+- **Produced:** a rewritten history with both files absent from every commit;
+  this entry; `inputs/design/README.md` "Location" paragraph; a `.gitignore`
+  rule; the T-16 row struck through.
+- **How it was done.** The exports were first copied outside the repository, to
+  `~/Own/design-exports/` (SHA-256 verified identical:
+  `4a94a108…03eb23` for `app-prototype.html`, `30c39ca0…26f86a` for
+  `style-guide.html`). The rewrite ran in a fresh clone
+  (`git clone --no-local ai-native-personal-finance ai-native-personal-finance-rewrite`),
+  never in the working copy, with `git-filter-repo` 2.47.0:
+
+  ```
+  git filter-repo --path docs/00-discovery/inputs/design/app-prototype.html \
+                  --path docs/00-discovery/inputs/design/style-guide.html --invert-paths
+  ```
+
+  The result was then force-pushed to `origin` and the working copies swapped
+  (the pre-rewrite copy kept as `~/Own/ai-native-personal-finance-old`).
+- **Counts and effect:** 47 commits before, **47 after** — no commit was pruned,
+  because the only commit that added the exports (`fb64945`, "docs(discovery):
+  add Claude Design exports as inputs with analysis") also added three other
+  files and survives with them. This documentation commit makes 48. The pack
+  shrank from 5.3 MB to 1.0 MB. `git fsck --full` is clean and
+  `git log --all -- <path>` is empty for both files.
+- **Every commit SHA before this point changed.** `main` went from `ad3ae38` to
+  a new head; older SHAs quoted in earlier log entries, PR descriptions and
+  GitHub's merged PRs #1–#6 no longer resolve in the rewritten history. Nothing
+  else was altered: no squash, no reorder, no other file touched by the filter.
+- **What the agent got right:** stopped at the plan gate and reported three
+  blockers (open PR #6, a locked `T-01-scaffold` worktree, `git-filter-repo` not
+  installed) instead of working around them; caught that `git clone --no-local`
+  turns the source repo's *local* branches into the clone's `origin/*` refs, so
+  a `push --force --all` would have resurrected the already-deleted
+  `docs/frontend-mentor-license` branch on GitHub — the branch was deleted
+  inside the rewrite clone before pushing.
+- **What the agent got wrong or missed:** _(owner)_
+- **Owner changes and reasoning:** _(owner)_
+- **Disagreements:** none.
+- **Lessons for the process:** a file that cannot be public must not be
+  committed even once — the `.gitignore` rule added here is the cheap guard that
+  was missing on 2026-09-08; and licence review belongs in Discovery, next to
+  the input it covers, not in the go-public task at the end.
+- **Next:** ask GitHub Support to purge cached views / run GC for the rewritten
+  history (or push the clean history into a fresh repository before going
+  public); start future sessions in the swapped working copy and re-run
+  `npm ci` there; T-16 keeps its remaining go-public steps.

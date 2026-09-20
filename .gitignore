@@ -17,6 +17,9 @@ test-results/
 *.fig
 *.sketch
 
+# Frontend Mentor design reproductions never enter the repo
+docs/00-discovery/inputs/design/*.html
+
 # Claude Code local settings
 .claude/*.local.json
 .claude/worktrees/

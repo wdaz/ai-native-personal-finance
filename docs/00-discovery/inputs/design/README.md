@@ -1,6 +1,15 @@
 # Design exports (Claude Design)
 
-> **Public-repo note (2026-09-20):** these exports reproduce the Frontend Mentor premium design and will be removed from the tree and history in T-16 before the repository goes public (see `../../research/frontend-mentor-license.md`). They remain available to the owner outside the repository.
+> **Location (2026-09-20):** these two files are **not in this repository** and
+> never will be. They reproduce the Frontend Mentor premium design, whose
+> licence forbids distributing the design files (see
+> `../../research/frontend-mentor-license.md`), so they were removed from the
+> working tree and from the whole git history before the repository was made
+> public. The owner keeps them outside the repository, in `~/Own/design-exports/`;
+> anyone who needs them again re-exports the Figma file from Claude Design. The
+> rewrite is recorded in `docs/04-process/process-log.md` ("History rewrite:
+> Claude Design exports purged before going public"). Everything below describes
+> what those exports contain and what they may be used for; it stays valid.
 
 Status: Input · Added: 2026-09-08 · Source: Claude Design, built from the
 Frontend Mentor Figma file (`personal-finance-app.fig`, kept outside the repo).
