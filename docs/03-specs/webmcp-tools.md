@@ -1,7 +1,7 @@
 # SPEC-webmcp-tools — Adapter, registries, Release 1 tools, status indicator
 
-Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
-Changelog: v0.2 — S-08 cents in tool output; S-09 env names; S-10 indicator states; S-20 observable via-marker; S-21 `toolchange` rule; S-22 registration generation; S-23 assertions defined; S-31 names aligned with ADR-0004; S-32 page-scope in descriptions; S-33 idle fallback; S-37 execute signature.
+Status: **Approved** (v1.0.1 — 2026-09-22: §2.8 cross-reference corrected; v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
+Changelog: v1.0.1 (2026-09-22, T-02 plan gate) — §2.8 pointed at SPEC-reset-and-test-support §3 (States); the test-support routes are §2.7. v0.2 — S-08 cents in tool output; S-09 env names; S-10 indicator states; S-20 observable via-marker; S-21 `toolchange` rule; S-22 registration generation; S-23 assertions defined; S-31 names aligned with ADR-0004; S-32 page-scope in descriptions; S-33 idle fallback; S-37 execute signature.
 Implements: US-38, US-39 (R1 part), US-41; reserves names for R2 · Constrained by: ADR-0004, NFR-W1–W9, NFR-T8 · Spec reference: WebMCP Draft CG Report 2026-09-04 — `document.modelContext`; `execute(input, signal)` is the draft's callback shape (research note F2); the adapter wraps whatever the runtime passes and exposes `{ input, signal }` to our tools.
 
 ## 1. Purpose
@@ -29,7 +29,7 @@ Expose the app's capabilities to in-browser agents through one adapter, page by 
 | unavailable | off, or import failed | "Agent tools: unavailable" | "WebMCP is disabled or could not load" |
 
 N = number of currently registered tools (0 on pages without tools).
-2.8 Via-marker observability: every API response carries `X-Request-Id`; requests with `X-Via: webmcp` are logged as `{ requestId, via: "webmcp", route }`; when `APP_ENV=test`, `GET /api/test/log?requestId=` returns that entry (SPEC-reset-and-test-support §3).
+2.8 Via-marker observability: every API response carries `X-Request-Id`; requests with `X-Via: webmcp` are logged as `{ requestId, via: "webmcp", route }`; when `APP_ENV=test`, `GET /api/test/log?requestId=` returns that entry (SPEC-reset-and-test-support §2.7).
 
 ## 3. Release 1 tools (Overview page)
 | Tool | Title | Description | Annotations | Input | Output (`structuredContent`) | Calls |

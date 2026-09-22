@@ -1,6 +1,11 @@
 # 0005 — Persistence, seed and reset: Neon Postgres, Prisma, integer cents, fixed clock, scheduled full reset
 
 - Status: **Accepted** · Date: 2026-09-13 · Author(s): Agent, Owner (decisions OQ-2/OQ-4/R-01/R-29)
+- Clarification 2026-09-22 (owner, T-02 plan gate): money columns are integer cents stored as
+  64-bit (Prisma `BigInt`) — a Prisma `Int` is 32-bit and stops at 2,147,483,647 cents, below
+  the 99,999,999,999 that NFR-S3 allows (R-17). The seed routine is `resetToSeed` in
+  `src/server/reset.ts`, which reads `prisma/data.json` (a checksum-tested copy of the
+  challenge's `data.json`); `prisma/seed.ts` is its command-line entry (`npm run db:reset`).
 - Driven by: NFR-D1–D6, NFR-S3/S4, US-36, US-37, PRD OQ-4
 
 ## Context
