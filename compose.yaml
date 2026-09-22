@@ -15,7 +15,9 @@ services:
       # Postgres 18 images keep PGDATA in /var/lib/postgresql/18/docker; mount the parent.
       - postgres-data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d personal_finance"]
+      # -h 127.0.0.1: without it pg_isready checks the Unix socket only, which the image's
+      # temporary init server on a fresh volume's first boot can answer before TCP works.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d personal_finance"]
       interval: 2s
       timeout: 5s
       retries: 30
