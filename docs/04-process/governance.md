@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Draft (owner to approve at Phase 0 exit)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident)
 
 ## Roles
 
@@ -39,6 +39,13 @@ Status: Draft (owner to approve at Phase 0 exit)
 - Record uncertainty explicitly rather than choosing silently.
 - Never modify an Approved/Accepted document — propose a new version or a
   superseding ADR.
+- **Review and verification subagents run without write tools** (read, grep,
+  glob only) and never in the shared checkout's `.git`. A "read-only" instruction
+  in a prompt is not enforcement — the T-02a final review proved it (a reviewer
+  wrote `user.name=Scratch` to `.git/config` and made two junk commits). If a
+  review needs to execute something, it does so in a throwaway clone.
+- Any subagent that touches git identity, `.git/config` or hooks stops and reports
+  instead.
 
 ## Process log
 
