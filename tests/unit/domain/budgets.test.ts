@@ -8,18 +8,18 @@ const clock = fixedClock(BUSINESS_TODAY);
 describe("budgetSpent (data-model.md: Σ |amount| of negative transactions in the current month)", () => {
   it("adds the category's money out this month", () => {
     const rows = [
-      transaction({ category: "Bills", amount: -1_500 }),
+      transaction({ category: "Bills", amount: -1_537 }),
       transaction({ category: "Bills", amount: -250, date: "2026-08-01T00:00:00Z" }),
     ];
-    expect(budgetSpent("Bills", rows, clock)).toBe(1_750);
+    expect(budgetSpent("Bills", rows, clock)).toBe(1_787);
   });
 
   it("does not let money in reduce what was spent (the seed has no such case)", () => {
     const rows = [
-      transaction({ category: "Bills", amount: -1_500 }),
-      transaction({ category: "Bills", amount: 4_000 }),
+      transaction({ category: "Bills", amount: -1_537 }),
+      transaction({ category: "Bills", amount: 4_219 }),
     ];
-    expect(budgetSpent("Bills", rows, clock)).toBe(1_500);
+    expect(budgetSpent("Bills", rows, clock)).toBe(1_537);
   });
 
   it("leaves out other categories, other months and the same month of another year", () => {

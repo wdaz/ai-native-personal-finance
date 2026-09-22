@@ -1,7 +1,7 @@
 import type { TransactionInput } from "@/src/domain/types";
 
 /**
- * A hand-built transaction for the domain's unit tests: an August 2026 bill of $10.00
+ * A hand-built transaction for the domain's unit tests: an August 2026 bill of $10.37
  * unless the test says otherwise. Values here are invented for one rule at a time — the
  * seed's own figures come from scripts/seed-figures.ts, never from here.
  */
@@ -12,7 +12,7 @@ export function transaction({
   return {
     name: "Vendor",
     category: "Bills",
-    amount: -1_000,
+    amount: -1_037,
     recurring: false,
     ...fields,
     date: new Date(date),

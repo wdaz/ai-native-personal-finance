@@ -4,7 +4,7 @@ import { sumCents } from "@/src/domain/money";
 // toCents keeps its tests in tests/unit/seed.test.ts, beside the seed amounts it converts.
 describe("sumCents (ADR-0005: money is integer cents)", () => {
   it("adds whole cents, signs included", () => {
-    expect(sumCents([12_345, -2_000, 7])).toBe(10_352);
+    expect(sumCents([12_345, -2_119, 7])).toBe(10_233);
   });
 
   it("is 0 for no amounts", () => {

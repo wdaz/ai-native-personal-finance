@@ -4,7 +4,7 @@ import { BUSINESS_TODAY, fixedClock } from "@/src/domain/clock";
 import { transaction } from "@/tests/fixtures/domain";
 
 const clock = fixedClock(BUSINESS_TODAY);
-const bill = (name: string, date: string, amount = -1_000) =>
+const bill = (name: string, date: string, amount = -1_037) =>
   transaction({ name, date, amount, recurring: true });
 
 describe("recurringBills (data-model.md; US-27 AC1, AC2)", () => {
@@ -22,11 +22,11 @@ describe("recurringBills (data-model.md; US-27 AC1, AC2)", () => {
     const [power] = recurringBills(
       [
         bill("Power", "2026-07-02T12:00:00Z", -9_000),
-        bill("Power", "2026-08-03T12:00:00Z", -10_000),
+        bill("Power", "2026-08-03T12:00:00Z", -10_037),
       ],
       clock,
     );
-    expect(power).toMatchObject({ day: 3, amount: 10_000 });
+    expect(power).toMatchObject({ day: 3, amount: 10_037 });
     expect(power?.latest.date.toISOString()).toBe("2026-08-03T12:00:00.000Z");
   });
 
@@ -62,13 +62,13 @@ describe("billsSummary (SPEC-overview §2.6, US-28 AC1)", () => {
   it("totals paid and not-paid bills; Due Soon is part of Upcoming", () => {
     const bills = recurringBills(
       [
-        bill("Paid", "2026-08-05T12:00:00Z", -12_000),
+        bill("Paid", "2026-08-05T12:00:00Z", -12_419),
         bill("Soon", "2026-07-22T12:00:00Z", -777),
-        bill("Later", "2026-07-28T12:00:00Z", -3_000),
+        bill("Later", "2026-07-28T12:00:00Z", -3_219),
       ],
       clock,
     );
-    expect(billsSummary(bills)).toEqual({ paid: 12_000, upcoming: 3_777, dueSoon: 777 });
+    expect(billsSummary(bills)).toEqual({ paid: 12_419, upcoming: 3_996, dueSoon: 777 });
   });
 
   it("is zero everywhere without bills (US-08 AC3)", () => {
