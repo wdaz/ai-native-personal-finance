@@ -7,6 +7,11 @@ import type { NextConfig } from "next";
  * WebMCP adapter (T-11).
  */
 const nextConfig: NextConfig = {
+  // Next.js 16.3's `next dev` appends a managed "agent rules" block to AGENTS.md whenever it
+  // detects a coding agent. AGENTS.md is this project's contract with its agents and changes
+  // only by the owner's decision (AGENTS.md §2), so the feature is off.
+  // tests/unit/next-config.test.ts holds it off.
+  agentRules: false,
   env: {
     NEXT_PUBLIC_WEBMCP_MODE: process.env.WEBMCP_MODE ?? "polyfill",
     NEXT_PUBLIC_APP_ENV: process.env.APP_ENV ?? "development",
