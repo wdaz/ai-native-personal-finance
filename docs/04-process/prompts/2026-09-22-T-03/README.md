@@ -20,6 +20,7 @@ replies are in `../2026-09-22-T-03.md`; the summary is the T-03 entry of
 | `final-fix-findings.md` | The six items the controller sent to the one fix wave (M1–M6, with rulings R13–R15) |
 | `final-fix-report.md` | The fix-wave implementer's report |
 | `final-rereview.md` | The scoped re-review of the fix wave |
+| `copilot-fix-brief.md`, `copilot-fix-report.md`, `copilot-fix-review.md` | After the PR opened: GitHub Copilot's four comments on PR #8, which the owner chose to fix in the PR — the brief (with Copilot's words), the implementer's report and the read-only review (Sonnet) |
 
 Reviewers ran as `feature-dev:code-reviewer` — no shell and no write tools (governance v1.1) —
 so their reports reached the controller as messages; the review files are verbatim copies of

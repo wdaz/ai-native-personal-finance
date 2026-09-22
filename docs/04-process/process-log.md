@@ -757,6 +757,14 @@ Append-only. Newest entry at the bottom. Template:
   and T-09/T-10 must map; the v1.8 changelog overclaimed; a stale T-04 clause; "every run" for
   coverage-only errors; two `seed-figures` test titles claimed more than they checked (one now
   asserts that another day gives other bills). Re-review: all addressed.
+- **Copilot review (PR #8):** four comments — `recurringBills` copied each vendor's list on
+  every push (O(k²), "Medium"); `formatDate("")`'s message had an empty operand; the sort
+  test's title said "ignoring case"; `0` and `-0` shared one test title. All four were minors the
+  task reviews had deferred as "can wait". The owner chose, verbatim, "Dördünü bu PR-da düzəlt"
+  ("fix all four in this PR"): commit `cc2882b` (string inputs quoted in the error, the dates
+  test asserting the quoted message, `-0` in its own test; Vitest still 341/341); read-only
+  review approved, with two Minor notes left open — `toThrow(string)` checks containment, and
+  no test pins the invalid-`Date` wording.
 - **What the agent got right:** the generator reproduced every value of §4.3 on its first run,
   and the Task 5 checkpoint differed from the spec only in the predicted `$` style; every
   *measured* Expected held at execution (Task 1: 5 failed | 34 → 3 failed | 47 → 50/50, the two
