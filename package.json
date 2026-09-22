@@ -19,12 +19,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:api": "playwright test --project=api --pass-with-no-tests",
+    "test:api": "playwright test --project=api --workers=1",
     "test:e2e": "playwright test --project=chromium --project=firefox --project=webkit",
     "test:e2e:ui": "playwright test --ui",
     "secrets:scan": "scripts/secret-scan.sh history",
     "test:all": "npm run secrets:scan && npm run lint && npm run format:check && npm run typecheck && npm test && npm run test:api && npm run test:e2e",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:reset": "prisma migrate deploy && prisma db seed"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.0",
@@ -49,6 +50,7 @@
     "pg": "^8.23.0",
     "prettier": "^3.9.8",
     "prisma": "7.10.0",
+    "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.70.0",
     "vite-tsconfig-paths": "^6.1.1",
@@ -57,7 +59,8 @@
   "allowScripts": {
     "unrs-resolver@1.12.2": true,
     "prisma@7.10.0": true,
-    "@prisma/engines@7.10.0": true
+    "@prisma/engines@7.10.0": true,
+    "esbuild@0.28.2": true
   },
   "//": [
     "overrides: prisma@7.10.0 pins deepmerge-ts 7.1.5 (GHSA-ggr8-5vv4-36mx) and mysql2 3.15.3 (GHSA-3f6p-5ww8-9rcr, GHSA-rgwj-5xj2-c3m3); forcing the fixed releases keeps npm audit at 0 behind the T-02a gate (owner decision 2026-09-22).",
