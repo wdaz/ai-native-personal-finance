@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons)
 
 ## Roles
 
@@ -46,6 +46,19 @@ Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run 
   review needs to execute something, it does so in a throwaway clone.
 - Any subagent that touches git identity, `.git/config` or hooks stops and reports
   instead.
+- **Implementer subagents** (those with write tools) never run commands that rewrite
+  the whole working tree or shared git state: `git checkout <rev> -- .`,
+  `git reset --hard`, `git stash`, `git clean`, argument-less `npm install`
+  (its `prepare` writes git configuration). Scoped edits and scoped `git add`
+  only. (T-02, Task 5.)
+- **Reported output is copied from the run, never from the brief.** A report
+  that states a command result the reviewer cannot reproduce is treated as a
+  defect of the report, not of the reviewer. (T-01 lesson 4, repeated in T-02
+  Task 2 — now a rule.)
+- **Plans mark predictions.** An "Expected" line for a command nobody has run is
+  labelled *prediction* and is verified at execution before it is relied on.
+- **Rules about how tests run live in the tool's config** (Playwright/Vitest
+  config), never only in an npm script. (T-02 final review.)
 
 ## Process log
 
