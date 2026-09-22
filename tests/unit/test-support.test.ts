@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { GET, POST } from "@/app/api/test/[...path]/route";
+import * as route from "@/app/api/test/[...path]/route";
 import { handleTestSupport, testSupportRoutes } from "@/src/server/test-support";
 
 /**
@@ -40,11 +40,28 @@ describe("test-support routes (SPEC-reset-and-test-support §2.7)", () => {
     expect(await response.json()).toEqual({ error: "not_found", message: "Not found" });
   });
 
-  it("answers 404 through the route file when APP_ENV is not test", async () => {
+  it("answers 404 through the route file when APP_ENV is not test, for every exported method", async () => {
     vi.stubEnv("APP_ENV", "production");
     const params = Promise.resolve({ path: ["reset"] });
-    expect((await POST(post("reset"), { params })).status).toBe(404);
-    expect((await GET(post("reset"), { params })).status).toBe(404);
+    const handlers = Object.entries(route) as [
+      string,
+      (request: Request, context: { params: typeof params }) => Promise<Response>,
+    ][];
+    // Next.js implements OPTIONS itself and answers 405 to PUT/PATCH/DELETE unless the
+    // route file exports them, so this also pins that every one of the six is exported —
+    // a handler added later is covered automatically, and dropping one here fails loudly.
+    expect(handlers.map(([name]) => name).sort()).toEqual([
+      "DELETE",
+      "GET",
+      "OPTIONS",
+      "PATCH",
+      "POST",
+      "PUT",
+    ]);
+    for (const [, handler] of handlers) {
+      const response = await handler(post("reset"), { params });
+      expect(response.status).toBe(404);
+    }
   });
 
   it("answers an unknown path with 404 in test too", async () => {

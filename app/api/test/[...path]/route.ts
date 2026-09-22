@@ -14,3 +14,23 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
 export async function GET(request: Request, { params }: Context): Promise<Response> {
   return handleTestSupport("GET", (await params).path, request);
 }
+
+// Next.js implements OPTIONS itself and answers 405 to PUT/PATCH/DELETE unless a route
+// exports them; the route table has no entries for these methods, so delegating them like
+// POST/GET above answers the same 404 envelope everywhere, and outside test every method
+// does (SPEC-reset-and-test-support §2.7: the routes "do not exist — 404").
+export async function PUT(request: Request, { params }: Context): Promise<Response> {
+  return handleTestSupport("PUT", (await params).path, request);
+}
+
+export async function PATCH(request: Request, { params }: Context): Promise<Response> {
+  return handleTestSupport("PATCH", (await params).path, request);
+}
+
+export async function DELETE(request: Request, { params }: Context): Promise<Response> {
+  return handleTestSupport("DELETE", (await params).path, request);
+}
+
+export async function OPTIONS(request: Request, { params }: Context): Promise<Response> {
+  return handleTestSupport("OPTIONS", (await params).path, request);
+}
