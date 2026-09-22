@@ -12,4 +12,9 @@ public
 /AGENTS.md
 /CLAUDE.md
 /README.md
+
+# Agent workspaces that keep out of git with a nested `.gitignore`, which Prettier does not
+# read (.claude/worktrees/ is in the root .gitignore, which it does). Pinned by
+# tests/unit/boundaries.test.ts.
 .superpowers
+.remember
