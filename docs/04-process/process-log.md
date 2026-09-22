@@ -592,3 +592,35 @@ Append-only. Newest entry at the bottom. Template:
 - **Produced:** `next.config.ts` — `agentRules: false`, with the reason; `tests/unit/next-config.test.ts` — loads the config through Next's own `loadConfig` and asserts `next dev` would not write the files, plus the same config with that one line removed, which must report that it would (violation fixture, DoD v1.1). Both tests red with the line deleted, green with it.
 - **Lesson:** a framework's dev server can write to the project's contract documents. `AGENTS.md` changes only by the owner's decision (AGENTS.md §2), so a tool that edits it is configured off, with a test that reads the setting the way the tool does.
 - Delivered as a PR (branch `fix/next-agent-rules`).
+
+---
+
+## 2026-09-22 — Phase 5: T-02 persistence, seed and test support
+
+- **Phase:** 5 — Build the slice (Release 1)
+- **Participants:** Owner / Agent (Claude Code, Opus 5)
+- **Trigger:** backlog T-02, the task after T-02a; the first real `DATABASE_URL`.
+- **Prompt(s):** `prompts/2026-09-22-T-02.md`; plan `plans/2026-09-22-T-02.md`
+- **Produced:** Prisma 7.10.0 schema (six tables, three enums), first migration with the
+  `citext` extension, the generated client in `src/server/generated/prisma` (git-ignored,
+  `postinstall`); `compose.yaml` (Postgres 18.6); `src/server/{env,db,seed,variants,reset,http,test-support}.ts`;
+  `prisma/seed.ts` and `npm run db:reset`; `app/api/test/[...path]/route.ts`; 69 unit tests
+  and 16 API tests; the six server fixtures repointed and one added; a CI job `api` ("API
+  tests (Postgres)", Postgres 18.6-alpine service) added to `.github/workflows/ci.yml` before
+  `secret-scan`; README.md and `.env.example` run instructions (`docker compose up -d
+  --wait`, `npm run db:reset`, the command table); document amendments —
+  `docs/03-specs/reset-and-test-support.md` v1.1 (29 February leap-day rule, `empty-all`
+  wording, missing-variant 400, `GET /api/test/log` moved to T-12, 64-bit money at the DTO
+  boundary, checksum test moved to Unit), `docs/02-architecture/data-model.md` v1.1 (`seq`
+  on `Budget`/`Pot`, 64-bit money), `docs/02-architecture/adr/0005-persistence-and-reset.md`
+  (clarification: `BigInt` money columns, `resetToSeed`/`prisma/seed.ts`),
+  `docs/03-specs/webmcp-tools.md` v1.0.1 (§2.8 cross-reference corrected), `docs/03-specs/backlog.md`
+  v1.6 (`GET /api/test/log` T-02 → T-12, CI API job T-05 → T-02, T-13 overrides-removal note).
+- **What the agent got right:** _(controller, from the execution ledger)_
+- **What the agent got wrong or missed:** _(controller, from the execution ledger)_
+- **Owner changes and reasoning:** _(owner)_
+- **Disagreements:** the owner chose the npm overrides where the agent had recommended
+  accepting the four advisories (plan § "Owner answers", question 9) — resolved for the
+  owner (AGENTS.md §5).
+- **Lessons for the process:** _(controller, from the execution ledger)_
+- **Next:** owner review and merge; T-03/T-04; findings F1, F2 and question 8 if deferred.
