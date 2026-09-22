@@ -1,0 +1,7 @@
+DATABASE_URL="postgresql://neondb_owner:{{PASSWORD}}@ep-cool-darkness-a1b2c3d4-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+DIRECT_URL=postgresql://neondb_owner:{{PASSWORD}}@ep-cool-darkness-a1b2c3d4.eu-central-1.aws.neon.tech/neondb
+  DATABASE_URL: postgres://app:{{PASSWORD}}@db.example.com:5432/app
+const url = 'postgresql://app:{{PASSWORD_URL_ENCODED}}@10.0.0.12/app';
+const url = `POSTGRES://svc:{{PASSWORD}}@prod-db.internal:6543/app`;
+postgresql://postgres:{{WEAK_PASSWORD}}@db.example.com/app
+postgresql://app:{{PASSWORD}}@localhost.example.com/app

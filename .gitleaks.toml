@@ -1,0 +1,49 @@
+# Secret scanning for this repository (T-02a, NFR-S5). Read by scripts/secret-scan.sh —
+# the pre-commit hook, the CI `secret scan` job and `npm run secrets:scan` — and by
+# tests/unit/secret-guard.test.ts, which makes every entry below fire, or stay silent, on
+# purpose. Written for gitleaks 8.30.1 (scripts/gitleaks.sh): `[[rules.allowlists]]` needs
+# 8.21 or later and `[[allowlists]]` 8.25 or later.
+title = "ai-native-personal-finance secret scan"
+
+# Every default rule stays on; this file only adds to them.
+[extend]
+useDefault = true
+
+# The default rules do not detect a Postgres connection string (measured 2026-09-22 with a
+# Neon pooled URL and a generic one), and DATABASE_URL is the one secret this project is
+# certain to hold (ADR-0005, ADR-0007). The id keeps the backlog's spelling.
+[[rules]]
+id = "postgres_connection_string"
+description = "PostgreSQL connection URI with an embedded password"
+# scheme, user, password, host: the password is the secret (group 1); the match ends at the
+# host, which the first allowlist reads. No entropy threshold: a weak password on a remote
+# host is still a leak. The password may contain `@` and the host may not: gitleaks also
+# re-scans percent-decoded text, and a decoded `%40` would otherwise end the secret at its
+# first `@` and print the rest of the password, unredacted, as the host (measured in the
+# T-02a final review). Residual: a query string holding `@localhost` after a remote host
+# now reads as local and is exempt below; contrived, and accepted.
+regex = '''(?i)\bpostgres(?:ql)?://[^:@/\s'"`]+:([^/\s'"`]+)@([^@/:?\s'"`]+)'''
+secretGroup = 1
+keywords = ["postgres://", "postgresql://"]
+
+  # A database on this machine: the .env.example default and the CI service container.
+  # `$` makes it the whole host, not a prefix, so `localhost.example.com` is still reported.
+  [[rules.allowlists]]
+  description = "A database on this machine: its credentials are not secrets"
+  regexTarget = "match"
+  regexes = ['''@(?:localhost|127\.0\.0\.1)$''']
+
+  # The whole password is a placeholder. Anchored on purpose: stopwords match substrings
+  # and would exempt a real password that merely contains one. `{{…}}` is also what
+  # tests/fixtures/secret-scan uses, which is how those fixtures can be committed.
+  [[rules.allowlists]]
+  description = "Documentation and fixture placeholders, never real passwords"
+  regexes = ['''^(?:password|PASSWORD|<[^>]*>|\$\{[^}]*\}|\{\{[^}]*\}\})$''']
+
+# Backlog T-02a: build output and third-party challenge inputs. `.next/` is git-ignored, so
+# this entry matters for `gitleaks dir` scans of a working copy and for a forced `git add`.
+# `(?:^|/)` also exempts nested copies of the two folders; it is needed because
+# `gitleaks dir` reports absolute paths, which `^` alone would never match.
+[[allowlists]]
+description = "Build output and third-party challenge inputs (backlog T-02a)"
+paths = ['''(?:^|/)\.next/''', '''(?:^|/)docs/00-discovery/inputs/''']

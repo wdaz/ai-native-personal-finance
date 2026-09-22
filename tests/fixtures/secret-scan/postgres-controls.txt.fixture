@@ -1,0 +1,10 @@
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/personal_finance"
+DATABASE_URL=postgresql://app:{{PASSWORD}}@localhost:5432/test
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/test
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DB
+DATABASE_URL=postgresql://user:password@db.example.com/app
+DATABASE_URL=postgresql://user:${DB_PASSWORD}@db.example.com/app
+DATABASE_URL=postgresql://user:<password>@db.example.com/app
+DATABASE_URL=""
+DATABASE_URL=postgresql://user@db.example.com/app
+DATABASE_URL=postgresql://db.example.com:5432/app
