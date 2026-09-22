@@ -8,6 +8,8 @@ import {
   seedOverviewInput,
   workedExample,
 } from "@/scripts/seed-figures";
+import { fixedClock } from "@/src/domain/clock";
+import { overviewSummary } from "@/src/domain/overview";
 import { CATEGORY_BY_NAME, seedRows } from "@/src/server/seed";
 
 const repoRoot = join(import.meta.dirname, "..", "..");
@@ -93,7 +95,7 @@ describe("scripts/seed-figures.ts reads the seed as src/server/seed.ts does (T-0
     );
   });
 
-  it("has the same budgets and pots, with seq in the order the database assigns it", () => {
+  it("has the same budgets and pots, with seq 1…n in file order", () => {
     expect(input.budgets.map((b) => [CATEGORY_BY_NAME.get(b.category), b.maximum])).toEqual(
       rows.budgets.map((b) => [b.category, b.maximum]),
     );
@@ -106,9 +108,12 @@ describe("scripts/seed-figures.ts reads the seed as src/server/seed.ts does (T-0
     ]);
   });
 
-  it("computes the Overview on the business day, 19 Aug 2026", () => {
+  it("computes the Overview on the business day, 19 Aug 2026 — another day gives other bills", () => {
     const figures = seedFigures();
     expect(figures.transactions).toHaveLength(5);
     expect(figures.pots.items.map((p) => p.seq)).toEqual([1, 2, 3, 4]);
+    expect(overviewSummary(seedOverviewInput(), fixedClock("2026-09-19")).bills).not.toEqual(
+      figures.bills,
+    );
   });
 });

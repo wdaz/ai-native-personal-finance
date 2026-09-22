@@ -14,8 +14,11 @@ import { formatMoney, formatSignedMoney } from "@/src/shared/money";
  *
  * ADR-0002 lets scripts import only `src/domain` and `src/shared`, so the rows are built
  * here with the domain's own conversions (+2 years, cents) rather than with
- * `src/server/seed.ts`; tests/unit/seed-figures.test.ts checks the two agree. Budgets and
- * pots get `seq` in file order, as the database assigns it on reset (T-02).
+ * `src/server/seed.ts`; tests/unit/seed-figures.test.ts checks that names, money, dates,
+ * categories (mapped) and recurring flags agree with `src/server/seed.ts`; the rows keep
+ * data.json's avatar path, hex theme and display category name, where the database stores
+ * the avatar key and the `Theme`/`Category` enums. Budgets and pots get `seq` in file order,
+ * as the database assigns it on reset (T-02).
  */
 export function seedOverviewInput() {
   return {
