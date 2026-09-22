@@ -1,9 +1,12 @@
 #!/bin/sh
 # Runs the pinned gitleaks release (T-02a, NFR-S5). The binary is downloaded on first use
-# into node_modules/.cache/gitleaks/<version>/ and its SHA-256 is checked against the value
-# pinned below once, when it is downloaded; a cached binary is trusted and run without a
-# re-check (CI has no cache and always downloads). One version everywhere: the hook, the
-# CI `secret scan` job and tests/unit/secret-guard.test.ts all run through this file.
+# into node_modules/.cache/gitleaks/<version>/<platform>/ and its SHA-256 is checked against
+# the value pinned below once, when it is downloaded; a cached binary is trusted and run
+# without a re-check (CI has no cache and always downloads). The platform is part of the
+# key because node_modules can be shared between machines (a container, a mounted
+# checkout): on 2026-09-22 a Linux binary in the old version-only slot blocked every commit
+# on a Mac. One version everywhere: the hook, the CI `secret scan` job and
+# tests/unit/secret-guard.test.ts all run through this file.
 #
 # To upgrade: change VERSION and the four SHA256 values together, copying them from
 # gitleaks_<version>_checksums.txt on https://github.com/gitleaks/gitleaks/releases.
@@ -26,7 +29,7 @@ case "$(uname -s)-$(uname -m)" in
 esac
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-cache="${GITLEAKS_CACHE_DIR:-$root/node_modules/.cache/gitleaks}/$VERSION"
+cache="${GITLEAKS_CACHE_DIR:-$root/node_modules/.cache/gitleaks}/$VERSION/$PLATFORM"
 bin="$cache/gitleaks"
 
 if [ ! -x "$bin" ]; then
