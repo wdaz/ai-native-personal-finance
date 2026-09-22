@@ -8,5 +8,7 @@ if ! "$(dirname "$0")/../secret-scan.sh" staged; then
   echo "pre-commit: commit blocked. Either gitleaks reported a finding above, or it could" >&2
   echo "not run (see the message above). Remove the secret from the staged changes; if the" >&2
   echo "value is a real credential, rotate it as well. CI scans every commit regardless." >&2
+  echo "Only for a false positive, or when gitleaks cannot run: git commit --no-verify skips" >&2
+  echo "this hook. Never use it to commit a real secret." >&2
   exit 1
 fi

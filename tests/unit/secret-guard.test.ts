@@ -272,6 +272,7 @@ describe("T-02a secret guard", () => {
       const result = run("git", ["commit", "-q", "-m", "leak"], { cwd: repo });
       expect(result.status).not.toBe(0);
       expect(result.stderr).toContain("commit blocked");
+      expect(result.stderr).toContain("git commit --no-verify");
       expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
       expect(git(repo, "rev-list", "--count", "HEAD")).toBe("1");
     });
