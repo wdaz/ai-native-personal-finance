@@ -8,6 +8,7 @@ const repoRoot = join(import.meta.dirname, "..", "..");
 const fixtureDir = join(repoRoot, "tests/fixtures/secret-scan");
 const config = join(repoRoot, ".gitleaks.toml");
 const gitleaks = join(repoRoot, "scripts/gitleaks.sh");
+const secretScan = join(repoRoot, "scripts/secret-scan.sh");
 
 /**
  * T-02a — NFR-S5: "no secrets in the repo", verified by a secret scan in CI. Gitleaks'
@@ -25,6 +26,7 @@ const FAKE_CREDENTIALS = {
   "{{PASSWORD_URL_ENCODED}}": "T3st%40Only%21N0tReal",
   "{{WEAK_PASSWORD}}": "postgres",
 } as const;
+const FAKE_PASSWORD = FAKE_CREDENTIALS["{{PASSWORD}}"];
 
 const materialise = (text: string) =>
   Object.entries(FAKE_CREDENTIALS).reduce(
@@ -59,6 +61,12 @@ const run = (
   options: { cwd?: string; input?: string; env?: NodeJS.ProcessEnv } = {},
 ) => spawnSync(command, args, { encoding: "utf8", env: testEnv, ...options });
 
+const git = (cwd: string, ...args: string[]) => {
+  const result = run("git", args, { cwd });
+  if (result.status !== 0) throw new Error(`git ${args.join(" ")} failed:\n${result.stderr}`);
+  return result.stdout.trim();
+};
+
 /** gitleaks exits 1 with findings and 0 without; any other status is the tool failing. */
 const parseReport = (result: SpawnSyncReturns<string>): Finding[] => {
   if (result.status !== 0 && result.status !== 1) {
@@ -82,6 +90,18 @@ const scratch = () => {
 const writeInto = (dir: string, file: string, content: string) => {
   mkdirSync(dirname(join(dir, file)), { recursive: true });
   writeFileSync(join(dir, file), content);
+};
+
+const newRepo = () => {
+  const repo = scratch();
+  git(repo, "init", "-q", "-b", "main");
+  return repo;
+};
+
+const commitFile = (repo: string, file: string, content: string, message: string) => {
+  writeInto(repo, file, content);
+  git(repo, "add", file);
+  git(repo, "commit", "-q", "-m", message);
 };
 
 beforeAll(() => {
@@ -153,6 +173,74 @@ describe("T-02a secret guard", () => {
         writeInto(dir, file, `${leakLine}\n`);
       }
       expect(scanDir(dir).map((f) => relative(dir, f.File))).toEqual(["src/server/db.ts"]);
+    });
+  });
+
+  describe("scripts/secret-scan.sh history (the CI job and npm run secrets:scan)", () => {
+    const scanHistory = (repo: string) => run(secretScan, ["history"], { cwd: repo });
+
+    it("finds a secret that was committed and later deleted, and never prints it", () => {
+      const repo = newRepo();
+      commitFile(repo, ".env", `${leakLine}\n`, "add");
+      git(repo, "rm", "-q", ".env");
+      git(repo, "commit", "-q", "-m", "remove");
+      const result = scanHistory(repo);
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("postgres_connection_string");
+      expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
+    });
+
+    it("finds a secret typed only while resolving a merge conflict (-m)", () => {
+      const repo = newRepo();
+      commitFile(repo, "config.txt", "a\nb\nc\n", "base");
+      git(repo, "switch", "-q", "-c", "feature");
+      commitFile(repo, "config.txt", "a\nfeature\nc\n", "feature");
+      git(repo, "switch", "-q", "main");
+      commitFile(repo, "config.txt", "a\nmain\nc\n", "main");
+      expect(run("git", ["merge", "-q", "feature"], { cwd: repo }).status).not.toBe(0);
+      commitFile(repo, "config.txt", `a\n${leakLine}\nc\n`, "merge feature");
+      expect(scanHistory(repo).status).toBe(1);
+    });
+
+    it("finds a secret added and removed inside a merged branch (no --first-parent)", () => {
+      const repo = newRepo();
+      commitFile(repo, "README.md", "base\n", "base");
+      git(repo, "switch", "-q", "-c", "feature");
+      commitFile(repo, ".env", `${leakLine}\n`, "add");
+      git(repo, "rm", "-q", ".env");
+      git(repo, "commit", "-q", "-m", "remove");
+      git(repo, "switch", "-q", "main");
+      git(repo, "merge", "-q", "--no-ff", "--no-edit", "feature");
+      git(repo, "branch", "-q", "-D", "feature");
+      expect(scanHistory(repo).status).toBe(1);
+    });
+
+    it("passes a history whose only connection string is the .env.example default", () => {
+      const repo = newRepo();
+      commitFile(repo, ".env.example", readFileSync(join(repoRoot, ".env.example"), "utf8"), "env");
+      expect(scanHistory(repo).status).toBe(0);
+    });
+
+    it("refuses a shallow clone instead of passing on one commit", () => {
+      const origin = newRepo();
+      commitFile(origin, "a.txt", "a\n", "one");
+      commitFile(origin, "b.txt", "b\n", "two");
+      const clone = scratch();
+      git(clone, "clone", "-q", "--depth", "1", `file://${origin}`, ".");
+      const result = scanHistory(clone);
+      expect(result.status).toBe(2);
+      expect(result.stderr).toContain("fetch-depth: 0");
+    });
+  });
+
+  describe("package.json", () => {
+    const { scripts } = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")) as {
+      scripts: Record<string, string>;
+    };
+
+    it("runs the history scan first in test:all, the command CI mirrors", () => {
+      expect(scripts["secrets:scan"]).toBe("scripts/secret-scan.sh history");
+      expect(scripts["test:all"]?.startsWith("npm run secrets:scan && ")).toBe(true);
     });
   });
 });
