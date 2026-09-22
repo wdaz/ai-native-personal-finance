@@ -9,6 +9,8 @@ const fixtureDir = join(repoRoot, "tests/fixtures/secret-scan");
 const config = join(repoRoot, ".gitleaks.toml");
 const gitleaks = join(repoRoot, "scripts/gitleaks.sh");
 const secretScan = join(repoRoot, "scripts/secret-scan.sh");
+const hooksDir = join(repoRoot, "scripts/git-hooks");
+const installHooks = join(repoRoot, "scripts/install-git-hooks.sh");
 
 /**
  * T-02a — NFR-S5: "no secrets in the repo", verified by a secret scan in CI. Gitleaks'
@@ -241,6 +243,70 @@ describe("T-02a secret guard", () => {
     it("runs the history scan first in test:all, the command CI mirrors", () => {
       expect(scripts["secrets:scan"]).toBe("scripts/secret-scan.sh history");
       expect(scripts["test:all"]?.startsWith("npm run secrets:scan && ")).toBe(true);
+    });
+
+    it("installs the hook on npm install and npm ci (prepare)", () => {
+      expect(scripts.prepare).toBe("sh scripts/install-git-hooks.sh");
+    });
+  });
+
+  describe("scripts/git-hooks/pre-commit", () => {
+    const hookedRepo = () => {
+      const repo = newRepo();
+      git(repo, "config", "core.hooksPath", hooksDir);
+      return repo;
+    };
+
+    it("lets a clean commit through", () => {
+      const repo = hookedRepo();
+      writeInto(repo, ".env.example", readFileSync(join(repoRoot, ".env.example"), "utf8"));
+      git(repo, "add", ".env.example");
+      expect(run("git", ["commit", "-q", "-m", "clean"], { cwd: repo }).status).toBe(0);
+    });
+
+    it("blocks a commit that stages a secret", () => {
+      const repo = hookedRepo();
+      commitFile(repo, "README.md", "clean\n", "clean");
+      writeInto(repo, ".env", `${leakLine}\n`);
+      git(repo, "add", ".env");
+      const result = run("git", ["commit", "-q", "-m", "leak"], { cwd: repo });
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("commit blocked");
+      expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
+      expect(git(repo, "rev-list", "--count", "HEAD")).toBe("1");
+    });
+
+    it("is committed executable, because git skips a non-executable hook with only a hint", () => {
+      const files = [
+        "scripts/git-hooks/pre-commit",
+        "scripts/gitleaks.sh",
+        "scripts/install-git-hooks.sh",
+        "scripts/secret-scan.sh",
+      ];
+      const staged = git(repoRoot, "ls-files", "--stage", ...files)
+        .split("\n")
+        .map((line) => {
+          const [mode, , , path] = line.split(/\s+/);
+          return `${mode} ${path}`;
+        });
+      expect(staged).toEqual(files.map((file) => `100755 ${file}`));
+    });
+  });
+
+  describe("scripts/install-git-hooks.sh", () => {
+    it("points core.hooksPath at scripts/git-hooks", () => {
+      const repo = newRepo();
+      expect(run("sh", [installHooks], { cwd: repo }).status).toBe(0);
+      expect(git(repo, "config", "core.hooksPath")).toBe("scripts/git-hooks");
+    });
+
+    it("does nothing outside a git work tree", () => {
+      const dir = scratch();
+      const result = run("sh", [installHooks], {
+        cwd: dir,
+        env: { ...testEnv, GIT_CEILING_DIRECTORIES: dirname(dir) },
+      });
+      expect(result.status).toBe(0);
     });
   });
 });

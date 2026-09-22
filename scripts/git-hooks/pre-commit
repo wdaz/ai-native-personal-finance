@@ -1,0 +1,12 @@
+#!/bin/sh
+# Blocks a commit whose staged changes contain a secret (T-02a, NFR-S5). Installed by
+# `npm install` / `npm ci` through the `prepare` script (scripts/install-git-hooks.sh).
+# This is fast feedback, not the gate: `git commit --no-verify` skips it, and the CI
+# `secret scan` job reads the full history on every push either way.
+if ! "$(dirname "$0")/../secret-scan.sh" staged; then
+  echo "" >&2
+  echo "pre-commit: commit blocked. Either gitleaks reported a finding above, or it could" >&2
+  echo "not run (see the message above). Remove the secret from the staged changes; if the" >&2
+  echo "value is a real credential, rotate it as well. CI scans every commit regardless." >&2
+  exit 1
+fi
