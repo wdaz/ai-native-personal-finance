@@ -24,9 +24,10 @@ export type ResetResult = { at: Date; rows: number };
 
 /**
  * One transaction: take the advisory lock, truncate, insert the seed rows (`seeded = true`),
- * write the `ResetLog` row. `at` comes from the column's `@default(now())`, so this module
- * reads no clock (ADR-0005). `rows` counts the seed rows inserted; `LoginAttempt` is
- * emptied by the truncation.
+ * write the `ResetLog` row. `at` is filled by Prisma's runtime from the server's clock when
+ * the row is created (`@default(now())`) — operational time, not the fixed business clock —
+ * so this module itself reads no clock (ADR-0005). `rows` counts the seed rows inserted;
+ * `LoginAttempt` is emptied by the truncation.
  */
 export async function resetToSeed(
   db: Db,
