@@ -31,9 +31,9 @@ each blocking finding; Opus for the final fix wave.
 | `task-4-brief.md`, `task-4-report.md`, `task-4-review.md` | The CI `secret scan` and `npm audit` jobs; the push trigger narrowed to `main`. |
 | `task-5-brief.md`, `task-5-controller-facts.md`, `task-5-report.md`, `task-5-review.md` | This process-record task: the prompt file, backlog v1.4, the process-log entry, this folder, and the PR description. |
 | `final-review.md` | The final whole-branch review (Opus): one Critical, four Important, four Minor, and the triage of every deferred minor. |
-| `task-final-brief.md`, `task-final-report.md` | The final fix wave: the controller's rulings on each finding, and what the fixer changed, with the mutant runs and the regex measurements. |
+| `task-final-brief.md`, `task-final-report.md`, `task-final-rereview-1.md` | The final fix wave: the controller's rulings on each finding, what the fixer changed (with the mutant runs and the regex measurements), and the scoped re-review (Opus) that found all nine items addressed. |
 
-Four absences are deliberate:
+Three absences are deliberate:
 
 - **The `review-*.diff` files are not copied.** They are generated views of ranges that
   git already holds; `git diff <base>..<head>` reproduces any of them.
@@ -41,8 +41,9 @@ Four absences are deliberate:
   materialised fake credentials and `node_modules` copies.
 - **`final-review-result.json` is not copied.** It is the raw machine output of the review
   workflow; `final-review.md` is its readable form.
-- **The final re-review is not here.** It runs after the fix wave's commits and is added
-  by the controller's last copy.
+
+`progress.md` and `task-final-rereview-1.md` were added by the controller's last copy, after
+the fix wave's commits, so the ledger here ends with the final review's completion line.
 
 Redaction in the copies: three connection strings quoted in the final review and its
 brief are detectable, so the hook would have blocked this folder — gitleaks' `REDACTED`
