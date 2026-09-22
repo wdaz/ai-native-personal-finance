@@ -460,3 +460,68 @@ Append-only. Newest entry at the bottom. Template:
 - **Next:** T-16 on the new repository (secret scan, rotation, public flip,
   scanning/CodeQL/Dependabot/ruleset, README attribution and licence); the
   archive may be deleted once the owner no longer needs the review threads.
+
+---
+
+## 2026-09-22 — Phase 5: T-02a secret guard
+
+- **Phase:** 5 — Build the slice (Release 1)
+- **Participants:** Owner / Agent (Claude Code, Opus 5)
+- **Trigger:** backlog v1.1 placed the secret guard before T-02, because the first real
+  `DATABASE_URL` lands there and gitleaks' default rules do not detect it.
+- **Prompt(s):** `prompts/2026-09-22-T-02a-secret-guard.md`; plan
+  `plans/2026-09-22-T-02a.md`
+- **Produced:** `.gitleaks.toml` (`postgres_connection_string`); `scripts/gitleaks.sh`
+  (gitleaks 8.30.1, SHA-256 pinned); `scripts/secret-scan.sh`; `scripts/git-hooks/pre-commit`
+  installed by `npm prepare`; CI jobs `secret scan` and `npm audit`;
+  `tests/fixtures/secret-scan/`; `tests/unit/secret-guard.test.ts` (19 tests, each
+  guarantee mutation-checked); CI push trigger `main` only; backlog v1.4 (T-13, T-16).
+- **Execution:** subagent-driven, one workflow run per plan task; models by effort, as the
+  owner asked — Sonnet implementers, Opus for the Task 1 review (the security core: rule,
+  allowlists, checksum wrapper), Sonnet for the other reviews, Haiku for review packaging,
+  Opus for the final whole-branch review. One fix round (Task 3). CI on PR #1: `lint ·
+  typecheck · unit` 144/144, `secret scan` 59 commits and no leaks (the first run of the
+  wrapper's `linux_x64` branch), `npm audit` 0 vulnerabilities.
+- **Owner decisions at the plan gate:** T-16 names the `secret scan` check and
+  `npm run secrets:scan` (backlog v1.4); the stale `master` push trigger replaced with
+  `main` in this PR; `npm audit` reports without blocking; the session prompt saved;
+  the `docs/00-discovery/inputs/` exemption kept, as the backlog states.
+- **What the agent got right:** measured the backlog's premise before building on it
+  (default rules miss both a Neon and a generic Postgres URI); found that the default
+  `gitleaks git` never scans merge commits (43 of 49 here) and that `--first-parent`
+  misses a branch's add-then-remove, and chose the invocation from those measurements;
+  kept the fixtures free of detectable strings instead of exempting their folder.
+- **What the agent got wrong or missed:**
+  1. The plan contradicted itself: decision D10 says the blocked-commit message names
+     `git commit --no-verify`, but the plan's hook code never printed it. The Task 3 review
+     caught it; fixed in `7d2357f` with a test assertion, so the test file differs from the
+     plan's Appendix A by that one line.
+  2. The first plan draft tripped its own new rule: the evidence table quoted a literal
+     Postgres URI whose password was `pass` (plan E18). Found by scanning the plan before
+     committing it; rewritten without a literal URI.
+  3. Plan question 2 assumed the reader knew what a path allowlist does; the owner could not
+     answer it and it was re-asked in plain terms with the consequence of each answer.
+  4. Plan Task 1 Step 1 first told the executor to `git switch` onto a branch another
+     worktree had checked out; corrected in the plan (`8c4af2f`) before execution.
+  5. Plan Task 1 Step 10 prescribed `gitleaks git --pre-commit --staged`, which the subagent
+     sandbox refuses; the controller verified the same bytes with a git-mode scan of the task
+     range (1 commit, no leaks), and from Task 3 on the installed hook ran the literal command
+     on every commit.
+- **Owner changes and reasoning:** _(owner)_
+- **Disagreements:** (1) during planning, a reviewer pass proposed path-allowlisting the
+  fixture folder; the agent kept the placeholder design because a path allowlist is a
+  permanent hole in both gates, and the reviewer agreed once shown that the committed
+  fixtures scan clean and the materialised ones fire on every line. (2) The agent proposed
+  a blocking `npm audit`; the owner chose reporting without blocking, so that an advisory
+  published overnight cannot turn an unrelated pull request red — resolved for the owner
+  (AGENTS.md §5). (3) The agent recommended scanning `docs/00-discovery/inputs/` too,
+  since nothing there would be blocked (E20) and an exemption hides whatever lands there
+  later; the owner kept the exemption the backlog specifies — resolved for the owner.
+- **Plan-gate lesson:** question 2 was written for a reader who already knew what a path
+  allowlist does, and the owner could not answer it; a plan-gate question should state
+  the consequence of each answer in plain terms.
+- **Lessons for the process:** a scanner's defaults are part of what it guarantees —
+  "full-history scan" meant 43 of 49 commits until the merge commits were measured; and a
+  hook without the executable bit fails open with only a hint, so the mode belongs in a
+  test.
+- **Next:** owner review and merge; T-02 (the first real `DATABASE_URL`).
