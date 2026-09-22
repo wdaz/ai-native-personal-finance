@@ -1,0 +1,8 @@
+// Linted as app/api/imports-prisma-generated.ts.
+// ADR-0002: app never imports Prisma directly. Prisma 7 generates the client into
+// src/server/generated/prisma (T-02) instead of @prisma/client, so the guard must cover that
+// path too — here from the layer that is allowed to import src/server, so only the Prisma
+// rule stands between this import and the database.
+import { PrismaClient } from "@/src/server/generated/prisma/client";
+
+export const client = new PrismaClient();

@@ -2,4 +2,4 @@
 // ADR-0002: shared imports nothing from the rest. It is the one layer the client bundle,
 // the route handlers and the tools all load, so a server import here would drag the
 // database into the browser.
-import "@/src/server/README.md";
+import "@/src/server/db";

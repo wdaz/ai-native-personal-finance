@@ -1,0 +1,126 @@
+// The database of docs/02-architecture/data-model.md (ADR-0005). Money is integer cents in
+// 64-bit columns (NFR-S3 allows 99,999,999,999 cents; a 32-bit Int stops at 2,147,483,647).
+// Dates are UTC instants. Every entity has id, createdAt, updatedAt and seeded.
+// The connection URL lives in prisma.config.ts, not here (Prisma 7).
+
+generator client {
+  provider = "prisma-client"
+  // Inside src/server: ADR-0002 lets only that layer reach the database, and the `prisma`
+  // segment of the path is what the import guard in eslint.config.mjs matches.
+  output   = "../src/server/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// The database stores the documented name ("Dining Out"); the client spells it without
+// the space (DiningOut).
+enum Category {
+  Entertainment
+  Bills
+  Groceries
+  DiningOut      @map("Dining Out")
+  Transportation
+  PersonalCare   @map("Personal Care")
+  Education
+  Lifestyle
+  Shopping
+  General
+}
+
+enum Theme {
+  Green
+  Yellow
+  Cyan
+  Navy
+  Red
+  Purple
+  Turquoise
+  Brown
+  Magenta
+  Blue
+  NavyGrey  @map("Navy Grey")
+  ArmyGreen @map("Army Green")
+  Gold
+  Orange
+  Pink
+}
+
+enum ResetReason {
+  scheduled
+  threshold
+  manual
+  test
+}
+
+// A singleton: resetToSeed writes exactly one row.
+model Balance {
+  id        String   @id @default(uuid()) @db.Uuid
+  current   BigInt
+  income    BigInt
+  expenses  BigInt
+  seeded    Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+
+model Transaction {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  // The avatar's basename key, e.g. emma-richardson (SPEC-overview §4.5).
+  avatar    String
+  category  Category
+  date      DateTime @db.Timestamptz(3)
+  // Signed: income positive, spending negative.
+  amount    BigInt
+  recurring Boolean
+  seeded    Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+
+model Budget {
+  id        String   @id @default(uuid()) @db.Uuid
+  // Creation order (US-07 AC1, US-15 AC4): rows created in one transaction share createdAt.
+  seq       Int      @unique @default(autoincrement())
+  category  Category @unique
+  maximum   BigInt
+  theme     Theme    @unique
+  seeded    Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+
+model Pot {
+  id        String   @id @default(uuid()) @db.Uuid
+  // Creation order (US-05 AC1, US-22 AC1).
+  seq       Int      @unique @default(autoincrement())
+  // citext: unique whatever the case. The init migration creates the extension.
+  name      String   @unique @db.Citext
+  target    BigInt
+  total     BigInt
+  theme     Theme    @unique
+  seeded    Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+
+model ResetLog {
+  id        String      @id @default(uuid()) @db.Uuid
+  at        DateTime    @default(now()) @db.Timestamptz(3)
+  reason    ResetReason
+  seeded    Boolean     @default(false)
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime    @updatedAt @db.Timestamptz(3)
+}
+
+model LoginAttempt {
+  id        String   @id @default(uuid()) @db.Uuid
+  ip        String
+  at        DateTime @default(now()) @db.Timestamptz(3)
+  success   Boolean
+  seeded    Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
