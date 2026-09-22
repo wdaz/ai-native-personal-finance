@@ -690,3 +690,11 @@ Append-only. Newest entry at the bottom. Template:
   in CI; T-14 — `APP_ENV` must never be `test` in production (consider a startup guard), check
   whether `migrate deploy` needs Neon's direct URL, and guard `test:api`/`db:reset` against a
   non-local `DATABASE_URL`.
+
+---
+
+## 2026-09-22 — T-02 hand-off: owner dispositions
+
+- **Governance v1.2** from the T-02 lessons: implementer subagents may not rewrite the working tree or shared git state (Task 5 incident — the write-tool sibling of the T-02a read-only incident); reported output is copied from the run (T-01 lesson 4 became a rule after repeating in T-02); plans label predictions; test-run rules live in tool config.
+- **Backlog v1.7:** every hand-off the T-02 entry addressed to a later task now sits in that task's row (T-05, T-06, T-08, T-09, T-13, T-14) — the "only in a README is invisible" lesson applied to the log itself.
+- **Owner:** fills "Owner changes" in the T-02 entry. Delivered as PR (branch `docs/t02-followups`).
