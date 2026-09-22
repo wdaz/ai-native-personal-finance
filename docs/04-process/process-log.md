@@ -795,8 +795,9 @@ Append-only. Newest entry at the bottom. Template:
   its prose promises. "Generated, never typed" held — the generator, not a reviewer, fixed
   §4.3's style slip. A lint rule too wide makes the code it protects unwritable, too narrow
   passes in silence; both edges now have fixtures.
-- **Next:** owner review and merge — CI on the draft PR is the last unmeasured prediction (tsx
-  running `npm run seed:figures` inside the `verify` job's Vitest). T-04 (schemas, enums, copy,
+- **Next:** owner review and merge of draft PR #8. CI passed on `b5fc370` (run 35776926119: lint
+  · typecheck · unit, API tests (Postgres), npm audit, secret scan), which also verified the
+  plan's last prediction — tsx running `npm run seed:figures` inside CI's Vitest. T-04 (schemas, enums, copy,
   test ids); once the category and theme maps live in `src/shared`, `seedOverviewInput` could emit
   database-shaped rows. Hand-offs sit in the backlog rows: T-05 (system time apart from the
   business `Clock`), T-08, T-09, T-10, T-13. Release 2: US-27 AC2's "day-of-month ≤ today + 5"
