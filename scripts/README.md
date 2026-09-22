@@ -10,3 +10,15 @@ Repo tooling run through `npm run`: generators and checks, not application code
 `data.json`; the spec table must equal its output
 (`docs/04-process/build-workflow.md`: "Any seed-derived figure in code or tests comes
 from `scripts/seed-figures.ts`, never typed").
+
+## Secret guard (T-02a, NFR-S5)
+
+POSIX shell, no imports. `tests/unit/secret-guard.test.ts` proves each part fails on
+purpose.
+
+| File                   | Role                                                                                                                                                |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gitleaks.sh`          | Runs the pinned gitleaks release; downloads it on first use into `node_modules/.cache/gitleaks/<version>/` and checks its SHA-256 before running it |
+| `secret-scan.sh`       | The two scans with their flags: `history` (every commit, merges included — CI and `npm run secrets:scan`) and `staged` (the pre-commit hook)        |
+| `git-hooks/pre-commit` | Blocks a commit whose staged changes contain a secret; `git commit --no-verify` skips it, CI does not                                               |
+| `install-git-hooks.sh` | Sets `core.hooksPath` to `scripts/git-hooks`; run by `npm install` and `npm ci` through `prepare`                                                   |

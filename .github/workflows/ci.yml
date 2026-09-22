@@ -3,9 +3,9 @@ name: CI
 on:
   pull_request:
   push:
-    # ADR-0007 names `main` as the production branch; this repository's default branch is
-    # currently `master`. Both are listed until the owner resolves which one it is.
-    branches: [main, master]
+    # ADR-0007 names `main` as the production branch, and it is this repository's default
+    # branch (owner decision 2026-09-22, T-02a plan gate).
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -37,3 +37,43 @@ jobs:
 
       - name: Unit tests
         run: npm test
+
+  secret-scan:
+    name: secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Every commit, not only the tip. scripts/secret-scan.sh refuses a shallow clone
+          # rather than pass on one commit (NFR-S5, T-02a).
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Gitleaks 8.30.1 through scripts/gitleaks.sh (SHA-256 pinned): every ref, merge
+      # commits included, output redacted. A finding exits 1 and fails the job. No SARIF
+      # upload: code scanning needs GitHub Code Security, unavailable while the repository
+      # is private (backlog T-02a).
+      - name: Gitleaks (full history)
+        run: scripts/secret-scan.sh history
+
+  audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+
+      # Reads package-lock.json against the registry's advisories and reports high and
+      # critical ones without failing the job (owner decision 2026-09-22): the verdict can
+      # change with no code change, when an advisory is published, and must not turn an
+      # unrelated pull request red. A finding shows as a warning annotation on the run.
+      - name: npm audit (high and critical, reported, not blocking)
+        run: |
+          if ! npm audit --audit-level=high; then
+            echo "::warning title=npm audit::high or critical advisories found; see this step's log"
+          fi
