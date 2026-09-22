@@ -4,6 +4,7 @@ import { createDb, type Db } from "@/src/server/db";
 import { databaseUrl } from "@/src/server/env";
 import { RESET_LOCK_KEY, resetToSeed } from "@/src/server/reset";
 import { seedRows } from "@/src/server/seed";
+import { applyVariant } from "@/src/server/variants";
 import { insertedRows, storedRows } from "@/tests/fixtures/database";
 
 /**
@@ -91,4 +92,13 @@ test("a reset waits for the advisory lock, so two never run at once (§4)", asyn
   } finally {
     await holder.end();
   }
+});
+
+test("US-36 a reset that fails part-way leaves the previous data (§2.1: one transaction)", async () => {
+  await resetToSeed(db, "test", applyVariant(seedRows(), "empty-pots"));
+  const before = await storedRows(db);
+  const rows = seedRows();
+  const broken = { ...rows, budgets: [...rows.budgets, rows.budgets[0]!] }; // duplicate category
+  await expect(resetToSeed(db, "test", broken)).rejects.toMatchObject({ code: "P2002" });
+  expect(await storedRows(db)).toEqual(before);
 });
