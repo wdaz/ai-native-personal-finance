@@ -31,4 +31,8 @@ describe("sumCents (ADR-0005: money is integer cents)", () => {
   it("refuses a total beyond the exact range of a number", () => {
     expect(() => sumCents([Number.MAX_SAFE_INTEGER, 1])).toThrow("beyond the exact range");
   });
+
+  it("refuses a partial sum beyond the exact range, even when later amounts bring it back", () => {
+    expect(() => sumCents([Number.MAX_SAFE_INTEGER, 2, -2])).toThrow("beyond the exact range");
+  });
 });

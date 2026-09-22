@@ -19,7 +19,9 @@ export function toCents(dollars: number): number {
 /**
  * The sum of whole-cent amounts. Anything else is refused, so a dollar amount or a database
  * `BigInt` that was not converted at the repository edge fails here instead of summing to a
- * wrong figure.
+ * wrong figure. The running total is checked after every addition, not just at the end, so a
+ * partial sum that leaves the exact range is refused even if a later amount would bring it
+ * back inside.
  */
 export function sumCents(amounts: readonly number[]): number {
   let total = 0;
@@ -28,9 +30,9 @@ export function sumCents(amounts: readonly number[]): number {
       throw new Error(`Amount ${String(amount)} is not a whole number of cents`);
     }
     total += amount;
-  }
-  if (!Number.isSafeInteger(total)) {
-    throw new Error(`Total ${total} is beyond the exact range of a number`);
+    if (!Number.isSafeInteger(total)) {
+      throw new Error(`Total ${total} is beyond the exact range of a number`);
+    }
   }
   return total;
 }
