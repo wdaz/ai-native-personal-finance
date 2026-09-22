@@ -560,3 +560,13 @@ Append-only. Newest entry at the bottom. Template:
   `--ignore-gitleaks-allow` on the history scan and owner review of the guard files
   (CODEOWNERS or the `main` ruleset); for T-13, workflow-level `permissions: contents:
   read`.
+
+---
+
+## 2026-09-22 — T-02a hand-off: owner dispositions
+
+- **Incident (reviewer wrote to the shared `.git`):** governance v1.1 — review/verification subagents run without write tools and never in the shared checkout; anything touching git identity or hooks stops and reports. Owner deletes `backup/t02a-final-review-junk` after inspection; the local `--all` scan stops counting the two junk commits then.
+- **Commit/tag messages are not scanned:** limitation documented in T-02a; the prototype second pass is **not** adopted now — it goes to T-13 for evaluation with its own failing fixture (DoD v1.1), not as an unproven extra mechanism.
+- **T-16:** `--ignore-gitleaks-allow` on the full-history scan; guard files under CODEOWNERS/ruleset review. **T-13:** `permissions: contents: read`.
+- **ESLint does not ignore `.superpowers/`** (breaks `npm run lint` in every subagent-driven session): a T-01 configuration defect, fixed as a separate small PR by Claude Code (`ignores: [".superpowers/**"]` + `.prettierignore` + a boundaries-test control that an ignored path is not linted).
+- Delivered as PR (branch `docs/t02a-followups`).
