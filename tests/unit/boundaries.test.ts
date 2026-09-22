@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ESLint } from "eslint";
+import { getFileInfo } from "prettier";
 import { describe, expect, it } from "vitest";
 
 const repoRoot = join(import.meta.dirname, "..", "..");
@@ -199,5 +200,51 @@ describe("eslint enforces ADR-0002 and ADR-0005 (tests/fixtures/boundaries)", ()
       "@typescript-eslint/no-explicit-any",
       "@typescript-eslint/no-unused-vars",
     ]);
+  });
+});
+
+/**
+ * Agent tools keep workspaces inside the checkout, and each hides itself from git its own
+ * way: `.superpowers/` (the superpowers skills' plans: briefs, reports, review scratch with
+ * copies of `tests/` and `node_modules`) and `.remember/` (the Remember plugin's session
+ * notes) through a nested `.gitignore` of `*`; `.claude/worktrees/`, where every worktree is
+ * a full copy of the repository with its own `.next/` build output, through the root
+ * .gitignore. ESLint's flat config reads no .gitignore and lints dot-directories; Prettier
+ * reads the root .gitignore and .prettierignore only. Unignored, they fail `npm run lint`
+ * and `npm run format:check` on files nobody commits — on 2026-09-22, in the main checkout,
+ * 84 lint errors from one worktree and 10 format warnings from `.remember/`.
+ */
+const workspaces = [
+  ".superpowers/sdd/2026-01-01-example/scratch/typescript-rules-enabled.ts",
+  ".claude/worktrees/T-99-example/src/shared/typescript-rules-enabled.ts",
+  ".remember/tmp/typescript-rules-enabled.ts",
+];
+
+// The Prettier CLI's default ignore files; the API reads none unless it is told to.
+const prettierIgnored = async (path: string) =>
+  (
+    await getFileInfo(join(repoRoot, path), {
+      ignorePath: [join(repoRoot, ".gitignore"), join(repoRoot, ".prettierignore")],
+    })
+  ).ignored;
+
+describe("agent workspaces inside the checkout are neither linted nor formatted", () => {
+  const fixture = "typescript-rules-enabled.ts.fixture";
+
+  it("the same file outside a workspace is linted and formatted", async () => {
+    // Without this, "nothing reported" and "ignored" below could mean the fixture stopped
+    // violating, or that every path reads as ignored.
+    const outside = "src/shared/typescript-rules-enabled.ts";
+    expect(await lintFixture(fixture, outside)).toHaveLength(2);
+    expect(await prettierIgnored(outside)).toBe(false);
+  });
+
+  it.each(workspaces)("eslint ignores %s", async (lintAs) => {
+    expect(await eslint.isPathIgnored(join(repoRoot, lintAs))).toBe(true);
+    expect(await lintFixture(fixture, lintAs)).toEqual([]);
+  });
+
+  it.each(workspaces)("prettier ignores %s", async (path) => {
+    expect(await prettierIgnored(path)).toBe(true);
   });
 });

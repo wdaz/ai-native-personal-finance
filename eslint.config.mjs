@@ -27,6 +27,15 @@ const config = [
       "test-results/**",
       "docs/**",
       "next-env.d.ts",
+      // Agent workspaces inside the checkout: the superpowers skills' plans (scratch with
+      // copies of tests/ and node_modules), the Remember plugin's notes, and git worktrees
+      // (full copies of the repository, each with its own .next/, which `.next/**` above
+      // does not reach). Flat config reads no .gitignore and lints dot-directories, so what
+      // keeps them out of git does nothing here; without these lines `npm run lint` fails
+      // on files nobody commits. Pinned by tests/unit/boundaries.test.ts.
+      ".superpowers/**",
+      ".remember/**",
+      ".claude/worktrees/**",
     ],
   },
   {
