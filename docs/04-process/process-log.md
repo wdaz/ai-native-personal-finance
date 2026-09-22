@@ -698,3 +698,110 @@ Append-only. Newest entry at the bottom. Template:
 - **Governance v1.2** from the T-02 lessons: implementer subagents may not rewrite the working tree or shared git state (Task 5 incident — the write-tool sibling of the T-02a read-only incident); reported output is copied from the run (T-01 lesson 4 became a rule after repeating in T-02); plans label predictions; test-run rules live in tool config.
 - **Backlog v1.7:** every hand-off the T-02 entry addressed to a later task now sits in that task's row (T-05, T-06, T-08, T-09, T-13, T-14) — the "only in a README is invisible" lesson applied to the log itself.
 - **Owner:** fills "Owner changes" in the T-02 entry. Delivered as PR (branch `docs/t02-followups`).
+
+---
+
+## 2026-09-22 — Phase 5: T-03 domain logic and generated seed figures
+
+- **Phase:** 5 — Build the slice (Release 1)
+- **Participants:** Owner / Agent (Claude Code: Opus 5 wrote the plan, Opus 5.5 controlled the
+  execution; subagents below)
+- **Trigger:** backlog T-03, after T-02 merged (PR #6) and the T-02 follow-ups (PR #7).
+- **Prompt(s):** `prompts/2026-09-22-T-03.md`; plan `plans/2026-09-22-T-03.md` (v0.2);
+  execution record `prompts/2026-09-22-T-03/`
+- **Produced:** `src/domain` — `clock.ts` (`Clock`, `BUSINESS_TODAY`, `fixedClock`),
+  `calendar.ts` (`shiftYears` and `SEED_YEAR_SHIFT` moved verbatim from `src/server/seed.ts`; the
+  UTC month), `money.ts` (`toCents` moved verbatim; `sumCents`), `types.ts`, `transactions.ts`
+  (`latestTransactions`, US-11 Latest), `budgets.ts` (`budgetSpent`), `bills.ts`
+  (`recurringBills`, `billsSummary`), `overview.ts` (`overviewSummary`); `src/shared/money.ts`
+  and `dates.ts` (the SPEC-overview §4.2 formatters: integer digits, three-letter months, strict
+  ISO-8601 input); the ADR-0005 lint rule narrowed to the calls that read the clock (`new Date()`
+  without arguments, `Date()`, `Date.now()`), with four new boundary fixtures and two repointed;
+  `scripts/seed-figures.ts` and `npm run seed:figures`; `tests/unit/seed-figures.test.ts`, which
+  fails when SPEC-overview §4.3 and the script's output differ, with three fixtures that are wrong
+  on purpose. Documents: `docs/03-specs/overview.md` v1.1 (§4.2 dates from a fixed month table;
+  §4.3 per-budget amounts as `$15.00`; the check named), `docs/03-specs/backlog.md` v1.8 (T-03
+  takes the formatters and the rule fix, T-04 narrowed, hand-offs in the T-05, T-08, T-09, T-10
+  and T-13 rows), an ADR-0005 clarification ("parsing a date is allowed; reading the clock is
+  not"). Tests: Vitest 229 → **341** (112 new), API 17/17 (measured before Task 2 and at the
+  end), E2E 3/3, `src/domain` + `src/shared` coverage 100 %, `npm audit` 0, secret scan clean.
+- **Execution:** subagent-driven, one Sonnet implementer per task (Task 6: Steps 1–3; the
+  process record was written by the controller after the final review) and for the final fix
+  wave. Every review ran on `feature-dev:code-reviewer`, which has no shell and no write tools
+  (governance v1.1): Sonnet for Tasks 1, 2, 4, 6 and the three re-reviews, Opus for Tasks 3 and 5
+  and the final whole-branch review. Two task fix rounds (Task 2, Task 3) and one final fix wave
+  (two commits). The controller ran `npm ci` itself (the worktree's `node_modules` was empty;
+  `core.hooksPath` was already the relative `scripts/git-hooks` and did not change), created
+  `.env.local` from `.env.example` (README), and made 15 recorded rulings (ledger in
+  `prompts/2026-09-22-T-03/progress.md`).
+- **Deviations from the plan:**
+  1. `sumCents` checks the running total after every addition (ruling R9). The plan's code
+     checked only the final total, so `sumCents([MAX_SAFE_INTEGER, 2, -2])` returned a cent short
+     without throwing — the opposite of plan D7. One regression test, hence 341 and 112 rather
+     than the plan's 340 and 111.
+  2. Hand-built test amounts changed so that none equals a seed amount (R10), in the Task 3 tests
+     and in Task 2's `money.test.ts`; test titles that cited seed-figure ACs (US-05/07/08/28 AC1)
+     over hand-built data now name the rule (R11).
+  3. `toCents`'s doc comment kept its T-02 wording, which the plan's transcription had dropped —
+     the owner asked for an unchanged move (R8).
+  4. The code commit `e3eca6a` precedes the spec commit `9c5e8c5`, so `e3eca6a` alone has one red
+     test (R12).
+  5. Owner answer 1 asked for a new `Date.now()` fixture; T-01's `domain-uses-date-now` and
+     `server-uses-date-now` were re-run instead of adding a third (disclosed with plan v0.2).
+  6. The implementers' commits carry their own attribution, "Co-Authored-By: Claude Sonnet 5"
+     (R7).
+- **Final review:** "With fixes" — no Critical or Important; six Minor items fixed before merge:
+  the backlog's T-09 row gave two contradicting `BigInt` instructions (T-02's "at the DTO edge"
+  vs T-03's "first"; now one: at the repository edge, before `overviewSummary`); `seedFigures()`
+  rows keep data.json's avatar path, hex theme and display category, which the JSDoc did not say
+  and T-09/T-10 must map; the v1.8 changelog overclaimed; a stale T-04 clause; "every run" for
+  coverage-only errors; two `seed-figures` test titles claimed more than they checked (one now
+  asserts that another day gives other bills). Re-review: all addressed.
+- **What the agent got right:** the generator reproduced every value of §4.3 on its first run,
+  and the Task 5 checkpoint differed from the spec only in the predicted `$` style; every
+  *measured* Expected held at execution (Task 1: 5 failed | 34 → 3 failed | 47 → 50/50, the two
+  ESLint errors at 21:34 and 24:25); the plan's predictions API 17/17 and E2E 3/3 held; the
+  pasted plan-gate reply was confirmed with the owner before it was acted on; the API baseline
+  was measured before the first change to `src/server/seed.ts`, so a failure would have been
+  attributable.
+- **What the agent got wrong or missed:**
+  1. Two guarantees the plan stated were broken by the plan's own code: D7's "fails loudly
+     instead of summing to a wrong figure" (`sumCents` checked only the final total), and D12's
+     "hand-built amounts never equal a seed amount" (nine test values did: eight in Task 3's
+     tests, one in Task 2's). The prototype's 20
+     mutations and 100 % coverage tested what the code did, not what the plan promised.
+  2. The controller's first seed-amount check (`seed-amounts.mjs`) read only `$`-prefixed
+     figures and missed §4.3's bare "40.00"; the Task 3 implementer found it.
+  3. Transcription slips in the plan: `toCents`'s comment (R8); Task 1 Step 9's replacement range
+     started one clause late (the implementer anchored it correctly).
+  4. The planned backlog v1.8 text contradicted T-02's T-09 hand-off, overclaimed in its
+     changelog and left a stale T-04 clause; test titles claimed seed ACs, database order and
+     clock dependence they did not check — all caught by reviews.
+  5. `seedFigures()` rows are not shaped like the database's rows (avatar path, hex theme,
+     display category); T-09 and T-10 have to map them.
+  6. Report defects, left unedited in the copies: the Task 1 report's test-count breakdown is
+     wrong (the true split is 11 Clock tests + 4 boundary cases = 15; the totals it reports are
+     right) and some of its Step 10 output is paraphrased; the Task 4 report trims output to
+     "relevant lines".
+- **Owner changes and reasoning:** at the plan gate the owner took every recommendation, with
+  conditions: T-02's text dates were a side effect of the wide lint rule, not a goal, and
+  ADR-0005 says so in one line; boundary tests for the formatters (0, negative, 1 cent,
+  December, September); "Sep" from a fixed table rather than `Intl`; `$15.00` in §4.3; the PR
+  lists its three document changes separately; F2 stays in T-13; T-05's plan separates system
+  time from the business Clock. _(owner: the rest)_
+- **Disagreements:** none.
+- **Lessons for the process:** a guarantee a plan states (a "never", a "fails loudly") needs its
+  own check at plan time; a prototype's tests and mutations probe what its code does, not what
+  its prose promises. "Generated, never typed" held — the generator, not a reviewer, fixed
+  §4.3's style slip. A lint rule too wide makes the code it protects unwritable, too narrow
+  passes in silence; both edges now have fixtures.
+- **Next:** owner review and merge — CI on the draft PR is the last unmeasured prediction (tsx
+  running `npm run seed:figures` inside the `verify` job's Vitest). T-04 (schemas, enums, copy,
+  test ids); once the category and theme maps live in `src/shared`, `seedOverviewInput` could emit
+  database-shaped rows. Hand-offs sit in the backlog rows: T-05 (system time apart from the
+  business `Clock`), T-08, T-09, T-10, T-13. Release 2: US-27 AC2's "day-of-month ≤ today + 5"
+  has no month-end case — from the 27th every unpaid bill reads Due Soon; add tests for the
+  "most recent" pick and "paid by any transaction". For the owner to route (final review,
+  unverified): `boundaries/include` does not cover `prisma/**`, so `scripts` → `prisma/seed.ts` →
+  `src/server` is an unguarded path; `toCents`'s 1e-6 tolerance may refuse valid amounts above
+  about $85.9 million, which matters only if a later task reuses it for input.
