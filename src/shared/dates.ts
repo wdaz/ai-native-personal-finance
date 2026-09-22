@@ -44,7 +44,9 @@ export function formatDate(value: Date | string): string {
   const date = typeof value === "string" ? parseIso(value) : value;
   const month = date && MONTHS[date.getUTCMonth()];
   if (!date || month === undefined) {
-    throw new Error(`Date ${String(value)} is not a valid ISO-8601 date`);
+    throw new Error(
+      `Date ${typeof value === "string" ? JSON.stringify(value) : String(value)} is not a valid ISO-8601 date`,
+    );
   }
   return `${date.getUTCDate()} ${month} ${date.getUTCFullYear()}`;
 }

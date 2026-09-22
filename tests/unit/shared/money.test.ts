@@ -11,10 +11,13 @@ describe("formatMoney (SPEC-overview §4.2: `$`, thousands separators, two decim
     [-4_210, "-$42.10"],
     [-123_456_789, "-$1,234,567.89"],
     [0, "$0.00"],
-    [-0, "$0.00"],
     [99_999_999_999, "$999,999,999.99"],
   ])("writes %d cents as %s", (cents, text) => {
     expect(formatMoney(cents)).toBe(text);
+  });
+
+  it("writes negative zero as $0.00, not -$0.00", () => {
+    expect(formatMoney(-0)).toBe("$0.00");
   });
 
   it.each([1.5, Number.NaN, 2 ** 53])(

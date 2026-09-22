@@ -24,7 +24,7 @@ describe("latestTransactions (US-06 AC1, ordered as US-11 Latest)", () => {
     expect(names(latestTransactions(rows, 5))).toEqual(["Amy", "Moe", "Zed"]);
   });
 
-  it("orders names as a reader would, ignoring case", () => {
+  it("orders names A to Z as a reader would, not by code unit", () => {
     const at = "2026-08-19T12:00:00Z";
     const rows = [
       transaction({ name: "Banana", date: at }),

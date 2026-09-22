@@ -68,7 +68,9 @@ describe("formatDate (SPEC-overview §4.2: `d MMM yyyy`, UTC)", () => {
     "2026-08-19T25:00:00Z",
     "",
   ])("refuses %j, which is not an ISO-8601 date with its zone", (text) => {
-    expect(() => formatDate(text)).toThrow("is not a valid ISO-8601 date");
+    expect(() => formatDate(text)).toThrow(
+      `Date ${JSON.stringify(text)} is not a valid ISO-8601 date`,
+    );
   });
 
   it("refuses an invalid Date", () => {

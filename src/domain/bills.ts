@@ -35,7 +35,9 @@ export function recurringBills<T extends TransactionInput>(
   const byName = new Map<string, T[]>();
   for (const transaction of transactions) {
     if (!transaction.recurring) continue;
-    byName.set(transaction.name, [...(byName.get(transaction.name) ?? []), transaction]);
+    const list = byName.get(transaction.name);
+    if (list) list.push(transaction);
+    else byName.set(transaction.name, [transaction]);
   }
   return [...byName].map(([name, list]) => {
     const latest = list.reduce((a, b) => (compareLatest(a, b) <= 0 ? a : b));
