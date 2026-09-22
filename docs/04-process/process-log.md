@@ -582,3 +582,13 @@ Append-only. Newest entry at the bottom. Template:
 - **Disagreement:** the agent kept `.claude/worktrees/` out citing the DoD; the owner folded it into this PR ("onuda bu pr-da fix et"). The owner decides.
 - **Lesson:** a directory that hides from git through its own nested `.gitignore` is neither ESLint- nor Prettier-ignored, and ESLint's flat config reads no `.gitignore` at all; every tool workspace inside the checkout needs its own entry in both, and a control. A found defect with the same root cause and the same lines as the fix goes to the owner as a question before the PR opens, not as a separate task after.
 - Delivered as PR #3 (branch `fix/eslint-ignore-superpowers`).
+
+---
+
+## 2026-09-22 — `next dev` tried to edit AGENTS.md; turned off before T-02
+
+- **Trigger:** found while measuring the T-02 plan (plan E15, question 8); owner decision at the T-02 plan gate: "(a) next.config agentRules: false with a process-log line that the tool tried to edit AGENTS.md".
+- **What the tool did:** in a scratch copy of `main` (`f38f7de`), one `next dev` start (Next.js 16.3.5) appended a `<!-- BEGIN:nextjs-agent-rules -->` block to `AGENTS.md` — it tells agents to read Next's bundled docs "before writing any code" and to commit the block "with your work" — and rewrote `next-env.d.ts`. `next dev` does this on every start when `@vercel/detect-agent` recognises a coding agent (Claude Code sets `CLAUDECODE`), unless the loaded config has `agentRules: false` (`node_modules/next/dist/server/lib/start-server.js`). The block never reached this repository's `AGENTS.md`: the only commit containing its marker is the T-02 plan, which quotes it.
+- **Produced:** `next.config.ts` — `agentRules: false`, with the reason; `tests/unit/next-config.test.ts` — loads the config through Next's own `loadConfig` and asserts `next dev` would not write the files, plus the same config with that one line removed, which must report that it would (violation fixture, DoD v1.1). Both tests red with the line deleted, green with it.
+- **Lesson:** a framework's dev server can write to the project's contract documents. `AGENTS.md` changes only by the owner's decision (AGENTS.md §2), so a tool that edits it is configured off, with a test that reads the setting the way the tool does.
+- Delivered as a PR (branch `fix/next-agent-rules`).
