@@ -4,7 +4,10 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * ADR-0003 — E2E on Chromium, Firefox and WebKit against `next build && next start`,
  * never `next dev`. Retries: 1 in CI, 0 locally. API tests use the request context and
- * no browser; they share one database, so `npm run test:api` runs them on one worker.
+ * no browser; they share one database, so the `api` project itself pins `workers: 1` and
+ * `fullyParallel: false` — resets would otherwise clobber each other under a bare
+ * `npx playwright test` or `--project=api`. `npm run test:api` also passes `--workers=1`,
+ * which is redundant with the project setting but documents the rule at the call site too.
  *
  * The server runs with APP_ENV=test, so the test-support routes exist (SPEC-reset-and-test-
  * support §2.7). API tests also read the database directly (ADR-0003: "side effects via
@@ -32,6 +35,11 @@ export default defineConfig({
     {
       name: "api",
       testDir: "tests/api",
+      // Not just `npm run test:api`'s `--workers=1`: a bare `npx playwright test`,
+      // `--project=api` alone or `npm run test:e2e:ui` must also serialise these against
+      // the one shared database.
+      workers: 1,
+      fullyParallel: false,
       use: { baseURL },
     },
     {
