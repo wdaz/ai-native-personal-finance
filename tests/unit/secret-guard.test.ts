@@ -1,7 +1,15 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, relative } from "node:path";
+import { basename, dirname, join, relative } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const repoRoot = join(import.meta.dirname, "..", "..");
@@ -89,6 +97,17 @@ const scratch = () => {
   return dir;
 };
 
+/** Every file called `gitleaks` under a cache directory, however deep. */
+const binariesIn = (dir: string) =>
+  readdirSync(dir, { recursive: true, encoding: "utf8" }).filter(
+    (path) => basename(path) === "gitleaks",
+  );
+
+/** scripts/gitleaks.sh's name for the machine running the tests (its `uname` case). */
+const thisPlatform = `${process.platform === "darwin" ? "darwin" : "linux"}_${
+  process.arch === "arm64" ? "arm64" : "x64"
+}`;
+
 const writeInto = (dir: string, file: string, content: string) => {
   mkdirSync(dirname(join(dir, file)), { recursive: true });
   writeFileSync(join(dir, file), content);
@@ -133,7 +152,29 @@ describe("T-02a secret guard", () => {
       });
       expect(result.status).toBe(2);
       expect(result.stderr).toContain("checksum mismatch");
-      expect(existsSync(join(cache, "8.30.1", "gitleaks"))).toBe(false);
+      expect(binariesIn(cache)).toEqual([]);
+    });
+
+    it("never runs a binary another platform left in the cache (keyed by os_arch)", () => {
+      // The fixture: what a Linux run sharing this node_modules left on a Mac on 2026-09-22 —
+      // a binary in the version-only slot the cache used to have, and one in each other
+      // platform's slot. Here each is a script that announces itself if it is ever run.
+      const cache = scratch();
+      const foreign = "#!/bin/sh\necho foreign-binary-ran\nexit 3\n";
+      for (const slot of ["", "darwin_arm64", "darwin_x64", "linux_x64", "linux_arm64"]) {
+        const bin = join(cache, "8.30.1", slot, "gitleaks");
+        if (slot === thisPlatform) continue;
+        writeInto(cache, relative(cache, bin), foreign);
+        chmodSync(bin, 0o755);
+      }
+      // An empty mirror: the wrapper must go for its own platform's download, which fails
+      // offline and deterministically instead of running anything it found.
+      const result = run(gitleaks, ["version"], {
+        env: { ...testEnv, GITLEAKS_CACHE_DIR: cache, GITLEAKS_BASE_URL: `file://${scratch()}` },
+      });
+      expect(result.stdout).not.toContain("foreign-binary-ran");
+      expect(result.stderr).toContain(`downloading gitleaks 8.30.1 (${thisPlatform})`);
+      expect(result.status).not.toBe(0);
     });
   });
 
