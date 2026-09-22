@@ -187,9 +187,18 @@ const config = [
       "no-restricted-syntax": [
         "error",
         {
-          selector: "NewExpression[callee.name='Date']",
+          // The wall clock is read by the argument-less form only. `new Date(<text or ms>)`
+          // builds a fixed value — how `fixedClock` makes business time (T-03) — and is
+          // allowed; the domain-parses-date-allowed fixture keeps it that way.
+          selector: "NewExpression[callee.name='Date'][arguments.length=0]",
           message:
             "ADR-0005: inject a Clock instead of calling new Date() in domain/server business code.",
+        },
+        {
+          // `Date()` without `new` returns the current time as text — the same clock read.
+          selector: "CallExpression[callee.name='Date']",
+          message:
+            "ADR-0005: inject a Clock instead of calling Date(), which reads the current time.",
         },
         {
           selector: "CallExpression[callee.object.name='Date'][callee.property.name='now']",

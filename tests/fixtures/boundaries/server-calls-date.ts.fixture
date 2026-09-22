@@ -1,0 +1,3 @@
+// Linted as src/server/calls-date.ts.
+// ADR-0005: `Date()` reads the wall clock in src/server as much as in src/domain.
+export const stamp = (): string => Date();

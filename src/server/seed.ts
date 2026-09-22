@@ -1,4 +1,6 @@
 import seedFile from "@/prisma/data.json" with { type: "json" };
+import { SEED_YEAR_SHIFT, shiftYears } from "@/src/domain/calendar";
+import { toCents } from "@/src/domain/money";
 import type { Category, Theme } from "./generated/prisma/enums";
 
 /**
@@ -38,39 +40,6 @@ export type SeedRows = {
   budgets: { category: Category; maximum: number; theme: Theme }[];
   pots: { name: string; target: number; total: number; theme: Theme }[];
 };
-
-/** NFR-D3: "all dates shifted +2 years (2024 → 2026) at seed time". */
-export const SEED_YEAR_SHIFT = 2;
-
-const UTC_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})(T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)$/;
-
-const isLeapYear = (year: number) => (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-
-/**
- * Adds whole calendar years to a UTC timestamp written as text. 29 February lands on
- * 28 February when the target year has no leap day (SPEC-reset-and-test-support §2.1).
- */
-export function shiftYears(timestamp: string, years: number): string {
-  const [, year, month, day, time] = UTC_TIMESTAMP.exec(timestamp) ?? [];
-  if (!year || !month || !day || !time) {
-    throw new Error(`Seed date "${timestamp}" is not a UTC ISO-8601 timestamp`);
-  }
-  const shifted = Number(year) + years;
-  const shiftedDay = month === "02" && day === "29" && !isLeapYear(shifted) ? "28" : day;
-  return `${String(shifted).padStart(4, "0")}-${month}-${shiftedDay}${time}`;
-}
-
-/**
- * Dollars as data.json writes them to integer cents (ADR-0005, NFR-D2). A value finer than
- * a cent is refused rather than rounded away.
- */
-export function toCents(dollars: number): number {
-  const cents = Math.round(dollars * 100);
-  if (!Number.isFinite(dollars) || Math.abs(cents - dollars * 100) > 1e-6) {
-    throw new Error(`Seed amount ${dollars} is not a whole number of cents`);
-  }
-  return cents;
-}
 
 /**
  * docs/02-architecture/design-tokens.md, the 15 theme colours: "data.json stores them as

@@ -1,0 +1,4 @@
+// Linted as src/domain/calls-date.ts.
+// ADR-0005, the third form: `Date()` without `new` returns the current time as text. The
+// rule missed it until T-03 (plan finding F1).
+export const stamp = (): string => Date();

@@ -1,0 +1,6 @@
+// Linted as src/domain/parses-date-allowed.ts.
+// Control: ADR-0005 forbids reading the wall clock, not building a fixed date. `fixedClock`
+// turns "2026-08-19" into a `Date` this way (T-03); a rule that caught these would leave the
+// Clock itself impossible to write.
+export const businessDay = (): Date => new Date(Date.UTC(2026, 7, 19));
+export const parsed = (): Date => new Date("2026-08-19T20:23:11Z");

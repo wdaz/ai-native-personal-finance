@@ -6,6 +6,13 @@
   the 99,999,999,999 that NFR-S3 allows (R-17). The seed routine is `resetToSeed` in
   `src/server/reset.ts`, which reads `prisma/data.json` (a checksum-tested copy of the
   challenge's `data.json`); `prisma/seed.ts` is its command-line entry (`npm run db:reset`).
+- Clarification 2026-09-22 (owner, T-03 plan gate): parsing a date is allowed; reading the
+  clock is not. The lint rule forbids the calls that read the wall clock — `new Date()`
+  without arguments, `Date()` and `Date.now()` — and allows `new Date(<value>)`, which builds
+  a fixed date: `fixedClock("2026-08-19")` in `src/domain/clock.ts` is written that way, and
+  its `today()` answers 00:00 UTC of that day, a new `Date` on every call. T-02's seed keeps
+  its dates as text; that was a side effect of the earlier, wider rule, not a requirement —
+  `shiftYears` is unchanged, so the behaviour stays, but the rule no longer enforces it.
 - Driven by: NFR-D1–D6, NFR-S3/S4, US-36, US-37, PRD OQ-4
 
 ## Context
