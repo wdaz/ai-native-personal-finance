@@ -474,14 +474,32 @@ Append-only. Newest entry at the bottom. Template:
 - **Produced:** `.gitleaks.toml` (`postgres_connection_string`); `scripts/gitleaks.sh`
   (gitleaks 8.30.1, SHA-256 pinned); `scripts/secret-scan.sh`; `scripts/git-hooks/pre-commit`
   installed by `npm prepare`; CI jobs `secret scan` and `npm audit`;
-  `tests/fixtures/secret-scan/`; `tests/unit/secret-guard.test.ts` (19 tests, each
-  guarantee mutation-checked); CI push trigger `main` only; backlog v1.4 (T-13, T-16).
+  `tests/fixtures/secret-scan/`; `tests/unit/secret-guard.test.ts` (25 tests; each
+  mutation listed in the PR description turned a test red); CI push trigger `main` only;
+  backlog v1.4 (T-13, T-16).
 - **Execution:** subagent-driven, one workflow run per plan task; models by effort, as the
   owner asked — Sonnet implementers, Opus for the Task 1 review (the security core: rule,
   allowlists, checksum wrapper), Sonnet for the other reviews, Haiku for review packaging,
-  Opus for the final whole-branch review. One fix round (Task 3). CI on PR #1: `lint ·
+  Opus for the final whole-branch review, whose blocking findings were each verified by
+  three Sonnet skeptics. Two fix rounds (Task 1, verification only; Task 3) and one final
+  fix wave (Opus) after the final review. CI on PR #1 before the final wave: `lint ·
   typecheck · unit` 144/144, `secret scan` 59 commits and no leaks (the first run of the
   wrapper's `linux_x64` branch), `npm audit` 0 vulnerabilities.
+- **Final review:** "ready to merge with fixes" — one Critical, four Important, four
+  Minor. Fixed in the final wave: git colour and `--diff-merges=separate` pinned for both
+  scans; the password group takes `@`, so redaction holds for a percent-decoded password;
+  the history scan refuses a directory outside a git work tree; a test that makes the
+  hook's fail-closed path fail; the checksum, hook-reach and `npm audit` wording.
+  Documented only (owner decision pending): commit and tag messages are not scanned.
+- **Deviations of the test file from plan Appendix A:** (1) Task 3: one assertion in
+  "blocks a commit that stages a secret" (the message names `git commit --no-verify`).
+  (2) Final wave: the merge-conflict test renamed "(--diff-merges=separate)" and its repo
+  setup moved into a `conflictLeakRepo` helper; six tests added — "still finds it under a
+  developer's log.diffMerges=dense-combined and color.ui=always", "never prints any part
+  of a password, one with a percent-encoded @ included", "refuses a directory that is not
+  a git work tree instead of passing on nothing", "blocks a staged secret when the
+  developer sets color.ui=always" and "… color.diff=always" (one `it.each`), and "blocks
+  the commit when gitleaks cannot run (fails closed, D10)". The plan is not edited.
 - **Owner decisions at the plan gate:** T-16 names the `secret scan` check and
   `npm run secrets:scan` (backlog v1.4); the stale `master` push trigger replaced with
   `main` in this PR; `npm audit` reports without blocking; the session prompt saved;
@@ -507,6 +525,18 @@ Append-only. Newest entry at the bottom. Template:
      sandbox refuses; the controller verified the same bytes with a git-mode scan of the task
      range (1 commit, no leaks), and from Task 3 on the installed hook ran the literal command
      on every commit.
+  6. The final review found four defects in code the plan mandated and E17 had verified: a
+     developer's `color.ui`/`color.diff=always` or `log.diffMerges=combined` silently
+     disabled the hook and the local history scan; redaction printed most of a password
+     containing `@`; the history scan passed outside a work tree; and the D10 fail-closed
+     guarantee had no test that could fail. Lesson: E17 measured under a neutral git config
+     (`GIT_CONFIG_GLOBAL=/dev/null`) and one fixture line; the evidence proved what it
+     measured, not the environment the hook runs in.
+  7. During the final review's verification, one subagent broke the read-only rule: it set
+     `user.name`/`user.email` ("Scratch") in the repository's shared `.git/config` and
+     committed two commits ("add leak", "remove leak") on the task branch. They were never
+     pushed; the controller moved the branch back and removed the identity keys, and the
+     two commits are kept on a local backup branch for the owner to inspect.
 - **Owner changes and reasoning:** _(owner)_
 - **Disagreements:** (1) during planning, a reviewer pass proposed path-allowlisting the
   fixture folder; the agent kept the placeholder design because a path allowlist is a
@@ -524,4 +554,9 @@ Append-only. Newest entry at the bottom. Template:
   "full-history scan" meant 43 of 49 commits until the merge commits were measured; and a
   hook without the executable bit fails open with only a hint, so the mode belongs in a
   test.
-- **Next:** owner review and merge; T-02 (the first real `DATABASE_URL`).
+- **Next:** owner review and merge; T-02 (the first real `DATABASE_URL`). Owner decisions
+  the final review raised: whether to scan commit and tag messages (a second pass through
+  `gitleaks stdin`, prototyped and measured clean on this repository); for T-16,
+  `--ignore-gitleaks-allow` on the history scan and owner review of the guard files
+  (CODEOWNERS or the `main` ruleset); for T-13, workflow-level `permissions: contents:
+  read`.

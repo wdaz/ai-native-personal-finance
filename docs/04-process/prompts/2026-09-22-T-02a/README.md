@@ -15,8 +15,9 @@ after the implementer addressed them.
 
 Models were chosen by the effort level of the work, as the owner asked at the plan gate:
 Sonnet implementers throughout; Opus for the Task 1 review (the security core — rule,
-allowlists, checksum wrapper); Sonnet for the Task 2–4 reviews; Haiku for review
-packaging; Opus for the final whole-branch review.
+allowlists, checksum wrapper); Sonnet for the Task 2–5 reviews; Haiku for review
+packaging; Opus for the final whole-branch review, with three Sonnet skeptics verifying
+each blocking finding; Opus for the final fix wave.
 
 | File | What it is |
 |------|------------|
@@ -28,16 +29,30 @@ packaging; Opus for the final whole-branch review.
 | `task-2-brief.md`, `task-2-report.md`, `task-2-review.md` | `scripts/secret-scan.sh` and the full-history invocation. |
 | `task-3-brief.md`, `task-3-report.md`, `task-3-review.md`, `task-3-rereview-1.md` | The pre-commit hook and its `npm prepare` installer; the fix round corrected the blocked-commit message so it names `git commit --no-verify`, as plan decision D10 requires. |
 | `task-4-brief.md`, `task-4-report.md`, `task-4-review.md` | The CI `secret scan` and `npm audit` jobs; the push trigger narrowed to `main`. |
-| `task-5-brief.md`, `task-5-controller-facts.md`, `task-5-report.md` | This process-record task: the prompt file, backlog v1.4, the process-log entry, this folder, and the PR description. |
+| `task-5-brief.md`, `task-5-controller-facts.md`, `task-5-report.md`, `task-5-review.md` | This process-record task: the prompt file, backlog v1.4, the process-log entry, this folder, and the PR description. |
+| `final-review.md` | The final whole-branch review (Opus): one Critical, four Important, four Minor, and the triage of every deferred minor. |
+| `task-final-brief.md`, `task-final-report.md` | The final fix wave: the controller's rulings on each finding, and what the fixer changed, with the mutant runs and the regex measurements. |
 
-Two absences are deliberate:
+Four absences are deliberate:
 
 - **The `review-*.diff` files are not copied.** They are generated views of ranges that
   git already holds; `git diff <base>..<head>` reproduces any of them.
-- **The final whole-branch review is not here.** It runs after this commit, once Task 5
-  is in, and is added by the controller's final dispatch.
+- **`final-scratch/` is not copied.** It was the final review's measurement area and held
+  materialised fake credentials and `node_modules` copies.
+- **`final-review-result.json` is not copied.** It is the raw machine output of the review
+  workflow; `final-review.md` is its readable form.
+- **The final re-review is not here.** It runs after the fix wave's commits and is added
+  by the controller's last copy.
 
-No redaction was needed: `scripts/secret-scan.sh staged` ran clean over every file in
-this folder before it was committed (all connection strings quoted in the briefs and
-reports use `localhost`/`127.0.0.1` or a `{{…}}`/`<…>`/`${…}` placeholder, which the
-`postgres_connection_string` rule exempts by design — see D4 in `context.md`).
+Redaction in the copies: three connection strings quoted in the final review and its
+brief are detectable, so the hook would have blocked this folder — gitleaks' `REDACTED`
+reads as a password on a remote host, and two of the three match only since the fix wave
+widened the rule's password class to take `@`. In the copies only, their password parts are
+replaced with `{{PASSWORD}}`: `final-review.md`'s two `Finding:` lines under I1 (the
+original second line showed `REDACTED@`, then the unredacted tail of the password, then
+the IP host — the defect I1 describes), and the quoted example in `task-final-brief.md`'s
+process-record section (the same line). The originals stay in the git-ignored session
+directory. Every other connection string quoted here uses `localhost`/`127.0.0.1` or a
+`{{…}}`/`<…>`/`${…}` placeholder, which the `postgres_connection_string` rule exempts by
+design (D4 in `context.md`); `scripts/secret-scan.sh staged` ran clean over this folder
+before it was committed.
