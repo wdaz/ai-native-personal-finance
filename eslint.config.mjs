@@ -27,6 +27,12 @@ const config = [
       "test-results/**",
       "docs/**",
       "next-env.d.ts",
+      // The superpowers skills' workspace: agent scratch, including copies of tests/ and
+      // node_modules. Flat config reads no .gitignore and lints dot-directories, so the
+      // `.superpowers/sdd/.gitignore` that keeps it out of git does nothing here; without
+      // this line `npm run lint` fails on files nobody commits (T-02a). Pinned by
+      // tests/unit/boundaries.test.ts.
+      ".superpowers/**",
     ],
   },
   {

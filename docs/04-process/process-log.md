@@ -570,3 +570,16 @@ Append-only. Newest entry at the bottom. Template:
 - **T-16:** `--ignore-gitleaks-allow` on the full-history scan; guard files under CODEOWNERS/ruleset review. **T-13:** `permissions: contents: read`.
 - **ESLint does not ignore `.superpowers/`** (breaks `npm run lint` in every subagent-driven session): a T-01 configuration defect, fixed as a separate small PR by Claude Code (`ignores: [".superpowers/**"]` + `.prettierignore` + a boundaries-test control that an ignored path is not linted).
 - Delivered as PR (branch `docs/t02a-followups`).
+
+---
+
+## 2026-09-22 — ESLint ignores the agent workspace `.superpowers/` (T-02a hand-off)
+
+- **Trigger:** the owner disposition above; prompt (verbatim): "Add .superpowers/** to ignores in eslint.config.mjs and to .prettierignore; add a boundaries-test control proving an ignored path is not linted; separate small PR."
+- **Measured before the fix** (T-02a worktree, its review scratch still present): `eslint .` linted 29 files, 18 of them under `.superpowers/` — clean only by chance; one git-ignored probe file there with a deliberate violation turned `npm run lint` to exit 1. The other gates were already clean: `tsc --listFilesOnly` 0 files (TypeScript wildcards skip dot-directories), `vitest list` 0 (`include` is `tests/unit/**`), Prettier `ignored: true` (`.prettierignore` already lists `.superpowers`).
+- **Produced:** `eslint.config.mjs` — `".superpowers/**"` in the global `ignores`, with the reason; `tests/unit/boundaries.test.ts` — a control: the typescript-rules fixture reports two problems as `src/shared/…`, and as `.superpowers/sdd/…` ESLint reports the path ignored (`isPathIgnored`) and returns nothing. Red before the ignore line (`expected false to be true`), green after; Vitest 151/151. After the fix: 11 files linted, none under `.superpowers/`; the probe no longer fails lint.
+- **Deviation from the prompt:** `.prettierignore` is unchanged — its `.superpowers` line (gitignore syntax) already matches the directory, so a `.superpowers/**` line would be a no-op.
+- **What the agent got wrong:** during T-02a the fixer deleted the scratch that broke lint instead of fixing the config; the root cause waited for the owner's disposition.
+- **Found, not fixed (owner decision):** the same defect for `.claude/worktrees/` — git-ignored (`.gitignore`), not ESLint-ignored. In the main checkout, with the T-02a worktree present, `npm run lint` lints 74 files of that worktree (its `.next/` build output included, since `.next/**` matches the root only) and fails with 84 errors and 2,543 warnings; `.remember/tmp/last-ndc.ts` adds one warning. An `".claude/worktrees/**"` (and `".remember/**"`) entry with its own control is a separate change (DoD: drive-by fixes go to a new task).
+- **Lesson:** ESLint's flat config reads no `.gitignore` and lints dot-directories, so a git-ignored directory is not an ESLint-ignored one. Every tool workspace that lives inside the checkout needs its own `ignores` entry and a control.
+- Delivered as PR (branch `fix/eslint-ignore-superpowers`).

@@ -201,3 +201,23 @@ describe("eslint enforces ADR-0002 and ADR-0005 (tests/fixtures/boundaries)", ()
     ]);
   });
 });
+
+/**
+ * The superpowers skills keep each plan's workspace under `.superpowers/`: briefs, reports
+ * and review scratch that can hold whole copies of `tests/` and `node_modules`. Only
+ * `.superpowers/sdd/.gitignore` keeps it out of git, and ESLint's flat config neither reads
+ * .gitignore nor skips dot-directories, so during T-02a `npm run lint` failed on scratch
+ * files nobody would commit. The fixture reports two problems wherever it is linted; under
+ * `.superpowers/` ESLint must not open it at all.
+ */
+describe("eslint never lints the agent workspace (.superpowers/)", () => {
+  const fixture = "typescript-rules-enabled.ts.fixture";
+  const lintAs = ".superpowers/sdd/2026-01-01-example/scratch/typescript-rules-enabled.ts";
+
+  it("ignores a file under .superpowers/ that reports problems anywhere else", async () => {
+    // Without this, "nothing reported" below could mean the fixture stopped violating.
+    expect(await lintFixture(fixture, "src/shared/typescript-rules-enabled.ts")).toHaveLength(2);
+    expect(await eslint.isPathIgnored(join(repoRoot, lintAs))).toBe(true);
+    expect(await lintFixture(fixture, lintAs)).toEqual([]);
+  });
+});
