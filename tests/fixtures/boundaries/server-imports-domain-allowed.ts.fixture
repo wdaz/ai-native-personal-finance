@@ -1,4 +1,4 @@
 // Linted as src/server/imports-domain-allowed.ts.
 // Control: repositories call the pure functions, so server → domain is legal. This is the
 // direction that makes the domain layer worth having, and it must stay unreported.
-import "@/src/domain/README.md";
+import "@/src/domain/clock";

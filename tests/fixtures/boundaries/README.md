@@ -30,15 +30,17 @@ everything would pass no control.
 | `webmcp` → anything but `shared`           | `server`                                                                                                                              |
 | `scripts` → anything but `shared`/`domain` | `server`                                                                                                                              |
 | Prisma outside `src/server`                | from `app` (`@prisma/client`, the `/edge` sub-path and the generated client in `src/server/generated/prisma`), `src/ui`, `src/shared` |
-| ADR-0005's clock rule                      | `new Date()` and `Date.now()`, in `src/domain` **and** `src/server`                                                                   |
+| ADR-0005's clock rule                      | `new Date()`, `Date()` and `Date.now()`, in `src/domain` **and** `src/server`                                                         |
 
-| Must report nothing  | Fixture                          |
-| -------------------- | -------------------------------- |
-| `domain` → `shared`  | `domain-imports-shared-allowed`  |
-| `app` → `server`     | `app-imports-server-allowed`     |
-| `server` → `domain`  | `server-imports-domain-allowed`  |
-| `scripts` → `shared` | `scripts-imports-shared-allowed` |
-| `webmcp` → `shared`  | `webmcp-imports-shared-allowed`  |
+| Must report nothing                                           | Fixture                          |
+| ------------------------------------------------------------- | -------------------------------- |
+| `domain` → `shared`                                           | `domain-imports-shared-allowed`  |
+| `app` → `server`                                              | `app-imports-server-allowed`     |
+| `server` → `domain`                                           | `server-imports-domain-allowed`  |
+| `scripts` → `shared`                                          | `scripts-imports-shared-allowed` |
+| `scripts` → `domain`                                          | `scripts-imports-domain-allowed` |
+| `webmcp` → `shared`                                           | `webmcp-imports-shared-allowed`  |
+| `new Date(<value>)` in `domain` — a fixed date, not the clock | `domain-parses-date-allowed`     |
 
 The violation cases also assert `severity === 2`. ADR-0002 says "CI must fail on
 violations"; a rule demoted to a warning would still be reported, and `eslint` would still
@@ -48,10 +50,10 @@ exit 0 were `--max-warnings 0` ever dropped from the `lint` script.
 
 `boundaries/dependencies` classifies an import by the path it _resolves to_; an import
 that does not resolve is treated as external and is allowed by policy. The target
-therefore has to exist. `src/server` holds modules since T-02, and its fixtures import
-`src/server/db`; `src/domain` holds none until T-03, so its fixtures import the only file
-that folder contains. The layer is what is being asserted, not the module's contents, and
-a side-effect import states that plainly. T-03 points them at real modules.
+therefore has to exist. `src/server` and `src/domain` hold modules since T-02 and T-03, and
+their fixtures import `src/server/db` and `src/domain/clock`; `src/webmcp` and `app/(app)`
+hold none yet, so their fixtures import the only file each contains. The layer is what is
+being asserted, not the module's contents, and a side-effect import states that plainly.
 
 If one of those targets is ever deleted the import stops resolving, the rule stops
 firing, and the test fails loudly rather than the guarantee lapsing in silence.

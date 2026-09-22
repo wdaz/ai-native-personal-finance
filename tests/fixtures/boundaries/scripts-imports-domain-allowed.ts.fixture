@@ -1,0 +1,5 @@
+// Linted as scripts/imports-domain-allowed.ts.
+// Control: ADR-0002's 2026-09-20 clarification lets scripts import domain as well as
+// shared. scripts/seed-figures.ts computes the seed's figures with the domain's functions.
+import { BUSINESS_TODAY } from "@/src/domain/clock";
+export const today = BUSINESS_TODAY;

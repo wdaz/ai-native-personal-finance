@@ -139,6 +139,19 @@ const violations = [
     ruleId: "no-restricted-syntax",
     message: "ADR-0005: inject a Clock instead of calling Date.now().",
   },
+  {
+    // `Date()` without `new` returns the current time as text; the rule missed it until T-03.
+    fixture: "domain-calls-date.ts.fixture",
+    lintAs: "src/domain/calls-date.ts",
+    ruleId: "no-restricted-syntax",
+    message: "ADR-0005: inject a Clock instead of calling Date()",
+  },
+  {
+    fixture: "server-calls-date.ts.fixture",
+    lintAs: "src/server/calls-date.ts",
+    ruleId: "no-restricted-syntax",
+    message: "ADR-0005: inject a Clock instead of calling Date()",
+  },
 ];
 
 /**
@@ -163,6 +176,16 @@ const allowed = [
     lintAs: "scripts/imports-shared-allowed.ts",
   },
   {
+    fixture: "scripts-imports-domain-allowed.ts.fixture",
+    lintAs: "scripts/imports-domain-allowed.ts",
+  },
+  {
+    // ADR-0005 forbids reading the wall clock, not building a fixed date: `fixedClock`
+    // needs `new Date(<ms>)`, and a rule that caught it would make the Clock unwritable.
+    fixture: "domain-parses-date-allowed.ts.fixture",
+    lintAs: "src/domain/parses-date-allowed.ts",
+  },
+  {
     fixture: "webmcp-imports-shared-allowed.ts.fixture",
     lintAs: "src/webmcp/imports-shared-allowed.ts",
   },
@@ -173,7 +196,7 @@ const allowed = [
 // violations, so assert them separately to keep that failure legible.
 const importTargets = [
   "src/server/db.ts",
-  "src/domain/README.md",
+  "src/domain/clock.ts",
   "src/webmcp/README.md",
   "app/(app)/README.md",
   "src/shared/env.ts",
