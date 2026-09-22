@@ -192,7 +192,8 @@ describe("T-02a secret guard", () => {
       expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
     });
 
-    it("finds a secret typed only while resolving a merge conflict (-m)", () => {
+    /** A merge whose conflict was resolved by typing the leak: it exists only in the merge. */
+    const conflictLeakRepo = () => {
       const repo = newRepo();
       commitFile(repo, "config.txt", "a\nb\nc\n", "base");
       git(repo, "switch", "-q", "-c", "feature");
@@ -201,6 +202,17 @@ describe("T-02a secret guard", () => {
       commitFile(repo, "config.txt", "a\nmain\nc\n", "main");
       expect(run("git", ["merge", "-q", "feature"], { cwd: repo }).status).not.toBe(0);
       commitFile(repo, "config.txt", `a\n${leakLine}\nc\n`, "merge feature");
+      return repo;
+    };
+
+    it("finds a secret typed only while resolving a merge conflict (--diff-merges=separate)", () => {
+      expect(scanHistory(conflictLeakRepo()).status).toBe(1);
+    });
+
+    it("still finds it under a developer's log.diffMerges=dense-combined and color.ui=always", () => {
+      const repo = conflictLeakRepo();
+      git(repo, "config", "log.diffMerges", "dense-combined");
+      git(repo, "config", "color.ui", "always");
       expect(scanHistory(repo).status).toBe(1);
     });
 
@@ -221,6 +233,26 @@ describe("T-02a secret guard", () => {
       const repo = newRepo();
       commitFile(repo, ".env.example", readFileSync(join(repoRoot, ".env.example"), "utf8"), "env");
       expect(scanHistory(repo).status).toBe(0);
+    });
+
+    it("never prints any part of a password, one with a percent-encoded @ included", () => {
+      const repo = newRepo();
+      commitFile(repo, ".env", materialise(violations), "all violations");
+      const result = scanHistory(repo);
+      expect(result.status).toBe(1);
+      for (const part of ["N0tReal", "T3st", FAKE_PASSWORD]) {
+        expect(result.stdout + result.stderr).not.toContain(part);
+      }
+    });
+
+    it("refuses a directory that is not a git work tree instead of passing on nothing", () => {
+      const dir = scratch();
+      const result = run(secretScan, ["history"], {
+        cwd: dir,
+        env: { ...testEnv, GIT_CEILING_DIRECTORIES: dirname(dir) },
+      });
+      expect(result.status).toBe(2);
+      expect(result.stderr).toContain("not inside a git work tree");
     });
 
     it("refuses a shallow clone instead of passing on one commit", () => {
@@ -275,6 +307,35 @@ describe("T-02a secret guard", () => {
       expect(result.stderr).toContain("git commit --no-verify");
       expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
       expect(git(repo, "rev-list", "--count", "HEAD")).toBe("1");
+    });
+
+    it.each(["color.ui", "color.diff"])(
+      "blocks a staged secret when the developer sets %s=always",
+      (key) => {
+        const repo = hookedRepo();
+        git(repo, "config", key, "always");
+        commitFile(repo, "README.md", "clean\n", "clean");
+        writeInto(repo, ".env", `${leakLine}\n`);
+        git(repo, "add", ".env");
+        const result = run("git", ["commit", "-q", "-m", "leak"], { cwd: repo });
+        expect(result.status).not.toBe(0);
+        expect(result.stderr).toContain("commit blocked");
+        expect(git(repo, "rev-list", "--count", "HEAD")).toBe("1");
+      },
+    );
+
+    it("blocks the commit when gitleaks cannot run (fails closed, D10)", () => {
+      const repo = hookedRepo();
+      const emptyDir = scratch();
+      writeInto(repo, "a.txt", "clean\n");
+      git(repo, "add", "a.txt");
+      const result = run("git", ["commit", "-q", "-m", "clean"], {
+        cwd: repo,
+        env: { ...testEnv, GITLEAKS_CACHE_DIR: scratch(), GITLEAKS_BASE_URL: `file://${emptyDir}` },
+      });
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("commit blocked");
+      expect(run("git", ["rev-parse", "--verify", "-q", "HEAD"], { cwd: repo }).status).not.toBe(0);
     });
 
     it("is committed executable, because git skips a non-executable hook with only a hint", () => {

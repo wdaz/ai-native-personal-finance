@@ -57,11 +57,13 @@ a one-off after the install on each machine; without it the browser tests stop
 at *Executable doesn't exist*.
 
 `npm ci` (and `npm install`) also points git at `scripts/git-hooks/`, whose pre-commit
-hook runs gitleaks on the staged changes and blocks a commit that contains a secret
-(T-02a). The first scan downloads the pinned gitleaks release into `node_modules/.cache/`
-and checks its SHA-256, so it needs `curl` and a network connection once.
-`git commit --no-verify` skips the hook; the CI `secret scan` job reads every commit
-either way.
+hook runs gitleaks on the staged changes on `git commit` and blocks a commit that
+contains a secret (T-02a). The first scan after each `npm ci` (which wipes the cache)
+downloads the pinned gitleaks release into `node_modules/.cache/` and checks its SHA-256,
+so it needs `curl` and a network connection once per `npm ci`. Commits that
+`git rebase` or `git cherry-pick` write themselves skip the hook, and
+`git commit --no-verify` skips it on purpose; the CI `secret scan` job reads every
+commit either way.
 
 `npm run test:all` builds the app and starts it before the browser tests
 (ADR-0003: E2E never runs against `next dev`). The individual commands are:
@@ -71,7 +73,7 @@ either way.
 | `npm run lint`                | ESLint, including the ADR-0002 import boundaries                  |
 | `npm run format:check`        | Prettier                                                          |
 | `npm run typecheck`           | `tsc --noEmit`, strict                                            |
-| `npm run secrets:scan`        | Gitleaks over every commit, merges included — first in `test:all` |
+| `npm run secrets:scan`        | Gitleaks on all commit diffs, not messages — first in `test:all`  |
 | `npm test`                    | Vitest — `tests/unit`                                             |
 | `npm run test:api`            | Playwright request-context tests — `tests/api` (empty until T-05) |
 | `npm run test:e2e`            | Playwright on Chromium, Firefox and WebKit — `tests/e2e`          |

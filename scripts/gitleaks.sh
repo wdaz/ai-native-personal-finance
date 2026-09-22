@@ -1,7 +1,8 @@
 #!/bin/sh
 # Runs the pinned gitleaks release (T-02a, NFR-S5). The binary is downloaded on first use
 # into node_modules/.cache/gitleaks/<version>/ and its SHA-256 is checked against the value
-# pinned below before it is ever executed. One version everywhere: the pre-commit hook, the
+# pinned below once, when it is downloaded; a cached binary is trusted and run without a
+# re-check (CI has no cache and always downloads). One version everywhere: the hook, the
 # CI `secret scan` job and tests/unit/secret-guard.test.ts all run through this file.
 #
 # To upgrade: change VERSION and the four SHA256 values together, copying them from

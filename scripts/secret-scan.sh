@@ -13,8 +13,23 @@ set -eu
 here="$(cd "$(dirname "$0")" && pwd)"
 config="$(dirname "$here")/.gitleaks.toml"
 
+# gitleaks parses the text output of its own `git log -p` / `git diff`, and that output
+# follows the invoking user's git config: with `color.ui=always` or `color.diff=always` it
+# is ANSI text, and both scans then pass having read nothing (measured in the T-02a final
+# review: no output at all on a staged leak, "0 commits scanned" on a history). Config
+# given on the command scope outranks every config file, so both keys are pinned here.
+export GIT_CONFIG_COUNT=2
+export GIT_CONFIG_KEY_0=color.ui GIT_CONFIG_VALUE_0=never
+export GIT_CONFIG_KEY_1=color.diff GIT_CONFIG_VALUE_1=never
+
 case "${1:-}" in
   history)
+    # Outside a git work tree gitleaks prints "no leaks found" and exits 0 having scanned
+    # nothing (for example an actions/checkout tarball fallback, which has no .git). Stop.
+    if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      echo "secret-scan: not inside a git work tree; nothing to scan" >&2
+      exit 2
+    fi
     # A shallow clone has only the tip, so the scan below would pass on one commit and
     # say nothing. Stop instead: the CI checkout needs `fetch-depth: 0`.
     if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
@@ -23,10 +38,13 @@ case "${1:-}" in
     fi
     # Passing --log-opts replaces gitleaks' own `git log` options (`--full-history --all
     # --diff-filter=tuxdb`), so `--all` is restated; the other two only narrow the scan.
-    # `-m` adds the merge commits, which `git log -p` otherwise prints without a diff: a
-    # secret typed while resolving a conflict exists only there. Not `--first-parent`: it
-    # skips a secret added and removed inside a merged branch, which was still pushed.
-    exec "$here/gitleaks.sh" git --config "$config" --log-opts="--all -m" \
+    # `--diff-merges=separate` adds the merge commits, which `git log -p` otherwise prints
+    # without a diff: a secret typed while resolving a conflict exists only there. Not `-m`:
+    # it means `--diff-merges=on`, which follows `log.diffMerges`, and `combined` or
+    # `dense-combined` there hide a conflict resolution from the parser. Not
+    # `--first-parent`: it skips a secret added and removed inside a merged branch, which
+    # was still pushed.
+    exec "$here/gitleaks.sh" git --config "$config" --log-opts="--all --diff-merges=separate" \
       --redact --no-banner --verbose .
     ;;
   staged)

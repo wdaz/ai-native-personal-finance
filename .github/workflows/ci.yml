@@ -75,5 +75,5 @@ jobs:
       - name: npm audit (high and critical, reported, not blocking)
         run: |
           if ! npm audit --audit-level=high; then
-            echo "::warning title=npm audit::high or critical advisories found; see this step's log"
+            echo "::warning title=npm audit::npm audit failed or found high or critical advisories; see this step's log"
           fi

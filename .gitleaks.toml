@@ -17,8 +17,12 @@ id = "postgres_connection_string"
 description = "PostgreSQL connection URI with an embedded password"
 # scheme, user, password, host: the password is the secret (group 1); the match ends at the
 # host, which the first allowlist reads. No entropy threshold: a weak password on a remote
-# host is still a leak.
-regex = '''(?i)\bpostgres(?:ql)?://[^:@/\s'"`]+:([^@/\s'"`]+)@([^/:?\s'"`]+)'''
+# host is still a leak. The password may contain `@` and the host may not: gitleaks also
+# re-scans percent-decoded text, and a decoded `%40` would otherwise end the secret at its
+# first `@` and print the rest of the password, unredacted, as the host (measured in the
+# T-02a final review). Residual: a query string holding `@localhost` after a remote host
+# now reads as local and is exempt below; contrived, and accepted.
+regex = '''(?i)\bpostgres(?:ql)?://[^:@/\s'"`]+:([^/\s'"`]+)@([^@/:?\s'"`]+)'''
 secretGroup = 1
 keywords = ["postgres://", "postgresql://"]
 
@@ -38,6 +42,8 @@ keywords = ["postgres://", "postgresql://"]
 
 # Backlog T-02a: build output and third-party challenge inputs. `.next/` is git-ignored, so
 # this entry matters for `gitleaks dir` scans of a working copy and for a forced `git add`.
+# `(?:^|/)` also exempts nested copies of the two folders; it is needed because
+# `gitleaks dir` reports absolute paths, which `^` alone would never match.
 [[allowlists]]
 description = "Build output and third-party challenge inputs (backlog T-02a)"
 paths = ['''(?:^|/)\.next/''', '''(?:^|/)docs/00-discovery/inputs/''']

@@ -59,3 +59,7 @@ Key–value DSNs (`host=… password=…`), JDBC `?password=` parameters and bar
 lines are outside the URI form this project uses (Prisma reads `DATABASE_URL`). No scanner
 covers generic high-entropy strings either; that is why T-16 rotates every secret that was
 ever real before the repository goes public, rather than trusting a green scan.
+
+Commit messages and annotated tag messages are never scanned: `gitleaks git` reads diffs
+only (measured on 2026-09-22 in the T-02a final review). A secret typed only into a message
+is outside both the hook and CI.
