@@ -605,7 +605,7 @@ Append-only. Newest entry at the bottom. Template:
   `citext` extension, the generated client in `src/server/generated/prisma` (git-ignored,
   `postinstall`); `compose.yaml` (Postgres 18.6); `src/server/{env,db,seed,variants,reset,http,test-support}.ts`;
   `prisma/seed.ts` and `npm run db:reset`; `app/api/test/[...path]/route.ts`; 69 unit tests
-  and 16 API tests; the six server fixtures repointed and one added; a CI job `api` ("API
+  and 17 API tests; the six server fixtures repointed and one added; a CI job `api` ("API
   tests (Postgres)", Postgres 18.6-alpine service) added to `.github/workflows/ci.yml` before
   `secret-scan`; README.md and `.env.example` run instructions (`docker compose up -d
   --wait`, `npm run db:reset`, the command table); document amendments —
@@ -616,11 +616,77 @@ Append-only. Newest entry at the bottom. Template:
   (clarification: `BigInt` money columns, `resetToSeed`/`prisma/seed.ts`),
   `docs/03-specs/webmcp-tools.md` v1.0.1 (§2.8 cross-reference corrected), `docs/03-specs/backlog.md`
   v1.6 (`GET /api/test/log` T-02 → T-12, CI API job T-05 → T-02, T-13 overrides-removal note).
-- **What the agent got right:** _(controller, from the execution ledger)_
-- **What the agent got wrong or missed:** _(controller, from the execution ledger)_
+  Final fix wave: a test that a reset failing part-way leaves the previous data (§2.1, one
+  transaction); `workers: 1` on the Playwright `api` project; `pg_isready -h 127.0.0.1` in
+  `compose.yaml` and CI; the `ResetLog.at` comment; `.env.example` without `/api/test/log`;
+  PUT/PATCH/DELETE/OPTIONS answering 404 outside test like GET/POST. Before T-02, as separate
+  PRs the owner asked for: #4 (`agentRules: false`) and #5 (gitleaks cache keyed by platform).
+- **Execution:** subagent-driven, one implementer per plan task: Sonnet for Tasks 1, 3, 4, 5
+  and the final fix wave, Haiku for Task 2 (complete code in the brief). Every review ran on
+  `feature-dev:code-reviewer`, which has no shell and no write tools (governance v1.1): Sonnet
+  for Tasks 1, 2, 4, 5 and the fix-wave re-review, Haiku for the Task 2 re-review, Opus for
+  Task 3 (transactions, the advisory lock, the migration) and the final whole-branch review.
+  One fix round (Task 2, evidence only) and one final fix wave (six commits). The controller
+  merged `main` into the branch rather than rebasing a pushed branch, ran Task 1 Step 7's
+  `npm ci` itself (its `prepare` set the shared `core.hooksPath` from the main checkout's
+  absolute path to the relative `scripts/git-hooks`), and made 17 recorded rulings (briefs,
+  reports, reviews and the ledger are in `prompts/2026-09-22-T-02/`). Tests at the end: Vitest
+  229/229 (160 before), Playwright api 17, E2E 3/3, `npm audit` 0, secret scan clean.
+- **Final review:** "ready to merge with fixes" — no Critical; Important: no test pinned "in
+  one transaction", the one-worker rule lived only in the npm script, the process record was
+  unfinished; five Minor items. All fixed in the one fix wave (re-review: every item
+  addressed); the process record is this entry and the prompts folder.
+- **What the agent got right:** measured the backlog row's premises in a scratch copy before
+  writing the plan and verified every database-free file there (tsc, ESLint, Prettier, 226
+  unit tests, `next build`, HTTP probes, ten mutations). That surfaced what the documents did
+  not say: `npm install prisma` installs an 8.x release candidate; the ADR-0005 lint rule also
+  rejects `new Date(iso)`, so dates are shifted as text; `prisma/data.json` fails Prettier; the
+  generated migration lacks `CREATE EXTENSION citext`; creation order cannot come from
+  `createdAt` inside one transaction (`seq`, question 1); a Prisma `Int` cannot hold R-17's
+  99,999,999,999 cents (`BigInt`, question 2); `next dev` rewrites `AGENTS.md` (PR #4); the
+  main checkout's gitleaks cache held a Linux binary (PR #5). Every database behaviour the plan
+  left unmeasured (E23) held at execution, including Prisma leaving the hand-written extension
+  alone (E22). The pasted plan-gate reply was confirmed with the owner before it was acted on.
+- **What the agent got wrong or missed:**
+  1. The plan predicted that `prisma migrate dev --create-only` prints "Already in sync";
+     Prisma 7.10 writes an empty migration folder. The implementer investigated, deleted it and
+     reported it; recorded as a ruling.
+  2. Six items the final review found were in the plan's own text: the lock test was offered
+     as the concurrency test but nothing tested "in one transaction"; the one-worker rule sat in
+     an npm script instead of the Playwright config; the health check used the Unix socket; the
+     `ResetLog.at` comment asserted the column default fills it, although E23 had listed that as
+     unmeasured — Prisma's runtime binds it; `.env.example` kept `/api/test/log` after the plan
+     moved it to T-12; and Next's automatic OPTIONS/405 answers showed that the "non-existent"
+     route existed.
+  3. Two plan steps would have broken rules at execution and needed rulings: Task 1's
+     argument-less `npm install` runs `prepare`, which writes git configuration from a subagent
+     (governance v1.1); and every test count was stale once PRs #4 and #5 merged.
+  4. The Task 2 implementer reported a mutation check's failing tests as the brief predicted
+     them, not as observed (one named test could not fail from that mutation). The task review
+     caught it; the implementer re-ran the check and corrected the report.
+  5. The Task 5 implementer ran `git checkout 0eec801 -- .` and then `git reset --hard HEAD`
+     in a worktree that shares `.git` with the main checkout, outside its brief, while checking
+     a test count. Nothing was lost (the controller verified the tree, the ignored files, the
+     ledger and the stash); the fix-wave dispatch then forbade wholesale working-tree rewrites.
 - **Owner changes and reasoning:** _(owner)_
 - **Disagreements:** the owner chose the npm overrides where the agent had recommended
   accepting the four advisories (plan § "Owner answers", question 9) — resolved for the
   owner (AGENTS.md §5).
-- **Lessons for the process:** _(controller, from the execution ledger)_
-- **Next:** owner review and merge; T-03/T-04; findings F1, F2 and question 8 if deferred.
+- **Lessons for the process:** an "Expected" line for a command nobody has run is a
+  prediction, and the plan should mark it so (E23 did; Task 3 Step 6 and the `ResetLog.at`
+  comment slipped through). A guarantee the spec names needs its own failing test — a
+  neighbouring test can look like coverage without being it. Rules about how tests run belong
+  in the tool's config, not in one npm script. Implementer prompts should say that reported
+  output is copied from the run, never from the brief, and that commands rewriting the whole
+  working tree (`git checkout <rev> -- .`, `git reset --hard`, `git stash`) are forbidden;
+  governance v1.1 could name both.
+- **Next:** owner review and merge; T-03/T-04. Hand-offs, also in the plan: T-05 — index
+  `LoginAttempt (ip, at)`, keep `/api/test/*` out of the session and the rate limit; T-06 —
+  seeding E2E tests share one database (one worker or a database per worker); T-08 —
+  `latestReset`/`checkThreshold`, `ResetLog.at` is the app process's clock (Prisma runtime),
+  decide whether the threshold counts `ResetLog`/`LoginAttempt`; T-09 — creation order is
+  `seq`, `BigInt` becomes `Number` at the DTO edge, add overview-shape assertions per variant;
+  T-12 — `GET /api/test/log`; T-13 — drop the overrides, add a schema-vs-migrations drift check
+  in CI; T-14 — `APP_ENV` must never be `test` in production (consider a startup guard), check
+  whether `migrate deploy` needs Neon's direct URL, and guard `test:api`/`db:reset` against a
+  non-local `DATABASE_URL`.
