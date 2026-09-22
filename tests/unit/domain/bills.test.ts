@@ -58,7 +58,7 @@ describe("recurringBills (data-model.md; US-27 AC1, AC2)", () => {
   });
 });
 
-describe("billsSummary (SPEC-overview §2.6, US-28 AC1)", () => {
+describe("billsSummary (SPEC-overview §2.6, US-28 AC1's rule)", () => {
   it("totals paid and not-paid bills; Due Soon is part of Upcoming", () => {
     const bills = recurringBills(
       [
