@@ -92,6 +92,14 @@ const violations = [
     message: "ADR-0002: only src/server may import Prisma",
   },
   {
+    // Prisma 7 generates the client into src/server/generated/prisma (T-02); app may import
+    // src/server, so only the Prisma rule stands between this import and the database.
+    fixture: "app-imports-prisma-generated.ts.fixture",
+    lintAs: "app/api/imports-prisma-generated.ts",
+    ruleId: "no-restricted-imports",
+    message: "ADR-0002: only src/server may import Prisma",
+  },
+  {
     fixture: "ui-imports-prisma.ts.fixture",
     lintAs: "src/ui/imports-prisma.ts",
     ruleId: "no-restricted-imports",
@@ -164,7 +172,7 @@ const allowed = [
 // and every policy allows external. If one of these disappears the fixtures stop being
 // violations, so assert them separately to keep that failure legible.
 const importTargets = [
-  "src/server/README.md",
+  "src/server/db.ts",
   "src/domain/README.md",
   "src/webmcp/README.md",
   "app/(app)/README.md",

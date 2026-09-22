@@ -2,4 +2,5 @@
 
 Seed/reset helpers and the stored `storageState` for authenticated E2E runs (ADR-0003).
 
-Filled by T-02 (reset/seed helpers) and T-06 (auth state).
+T-02: `database.ts` (`storedRows`, `insertedRows`) for the API tests, and the ADR-0002
+fixtures in `boundaries/`. T-06 adds the authenticated `storageState`.

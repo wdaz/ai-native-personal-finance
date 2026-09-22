@@ -27,3 +27,6 @@ docs/00-discovery/inputs/design/*.html
 # next / vercel
 /.vercel
 *.tsbuildinfo
+
+# The Prisma client, generated into src/server by `prisma generate` on every npm install (T-02)
+/src/server/generated/

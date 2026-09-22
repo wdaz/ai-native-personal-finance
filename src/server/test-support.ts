@@ -1,0 +1,62 @@
+import { getDb } from "./db";
+import { isTestEnv, type Env } from "./env";
+import { errorResponse } from "./http";
+import { resetToSeed } from "./reset";
+import { seedRows } from "./seed";
+import { SEED_VARIANTS, applyVariant, isSeedVariant } from "./variants";
+
+/**
+ * SPEC-reset-and-test-support §2.7 — the routes E2E and API tests use to put the database
+ * in a known state (ADR-0003, NFR-T3). No session, no rate limit. They exist only when
+ * `APP_ENV=test`: in any other environment `testSupportRoutes` is empty and every
+ * /api/test/* path answers 404.
+ */
+export type TestRoute = {
+  method: "GET" | "POST";
+  path: string;
+  handle: (request: Request) => Promise<Response>;
+};
+
+async function reset(): Promise<Response> {
+  const { at } = await resetToSeed(getDb(), "test");
+  return Response.json({ at });
+}
+
+async function seed(request: Request): Promise<Response> {
+  const body: unknown = await request.json().catch(() => null);
+  const variant =
+    typeof body === "object" && body !== null && "variant" in body ? body.variant : undefined;
+  if (!isSeedVariant(variant)) {
+    return errorResponse(400, "validation", `variant must be one of: ${SEED_VARIANTS.join(", ")}`);
+  }
+  const { at } = await resetToSeed(getDb(), "test", applyVariant(seedRows(), variant));
+  return Response.json({ at, variant });
+}
+
+const routes: readonly TestRoute[] = [
+  { method: "POST", path: "reset", handle: reset },
+  { method: "POST", path: "seed", handle: seed },
+];
+
+export function testSupportRoutes(env: Env = process.env): readonly TestRoute[] {
+  return isTestEnv(env) ? routes : [];
+}
+
+export async function handleTestSupport(
+  method: string,
+  segments: readonly string[],
+  request: Request,
+  env: Env = process.env,
+): Promise<Response> {
+  const path = segments.join("/");
+  const route = testSupportRoutes(env).find((r) => r.method === method && r.path === path);
+  if (!route) {
+    return errorResponse(404, "not_found", "Not found");
+  }
+  try {
+    return await route.handle(request);
+  } catch (error) {
+    console.error(`test-support ${method} /api/test/${path} failed`, error);
+    return errorResponse(500, "server_error", "The test-support request failed");
+  }
+}

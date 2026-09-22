@@ -43,14 +43,22 @@ gate is met and recorded in the process log.
 
 ## Run locally
 
-Requires Node 26 (see `.nvmrc`) and, from T-02 onwards, a local Postgres.
+Requires Node 26 (see `.nvmrc`) and Docker: Postgres runs in a container (`compose.yaml`).
 
 ```bash
-npm ci                 # install
+npm ci                          # install; also generates the Prisma client
 npx playwright install --with-deps chromium firefox webkit
-npm run dev            # develop on http://localhost:3000
-npm run test:all       # secret scan, lint, format, typecheck, unit, API and E2E
+cp .env.example .env.local      # local settings; DATABASE_URL already points at the container
+docker compose up -d --wait     # Postgres 18 on localhost:5432
+npm run db:reset                # apply migrations, then load the seed
+npm run dev                     # develop on http://localhost:3000
+npm run test:all                # secret scan, lint, format, typecheck, unit, API and E2E
 ```
+
+`npm run db:reset` applies pending migrations and replaces all data with the seed
+(`prisma/data.json`, dates moved two years on), recording a reset of reason `manual`
+(SPEC-reset-and-test-support §2.5). The API and E2E tests reset the same database; it holds
+demo data only.
 
 `npm ci` does not download the Playwright browsers, so `playwright install` is
 a one-off after the install on each machine; without it the browser tests stop
@@ -68,16 +76,17 @@ commit either way.
 `npm run test:all` builds the app and starts it before the browser tests
 (ADR-0003: E2E never runs against `next dev`). The individual commands are:
 
-| Command                       | What it runs                                                      |
-| ----------------------------- | ----------------------------------------------------------------- |
-| `npm run lint`                | ESLint, including the ADR-0002 import boundaries                  |
-| `npm run format:check`        | Prettier                                                          |
-| `npm run typecheck`           | `tsc --noEmit`, strict                                            |
-| `npm run secrets:scan`        | Gitleaks on all commit diffs, not messages — first in `test:all`  |
-| `npm test`                    | Vitest — `tests/unit`                                             |
-| `npm run test:api`            | Playwright request-context tests — `tests/api` (empty until T-05) |
-| `npm run test:e2e`            | Playwright on Chromium, Firefox and WebKit — `tests/e2e`          |
-| `npm run build` / `npm start` | Production build and server                                       |
+| Command                       | What it runs                                                                                                     |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `npm run lint`                | ESLint, including the ADR-0002 import boundaries                                                                 |
+| `npm run format:check`        | Prettier                                                                                                         |
+| `npm run typecheck`           | `tsc --noEmit`, strict                                                                                           |
+| `npm run secrets:scan`        | Gitleaks on all commit diffs, not messages — first in `test:all`                                                 |
+| `npm test`                    | Vitest — `tests/unit`                                                                                            |
+| `npm run test:api`            | Playwright request-context tests — `tests/api`, one worker, against the app with `APP_ENV=test` and the database |
+| `npm run db:reset`            | `prisma migrate deploy`, then the seed (`prisma/seed.ts`)                                                        |
+| `npm run test:e2e`            | Playwright on Chromium, Firefox and WebKit — `tests/e2e`                                                         |
+| `npm run build` / `npm start` | Production build and server                                                                                      |
 
 Copy `.env.example` to `.env.local` before running anything that touches the database or
 the session. Every variable names the ADR or spec that defines it.

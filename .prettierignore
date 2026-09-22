@@ -18,3 +18,7 @@ public
 # tests/unit/boundaries.test.ts.
 .superpowers
 .remember
+
+# A byte-for-byte copy of docs/00-discovery/inputs/data.json (checksum test in
+# tests/unit/seed.test.ts); formatting it would break the copy.
+/prisma/data.json

@@ -23,14 +23,14 @@ every layer pair they permit has one that must stay silent. The two halves matte
 a config that reported nothing would pass no violation case, and a config that reported
 everything would pass no control.
 
-| Violates                                   | Fixtures                                                                            |
-| ------------------------------------------ | ----------------------------------------------------------------------------------- |
-| `domain` → `server`, `app`, `webmcp`       | relative and `@/`-aliased server imports, plus app and webmcp                       |
-| `shared` → anything else                   | `domain`, `server`                                                                  |
-| `webmcp` → anything but `shared`           | `server`                                                                            |
-| `scripts` → anything but `shared`/`domain` | `server`                                                                            |
-| Prisma outside `src/server`                | from `app` (both `@prisma/client` and the `/edge` sub-path), `src/ui`, `src/shared` |
-| ADR-0005's clock rule                      | `new Date()` and `Date.now()`, in `src/domain` **and** `src/server`                 |
+| Violates                                   | Fixtures                                                                                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `domain` → `server`, `app`, `webmcp`       | relative and `@/`-aliased server imports, plus app and webmcp                                                                         |
+| `shared` → anything else                   | `domain`, `server`                                                                                                                    |
+| `webmcp` → anything but `shared`           | `server`                                                                                                                              |
+| `scripts` → anything but `shared`/`domain` | `server`                                                                                                                              |
+| Prisma outside `src/server`                | from `app` (`@prisma/client`, the `/edge` sub-path and the generated client in `src/server/generated/prisma`), `src/ui`, `src/shared` |
+| ADR-0005's clock rule                      | `new Date()` and `Date.now()`, in `src/domain` **and** `src/server`                                                                   |
 
 | Must report nothing  | Fixture                          |
 | -------------------- | -------------------------------- |
@@ -44,14 +44,14 @@ The violation cases also assert `severity === 2`. ADR-0002 says "CI must fail on
 violations"; a rule demoted to a warning would still be reported, and `eslint` would still
 exit 0 were `--max-warnings 0` ever dropped from the `lint` script.
 
-## Why the imports point at README files
+## Why some imports point at README files
 
 `boundaries/dependencies` classifies an import by the path it _resolves to_; an import
 that does not resolve is treated as external and is allowed by policy. The target
-therefore has to exist. `src/server` and `src/domain` hold no modules yet — T-02 and T-04
-add them — so the fixtures import the only files those folders contain. The layer is what
-is being asserted, not the module's contents, and a side-effect import states that
-plainly. Point them at real modules once those exist.
+therefore has to exist. `src/server` holds modules since T-02, and its fixtures import
+`src/server/db`; `src/domain` holds none until T-03, so its fixtures import the only file
+that folder contains. The layer is what is being asserted, not the module's contents, and
+a side-effect import states that plainly. T-03 points them at real modules.
 
 If one of those targets is ever deleted the import stops resolving, the rule stops
 firing, and the test fails loudly rather than the guarantee lapsing in silence.
