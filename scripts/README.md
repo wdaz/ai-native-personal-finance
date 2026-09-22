@@ -6,10 +6,12 @@ Repo tooling run through `npm run`: generators and checks, not application code
 - **Imports allowed:** `src/shared`, `src/domain`.
 - **Imports forbidden:** `app/`, `src/server`, `src/webmcp`, `src/ui`.
 
-`seed-figures.ts` (T-03) prints the worked example of SPEC-overview §4.3 from
-`data.json`; the spec table must equal its output
-(`docs/04-process/build-workflow.md`: "Any seed-derived figure in code or tests comes
-from `scripts/seed-figures.ts`, never typed").
+`seed-figures.ts` (T-03) computes the seed's Overview with the domain's own functions and
+prints SPEC-overview §4.3 (`npm run seed:figures`). `tests/unit/seed-figures.test.ts` fails
+when the spec's table differs from that output, and a later test that needs a seed figure
+imports it from here (`seedFigures()`) rather than typing it
+(`docs/04-process/build-workflow.md`: "Any seed-derived figure in code or tests comes from
+`scripts/seed-figures.ts`, never typed").
 
 ## Secret guard (T-02a, NFR-S5)
 

@@ -1,0 +1,6 @@
+A spec whose §4.3 was renamed or deleted. Reading it must fail loudly: an empty table
+compared with an empty table would pass in silence.
+
+4.3 Figures (see the design)
+
+4.4 Donut: …
