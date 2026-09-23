@@ -1,9 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { errorResponse } from "@/src/server/http";
-import { ERROR_CODES, ErrorEnvelopeSchema, LoginSchema, toErrorIssues } from "@/src/shared/schemas";
+import {
+  ERROR_CODES,
+  ErrorEnvelopeSchema,
+  ErrorIssueSchema,
+  LoginSchema,
+  SignupSchema,
+  toErrorIssues,
+  VALIDATION_ISSUE_CODES,
+} from "@/src/shared/schemas";
 
 const valid = (body: unknown) => ErrorEnvelopeSchema.safeParse(body).success;
+const issuesOf = (schema: z.ZodType, input: unknown) => {
+  const result = schema.safeParse(input);
+  if (result.success) throw new Error("expected a failed parse");
+  return toErrorIssues(result.error);
+};
 
 describe("ErrorEnvelope (SPEC-auth §2.10)", () => {
   it("has exactly the seven codes of §2.10", () => {
@@ -18,20 +31,21 @@ describe("ErrorEnvelope (SPEC-auth §2.10)", () => {
     ]);
   });
 
-  it("accepts a validation error carrying a failed parse's issues, after a JSON round trip", () => {
-    const result = LoginSchema.safeParse({ email: "", password: "" });
-    if (result.success) throw new Error("expected a failed parse");
+  it("accepts a 400 validation body with no message — owner decision, T-04 plan gate finding 3", () => {
     const body = JSON.parse(
       JSON.stringify({
         error: "validation",
-        message: "Invalid",
-        issues: toErrorIssues(result.error),
+        issues: issuesOf(LoginSchema, { email: "", password: "" }),
       }),
     );
-    expect(ErrorEnvelopeSchema.parse(body).issues?.map((issue) => issue.path)).toEqual([
-      ["email"],
-      ["password"],
-    ]);
+    expect(body.message).toBeUndefined();
+    expect(ErrorEnvelopeSchema.parse(body)).toEqual({
+      error: "validation",
+      issues: [
+        { path: ["email"], code: "required" },
+        { path: ["password"], code: "required" },
+      ],
+    });
   });
 
   it("accepts rate_limited with a whole, positive number of seconds", () => {
@@ -41,9 +55,15 @@ describe("ErrorEnvelope (SPEC-auth §2.10)", () => {
     }
   });
 
-  it("refuses an unknown code, a missing or empty message, and unlisted fields", () => {
+  it("takes message as optional — present for 401/429, absent for 400", () => {
+    expect(valid({ error: "not_found" })).toBe(true);
+    expect(valid({ error: "invalid_credentials", message: "Email or password is incorrect" })).toBe(
+      true,
+    );
+  });
+
+  it("refuses an unknown code, an empty message, and unlisted fields", () => {
     expect(valid({ error: "forbidden", message: "No" })).toBe(false);
-    expect(valid({ error: "not_found" })).toBe(false);
     expect(valid({ error: "not_found", message: "" })).toBe(false);
     expect(valid({ error: "not_found", message: "Gone", stack: "at …" })).toBe(false);
   });
@@ -58,15 +78,80 @@ describe("ErrorEnvelope (SPEC-auth §2.10)", () => {
   });
 });
 
-describe("toErrorIssues", () => {
+describe("ErrorIssueSchema — path and code only (owner decision, T-04 plan gate finding 3)", () => {
+  it(`is exactly one of the four codes: ${VALIDATION_ISSUE_CODES.join(", ")}`, () => {
+    expect(VALIDATION_ISSUE_CODES).toEqual(["required", "invalid_format", "too_short", "too_long"]);
+  });
+
+  it("refuses a message or any other field — no Zod strings, no echoed values", () => {
+    expect(ErrorIssueSchema.safeParse({ path: ["email"], code: "required" }).success).toBe(true);
+    expect(
+      ErrorIssueSchema.safeParse({ path: ["email"], code: "required", message: "Can't be empty" })
+        .success,
+    ).toBe(false);
+    expect(
+      ErrorIssueSchema.safeParse({ path: ["password"], code: "required", input: "short1" }).success,
+    ).toBe(false);
+  });
+
+  it("refuses a code outside the four", () => {
+    expect(ErrorIssueSchema.safeParse({ path: ["email"], code: "invalid_type" }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe("toErrorIssues — every case LoginSchema/SignupSchema can produce (measured, T-04 plan gate finding 3)", () => {
+  it("a missing or wrong-typed field is required", () => {
+    expect(issuesOf(LoginSchema, {})).toEqual([
+      { path: ["email"], code: "required" },
+      { path: ["password"], code: "required" },
+    ]);
+    expect(issuesOf(LoginSchema, { email: 5, password: "x" })).toEqual([
+      { path: ["email"], code: "required" },
+    ]);
+  });
+
+  it("a malformed email is invalid_format", () => {
+    expect(issuesOf(LoginSchema, { email: "not-an-email", password: "x" })).toEqual([
+      { path: ["email"], code: "invalid_format" },
+    ]);
+  });
+
+  it("an email over 254 characters is too_long — the client maps it to the same copy as invalid_format", () => {
+    expect(issuesOf(LoginSchema, { email: "a".repeat(250) + "@b.co", password: "x" })).toEqual([
+      { path: ["email"], code: "too_long" },
+    ]);
+  });
+
+  it("a name over 60 or a password over 128 characters is too_long", () => {
+    expect(
+      issuesOf(SignupSchema, { name: "n".repeat(61), email: "a@b.co", password: "p".repeat(10) }),
+    ).toEqual([{ path: ["name"], code: "too_long" }]);
+    expect(
+      issuesOf(SignupSchema, { name: "n", email: "a@b.co", password: "p".repeat(129) }),
+    ).toEqual([{ path: ["password"], code: "too_long" }]);
+  });
+
+  it("a password under 8 characters (but present) is too_short, not required", () => {
+    expect(issuesOf(SignupSchema, { name: "n", email: "a@b.co", password: "p" })).toEqual([
+      { path: ["password"], code: "too_short" },
+    ]);
+  });
+
   it("keeps array indices as numbers and writes symbol keys as text", () => {
     const key = Symbol("hidden");
     const schema = z.object({ rows: z.array(z.string()), [key]: z.string() });
-    const result = schema.safeParse({ rows: ["a", 1], [key]: 2 });
-    if (result.success) throw new Error("expected a failed parse");
-    expect(toErrorIssues(result.error).map((issue) => issue.path)).toEqual([
+    expect(issuesOf(schema, { rows: ["a", 1], [key]: 2 }).map((issue) => issue.path)).toEqual([
       ["rows", 1],
       ["Symbol(hidden)"],
     ]);
+  });
+
+  it("throws on a Zod issue code it has no mapping for, rather than mis-report it", () => {
+    const schema = z.object({ kind: z.enum(["a", "b"]) });
+    expect(() => issuesOf(schema, { kind: "c" })).toThrow(
+      'No validation code mapped for Zod issue code "invalid_value"',
+    );
   });
 });

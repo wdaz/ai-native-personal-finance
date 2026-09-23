@@ -838,9 +838,9 @@ Append-only. Newest entry at the bottom. Template:
   `docs/03-specs/backlog.md` v1.9 (T-04 hand-offs in ten later rows); a separate PR (#9, merged)
   amending ADR-0004 and `docs/03-specs/webmcp-tools.md` to v1.0.2 (finding F1 — `z.toJSONSchema`,
   not `zod-to-json-schema`, which returns an empty schema for a Zod 4 object with no error).
-  Tests: Vitest 341 → **436** (95 new — 429 through Task 7, one net test from the final review's
-  fix wave, six more from the Copilot-review fix, below), API 17/17, E2E 3/3, `src/domain` +
-  `src/shared` coverage 100 %,
+  Tests: Vitest 341 → **446** (105 new — 429 through Task 7, one net test from the final review's
+  fix wave, six from the Copilot fail-closed fix, ten from the 400-body redesign, below), API
+  17/17, E2E 3/3, `src/domain` + `src/shared` coverage 100 %,
   `npm audit` 0, secret scan clean.
 - **Execution:** subagent-driven, one Haiku implementer per task (every task's plan text gave
   complete, verbatim code, so the work was transcription plus testing) and one Sonnet reviewer
@@ -893,7 +893,21 @@ Append-only. Newest entry at the bottom. Template:
   routed to the owner). The owner chose to fix the first in this PR via a subagent, leave the
   second (verified false), and hold the third (still awaiting a decision on the message text):
   commit `16dfe06` (fail-closed on the five shapes, six new tests, 430 → 436); reviewed, Approved,
-  no findings.
+  no findings. The owner then answered the third, verbatim: "400 body is { error: 'validation',
+  issues: [{ path, code }] } — no message field, no Zod default strings, no echoed values;
+  codes: required, invalid_format, too_short, too_long. Client maps path+code to the copy
+  appendix, same as 401/429 map error to banner text" — with the reasoning line "API carries
+  codes only; copy lives in the client — consistent with 401/429, avoids leaking input or
+  duplicating UI text." This is a real design decision, not documentation: `message` on
+  `ErrorEnvelopeSchema` became optional; `ErrorIssueSchema` narrowed from a loose Zod-issue
+  passthrough (`code`, `path`, `message`, plus whatever Zod added) to a strict `{ path, code }`
+  with `code` one of the four named values; `toErrorIssues` now maps every Zod issue
+  `LoginSchema`/`SignupSchema` can produce to one of them (measured against the real schemas
+  first — `invalid_type`→required, `too_small` with `minimum:1`→required else →too_short,
+  `too_big`→too_long, `invalid_format`→invalid_format — and throws on anything unmapped rather
+  than mis-report). SPEC-auth → v1.0.2; `backlog.md` → v1.10 (T-05's hand-off had the stale
+  `{ error, message, issues }` shape from before this decision — corrected). 10 new/rewritten
+  tests; 7 mutations against the mapping function, all killed. Vitest 436 → 446.
 - **Owner changes and reasoning:** at the plan gate the owner took every recommendation, with
   conditions: the enum schemas' lists must be the documents' *full* lists so T-09 can test its
   Prisma map against them; two new copy rows plus one reused row, short and unpunctuated like the

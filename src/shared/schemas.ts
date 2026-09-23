@@ -85,20 +85,33 @@ export const ERROR_CODES = [
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
 /**
- * A Zod issue as it arrives in JSON: its `code`, `path` and `message`, plus whatever fields
- * the code carries (`minimum`, `format`, …). Zod adds the rejected value only on request
- * (`reportInput`), so a password never travels back in an envelope.
+ * A 400 validation error's own code, not Zod's: `path` and this code are all a validation
+ * issue carries — no `message` (Zod's own strings are UI text baked into the schema, not API
+ * contract; the appendix already owns the words) and no rejected value (a password is never
+ * echoed back). The client maps `path` + `code` to the copy appendix, the same way it maps a
+ * 401/429 `error` code to its banner text (owner decision, T-04 plan gate finding 3, 2026-09-23:
+ * "API carries codes only; copy lives in the client — consistent with 401/429, avoids leaking
+ * input or duplicating UI text").
  */
-export const ErrorIssueSchema = z.looseObject({
-  code: z.string(),
+export const VALIDATION_ISSUE_CODES = [
+  "required",
+  "invalid_format",
+  "too_short",
+  "too_long",
+] as const;
+export type ValidationIssueCode = (typeof VALIDATION_ISSUE_CODES)[number];
+
+export const ErrorIssueSchema = z.strictObject({
   path: z.array(z.union([z.string(), z.int()])),
-  message: z.string(),
+  code: z.enum(VALIDATION_ISSUE_CODES),
 });
 export type ErrorIssue = z.infer<typeof ErrorIssueSchema>;
 
 export const ErrorEnvelopeSchema = z.strictObject({
   error: z.enum(ERROR_CODES),
-  message: z.string().min(1),
+  /** Present for every code this schema has a fixed banner/notice for (401, 429, …); a 400
+   * validation error has none — its `issues` carry the codes the client renders instead. */
+  message: z.string().min(1).optional(),
   issues: z.array(ErrorIssueSchema).optional(),
   /** Seconds, as in the `Retry-After` header (SPEC-auth §4). */
   retryAfter: z.int().positive().optional(),
@@ -106,13 +119,38 @@ export const ErrorEnvelopeSchema = z.strictObject({
 export type ErrorEnvelope = z.infer<typeof ErrorEnvelopeSchema>;
 
 /**
- * A failed parse's issues in the envelope's shape. Zod types a path segment as any property
- * key; JSON has no symbols, so a symbol key is written as its description.
+ * Every Zod issue `LoginSchema`/`SignupSchema` can produce, given their fields' checks (each
+ * field's chain `stop()`s at its first failure, so one issue per field): a missing or
+ * wrong-typed value (`invalid_type`); an empty string (`too_small`, `minimum: 1` — `.min(1)`);
+ * a too-short password (`too_small`, `minimum: 8`); a too-long email/name/password (`too_big`);
+ * a malformed email (`invalid_format`). Measured against the real schemas (T-04 plan gate
+ * finding 3 evidence), not assumed. Any other Zod issue code means a schema added a check this
+ * function was not extended for — it throws rather than mis-report a validation error.
+ */
+function validationIssueCode(issue: z.core.$ZodIssue): ValidationIssueCode {
+  switch (issue.code) {
+    case "invalid_type":
+      return "required";
+    case "too_small":
+      return issue.minimum === 1 ? "required" : "too_short";
+    case "too_big":
+      return "too_long";
+    case "invalid_format":
+      return "invalid_format";
+    default:
+      throw new Error(`No validation code mapped for Zod issue code "${issue.code}"`);
+  }
+}
+
+/**
+ * A failed parse's issues in the 400 envelope's shape (`path`, `code` — see `ErrorIssueSchema`).
+ * Zod types a path segment as any property key; JSON has no symbols, so a symbol key is written
+ * as its description.
  */
 export const toErrorIssues = (error: z.ZodError): ErrorIssue[] =>
   error.issues.map((issue) => ({
-    ...issue,
     path: issue.path.map((key) => (typeof key === "symbol" ? String(key) : key)),
+    code: validationIssueCode(issue),
   }));
 
 // ---------------------------------------------------------------------------------------
