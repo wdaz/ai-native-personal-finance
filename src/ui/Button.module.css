@@ -1,0 +1,22 @@
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  padding: var(--spacing-200);
+  border: none;
+  border-radius: var(--radius-100);
+  background: var(--color-grey-900);
+  color: var(--color-white);
+  font: var(--text-preset-4-bold);
+  cursor: pointer;
+}
+
+/* US-34 AC2: a disabled control has no hover state. */
+.primary:hover:not(:disabled) {
+  background: var(--color-grey-500);
+}
+
+.primary:disabled {
+  cursor: not-allowed;
+}

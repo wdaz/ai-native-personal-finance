@@ -21,10 +21,17 @@ const baseURL = process.env.BASE_URL ?? `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: "tests",
-  fullyParallel: true,
+  // T-06 (backlog: "decide in the Playwright config"): one worker for every project, in CI
+  // and locally. The API and E2E tests share one server and one database, a reset ends every
+  // session (SPEC-reset-and-test-support §2.6) and clears every rate-limit counter, and the
+  // chromium/firefox/webkit projects would otherwise run side by side — each resetting the
+  // others' state mid-test. One database per worker would need one server per worker (the app
+  // reads a single DATABASE_URL); at Release 1's suite size, serial is the cheaper correct
+  // answer.
+  fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : [["list"]],
   use: {
     baseURL,

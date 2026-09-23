@@ -1,0 +1,71 @@
+/* SPEC-auth §2.2: not in the design; built from its tokens. */
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-150);
+  padding: var(--spacing-200);
+  border-radius: var(--radius-100);
+  background: var(--color-beige-100);
+}
+
+.title {
+  margin: 0;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-100);
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-100);
+}
+
+.label {
+  color: var(--color-grey-500);
+  font: var(--text-preset-5-bold);
+}
+
+.value {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-100);
+  margin: 0;
+}
+
+.text {
+  overflow-wrap: anywhere;
+  user-select: all;
+  font: var(--text-preset-4);
+}
+
+.copy {
+  min-block-size: var(--spacing-300);
+  padding: var(--spacing-50) var(--spacing-150);
+  border: var(--border-width) solid var(--color-beige-500);
+  border-radius: var(--radius-100);
+  background: var(--color-white);
+  color: var(--color-grey-900);
+  font: var(--text-preset-5-bold);
+  cursor: pointer;
+}
+
+.copy:hover {
+  border-color: var(--color-grey-900);
+}
+
+/* White on grey-900: red text on this box's beige-100 would fall under AA (4.3:1). */
+.tooltip:not(:empty) {
+  padding: var(--spacing-50) var(--spacing-100);
+  border-radius: var(--radius-100);
+  background: var(--color-grey-900);
+  color: var(--color-white);
+  font: var(--text-preset-5);
+}

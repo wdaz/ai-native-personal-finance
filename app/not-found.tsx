@@ -3,8 +3,8 @@ import { connection } from "next/server";
 import { COPY } from "@/src/shared/copy";
 import styles from "./not-found.module.css";
 
-// The tab title Next's default not-found page set, kept as it was.
-export const metadata: Metadata = { title: `404: ${COPY.notFound}` };
+// SPEC-app-shell §2.5 (v1.2): the root layout's template makes it "Personal Finance - <name>".
+export const metadata: Metadata = { title: COPY.notFound };
 
 /**
  * The 404 page for every unmatched URL (T-06 plan finding F1).

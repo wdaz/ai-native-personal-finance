@@ -1176,3 +1176,150 @@ directives), 3 E2E.
 - **Next:** owner review of the draft PR `fix/not-found-csp`, starting with the copy row. Then T-06. Candidates for separate small PRs:
   1. Set the CSP on the forwarded request headers in `middleware.ts`, and correct its comment and ADR-0006's wording.
   2. `/_global-error` under the CSP, if the owner wants it before Release 1 ships.
+
+## 2026-09-23 — Build (T-06): Auth UI — plan, plan gate, inline implementation
+
+- **Phase:** 5 — Build the slice (Release 1).
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5), with one subagent that prepared F1.
+- **Trigger:** the owner's "T-06 start to prepare plan", right after T-05 (PR #11) merged.
+- **Prompt(s):** `prompts/2026-09-23-T-06.md` (the owner's messages verbatim);
+  `prompts/2026-09-23-F1-not-found-csp.md` (the F1 subagent's brief); `prompts/2026-09-23-T-06/`
+  (the F1 review-fix brief, the whole-branch reviewer's brief and report, screenshots).
+- **Produced:**
+  - The plan, `plans/2026-09-23-T-06.md`, v0.1 → v0.4, and three docs PRs at the gate: #13
+    (plan v0.2, SPEC-auth v1.0.4, design-tokens v1.1 with its `tokens.css` mirror, backlog v1.16,
+    ADR-0003 clarification), #14 (plan v0.3), #16 (`docs/03-specs/tech-debt.md` with TD-1..TD-3,
+    backlog v1.17, the ADR-0006 correction). F1 — the prerendered 404 under the CSP — as its own
+    PR #15, prepared by the subagent.
+  - On `task/T-06-auth-ui`: `tests/fixtures/e2e.ts` (automatic CSP-violation guard, reset, per-test
+    API login, axe helper) with `tests/e2e/guards.spec.ts` proving both guards fire; one Playwright
+    worker; the CI job `E2E (Chromium)`; `demoCredentials()`; the `(auth)` layout rendered per
+    request; `src/ui` `Button`, `Field`, `PasswordField`, `LogoLarge`, eye icons;
+    `src/shared/form-feedback.ts`; `LoginForm`, `DemoBox`, `SignupForm`; user-stories v1.4 (sign-up
+    failure copy) with `COPY.signupFailed`/`signupUnreachable`; 11 + 4 + 7 + 11 E2E tests in
+    `login`, `login-demo-and-reset`, `signup`, `auth-accessibility`; `tests/api/auth-pages.spec.ts`.
+  - `npm run test:all` green: 521 unit, 43 API, 108 E2E (Chromium, Firefox, WebKit); `npm audit`
+    0.
+- **What the agent got right:**
+  - The design export answered Q1 (a)/(b) and Q2 outright — every label and all seven layout
+    values were in it — so two of four gate questions needed no owner decision.
+  - The automatic E2E CSP guard earned its keep on its first real page: it caught Zod 4's JIT
+    probing `new Function("")` on the first client-side parse. Zod catches the throw, but the
+    browser still reports a CSP violation. Fixed with `z.config({ jitless: true })` in
+    `src/shared/schemas.ts`, which Zod's own source documents for strict CSPs, and pinned by a
+    unit test. No review of the code would have found this; only running it under the real policy
+    did.
+  - Review Focus pins were proved by reintroducing each defect: `noValidate` (on login — the
+    sign-up pin was not, see the addendum, I2), `method="post"`, the `next` sanitiser, the
+    notice's `tabIndex`, the two sign-up messages, the copy-failed state.
+  - F2 was checked against Next's installed source before it went to the owner:
+    `app-render.js:209-210` reads the request's CSP header, not `x-nonce`.
+- **What the agent got wrong or missed:**
+  1. **Pushed four commits to a branch whose PR had already merged.** Backlog v1.17, the ADR-0006
+     correction and two plan updates went to `docs/T-06-plan-v0.3` after PR #14 merged, and never
+     reached `main`. The owner asked "Hara qeyd etmisən?" ("Where did you record it?"). Recovered in
+     PR #16, reworked to the owner's new instruction (tech debt in its own file), with correction
+     comments on #14 and #15.
+  2. **A hand-copied SVG path slipped.** The logo's `7.04` became `7.040`. The plan-writing session
+     caught it by script and fixed it before execution.
+  3. **The plan's Task 2 mutation expected the wrong result.** It said removing `connection()` from
+     the `(auth)` layout would make `/signup` fail. It still passed: F1's `app/not-found.tsx` awaits
+     `connection()`, and the App Router renders the root not-found into every route's RSC tree, so
+     since F1 every route is dynamic. The execution proved both halves: with both calls removed,
+     the routes are `○` and the test fails 2/2; with only the layout's call restored, they are `ƒ`
+     and it passes. The layout's call stays, so the auth pages do not rely on the 404 page. The plan
+     was written before F1 existed.
+  4. **One planned test passed for the wrong reason.** Without `noValidate`, the "malformed email on
+     submit" test still passed. Filling the password blurred the email, which showed our message,
+     and the browser focused the field itself. The test was strengthened: fill the password first,
+     then the email, then press Enter. Now it fails without `noValidate` and passes with it.
+  5. **The plan did not foresee Zod's eval probe under the CSP** (see above).
+  6. **The Q1 (c) recommendation was rejected.** It proposed reusing "Something went wrong. Try
+     again" for every failed sign-up. The owner wanted that text for server errors only.
+  7. **WebKit's Tab skips buttons and links.** The plan predicted this and wrote the fallback in
+     advance. It was measured, not assumed.
+- **Owner changes and reasoning:**
+  - Q1 (a)/(b), Q2: "look at the design exports first; come back if they don't answer". They did.
+  - Q1 (c): "500 xətası üçün Something went wrong. Try again olmalıdır. Səhv creadential və s
+    hallarda uyğun mesaj", and "this message is given on a server error". That produced two
+    appendix rows: a server error, and a network failure with its own words.
+  - Q3/Q4: as recommended. The amendments went in a docs-only gate PR, because this session does
+    not push to `main`.
+  - F1: "T06 əvvəl ayrı subagent yarat o hazırlasın" — prepare it with a separate subagent, before
+    T-06. Done as PR #15.
+  - F2: tech debt, kept in the backlog, then "Tech dept ayrıca fayl olsun … Əlaqə itməsin deyə". It
+    is now its own file (`tech-debt.md`), linked from the backlog. The two known items that had no
+    home were moved into it as TD-2 and TD-3.
+  - The go-ahead: "PR-lar merge oldu. bu suallarına təsdiq kimi qəbul olunur". The merges answered
+    the remaining approvals: F1's copy row and the network wording.
+- **Disagreements:** Copilot's review of PR #15 asked to redact absolute home paths in one verbatim
+  prompt record. The agent declined: the same paths are in 20+ committed records, and the
+  repository is private. It became a repository-wide T-16 note (backlog v1.17). The owner did not
+  object.
+- **Lessons for the process:**
+  1. Before pushing to a branch, check its PR is still open (`gh pr view <n> --json state`). A merged
+     PR's branch is a dead end that looks alive.
+  2. A plan's mutation step states an expected result. Re-derive it when another PR lands between
+     planning and execution (here F1 changed rendering for every route).
+  3. Keep runtime guards. The CSP-violation fixture caught a library behaviour (Zod's eval probe)
+     that neither the plan nor any review foresaw.
+  4. A test that relies on blur and focus can pass for the wrong reason. Prove each pin by
+     reintroducing its defect.
+- **Next:** the whole-branch review (addendum below) and the draft PR for `task/T-06-auth-ui`.
+  Then T-07, which now carries US-03 AC1–AC2's E2E (backlog v1.16).
+
+### Addendum — whole-branch review and fix pass (same day)
+
+A fresh reviewer (Opus) read the whole diff, re-ran every suite on its own port (521 unit, 43
+API, 36 Chromium + 72 Firefox/WebKit E2E), and probed the running app with throwaway scripts.
+Verdict "With fixes": 0 Critical, 2 Important, 4 Minor. It agreed with all five executor
+rulings, including the Zod `jitless` one (checked in Zod's source). Brief and report:
+`prompts/2026-09-23-T-06/final-review-{brief,report}.md`.
+
+- **I1 — fixed.** Anything typed or autofilled before the page hydrated was wiped. Both forms held
+  their values in React state starting at `""`, and the first re-render after hydration wrote that
+  `""` back into the inputs. The user then saw "Can't be empty" under fields they had filled. This
+  is the same pre-hydration window as plan D5, which made it safe (no credentials in the URL) but
+  not usable. Fix: `Field` is uncontrolled, and the forms read the values from the DOM on blur and
+  submit. That also keeps autofill that fires no events. **Plan deviation:** the reviewer offered a
+  mount-time state sync as an alternative; the uncontrolled inputs were chosen instead. Two E2E
+  tests hold every script chunk, fill the form, then release the chunks: they failed on the old
+  code and pass now.
+- **I2 — fixed.** The sign-up `noValidate` pin had never been proved; the plan had no mutation step
+  for it. The test passed without `noValidate` for the same reason the login test once did. It now
+  fills name and password first, then the email, then presses Enter. It fails without `noValidate`
+  and passes with it. The "What the agent got right" line above is corrected.
+- **Deferred minors (for the owner):**
+  - M1: on Chromium, the two "submit focused after a 429/network error" assertions pass without the
+    focus call, because a clicked, disabled button keeps focus. WebKit pins them locally.
+  - M2: the login walkthrough's comment says "Shift+Tab back", but the test focuses the field
+    programmatically.
+  - M3: `/login` and `/signup` share the `<title>` "Personal Finance" (WCAG 2.4.2). Page titles are
+    new copy, so they are the owner's call or T-07's.
+  - M4: `z.config({ jitless: true })` is a side effect of importing `schemas.ts`.
+- `npm run test:all` after the fix pass: 521 unit, 43 API, 114 E2E; `npm audit` 0.
+- **Lesson:** the executor had already met this exact wrong-reason pass on login and fixed it. It
+  did not carry the check to the sibling form. When a test is found passing for the wrong reason,
+  search for the same shape in every sibling test before moving on.
+
+### Addendum 2 — owner decisions on the minors, and PR #17's Copilot review (same day)
+
+On the draft PR, ~17:58 +04, verbatim: "M3 üçün. Bütün səhifələr üçün title qaydası. Personal
+Finance - page name. Misal: Personal Finance - Sign in. M1 və M4 tech dept əlavə olunsun." ("For
+M3: a title rule for all pages. Personal Finance - page name. Example: Personal Finance - Sign in.
+Add M1 and M4 as tech debt.") And: "iki review var onlarada bax" ("there are two reviews, look at
+them too").
+
+- **M3 → a rule for every page.** Every document title is "Personal Finance - <page name>"
+  (SPEC-app-shell v1.2 §2.5, SPEC-auth v1.0.5 §6). The root layout holds the template, and each page
+  sets its name. The agent read "page name" as the page's `<h1>`, so `/login` is "Personal Finance -
+  Login", `/signup` is "Personal Finance - Sign Up", and the 404 page is "Personal Finance - This
+  page could not be found.". The owner's example said "Sign in"; the login page is named "Login" in
+  SPEC-auth §2.1. **This reading was put to the owner.** An E2E test pins all three titles; it failed
+  first. T-07 and T-10 carry the rule for their own pages (backlog v1.18).
+- **M1, M4 → TD-4, TD-5** in `tech-debt.md` (v1.1), each named in the row of the task expected to
+  pick it up: T-13 and T-11 (backlog v1.18). M2 (a comment) stays deferred.
+- **Reviews.** PR #17 had one review on GitHub, from Copilot, with one finding: the WebKit comment
+  said "Option+Tab" while the code sends Playwright's "Alt+Tab". It was fixed by naming the key both
+  ways. The second review the owner referred to is taken to be the Opus whole-branch review above.
+- `npm run test:all`: 521 unit, 43 API, 117 E2E.

@@ -99,6 +99,8 @@ const RENDERED: [context: string, keys: Key[], message: string][] = [
   ["Email", ["emailInvalid"], COPY.emailInvalid],
   ["Password (sign-up)", ["passwordTooLong"], COPY.passwordTooLong],
   ["Any page", ["notFound"], COPY.notFound],
+  ["Sign-up", ["signupFailed"], COPY.signupFailed],
+  ["Sign-up", ["signupUnreachable"], COPY.signupUnreachable],
 ];
 
 const expected = RENDERED.map(([context, , message]) => [context, message]);

@@ -89,6 +89,61 @@ jobs:
       - name: API tests (builds and starts the app with APP_ENV=test)
         run: npm run test:api
 
+  e2e:
+    name: E2E (Chromium)
+    runs-on: ubuntu-latest
+    services:
+      # The same database service as the API job (T-02).
+      postgres:
+        image: postgres:18.6-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: personal_finance
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U postgres -d personal_finance"
+          --health-interval 2s --health-timeout 5s --health-retries 30
+    # The API job's env, verbatim — see the comment there on why DEMO_PASSWORD_HASH is raw here
+    # (no `\$` escaping: a CI env value reaches the app without passing through a .env file).
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/personal_finance
+      SESSION_SECRET: "ci-only-session-secret-not-a-real-secret-32chars"
+      DEMO_EMAIL: "demo@example.com"
+      DEMO_PASSWORD_HASH: "$2b$10$/gyfHp0z/Dlr77T6RwYhg.hO1OyLHX.zY9BIwRM6y7bFWNi8SnTM6"
+      DEMO_PASSWORD_DISPLAY: "ci-demo-password-123"
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install (generates the Prisma client)
+        run: npm ci
+
+      # Chromium only until T-13 adds Firefox and WebKit to CI (backlog T-06).
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Migrate
+        run: npx prisma migrate deploy
+
+      - name: E2E tests, Chromium (builds and starts the app with APP_ENV=test)
+        run: npx playwright test --project=chromium
+
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-e2e
+          path: playwright-report/
+          retention-days: 7
+
   secret-scan:
     name: secret scan
     runs-on: ubuntu-latest

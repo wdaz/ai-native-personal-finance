@@ -13,6 +13,11 @@ import { WEBMCP_MODES } from "./env";
  * `z.strictObject`, so an API test fails when a route leaks a field the spec does not list.
  */
 
+// ADR-0006: the forms parse in the browser under a CSP without 'unsafe-eval'. Zod's JIT probes
+// `new Function("")` on the first parse — the throw is caught, but the browser still reports a
+// CSP violation. `jitless` skips the probe; this module loads before any parse, on both sides.
+z.config({ jitless: true });
+
 // ---------------------------------------------------------------------------------------
 // Enums
 

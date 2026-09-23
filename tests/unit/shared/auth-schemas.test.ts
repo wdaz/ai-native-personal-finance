@@ -9,6 +9,16 @@ import {
   SignupSchema,
 } from "@/src/shared/schemas";
 
+describe("Zod's JIT under the CSP (ADR-0006)", () => {
+  // The login and sign-up forms parse in the browser, under a CSP without 'unsafe-eval'. Zod's
+  // JIT probes `new Function("")` on the first parse; the throw is caught, but the browser still
+  // reports a `securitypolicyviolation` (T-06 found it through the E2E CSP guard). `jitless`
+  // skips the probe (zod/v4/core/util.js, `allowsEval`).
+  it("schemas.ts switches Zod to jitless, so no parse probes eval", () => {
+    expect(z.config().jitless).toBe(true);
+  });
+});
+
 /** `[path, message]` for every issue — what US-31 shows under each field, in field order. */
 const messages = (schema: z.ZodType, input: unknown) => {
   const result = schema.safeParse(input);
