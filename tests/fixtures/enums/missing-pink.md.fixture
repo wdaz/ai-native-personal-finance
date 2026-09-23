@@ -1,0 +1,5 @@
+<!-- tests/unit/shared/enums.test.ts: data-model.md with Pink missing from Theme. -->
+
+| `ResetLog` | `at`, `reason` (`scheduled` \| `threshold` \| `manual` \| `test`) | latest exposed via `/api/meta` | US-37 |
+
+Enums: `Category` = Entertainment, Bills, Groceries, Dining Out, Transportation, Personal Care, Education, Lifestyle, Shopping, General. `Theme` = Green, Yellow, Cyan, Navy, Red, Purple, Turquoise, Brown, Magenta, Blue, Navy Grey, Army Green, Gold, Orange.
