@@ -1628,3 +1628,26 @@ them too").
 - **Next:** the owner answered "Bəli. Hamısı bir pr-da" ("Yes. All in one PR"). Backlog v1.20
   (the hand-offs to T-11, T-14, T-15 and T-16) rides in T-08's PR. Then comes the owner's
   review, with CI running Chromium E2E against Postgres 18.6. T-09 follows (the overview API).
+
+### Addendum — 2026-09-23, the owner's review round on PR #20
+
+- **Input:** ten findings pasted into the session, not posted as PR threads. The GitHub
+  `claude` review job failed twice before doing any work, with a 403 from
+  `api.individual.githubcopilot.com`; this is noted on the PR.
+- **Fixed:** findings 1, 4, 5, 8, 9 and 10 (plan v0.8 has the list). Mutations run and
+  reverted:
+  - a case-sensitive `Bearer`, and a throwing `RESET_SECRET`: the unit tests failed;
+  - a presence-only dismissal: the new "lasts only until the next reset" E2E test failed.
+
+  The `??` form of `next.config.ts` is pinned by a violation fixture in
+  `tests/unit/next-config.test.ts`.
+- **Declined, with reasons (plan v0.8):** findings 3, 6 and 7.
+- **Asked:** finding 2 (`*/10`), which ADR-0007 and SPEC §2.3 fix verbatim.
+- **Wrong in the first pass:**
+  - `isAuthorized` let a configuration fault in one secret disable the other secret.
+  - The dismissal was a flag, although a reset ends the session it belonged to.
+- **Environment:** the local Postgres had stopped while idle (no error in its log) and was
+  restarted. The failing E2E tests' 500s came from that, not from the code.
+- **Lesson:** next's `loadConfig` caches by path, so a test that loads one config under several
+  environments must copy it to a fresh directory for each load.
+
