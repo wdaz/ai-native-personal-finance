@@ -13,3 +13,6 @@ user-stories copy appendix and of data-model.md's enum lists that are wrong on p
 `resetDemoData`, `loginViaApi` (a per-test login after the reset, not a stored
 `storageState`: a reset ends every session — ADR-0003 clarification 2026-09-23) and
 `seriousA11yViolations`.
+
+T-07: `csp.ts` — `scriptNonce` and `inlineTags` for the API tests that check a page renders
+per request; `e2e.ts` gains `tabTo`.
