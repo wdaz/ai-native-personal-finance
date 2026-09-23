@@ -838,8 +838,9 @@ Append-only. Newest entry at the bottom. Template:
   `docs/03-specs/backlog.md` v1.9 (T-04 hand-offs in ten later rows); a separate PR (#9, merged)
   amending ADR-0004 and `docs/03-specs/webmcp-tools.md` to v1.0.2 (finding F1 — `z.toJSONSchema`,
   not `zod-to-json-schema`, which returns an empty schema for a Zod 4 object with no error).
-  Tests: Vitest 341 → **430** (89 new — 429 through Task 7, plus one net test from the final
-  review's fix wave, below), API 17/17, E2E 3/3, `src/domain` + `src/shared` coverage 100 %,
+  Tests: Vitest 341 → **436** (95 new — 429 through Task 7, one net test from the final review's
+  fix wave, six more from the Copilot-review fix, below), API 17/17, E2E 3/3, `src/domain` +
+  `src/shared` coverage 100 %,
   `npm audit` 0, secret scan clean.
 - **Execution:** subagent-driven, one Haiku implementer per task (every task's plan text gave
   complete, verbatim code, so the work was transcription plus testing) and one Sonnet reviewer
@@ -883,6 +884,16 @@ Append-only. Newest entry at the bottom. Template:
      defect anywhere in the plan or the code.
   4. The plan's `src/shared/README.md` diff (Task 7) did not mention `tool-schema.ts`, added
      late in v0.2 revision 5 — a one-line README gap, fixed while applying the diff.
+- **Copilot review (PR #10):** three comments — `unboundedStrings` doesn't recurse into
+  `anyOf`/`oneOf`/`allOf`/`$ref`/tuples/records ("Medium"; the same gap the final review had
+  already named and deferred to T-11); the `getByTestId` ESLint selector "looks malformed"
+  ("Medium" — checked directly: `page.getByTestId("donut")` is caught, a template literal and an
+  identifier are not, exactly as intended; a false positive from Copilot, not fixed); SPEC-auth
+  §6's 400 example still lacks `message` ("Low"; the same item the final review had already
+  routed to the owner). The owner chose to fix the first in this PR via a subagent, leave the
+  second (verified false), and hold the third (still awaiting a decision on the message text):
+  commit `16dfe06` (fail-closed on the five shapes, six new tests, 430 → 436); reviewed, Approved,
+  no findings.
 - **Owner changes and reasoning:** at the plan gate the owner took every recommendation, with
   conditions: the enum schemas' lists must be the documents' *full* lists so T-09 can test its
   Prisma map against them; two new copy rows plus one reused row, short and unpunctuated like the
