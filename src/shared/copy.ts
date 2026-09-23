@@ -65,4 +65,7 @@ export const COPY = {
   // R1 additions (T-04 plan gate): the maxima of SPEC-auth §6's SignupSchema
   nameTooLong: "Maximum 60 characters",
   passwordTooLong: "Maximum 128 characters",
+
+  // R1 additions (T-06 plan F1): the 404 page, in the words of Next's default not-found page
+  notFound: "This page could not be found.",
 } as const;
