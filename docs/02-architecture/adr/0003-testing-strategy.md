@@ -1,6 +1,7 @@
 # 0003 — Testing strategy: pyramid, tooling and rules
 
-- Status: **Accepted** (amended) · Date: 2026-09-13 · Author(s): Agent (proposal; carries forward the prior attempt's ADR-0002 thinking), Owner (decision)
+- Status: **Accepted** (amended; clarified 2026-09-23) · Date: 2026-09-13 · Author(s): Agent (proposal; carries forward the prior attempt's ADR-0002 thinking), Owner (decision)
+- Clarification 2026-09-23 (owner decision at the T-06 plan gate, Q4): E2E authenticates **per test** through `loginViaApi` (`tests/fixtures/e2e.ts`) — `POST /api/auth/login` from the page's own request context, which shares the browser's cookies, after the test's reset — instead of one stored `storageState` per run. A reset ends every session (ADR-0006, 2026-09-20 amendment) and every E2E test starts from one, so a state saved once per run would be dead by the second test.
 - Driven by: NFR-T1–T10, NFR-A1–A5, PRD M1/M2/M5, US-38 AC3, research note §Implications 3
 
 ## Context
@@ -17,7 +18,7 @@ Testing is a headline claim (S1). The suite must be readable, traceable to stori
 | WebMCP | E2E | wait for `data-webmcp="ready"`, then `page.evaluate` `getTools()` / `executeTool()`; assert result *and* UI/DB state | runs in `WEBMCP_MODE=polyfill` and `off`; native mode is a headed runbook step |
 | Performance | Lighthouse CI | Overview, Transactions on the deployed warm instance | on release |
 
-Test data: a `test-support` route (`/api/test/reset`, `/api/test/seed`) exists only when `APP_ENV=test`; a unit test asserts it is absent otherwise. Auth in E2E via a stored `storageState` created once per run. E2E targets `next build && next start` on a throwaway Neon branch (or local Postgres in Docker) — never `next dev`.
+Test data: a `test-support` route (`/api/test/reset`, `/api/test/seed`) exists only when `APP_ENV=test`; a unit test asserts it is absent otherwise. Auth in E2E via ~~a stored `storageState` created once per run~~ a per-test API login after the test's reset (clarification 2026-09-23). E2E targets `next build && next start` on a throwaway Neon branch (or local Postgres in Docker) — never `next dev`.
 
 Commands: `npm test` (unit + component), `npm run test:api`, `npm run test:e2e`, `npm run test:all` (what CI runs). Traceability: a script greps `US-\d\d` across `tests/` and fails CI if any story id from `user-stories.md` is missing.
 

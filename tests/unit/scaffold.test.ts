@@ -71,14 +71,15 @@ describe("T-01 scaffold", () => {
     // `700 2rem / 120% var(--font-family-base)`
     const fontShorthand = /^(\d+) ([\d.]+)rem \/ (\d+%) var\(--font-family-base\)$/;
 
-    it("documents at least the 22 colours, 7 presets, 11 spacings and 8 layout tokens", () => {
-      expect(documentedTokens.size).toBeGreaterThanOrEqual(48);
+    it("documents at least the 22 colours, 7 presets, 11 spacings, 8 layout and 7 auth/line tokens", () => {
+      expect(documentedTokens.size).toBeGreaterThanOrEqual(55);
     });
 
     it("parses a value for every documented token", () => {
       expect(documentedColours.size).toBe(22);
       expect(documentedPresets.size).toBe(7);
-      expect(documentedPixels.size).toBe(19);
+      // 11 spacings + 8 radii/layout/breakpoints (v1.0) + 7 auth layout and lines (v1.1).
+      expect(documentedPixels.size).toBe(26);
       // Nothing documented may escape the three value checks below — a new table in the
       // document has to be given a parser here rather than silently going unchecked.
       const valued = new Set([
