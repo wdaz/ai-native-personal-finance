@@ -32,6 +32,20 @@ const TEST_API = /^\/api\/test\//;
 // the session check too).
 const ADMIN_API = /^\/api\/admin\/reset$/;
 
+// SPEC-auth §2.7–2.8 (v1.0.6), ADR-0006 (2026-09-23, T-07 plan gate): where the logout button
+// goes when POST /api/auth/logout failed. The browser still holds the httpOnly session cookie,
+// which only a response can clear — so this one navigation clears it and shows the login page
+// instead of bouncing a logged-in visitor to /overview. Only a same-origin navigation
+// qualifies: a link or form on another site (logout CSRF), a typed URL ("none") or a browser
+// that sends no Sec-Fetch-Site keeps the redirect.
+function isLogoutFallback(request: NextRequest): boolean {
+  return (
+    request.nextUrl.pathname === "/login" &&
+    request.nextUrl.searchParams.get("reason") === "logout" &&
+    request.headers.get("sec-fetch-site") === "same-origin"
+  );
+}
+
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const now = new Date();
   const { pathname, search } = request.nextUrl;
@@ -60,6 +74,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // never having had a session at all, so the login page can show "The demo data was reset"
   // (review finding I1).
   const resetInvalidated = payload !== null && !authenticated && isSessionValid(payload, now, null);
+  const logoutFallback = isLogoutFallback(request);
 
   let response: NextResponse;
 
@@ -83,7 +98,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       loginUrl.searchParams.set("next", next);
       response = NextResponse.redirect(loginUrl, 302);
     }
-  } else if (!isApi && AUTH_PAGES.test(pathname) && authenticated) {
+  } else if (!isApi && AUTH_PAGES.test(pathname) && authenticated && !logoutFallback) {
     response = NextResponse.redirect(new URL("/overview", request.url), 302);
   } else {
     // Next.js reads the nonce back out of this request header while rendering (ADR-0006,
@@ -98,7 +113,8 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // Skip the reissue on logout (and login, which seals its own fresh cookie) — otherwise an
   // old-enough session sends two Set-Cookie headers in one response, and only header-merge
   // order happens to make the clear win (review finding M5).
-  const skipsReissue = pathname === "/api/auth/logout" || pathname === "/api/auth/login";
+  const skipsReissue =
+    pathname === "/api/auth/logout" || pathname === "/api/auth/login" || logoutFallback;
   if (!skipsReissue && authenticated && payload && shouldReissue(payload, now)) {
     const secure = request.url.startsWith("https://");
     const resealed = await sealSession({
@@ -109,6 +125,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     response.headers.append(
       "Set-Cookie",
       sessionCookieHeader(resealed, SESSION_TTL_SECONDS, secure),
+    );
+  }
+  if (logoutFallback && cookie !== undefined) {
+    response.headers.append(
+      "Set-Cookie",
+      sessionCookieHeader("", 0, request.url.startsWith("https://")),
     );
   }
 
