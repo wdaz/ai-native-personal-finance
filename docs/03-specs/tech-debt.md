@@ -22,7 +22,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   before T-06 ("F2 tapıntısı techdeptdə yazılır. Və backlogda saxlanılır.").
 - **What:** Next 16.3.5 takes the nonce it puts on its own inline `<script>`/`<style>` tags from
   the **request's** `Content-Security-Policy` header
-  (`next/dist/server/app-render/app-render.js:209-210`: `headers['content-security-policy']` →
+  (`node_modules/next/dist/server/app-render/app-render.js:209-210`: `headers['content-security-policy']` →
   `getScriptNonceFromHeader`). `middleware.ts` sets that header on the **response** only, and
   forwards `x-nonce`, which the renderer never reads. It works today because Next's router also
   copies middleware response headers onto the request — behaviour Next does not document.
