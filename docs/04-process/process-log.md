@@ -1056,3 +1056,53 @@ Append-only. Newest entry at the bottom. Template:
   `middleware` file convention printed a deprecation warning during every build in this task ("Please use
   'proxy' instead" — `npx @next/codemod@canary middleware-to-proxy`); harmless today, worth a follow-up
   task before Next.js actually removes the old convention.
+
+### Addendum — whole-branch review and fix pass (same day)
+
+A fresh subagent (Opus) reviewed the full diff, ran the suite, and — unusually — actually
+exercised the running app (forged iron-session cookies, real Chromium/Firefox, a throwaway
+scratch page) rather than reading the diff alone. Found 2 Critical, 4 Important, 11 Minor;
+verified all six of the ledger's own fixes above and confirmed the timing-oracle mitigation,
+rate-limit exactness and reset-epoch handling hold under live measurement. Fixed in this PR
+(commits `77f981c`, `dd351c8`, `03ac7d4`, `09b8800`):
+
+- **C1** — the `$`-escaping fix for `.env.local` was wrongly copied into `ci.yml` too:
+  `@next/env`'s `dotenv-expand` only runs over values it *loads from a file*; a CI `env:`
+  value with no `.env*` file present reaches the app raw, so the escaped hash broke every
+  login there. Reverted to the raw hash in CI, corrected the README, and added a
+  `demoPasswordHash()` accessor that throws on a misconfigured value instead of
+  `bcrypt.compare` silently returning `false`.
+- **I1** (SPEC-reset-and-test-support §2.6) — two real gaps: the `?reason=reset` redirect
+  the spec asks for was missing (fixed), and the "cached per instance for 30 s" clause was
+  implemented, found broken (Next.js bundles `middleware.ts` and route handlers separately —
+  no shared module state, so the cache was never invalidated by a reset, silently
+  undermining "sessions end on reset"), then removed and the spec amended (v1.2) to match.
+- **I2** — SPEC-auth §7's own test list had real gaps against the plan's Review Focus items:
+  each of attempts 1–10 now asserts 401 (not just the 11th's 429), the 15-minute stale-entry
+  case is tested, the sliding re-issue and 7-day TTL are now API-tested with forged cookies,
+  and the `next=` incoming-pass-through behaviour is documented with a test.
+- **I3** — the 429 body's `message` was the full client banner text; spec and backlog both
+  want the fixed `"Too many attempts"`.
+- **I4** — not a code bug: the `no-store` test could only prove the header on a 404 (which
+  Next answers `no-store` to an anonymous request too), so it never isolated this
+  middleware's own header. Reworded honestly; a T-07 backlog hand-off (v1.14) carries the
+  real version once a genuine authenticated page exists.
+- **M3, M4, M5, M6** — the admin-secret exemption matched the whole `/api/admin/*` prefix
+  instead of exactly `POST /api/admin/reset`; a comment clarified the `X-Forwarded-For`
+  trust assumption; logout could send two `Set-Cookie` headers when the session was old
+  enough to reissue (worked only by header-merge-order accident — login/logout now skip
+  reissue); the matcher ran this middleware, DB query included, on every static asset
+  request for a logged-in visitor.
+
+**Declined to fix — surfaced to the owner instead: C2.** The shipped CSP (`script-src
+'self'`, no nonce) blocks Next's own inline RSC-payload scripts and inline styles on *every*
+App Router page — the reviewer verified this live (5 blocked scripts + 5 blocked styles in
+two browsers' consoles; a client button's `onClick` proven dead in a scratch page). This
+rests on a premise the owner was given at the plan gate ("Next.js apps normally have none")
+that turned out to be false for the RSC payload specifically. Since this reverses information
+the owner's Q3 decision was based on, and the real choice (a per-request nonce with dynamic
+rendering, vs. Next's documented `'unsafe-inline'` fallback with weaker XSS protection) is a
+security trade-off, the agent did not re-decide it alone — the corrected facts and both
+options went back to the owner in the same turn the review landed.
+
+`npm run test:all` green after the fix pass: 478 unit, 38 API, 3 E2E.
