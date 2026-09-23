@@ -60,3 +60,13 @@ export async function resetToSeed(
     { maxWait: 10_000, timeout: 30_000 },
   );
 }
+
+/**
+ * SPEC-auth §2.9: the reset-epoch check compares a session's `resetEpoch` against this.
+ * `null` when the table is empty — a fresh database before the first seed, which the
+ * resetEpoch check treats as "nothing to reject against" (T-05 plan gate, Q4).
+ */
+export async function latestResetAt(db: Db): Promise<Date | null> {
+  const latest = await db.resetLog.findFirst({ orderBy: { at: "desc" }, select: { at: true } });
+  return latest?.at ?? null;
+}
