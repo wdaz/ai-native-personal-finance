@@ -137,9 +137,9 @@ test("US-01 a network failure shows 'Something went wrong. Try again' and re-ena
 });
 
 /**
- * These tests land on an app route (/overview, /transactions), which has no page until T-07 or
- * T-10 — Next's not-found page, rendered per request since plan F1, so the automatic CSP check
- * covers the whole journey.
+ * These tests land on /overview (its heading only until T-10, T-07 plan Q2) or /transactions
+ * (a Release 2 placeholder), both inside the app shell, rendered per request — the automatic
+ * CSP check covers the whole journey.
  */
 test.describe("after a successful login", () => {
   test("US-01 AC1 the demo credentials log in, land on Overview, and the session survives a reload", async ({
@@ -151,6 +151,7 @@ test.describe("after a successful login", () => {
     await loginButton(page).click();
 
     await expect(page).toHaveURL(`${baseURL}/overview`);
+    await expect(page.getByRole("heading", { level: 1, name: "Overview" })).toBeVisible();
     await page.reload();
     await expect(page).toHaveURL(`${baseURL}/overview`);
     const session = await page.request.get("/api/auth/session");

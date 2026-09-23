@@ -1,16 +1,5 @@
 import { expect, test } from "@playwright/test";
-
-const NONCE = /'nonce-([^']+)'/;
-
-/** The nonce of the response's `script-src` (T-05's middleware sets the same one on `style-src`). */
-function scriptNonce(csp: string | undefined): string | undefined {
-  return NONCE.exec(csp?.match(/script-src[^;]+/)?.[0] ?? "")?.[1];
-}
-
-/** Every inline `<script>` (no `src`) and every `<style>` opening tag of the document. */
-function inlineTags(html: string): string[] {
-  return [...html.matchAll(/<(?:script(?![^>]*\bsrc=)|style)\b[^>]*>/g)].map((match) => match[0]);
-}
+import { inlineTags, scriptNonce } from "../fixtures/csp";
 
 for (const path of ["/login", "/signup"]) {
   test(`ADR-0006, SPEC-auth §6: ${path} renders per request — its inline scripts and styles carry this response's nonce`, async ({

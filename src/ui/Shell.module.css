@@ -1,0 +1,55 @@
+/*
+ * SPEC-app-shell §2.2, §2.4, §2.8 and the design export: the page padded 32/40 (24/16 on a
+ * phone), 32 px between its blocks.
+ */
+.shell {
+  display: flex;
+  min-block-size: 100vh;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-400);
+  min-inline-size: 0;
+  /* Plan D13: clear the fixed bottom bar — its height plus 40 px. */
+  padding: var(--spacing-300) var(--spacing-200)
+    calc(var(--bottom-nav-height-mobile) + var(--spacing-500));
+}
+
+/* The skip link's target; a region, not a control — no ring (plan D14). */
+.main:focus {
+  outline: none;
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: var(--spacing-400) var(--spacing-500)
+      calc(var(--bottom-nav-height-tablet) + var(--spacing-500));
+  }
+}
+
+@media (min-width: 1024px) {
+  .main {
+    padding: var(--spacing-400) var(--spacing-500);
+  }
+}
+
+/* §2.8: the first focusable element, clipped away until it has focus. */
+.skipLink {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: var(--spacing-200);
+  inset-inline-start: var(--spacing-200);
+  padding: var(--spacing-150) var(--spacing-250);
+  border-radius: var(--radius-100);
+  background: var(--color-grey-900);
+  color: var(--color-white);
+  font: var(--text-preset-4-bold);
+  text-decoration: none;
+}
+
+.skipLink:not(:focus) {
+  clip-path: inset(50%);
+}
