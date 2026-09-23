@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { COPY } from "@/src/shared/copy";
 import { formatDate } from "@/src/shared/dates";
-import { readBannerDismissed, subscribeBanner, writeBannerDismissed } from "./banner-state";
+import { isBannerDismissed, subscribeBanner, writeBannerDismissed } from "./banner-state";
 import { CloseCircleIcon } from "./icons/CloseCircleIcon";
 import styles from "./ResetBanner.module.css";
 
@@ -20,10 +20,15 @@ type ResetBannerProps = {
 
 /**
  * SPEC-app-shell §2.6, US-37 AC2: the demo-reset notice above the page — the reset interval
- * and the last reset's date, with a "Dismiss notice" button whose dismissal lasts for the tab.
+ * and the last reset's date, with a "Dismiss notice" button. The dismissal lasts for the tab,
+ * and only for this reset: a later reset shows the banner again.
  */
 export function ResetBanner({ lastResetAt, resetIntervalDays, onDismissed }: ResetBannerProps) {
-  const dismissed = useSyncExternalStore(subscribeBanner, readBannerDismissed, shownOnTheServer);
+  const dismissed = useSyncExternalStore(
+    subscribeBanner,
+    () => isBannerDismissed(lastResetAt),
+    shownOnTheServer,
+  );
   if (dismissed) return null;
 
   return (
@@ -34,7 +39,7 @@ export function ResetBanner({ lastResetAt, resetIntervalDays, onDismissed }: Res
         className={styles.dismiss}
         aria-label={COPY.dismissNotice}
         onClick={() => {
-          writeBannerDismissed();
+          writeBannerDismissed(lastResetAt);
           onDismissed?.();
         }}
       >

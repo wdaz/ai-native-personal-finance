@@ -1,4 +1,7 @@
 import { WEBMCP_MODES } from "@/src/shared/env";
+// Type only: a runtime import of schemas.ts would pull zod and copy.ts into the middleware
+// bundle, which imports this file through db.ts (PR #20 review, finding 8).
+import type { WebMcpMode } from "@/src/shared/schemas";
 
 /**
  * Server-side environment. Read on every call rather than captured at import, so a route
@@ -126,9 +129,11 @@ export function cronSecret(env: Env = process.env): string | null {
   return secret ? secret : null;
 }
 
-export type WebMcpMode = (typeof WEBMCP_MODES)[number];
-
-/** SPEC-app-shell §5 `webmcp.configuredMode`; .env.example: "Default polyfill". */
+/**
+ * SPEC-app-shell §5 `webmcp.configuredMode`; .env.example: "Default polyfill". Unset and empty
+ * both mean "polyfill", the same rule next.config.ts applies to NEXT_PUBLIC_WEBMCP_MODE, so the
+ * server's meta and the client's build agree (PR #20 review, finding 5).
+ */
 export function configuredWebmcpMode(env: Env = process.env): WebMcpMode {
   const mode = env.WEBMCP_MODE;
   if (!mode) return "polyfill";

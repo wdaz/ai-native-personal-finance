@@ -13,7 +13,9 @@ const nextConfig: NextConfig = {
   // tests/unit/next-config.test.ts holds it off.
   agentRules: false,
   env: {
-    NEXT_PUBLIC_WEBMCP_MODE: process.env.WEBMCP_MODE ?? "polyfill",
+    // `||`, not `??`: an empty WEBMCP_MODE is "polyfill" here too, as src/server/env.ts's
+    // configuredWebmcpMode reads it for GET /api/meta (T-08, PR #20 review, finding 5).
+    NEXT_PUBLIC_WEBMCP_MODE: process.env.WEBMCP_MODE || "polyfill",
     NEXT_PUBLIC_APP_ENV: process.env.APP_ENV ?? "development",
   },
 };

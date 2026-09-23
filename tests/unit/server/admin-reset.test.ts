@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   adminResetIssues,
   bearerToken,
@@ -6,6 +6,10 @@ import {
   parseAdminResetBody,
   resetLogLine,
 } from "@/src/server/admin-reset";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 const RESET = "reset-secret-for-unit-tests";
 const CRON = "cron-secret-for-unit-tests";
@@ -15,7 +19,12 @@ describe("bearerToken", () => {
     expect(bearerToken(`Bearer ${RESET}`)).toBe(RESET);
   });
 
-  it.each([null, "", "Basic abc", "bearer abc", RESET])("is null for %j", (header) => {
+  it("matches the scheme case-insensitively (RFC 7235 §2.1)", () => {
+    expect(bearerToken(`bearer ${RESET}`)).toBe(RESET);
+    expect(bearerToken(`BEARER ${RESET}`)).toBe(RESET);
+  });
+
+  it.each([null, "", "Basic abc", "Bearerabc", RESET])("is null for %j", (header) => {
     expect(bearerToken(header)).toBeNull();
   });
 });
@@ -46,8 +55,23 @@ describe("isAuthorized (SPEC-reset-and-test-support §2.2–2.3, T-08 plan D6/D7
     },
   );
 
-  it("throws when RESET_SECRET itself is unset — a configuration fault, not a 401", () => {
-    expect(() => isAuthorized(`Bearer ${CRON}`, { CRON_SECRET: CRON })).toThrow(/RESET_SECRET/);
+  it("PR #20 review finding 1: an unset RESET_SECRET matches nothing — the cron secret still works", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    for (const env of [{ CRON_SECRET: CRON }, { RESET_SECRET: "", CRON_SECRET: CRON }]) {
+      expect(isAuthorized(`Bearer ${CRON}`, env)).toBe(true);
+      for (const header of [null, "", "Bearer ", "Bearer wrong"]) {
+        expect(isAuthorized(header, env)).toBe(false);
+      }
+    }
+  });
+
+  it("both secrets unset: every request is refused, nothing throws, the fault is logged", () => {
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    for (const header of [null, "", "Bearer ", "Bearer anything"]) {
+      expect(isAuthorized(header, {})).toBe(false);
+    }
+    expect(logged).toHaveBeenCalled();
+    expect(String(logged.mock.calls[0]?.[0])).not.toContain("anything");
   });
 });
 

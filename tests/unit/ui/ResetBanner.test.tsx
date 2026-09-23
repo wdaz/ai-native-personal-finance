@@ -30,14 +30,20 @@ describe("ResetBanner (SPEC-app-shell §2.6, US-37 AC2)", () => {
     render(<ResetBanner lastResetAt={AT} resetIntervalDays={10} onDismissed={onDismissed} />);
     fireEvent.click(screen.getByRole("button", { name: COPY.dismissNotice }));
     expect(screen.queryByRole("status")).toBeNull();
-    expect(sessionStorage.getItem(BANNER_STORAGE_KEY)).toBe("dismissed");
+    expect(sessionStorage.getItem(BANNER_STORAGE_KEY)).toBe(AT);
     expect(onDismissed).toHaveBeenCalledTimes(1);
   });
 
-  it("stays hidden when this tab dismissed it before", () => {
-    sessionStorage.setItem(BANNER_STORAGE_KEY, "dismissed");
+  it("stays hidden when this tab dismissed this reset before", () => {
+    sessionStorage.setItem(BANNER_STORAGE_KEY, AT);
     render(<ResetBanner lastResetAt={AT} resetIntervalDays={10} />);
     expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("shows again for a later reset (PR #20 review, finding 4)", () => {
+    sessionStorage.setItem(BANNER_STORAGE_KEY, AT);
+    render(<ResetBanner lastResetAt="2026-09-22T03:00:00.000Z" resetIntervalDays={10} />);
+    expect(screen.getByRole("status").textContent).toContain("last reset 22 Sep 2026");
   });
 
   it("hides its icon from assistive technology — the button carries the name", () => {

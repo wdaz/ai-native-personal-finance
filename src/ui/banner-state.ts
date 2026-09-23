@@ -1,28 +1,30 @@
 /**
- * SPEC-app-shell §2.6: the reset banner's dismissal, for this browser tab —
- * `sessionStorage["pf.banner"] = "dismissed"`. Read through `useSyncExternalStore`, like the
- * sidebar's state (T-08 plan v0.5, correction 8). Storage that throws must not break the page:
- * a read that fails shows the banner; a write that fails still hides it until the page goes.
+ * SPEC-app-shell §2.6: the reset banner's dismissal, for this browser tab. The stored value in
+ * `sessionStorage["pf.banner"]` is the `lastResetAt` the user dismissed. A later reset has
+ * another date, so the banner comes back with it (PR #20 review, finding 4). A reset also ends
+ * the session, so after the new login the tab has not dismissed this reset. Read through
+ * `useSyncExternalStore`, like the sidebar's state. Storage that throws must not break the
+ * page: a failed read shows the banner, and a failed write still hides it until the page goes.
  */
 export const BANNER_STORAGE_KEY = "pf.banner";
 
 const listeners = new Set<() => void>();
-let dismissedInMemory = false;
+let dismissedInMemory: string | null = null;
 
-export function readBannerDismissed(): boolean {
-  if (dismissedInMemory) return true;
+export function isBannerDismissed(lastResetAt: string): boolean {
+  if (dismissedInMemory === lastResetAt) return true;
   try {
-    return window.sessionStorage.getItem(BANNER_STORAGE_KEY) === "dismissed";
+    return window.sessionStorage.getItem(BANNER_STORAGE_KEY) === lastResetAt;
   } catch {
     return false;
   }
 }
 
-export function writeBannerDismissed(): void {
+export function writeBannerDismissed(lastResetAt: string): void {
   try {
-    window.sessionStorage.setItem(BANNER_STORAGE_KEY, "dismissed");
+    window.sessionStorage.setItem(BANNER_STORAGE_KEY, lastResetAt);
   } catch {
-    dismissedInMemory = true;
+    dismissedInMemory = lastResetAt;
   }
   for (const listener of listeners) listener();
 }

@@ -1,15 +1,18 @@
 import { timingSafeEqual } from "node:crypto";
 import type { z } from "zod";
-import type { ResetReason } from "@/src/shared/enums";
-import { AdminResetSchema, type ErrorIssue } from "@/src/shared/schemas";
+import { AdminResetSchema, type AdminResetBody, type ErrorIssue } from "@/src/shared/schemas";
 import { getDb } from "./db";
-import { cronSecret, resetSecret, type Env } from "./env";
+import { cronSecret, type Env } from "./env";
 import { errorResponse, validationErrorResponse } from "./http";
 import { resetToSeed } from "./reset";
 
-/** `Authorization: Bearer <token>` → the token; anything else → null. */
+/**
+ * `Authorization: Bearer <token>` → the token; anything else → null. The scheme is matched
+ * case-insensitively (RFC 7235 §2.1: "bearer" and "BEARER" are the same scheme).
+ */
 export function bearerToken(header: string | null): string | null {
-  return header?.startsWith("Bearer ") ? header.slice("Bearer ".length) : null;
+  const match = /^bearer (.*)$/i.exec(header ?? "");
+  return match ? (match[1] ?? "") : null;
 }
 
 /**
@@ -25,13 +28,21 @@ function sameSecret(token: string | null, secret: string | null): boolean {
 }
 
 /**
- * SPEC-reset-and-test-support §2.2–2.3: `RESET_SECRET` or, when set, `CRON_SECRET` — the one
- * Vercel sends on a scheduled call. Throws when `RESET_SECRET` is unset.
+ * SPEC-reset-and-test-support §2.2–2.3: `RESET_SECRET` or `CRON_SECRET`, the one Vercel sends
+ * on a scheduled call. Either may be unset: an unset secret matches nothing, so the route fails
+ * closed (401) rather than answering 500. A valid `CRON_SECRET` then still runs the scheduled
+ * reset when `RESET_SECRET` is missing (PR #20 review, finding 1). A missing `RESET_SECRET` is
+ * still a configuration fault, so it is logged. The token is never logged.
  */
 export function isAuthorized(header: string | null, env: Env = process.env): boolean {
   const token = bearerToken(header);
-  const reset = resetSecret(env);
+  const reset = env.RESET_SECRET ? env.RESET_SECRET : null;
   const cron = cronSecret(env);
+  if (reset === null) {
+    console.error(
+      "admin reset: RESET_SECRET is not set (.env.example); only CRON_SECRET can match",
+    );
+  }
   // Both comparisons always run, so the time taken does not say which secret matched.
   const matchesReset = sameSecret(token, reset);
   const matchesCron = sameSecret(token, cron);
@@ -53,7 +64,7 @@ export function adminResetIssues(issues: readonly z.core.$ZodIssue[]): ErrorIssu
   });
 }
 
-type AdminResetReason = Exclude<ResetReason, "test">;
+type AdminResetReason = AdminResetBody["reason"];
 
 export function parseAdminResetBody(
   body: unknown,

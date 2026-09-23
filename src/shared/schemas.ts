@@ -24,6 +24,7 @@ z.config({ jitless: true });
 export const CategorySchema = z.enum(CATEGORIES);
 export const ThemeSchema = z.enum(THEMES);
 export const WebMcpModeSchema = z.enum(WEBMCP_MODES);
+export type WebMcpMode = z.infer<typeof WebMcpModeSchema>;
 
 // ---------------------------------------------------------------------------------------
 // Auth — SPEC-auth §4, §6; messages from the copy appendix (US-31)

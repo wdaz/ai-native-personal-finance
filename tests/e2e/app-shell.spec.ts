@@ -338,3 +338,20 @@ test("US-37 AC2 on a phone the banner and its 44 px dismiss button fit at 320 px
     .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
     .toBeLessThanOrEqual(320);
 });
+
+test("US-37 AC2 a dismissal lasts only until the next reset: after it, the banner is back with the new date", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/overview");
+  await page.getByRole("button", { name: COPY.dismissNotice }).click();
+  await expect(page.getByRole("status")).toHaveCount(0);
+
+  // The reset ends the session (SPEC-reset-and-test-support §2.6); the same tab logs in again.
+  const { at } = (await (await request.post("/api/test/reset")).json()) as { at: string };
+  await loginViaApi(page);
+  await page.goto("/overview");
+  await expect(page.getByRole("status")).toHaveText(
+    COPY.resetBanner(resetIntervalDays(), formatDate(at)),
+  );
+});
