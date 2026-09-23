@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -10,11 +10,12 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 
 | Id | Title | Status | Picked up by |
 |----|-------|--------|--------------|
-| TD-1 | The CSP nonce reaches Next through an undocumented header copy | Open | **T-07** (owner decision 2026-09-23, T-07 plan gate Q1 (d): it changes `middleware.ts` for the logout fallback) |
+| TD-1 | The CSP nonce reaches Next through an undocumented header copy | **Closed** | T-07 |
 | TD-2 | `middleware.ts` uses a deprecated file convention (`proxy`) | Open | a small follow-up task, before Next removes the old convention |
 | TD-3 | `/_global-error` is prerendered, without the CSP nonce | Open | whichever task first gives the app an error UI of its own |
 | TD-4 | Two "submit is focused after an error" E2E assertions prove nothing on Chromium | Open | T-13 (WebKit joins CI), or any task that touches those tests |
 | TD-5 | Zod's `jitless` setting rides on importing `src/shared/schemas.ts` | Open | T-11/T-12, the first task that parses with Zod on the client outside the auth forms |
+| TD-6 | `next dev` fills the console with CSP violations (the policy has no dev variant) | Open | the owner decides first (ADR-0006 amendment); then a small follow-up task |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -38,6 +39,11 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   content-security-policy guide does; keep forwarding `x-nonce` for any `<Script>` that reads it
   with `headers()`; correct the comment in `middleware.ts`. ADR-0006's wording was already
   corrected (dated note of 2026-09-23).
+- **Closed:** 2026-09-23, T-07 (`task/T-07-app-shell`, PR #19) — `middleware.ts` sets the policy
+  on the forwarded request headers and its comment says so; the nonce API tests and the E2E CSP
+  guard stayed green. No test isolates the forwarded-header line itself: Next still copies the
+  response header onto the request, so removing the line alone would not fail one (whole-branch
+  review, M6).
 
 ## TD-2 — `middleware.ts` uses a deprecated file convention
 
@@ -104,3 +110,35 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   any E2E test whose page reports the probe.
 - **Fix:** set `jitless` in one module every client entry imports, or import `schemas.ts` from
   `tool-schema.ts`, when the WebMCP tools (T-11/T-12) first parse with Zod in the browser.
+
+## TD-6 — `next dev` fills the console with CSP violations
+
+- **Found:** 2026-09-23, during T-07's execution — the owner pasted the browser console of a
+  `next dev` session (~20:41 +04): an `eval() is not supported` error from React and a run of
+  "Applying inline style violates … `style-src 'self' 'nonce-…'`" errors. The stacks name
+  Next's own development tooling (`next-devtools`, `dev-overlay.browser.tsx`, `font-styles.tsx`,
+  `style-loader`'s `styleTagTransform`); none names a file of this repository, and neither
+  `app/` nor `src/` has a `style` prop. The last two violations (`react-dom-client.production.js:9252`)
+  show no devtools frame and were assumed, not verified, to come from the same overlay.
+- **Owner decision:** 2026-09-23 — asked for the entry ("Zəhmət olmasa TD-6 qeydini yarat.");
+  whether and how to fix is not decided. Any change to the policy is an ADR-0006 amendment,
+  which only the owner accepts.
+- **What:** `middleware.ts` builds one policy for every environment: `script-src 'self'
+  'nonce-…'; style-src 'self' 'nonce-…'` (`middleware.ts:58`). In development, React needs
+  `eval` to reconstruct server error stacks in the browser, and Next's overlay injects
+  `<style>` tags of its own, without this response's nonce. Next's content-security-policy
+  guide (`node_modules/next/dist/docs/01-app/02-guides/content-security-policy.md`, "Development
+  vs Production Considerations") says so and relaxes the policy in development only:
+  `'unsafe-eval'` in `script-src`, `'unsafe-inline'` instead of the nonce in `style-src`.
+- **Risk:** dev-only. The console is noisy enough that a real CSP violation from the
+  application's own code is easy to miss while developing, and the overlay itself may render
+  unstyled. Nothing reaches production: E2E and the CSP guard run against the production build.
+- **Guarded meanwhile by:** the E2E fixtures' automatic CSP-violation guard and
+  `tests/api/app-pages.spec.ts` / `auth-pages.spec.ts` (every inline tag carries the response's
+  nonce), all against `next build && next start` (ADR-0003: E2E never runs on `next dev`).
+- **Fix (options, for the owner):** (a) leave it and note in the README that CSP errors from
+  `next-devtools` are expected under `npm run dev`; (b) build a development variant of the policy
+  in `middleware.ts`, as Next's guide does, with API tests that pin the production policy
+  byte for byte so the relaxation can never ship. (b) needs a dated ADR-0006 amendment first
+  (the app's policy would then differ per environment) and is a change to `middleware.ts`, so
+  it reads TD-2 (the `proxy` rename) first.

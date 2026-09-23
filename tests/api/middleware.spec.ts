@@ -68,21 +68,6 @@ test("/ redirects to /overview when authenticated, /login otherwise", async ({ r
   expect(loggedIn.headers()["location"]).toContain("/overview");
 });
 
-test("authenticated HTML responses send Cache-Control: no-store", async ({ request }) => {
-  // Known limitation (review finding I4): every R1 app page is a 404 today (T-07/T-09/T-10
-  // haven't run), and Next's own 404 render already answers no-store to an unauthenticated
-  // request too (verified: a fresh /some-page-not-in-r1 gets "private, no-cache, no-store,
-  // max-age=0, must-revalidate" with no cookie at all) — so this test can only confirm the
-  // header is present on an authenticated response, not that this middleware is the one
-  // adding it rather than Next's 404 default. T-07 owns the real isolating test, against a
-  // genuinely cacheable 200 page, once one exists.
-  await request.post("/api/auth/login", {
-    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
-  });
-  const response = await request.get("/overview", { maxRedirects: 0 });
-  expect(response.headers()["cache-control"]).toContain("no-store");
-});
-
 test("every response carries X-Request-Id", async ({ request }) => {
   const response = await request.get("/api/auth/session");
   expect(response.headers()["x-request-id"]).toBeTruthy();
@@ -161,18 +146,19 @@ test("ADR-0006, T-06 plan F1: an unknown page's 404 carries the request's nonce 
   expect(second).not.toBe(first);
 });
 
-test("ADR-0006, T-06 plan F1: a logged-in /overview (no page before T-07) 404s under the same nonce rules", async ({
+test("ADR-0006, T-06 plan F1: a logged-in unknown app path 404s under the same nonce rules", async ({
   request,
 }) => {
   const login = await request.post("/api/auth/login", {
     data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
   });
-  // Without a session /overview redirects to /login, which is itself a 404 until T-06 —
-  // this test would then pass on the wrong page. No redirects are followed, and login must
-  // have worked.
+  // Without a session a protected path redirects to /login and this would test the wrong
+  // page — login must have worked, and no redirect is followed. /overview has a page since
+  // T-07 (plan Q2); a path below a protected prefix still passes the session check first.
   expect(login.status()).toBe(200);
-  const first = await expectNotFoundUnderCsp(await request.get("/overview", { maxRedirects: 0 }));
-  const second = await expectNotFoundUnderCsp(await request.get("/overview", { maxRedirects: 0 }));
+  const path = "/transactions/no-such-page";
+  const first = await expectNotFoundUnderCsp(await request.get(path, { maxRedirects: 0 }));
+  const second = await expectNotFoundUnderCsp(await request.get(path, { maxRedirects: 0 }));
   expect(second).not.toBe(first);
 });
 

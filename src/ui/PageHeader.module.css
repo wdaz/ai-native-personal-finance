@@ -1,0 +1,26 @@
+/* SPEC-app-shell §2.4–2.5 and the design export: the title and the actions spread apart, 24 px
+   between them, 8 px above and below. */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-300);
+  padding-block: var(--spacing-100);
+}
+
+.title {
+  margin: 0;
+}
+
+/* Below 1024 px the sidebar footer's actions move here (§2.4). */
+.compactActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-200);
+}
+
+@media (min-width: 1024px) {
+  .compactActions {
+    display: none;
+  }
+}

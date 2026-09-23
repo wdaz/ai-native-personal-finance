@@ -1,0 +1,44 @@
+/*
+ * SPEC-app-shell §2.4, §4 and the design export's bottom bar: grey-900, 8 px top corners, 8 px
+ * above the tabs, 16 px at the sides (40 px on a tablet), 8 px between tabs, tabs at most
+ * 104 px wide. 52 px tall on a phone, 74 px on a tablet (the tab's height + 8 px). Hidden from
+ * 1024 px, where the sidebar takes over.
+ */
+.bar {
+  position: fixed;
+  z-index: 1;
+  inset-inline: 0;
+  inset-block-end: 0;
+  padding: var(--spacing-100) var(--spacing-200) 0;
+  border-radius: var(--radius-100) var(--radius-100) 0 0;
+  background: var(--color-grey-900);
+}
+
+.list {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--spacing-100);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slot {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  max-inline-size: var(--bottom-nav-item-max-width);
+}
+
+@media (min-width: 768px) {
+  .bar {
+    padding-inline: var(--spacing-500);
+  }
+}
+
+@media (min-width: 1024px) {
+  .bar {
+    display: none;
+  }
+}

@@ -1,0 +1,110 @@
+/*
+ * SPEC-app-shell §2.2, §2.4 and the design export: grey-300 text and icon on grey-900; the
+ * current page on beige-100 with grey-900 text, a green icon and a green bar (left in the
+ * sidebar, at the bottom in the bottom bar); inactive items turn white on hover (§2.2 — over
+ * the prototype's grey-100, T-07 plan D11).
+ */
+.item {
+  display: flex;
+  align-items: center;
+  color: var(--color-grey-300);
+  text-decoration: none;
+  transition: color var(--duration-hover);
+}
+
+.item:not(.active):hover {
+  color: var(--color-white);
+}
+
+/* Plan D10: the items touch the viewport's edge, so the ring is drawn inside them — white on
+   the dark bars, grey-900 on the beige current item. */
+.item:focus-visible {
+  outline-color: var(--focus-ring-color-on-dark);
+  outline-offset: calc(-2 * var(--focus-ring-offset));
+}
+
+.active {
+  background: var(--color-beige-100);
+  color: var(--color-grey-900);
+}
+
+.active:focus-visible {
+  outline-color: var(--focus-ring-color);
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--nav-icon-size);
+  block-size: var(--nav-icon-size);
+}
+
+.active .icon {
+  color: var(--color-green);
+}
+
+.label {
+  white-space: nowrap;
+}
+
+/* The desktop sidebar's row: 56 px, 16/32 padding, 16 px gap, preset 3, right corners rounded. */
+.sidebar {
+  gap: var(--spacing-200);
+  block-size: var(--nav-item-height);
+  padding: var(--spacing-200) var(--spacing-400);
+  border-inline-start: var(--nav-indicator-width) solid transparent;
+  border-radius: 0 var(--radius-150) var(--radius-150) 0;
+  font: var(--text-preset-3);
+}
+
+.sidebar.active {
+  border-inline-start-color: var(--color-green);
+}
+
+.sidebar .label {
+  overflow: hidden;
+}
+
+.collapsed .label {
+  display: none;
+}
+
+/* The bottom bar's tab: icon over label, 44 px tall (66 px on a tablet), top corners rounded,
+   preset 5 bold; the label shows from 768 px (§2.4). */
+.bottom {
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-50);
+  block-size: calc(var(--bottom-nav-height-mobile) - var(--spacing-100));
+  padding: var(--spacing-100) 0 var(--spacing-150);
+  border-block-end: var(--nav-indicator-width) solid transparent;
+  border-radius: var(--radius-100) var(--radius-100) 0 0;
+  font: var(--text-preset-5-bold);
+}
+
+.bottom.active {
+  border-block-end-color: var(--color-green);
+}
+
+.bottom .label {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .bottom {
+    block-size: calc(var(--bottom-nav-height-tablet) - var(--spacing-100));
+  }
+
+  .bottom .label {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none;
+  }
+}

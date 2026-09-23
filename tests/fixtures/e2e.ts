@@ -1,5 +1,11 @@
 import AxeBuilder from "@axe-core/playwright";
-import { test as base, expect, type APIRequestContext, type Page } from "@playwright/test";
+import {
+  test as base,
+  expect,
+  type APIRequestContext,
+  type Locator,
+  type Page,
+} from "@playwright/test";
 import { demoCredentials } from "@/src/server/env";
 
 /**
@@ -75,6 +81,20 @@ export async function loginViaApi(page: Page): Promise<void> {
   const { email, password } = demoCredentials();
   const response = await page.request.post("/api/auth/login", { data: { email, password } });
   expect(response.status(), "POST /api/auth/login with the demo credentials").toBe(200);
+}
+
+/**
+ * Presses the key that moves focus to the next control and asserts where focus landed and
+ * that it is visibly indicated (NFR-A2). WebKit, like Safari with "Press Tab to highlight
+ * each item" off (its default), reaches only text fields with Tab and skips buttons and
+ * links; Option+Tab reaches every control, and Playwright names that key "Alt" — measured in
+ * T-06 (plan Task 7, Step 3).
+ */
+export async function tabTo(page: Page, target: Locator): Promise<void> {
+  const engine = page.context().browser()?.browserType().name();
+  await page.keyboard.press(engine === "webkit" ? "Alt+Tab" : "Tab");
+  await expect(target).toBeFocused();
+  await expect(target).toHaveCSS("outline-style", "solid");
 }
 
 /** NFR-A1: WCAG 2.1 AA, zero serious or critical axe violations. One `"<rule id>: <targets>"` per violation. */

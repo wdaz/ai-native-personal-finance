@@ -1323,3 +1323,217 @@ them too").
   said "Option+Tab" while the code sends Playwright's "Alt+Tab". It was fixed by naming the key both
   ways. The second review the owner referred to is taken to be the Opus whole-branch review above.
 - `npm run test:all`: 521 unit, 43 API, 117 E2E.
+
+## 2026-09-23 — Build (T-07): App shell part 1 — plan, plan gate, subagent-driven implementation
+
+- **Phase:** 5 — Build the slice (Release 1).
+- **Participants:** Owner / Agent (Claude Code): Opus 5.5 wrote the plan; the execution was
+  subagent-driven — a controller session and, per task, one Sonnet 5 implementer and one Sonnet 5
+  reviewer (plus a fix round where a reviewer confirmed a finding). The whole-branch review and the
+  draft PR are the controller's and are added below when they exist.
+- **Trigger:** the owner's "Start to planing T-07. main branch updated" (~18:09 +04), then, at the
+  go-ahead (~19:06 +04), "`/superpowers:subagent-driven-development` istifadə edərək T-07 icrasına
+  başla" ("start T-07's execution using subagent-driven-development").
+- **Prompt(s):** `prompts/2026-09-23-T-07.md` (the owner's messages verbatim);
+  `prompts/2026-09-23-T-07/screenshots/`.
+- **Produced:**
+  - The plan, `plans/2026-09-23-T-07.md`, v0.1 → v0.3, and one docs-only gate PR (#18): SPEC-auth
+    v1.0.6, ADR-0006's dated amendment, SPEC-app-shell v1.3, design-tokens v1.2 (the "App shell"
+    table, 35 tokens) with its `tokens.css` mirror, backlog v1.19, tech-debt v1.2.
+  - On `task/T-07-app-shell`, seven tasks:
+    - Task 1: Testing Library (component tests, first use), the navigation icons and `SignOutIcon`,
+      `LogoSmall`, `nav.ts`, `cx.ts`, `NavItem`.
+    - Task 2: `logout.ts`, `LogoutButton`, the middleware's same-origin `/login?reason=logout`
+      fallback, and TD-1 (the CSP on the forwarded request headers) in the same middleware change.
+    - Task 3: `Sidebar` and `sidebar-state.ts` (US-35).
+    - Task 4: `Shell`, `BottomNav`, `PageHeader`, `OriginTrialMeta`, the `(app)` layout with
+      `connection()`, the four Release 2 pages and the heading-only Overview,
+      `tests/fixtures/csp.ts`, `tests/api/app-pages.spec.ts`.
+    - Task 5: `session-recheck.ts` (the back/forward-cache re-check) and `logout.spec.ts`
+      (US-03 AC1–AC2).
+    - Task 6: `tabTo` in the E2E fixtures, `app-shell.spec.ts` (22 tests) and
+      `app-shell-keyboard.spec.ts` (4 walkthroughs) — 26 tests in the two files.
+    - Task 7: the layer READMEs, TD-1 marked Closed, this entry, the prompt record and seven
+      screenshots (Overview and Transactions at 1440, 768 and 375 px; Transactions minimised at
+      1440 px).
+  - `npm run test:all` green at the end of Task 7: secrets scan (225 commits, no leaks), lint,
+    format, typecheck, 576 unit (42 files), 56 API, 216 E2E (72 on each of Chromium, Firefox and
+    WebKit). Before T-07 it was 521 unit, 43 API, 117 E2E. `npm audit --audit-level=high`: 0
+    vulnerabilities.
+- **What the agent got right:**
+  - Four of the five Review Focus pins were proved by reintroducing the defect, and each mutation
+    bit as intended (the fifth is the first item under "wrong", below):
+    - Focus 1 (Back after logout): `router.push` in place of `window.location.assign` made
+      "back navigation after logout does not reveal the app page" fail — after `goBack()` the
+      page showed `/budgets` from the router's memory.
+    - Focus 2 (a failed logout must still log out): `authenticated && !logoutFallback` changed
+      back to `authenticated` made the same-origin test fail (`Expected: 200, Received: 302`).
+    - Focus 3 (`no-store` as Next's default): deleting the middleware's `no-store` line failed
+      exactly the T-05 hand-off test (`Received: "private, no-cache, no-store, max-age=0,
+      must-revalidate"`), and no other.
+    - Focus 5 (focus ring on the current item): deleting `.active:focus-visible` failed the
+      desktop walkthrough at the Budgets stop (`outline-color` `rgb(255, 255, 255)`, not
+      `rgb(32, 31, 36)`).
+  - Task 4's implementer bisected the Focus 4 result to its cause instead of accepting a green
+    run.
+  - The exact `toEqual` boxes (300 × 900 sidebar; 74 px and 52 px bars) and the computed colours
+    passed unchanged on all three engines.
+- **What the agent got wrong or missed:**
+  1. **Focus 4's mutation did not bite on the layout alone.** Deleting `await connection()` from
+     `app/(app)/layout.tsx` left all seven `app-pages` tests green, and the build's route table
+     still showed `ƒ` for all five pages. The cause is `app/not-found.tsx` (T-06 F1), which also
+     calls `connection()`; in Next 16.3.5 that alone makes every route in the tree dynamic. With
+     `not-found.tsx` moved away and the layout intact, the five pages stayed `ƒ`; with it moved
+     away and the layout's call removed, they became `○` and five tests failed on an inline
+     `<script>` with no nonce. So `tests/api/app-pages.spec.ts` guards "at least one of the two
+     `connection()` calls", and today the layout's is redundant: the mutation in Review Focus 4
+     bites only with both removed. The layout's doc comment (ADR-0006, plan D4) says its call is
+     what makes the pages per-request — true only when the not-found one is absent — so it
+     overstates. The controller kept the call (SPEC-app-shell, ADR-0006 and D4 mandate it, and it
+     stops the pages depending on `not-found.tsx`); rewording the comment, and a note at the top of
+     `app-pages.spec.ts`, are deferred to the whole-branch review. The plan's Review Focus 4 was
+     written without re-deriving what T-06's F1 did to rendering — the same lesson as T-06's
+     lesson 2.
+  2. **Which Back path each engine took (Task 5).** A temporary probe (a `pageshow` listener
+     writing `persisted`, plus a log of document requests after `goBack()`; deleted before the
+     commit) showed the same on Chromium, Firefox and WebKit: `pageshow` never fired, and the
+     browser re-requested `/budgets` and then `/login`, ending at `/login?next=%2Fbudgets` (the
+     middleware's redirect). Back took the reload path, not the back/forward cache. The bfcache
+     branch of the re-check is covered only by synthetic `pageshow { persisted: true }` tests and
+     by unit tests. **A manual check in real Chrome and Safari (Back after logout) was not
+     done**; it is the only true confirmation of US-03 AC1's bfcache half.
+  3. **Task 6's tests read values once.** The reviewer found `expect(await …)` on
+     `boundingBox()`, `scrollWidth`, `sessionStorage` and three axe calls in `app-shell.spec.ts`,
+     against the E2E rule "`expect.poll` where a value is read" (ADR-0003, the Definition of
+     Done). The plan's own code had them, so the plan text lost to the binding rule. One fix round
+     converted every one-shot read with the expected values unchanged (`4730dda`); the keyboard
+     spec had none. The two files together — 26 tests (22 + 4) on each of three engines, 78 runs —
+     passed afterwards.
+  4. **Task 2's middleware mutation, and TD-1.** The mutation check on the middleware exception
+     (Focus 2) was done as planned. TD-1 was fixed in the same middleware change, as the owner
+     decided at the gate (Q1 (d)); the nonce API tests and the E2E CSP guard stayed green.
+     `docs/03-specs/tech-debt.md` was left for Task 7, which marked TD-1 Closed.
+  5. **Smaller deviations from the plan.** Task 1's Step 1 (`git switch -c`, copying a
+     `.env.local`) was skipped: the worktree already sat on the task branch. In Task 3 the
+     implementer wrote `Sidebar.tsx` in the same batch as its test, then moved it aside to see
+     the RED failure. Task 5's E2E spec was written together with the implementation, so it has
+     no separate RED run; Task 6's tests were green on the first run because the app already
+     existed, and their mutation check is the proof they bite. Task 4's "7 tests" in the RED/GREEN
+     step counted only the new ones. The plan's screenshot script waited only for `sessionStorage`,
+     so the first "minimised" shot caught the sidebar at 285 px, mid-way through its 200 ms width
+     transition; it was retaken after a 600 ms wait.
+  6. **Deferred minors** (from the per-task reviews, for the whole-branch review to triage):
+     generated icon files with over-long one-line doc comments; an untyped `next/link` mock;
+     `LogoutButton` has no component test of its own; the logout-fallback test pins only
+     `Max-Age=0`; `middleware.ts` cites Next internals by line number; the sidebar's
+     `aria-label="Main"` is a literal (plan D7); the `sidebar-state` tests miss the
+     `getItem`-throws path; the session-recheck tests lack the `persisted: true` plus
+     authenticated no-leave case and a non-ok JSON case; `logout.spec`'s `toHaveLength(1)` console
+     count could be `expect.poll`; the tablet hover test has no pre-hover colour check; the phone
+     and skip-link focus rings are asserted as solid, not by colour; the OT-tag test title has no
+     story id (the brief mandated it: there is no story) and `toHaveCount(0)` cannot prove its
+     selector; the 1023/1024 px boundary is untested.
+- **Environment:** `.env.local` was absent in the fresh worktree. Copying another worktree's file
+  was denied by the harness, so a fresh local `.env.local` was generated with new random secrets
+  (git-ignored, local database only). The screenshot script reads the demo credentials from the
+  environment only, through `node --env-file`; it was a temporary file in the repository root,
+  deleted after the run, because the harness refuses a heredoc fed to `node`.
+- **Screenshots against the design export.** The prototype was not rendered side by side. Its
+  markup gives a 300 px sidebar (88 px minimised) with a `0 16px 16px 0` radius, page padding of
+  `32px 40px` on desktop and tablet and `24px 16px` on the phone; the screenshots are consistent
+  with those (heading at x = 340 on desktop, 40 on tablet, 16 on the phone; a beige active pill
+  with a green bar; labels in the tablet bar, icons only on the phone). Not compared: the
+  prototype's bottom padding (92 px phone, 116 px tablet), hover colours, and anything the markup
+  does not state. No value was tuned.
+- **Owner changes and reasoning:**
+  - At the gate, ~18:52 +04: "Q1–Q4 tövsiyyə olanları plana daxil et" — all four recommended
+    answers: Q1 (a) with TD-1 fixed in the same change ((d) yes), Q2 (a) a heading-only Overview,
+    Q3 (a) Phosphor "sign-out", Q4 nine tokens including the two durations. The owner did not
+    understand the question about the gate-PR path; the agent explained it (the specs T-07 changes
+    must be on `main` before the code that follows them), and at ~18:54 +04 the owner said "bəli,
+    hazırla". The go-ahead named the execution method — subagent-driven — although the plan had
+    recommended native execution.
+  - During execution the ledger records no owner change.
+- **Disagreements:** none recorded.
+- **Lessons for the process:**
+  1. A mutation step in a plan states an expected result; when an earlier task added a second way
+     to reach the same outcome (`not-found.tsx`'s `connection()`), the step has to be re-derived,
+     or it passes — or here, fails to fail — for a reason the plan did not name. The
+     implementer's bisect is what caught it.
+  2. When a plan's code conflicts with a binding constraint (here `expect.poll`), the constraint
+     wins; the plan text was corrected in a fix round, not defended.
+  3. Playwright's Chromium, Firefox and WebKit never exercised the real back/forward cache in this
+     setup. A behaviour that exists only there needs a manual check in the real browser, or an
+     honest note that it has none. This one has the note.
+  4. A screenshot taken right after a state change captures the transition. Wait for the
+     transition, not for the state.
+- **Next:** the whole-branch review on the most capable model, its fixes, `npm run test:all`
+  again, the push and the draft PR for `task/T-07-app-shell` (the controller's). The PR names
+  the `docs/03-specs/tech-debt.md` change (TD-1 Closed), and a follow-up commit adds its number
+  and date to TD-1's "Closed" line. Then T-08 (the reset banner and `getMeta` in the `(app)`
+  layout).
+
+### Addendum — 2026-09-23, whole-branch review
+
+- **Verdict:** With fixes, 0 Critical (the most capable model reviewed `5b15220..e8b7926`). One
+  fix wave, two commits: the code and tests, then this documentation.
+- **I1 — the "Skip to content" focus ring was invisible on desktop.** `.skipLink` is
+  `position: absolute` with no positioned ancestor, so it sits at 16 px / 16 px of the viewport —
+  at 1024 px and up on the grey-900 sidebar, over the logo. The global `:focus-visible` ring is
+  grey-900, so ring, sidebar and link box were the same colour. Measured in the production build
+  before the fix: at 1440, 768 and 375 px the ring was `rgb(32, 31, 36)`, 2 px outside the box;
+  only at 768 and 375 px did the link sit on the beige page, where it showed. The same defect
+  class as Review Focus 5. The walkthrough had asserted only `outline-style` (in `tabTo`) and
+  `toBeInViewport`, so "visible on focus" (SPEC-app-shell §2.8) was asserted nowhere. Fix: plan
+  D10's rule for the skip link — `outline-color: var(--focus-ring-color-on-dark)` with the offset
+  drawn inside the box — measured white at all three widths (an uncommitted scratch screenshot at 1440 px showed the
+  ring). The desktop walkthrough now asserts the skip link's `outline-color` is white and its
+  `clip-path` is `none`. Mutation: removing the rule failed the walkthrough (`outline-color`
+  `rgb(32, 31, 36)`, not white); always-clipping the link (`.skipLink:not(:focus)` → `.skipLink`)
+  failed it too, at `toBeInViewport` (ratio 0), which comes before the `clip-path` line.
+- **I2 — the go-ahead quote.** It is the owner's own command message, verbatim
+  "/superpowers:subagent-driven-development istifadə edərək T-07 icrasına başla", 2026-09-23
+  ~19:06 +04, recorded in the SDD ledger. The quote here and in the prompt record is exact; no
+  change.
+- **M1** — the comments on `connection()` (the layout, the head of `tests/api/app-pages.spec.ts`,
+  `app/(app)/README.md`) were reworded to what is true: `app/not-found.tsx`'s own call already
+  makes every route dynamic in Next 16.3.5, the layout's call keeps the app pages per-request
+  without depending on that file, and `app-pages.spec.ts` fails only when both are gone. The call
+  stays (the deferred item under "wrong", 1, is done).
+- **M2** — this entry's corrections: `app-shell.spec.ts` has 22 tests, not 26 (26 is the sum with
+  the keyboard spec, verified with `npx playwright test --list`), the `connection()` decision is
+  D4, not D1, and the prompt record's account of the branch (it first ran on `worktree-T-07-app-shell`, renamed to `task/T-07-app-shell`).
+- **M3** — TD-1's "Closed" line needs the PR's number and date; the controller adds them once
+  the PR exists.
+- **M4** — a unit test pins the 10 s logout timeout (SPEC-auth §2.7): `AbortSignal.timeout` is
+  called with `10_000`, asserted as the literal so the constant cannot drift with it. Changing the
+  constant to 60 000 failed it. The "no answer" logout test is renamed for what it simulates (the
+  request fails).
+- **M5** — a unit test for `pageshow` with `persisted: true` while the session lives: `leave` is
+  not called. It awaits the answer's body and one macrotask turn, no fixed sleep; making the
+  re-check leave unconditionally failed it.
+- **Deferred minors, triaged "may stay"** (the reviewer's numbering):
+  - M6: TD-1 is closed by construction — no test isolates the forwarded-header line.
+  - M7: the footer rows sit 4 px left of the navigation rows — compare with the design export.
+  - M8: reduced motion is untested.
+  - M9: `100vh` versus `100dvh` on mobile Safari.
+  - M10: unused exports.
+  - M11: `isLogoutFallback` does not check the request method (fixed below, after PR #19's Copilot review).
+  - M12: small CSS duplication.
+- **TD-6.** The owner pasted a `next dev` console log (~20:41 +04) full of CSP violations — React's
+  eval check and Next's dev overlay — and asked ("Zəhmət olmasa TD-6 qeydini yarat.", ~20:44 +04)
+  for a tech-debt entry. It is TD-6 in `docs/03-specs/tech-debt.md` v1.4, commit `b2da9de`, on
+  this branch (TD-4 and TD-5 were added the same way on T-06's), to be named in the PR.
+- **PR #19's Copilot review — four findings, one accepted.**
+  - Accepted: `isLogoutFallback` keyed only on `Sec-Fetch-Site: same-origin`, so a same-origin
+    `fetch()`, XHR or iframe to `/login?reason=logout` could clear the session in the background
+    (the same gap as M11, the missing method check). The controller/agent ruled it valid: the
+    spec text already said `GET`, and the design intent was a navigation. The middleware now also
+    requires `GET`, `Sec-Fetch-Mode: navigate` and `Sec-Fetch-Dest: document`; an absent header
+    keeps the redirect. SPEC-auth v1.0.7 and a dated note in ADR-0006 record it; API tests pin a
+    `cors` fetch, an iframe, absent mode and dest headers, and a `POST`. Removing each guard in
+    turn failed its test (method: the `POST` test; mode: the `fetch` test; dest: the iframe test).
+  - Declined, three findings: "move `"Main"` / `"Log out"` into `COPY`". The navigation and
+    logout labels stay spec text in the components — the owner's answer at T-06's plan gate, Q1
+    (b), recorded in SPEC-auth v1.0.4's changelog, and plan D3; `copy.test.ts` mirrors the copy
+    appendix row by row, and these labels are not rows of it.

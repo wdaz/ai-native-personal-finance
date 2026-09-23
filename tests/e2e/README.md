@@ -17,6 +17,12 @@ Playwright browser tests, one journey per story, on Chromium, Firefox and WebKit
   scaffold test, it has no story id.
 - Keyboard walkthroughs press Alt+Tab on WebKit: its default Tab skips buttons and links, as
   Safari does with "Press Tab to highlight each item" off.
+- `tabTo(page, target)` (`tests/fixtures/e2e.ts`) presses Tab — Alt+Tab on WebKit — and
+  asserts focus and a visible ring.
+- The app shell: `app-shell.spec.ts` (US-33 layouts at 1440/768/375 and 320, US-34 hover,
+  US-35 minimise, titles, placeholders, axe), `app-shell-keyboard.spec.ts` (US-32
+  walkthroughs, focus rings), `logout.spec.ts` (US-03 AC1–AC2, the back/forward-cache
+  re-check through a synthetic `pageshow`).
 - CI runs Chromium (T-06); Firefox and WebKit join in T-13. `npm run test:e2e` runs all three
   locally.
 

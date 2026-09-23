@@ -66,3 +66,12 @@ export function demoCredentials(env: Env = process.env): DemoCredentials {
   }
   return { email, password };
 }
+
+/**
+ * SPEC-app-shell §2.1, ADR-0007: Chrome's WebMCP origin-trial token, registered for the
+ * production hostname only. Unset, empty or blank → none, and the layout renders no tag.
+ */
+export function webmcpOriginTrialToken(env: Env = process.env): string | null {
+  const token = env.WEBMCP_ORIGIN_TRIAL_TOKEN?.trim();
+  return token ? token : null;
+}

@@ -32,6 +32,26 @@ const TEST_API = /^\/api\/test\//;
 // the session check too).
 const ADMIN_API = /^\/api\/admin\/reset$/;
 
+// SPEC-auth §2.7–2.8 (v1.0.7), ADR-0006 (2026-09-23, T-07 plan gate): where the logout button
+// goes when POST /api/auth/logout failed. The browser still holds the httpOnly session cookie,
+// which only a response can clear — so this one navigation clears it and shows the login page
+// instead of bouncing a logged-in visitor to /overview. Only a same-origin GET *document
+// navigation* qualifies (Copilot review of PR #19): a link or form on another site (logout
+// CSRF), a typed URL ("none"), a same-origin fetch()/XHR/iframe/prefetch (Sec-Fetch-Mode or
+// -Dest differ), a non-GET method, or a browser that sends no fetch metadata keeps the
+// redirect — an absent header fails closed. logOut()'s `window.location.assign` is exactly
+// such a navigation, so the button's path is unchanged.
+function isLogoutFallback(request: NextRequest): boolean {
+  return (
+    request.method === "GET" &&
+    request.nextUrl.pathname === "/login" &&
+    request.nextUrl.searchParams.get("reason") === "logout" &&
+    request.headers.get("sec-fetch-site") === "same-origin" &&
+    request.headers.get("sec-fetch-mode") === "navigate" &&
+    request.headers.get("sec-fetch-dest") === "document"
+  );
+}
+
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const now = new Date();
   const { pathname, search } = request.nextUrl;
@@ -41,6 +61,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // the nonce-source expression (review finding, Copilot High). Base64-encoding it, exactly
   // as Next's own docs do (content-security-policy.md), produces a valid token.
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const csp = `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; frame-ancestors 'none'`;
 
   const isApi = pathname.startsWith("/api/");
   const isRoot = pathname === "/";
@@ -60,6 +81,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // never having had a session at all, so the login page can show "The demo data was reset"
   // (review finding I1).
   const resetInvalidated = payload !== null && !authenticated && isSessionValid(payload, now, null);
+  const logoutFallback = isLogoutFallback(request);
 
   let response: NextResponse;
 
@@ -83,14 +105,16 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       loginUrl.searchParams.set("next", next);
       response = NextResponse.redirect(loginUrl, 302);
     }
-  } else if (!isApi && AUTH_PAGES.test(pathname) && authenticated) {
+  } else if (!isApi && AUTH_PAGES.test(pathname) && authenticated && !logoutFallback) {
     response = NextResponse.redirect(new URL("/overview", request.url), 302);
   } else {
-    // Next.js reads the nonce back out of this request header while rendering (ADR-0006,
-    // content-security-policy.md's "How nonces work in Next.js") and applies it to its own
-    // inline RSC-payload scripts, framework scripts and inline styles automatically — no
-    // per-tag wiring needed on our side for anything Next itself emits.
+    // Next 16 takes the nonce it puts on its own inline scripts and styles from the *request's*
+    // Content-Security-Policy header (next/dist/server/app-render/app-render.js:209-210) — set
+    // it there, as Next's content-security-policy guide does, rather than relying on Next
+    // copying the response header onto the request (TD-1, closed by T-07). `x-nonce` is for our
+    // own <Script> components, read with `headers()`.
     const forwardedHeaders = new Headers(request.headers);
+    forwardedHeaders.set("Content-Security-Policy", csp);
     forwardedHeaders.set("x-nonce", nonce);
     response = NextResponse.next({ request: { headers: forwardedHeaders } });
   }
@@ -98,7 +122,8 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // Skip the reissue on logout (and login, which seals its own fresh cookie) — otherwise an
   // old-enough session sends two Set-Cookie headers in one response, and only header-merge
   // order happens to make the clear win (review finding M5).
-  const skipsReissue = pathname === "/api/auth/logout" || pathname === "/api/auth/login";
+  const skipsReissue =
+    pathname === "/api/auth/logout" || pathname === "/api/auth/login" || logoutFallback;
   if (!skipsReissue && authenticated && payload && shouldReissue(payload, now)) {
     const secure = request.url.startsWith("https://");
     const resealed = await sealSession({
@@ -111,18 +136,21 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       sessionCookieHeader(resealed, SESSION_TTL_SECONDS, secure),
     );
   }
+  if (logoutFallback && cookie !== undefined) {
+    response.headers.append(
+      "Set-Cookie",
+      sessionCookieHeader("", 0, request.url.startsWith("https://")),
+    );
+  }
 
   response.headers.set("X-Request-Id", requestId);
   if (!isApi && authenticated) {
     response.headers.set("Cache-Control", "no-store");
   }
-  response.headers.set(
-    // ADR-0006, 2026-09-23 amendment (restored): Next's own RSC-payload scripts and inline
-    // styles are inline on every server-rendered page, so both script-src and style-src need
-    // the nonce, not just script-src.
-    "Content-Security-Policy",
-    `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; frame-ancestors 'none'`,
-  );
+  // ADR-0006, 2026-09-23 amendment (restored): Next's own RSC-payload scripts and inline
+  // styles are inline on every server-rendered page, so both script-src and style-src need
+  // the nonce, not just script-src.
+  response.headers.set("Content-Security-Policy", csp);
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("X-Content-Type-Options", "nosniff");
 

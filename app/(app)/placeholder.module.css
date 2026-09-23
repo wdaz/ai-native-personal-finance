@@ -1,0 +1,5 @@
+/* Plan D20: no design exists for the Release 2 placeholders — body text, grey-500. */
+.body {
+  margin: 0;
+  color: var(--color-grey-500);
+}
