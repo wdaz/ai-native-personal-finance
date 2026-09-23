@@ -1486,8 +1486,8 @@ them too").
   class as Review Focus 5. The walkthrough had asserted only `outline-style` (in `tabTo`) and
   `toBeInViewport`, so "visible on focus" (SPEC-app-shell §2.8) was asserted nowhere. Fix: plan
   D10's rule for the skip link — `outline-color: var(--focus-ring-color-on-dark)` with the offset
-  drawn inside the box — measured white at all three widths, and the screenshot at 1440 px shows
-  the ring. The desktop walkthrough now asserts the skip link's `outline-color` is white and its
+  drawn inside the box — measured white at all three widths (an uncommitted scratch screenshot at 1440 px showed the
+  ring). The desktop walkthrough now asserts the skip link's `outline-color` is white and its
   `clip-path` is `none`. Mutation: removing the rule failed the walkthrough (`outline-color`
   `rgb(32, 31, 36)`, not white); always-clipping the link (`.skipLink:not(:focus)` → `.skipLink`)
   failed it too, at `toBeInViewport` (ratio 0), which comes before the `clip-path` line.

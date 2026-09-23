@@ -39,9 +39,11 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   content-security-policy guide does; keep forwarding `x-nonce` for any `<Script>` that reads it
   with `headers()`; correct the comment in `middleware.ts`. ADR-0006's wording was already
   corrected (dated note of 2026-09-23).
-- **Closed:** T-07 (`task/T-07-app-shell`) — `middleware.ts` sets the policy on the forwarded
-  request headers and its comment says so; the nonce API tests and the E2E CSP guard stayed
-  green.
+- **Closed:** 2026-09-23, T-07 (`task/T-07-app-shell`, PR #19) — `middleware.ts` sets the policy
+  on the forwarded request headers and its comment says so; the nonce API tests and the E2E CSP
+  guard stayed green. No test isolates the forwarded-header line itself: Next still copies the
+  response header onto the request, so removing the line alone would not fail one (whole-branch
+  review, M6).
 
 ## TD-2 — `middleware.ts` uses a deprecated file convention
 
