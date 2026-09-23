@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  SCHEDULE_SLACK_MS,
   adminResetIssues,
   bearerToken,
   isAuthorized,
+  isScheduledResetDue,
   parseAdminResetBody,
   resetLogLine,
+  scheduledResetDueAt,
 } from "@/src/server/admin-reset";
 
 afterEach(() => {
@@ -107,5 +110,41 @@ describe("resetLogLine (SPEC-reset-and-test-support §2.2)", () => {
     expect(resetLogLine("scheduled", 59, "7f3c")).toBe(
       "reset reason=scheduled rows=59 requestId=7f3c",
     );
+  });
+});
+
+describe("scheduledResetDueAt / isScheduledResetDue (SPEC-reset-and-test-support §2.3 v1.4)", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const HOUR = 60 * 60 * 1000;
+  const last = new Date("2026-09-13T03:59:00.000Z");
+
+  it("is due one hour before interval days have passed — Vercel Hobby runs a cron within its hour", () => {
+    expect(scheduledResetDueAt(last, 10)).toEqual(new Date(last.getTime() + 10 * DAY - HOUR));
+    expect(SCHEDULE_SLACK_MS).toBe(HOUR);
+  });
+
+  it("a daily 03:xx check resets on the 10th day even when the last reset ran late in its hour", () => {
+    const tenthDayEarly = new Date("2026-09-23T03:00:00.000Z");
+    expect(isScheduledResetDue(last, tenthDayEarly, 10)).toBe(true);
+  });
+
+  it("is not due on the 9th day's check", () => {
+    const ninthDayLate = new Date("2026-09-22T03:59:00.000Z");
+    expect(isScheduledResetDue(last, ninthDayLate, 10)).toBe(false);
+  });
+
+  it("the due time itself is due; a millisecond before is not", () => {
+    const due = scheduledResetDueAt(last, 10);
+    expect(isScheduledResetDue(last, due, 10)).toBe(true);
+    expect(isScheduledResetDue(last, new Date(due.getTime() - 1), 10)).toBe(false);
+  });
+
+  it("follows the configured interval", () => {
+    expect(isScheduledResetDue(last, new Date(last.getTime() + 2 * DAY), 3)).toBe(false);
+    expect(isScheduledResetDue(last, new Date(last.getTime() + 3 * DAY), 3)).toBe(true);
+  });
+
+  it("a database never reset is due", () => {
+    expect(isScheduledResetDue(null, last, 10)).toBe(true);
   });
 });

@@ -1,10 +1,15 @@
 import { timingSafeEqual } from "node:crypto";
 import type { z } from "zod";
-import { AdminResetSchema, type AdminResetBody, type ErrorIssue } from "@/src/shared/schemas";
+import {
+  AdminResetSchema,
+  type AdminResetBody,
+  type ErrorIssue,
+  type ScheduledResetSkipped,
+} from "@/src/shared/schemas";
 import { getDb } from "./db";
-import { cronSecret, type Env } from "./env";
+import { cronSecret, resetIntervalDays, type Env } from "./env";
 import { errorResponse, validationErrorResponse } from "./http";
-import { resetToSeed } from "./reset";
+import { latestResetAt, resetToSeed } from "./reset";
 
 /**
  * `Authorization: Bearer <token>` → the token; anything else → null. The scheme is matched
@@ -75,6 +80,37 @@ export function parseAdminResetBody(
     : { success: false, issues: adminResetIssues(parsed.error.issues) };
 }
 
+/**
+ * Vercel's Hobby plan runs a cron "at any point within the specified hour"
+ * (vercel.com/docs/cron-jobs/manage-cron-jobs, read 2026-09-23), so a daily 03:00 check can
+ * land up to 59 minutes earlier than the one before. Due one hour early, the check on the
+ * interval's last day still resets.
+ */
+export const SCHEDULE_SLACK_MS = 60 * 60 * 1000;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** SPEC-reset-and-test-support §2.3 (v1.4): the earliest time the daily check resets. */
+export function scheduledResetDueAt(lastResetAt: Date, intervalDays: number): Date {
+  return new Date(lastResetAt.getTime() + intervalDays * DAY_MS - SCHEDULE_SLACK_MS);
+}
+
+/**
+ * SPEC-reset-and-test-support §2.3 (v1.4), US-37 AC1: the scheduled reset runs when
+ * `RESET_INTERVAL_DAYS` have passed since the last reset of any kind. A database with no reset
+ * at all is due. `now` is system time, handed in by the route (ADR-0005).
+ */
+export function isScheduledResetDue(
+  lastResetAt: Date | null,
+  now: Date,
+  intervalDays: number,
+): boolean {
+  return (
+    lastResetAt === null ||
+    now.getTime() >= scheduledResetDueAt(lastResetAt, intervalDays).getTime()
+  );
+}
+
 /** SPEC-reset-and-test-support §2.2's log line. It never names the secret. */
 export function resetLogLine(reason: AdminResetReason, rows: number, requestId: string): string {
   return `reset reason=${reason} rows=${rows} requestId=${requestId}`;
@@ -92,19 +128,23 @@ async function readBody(request: Request): Promise<{ ok: true; body: unknown } |
 }
 
 /**
- * `POST /api/admin/reset` (SPEC-reset-and-test-support §2.2) and `GET /api/admin/reset` — how
- * Vercel's cron calls it: a bodyless GET with the `CRON_SECRET` as its Authorization header,
- * always the scheduled reset (§2.3, T-08 plan Q1 (a)). 204, 400, 401, or the 500 envelope.
+ * `POST /api/admin/reset` (SPEC-reset-and-test-support §2.2): an operator's reset, always run.
+ * `GET /api/admin/reset` is Vercel's daily cron: a bodyless GET with the `CRON_SECRET` as its
+ * Authorization header (§2.3, T-08 plan Q1 (a)). It runs the scheduled reset only once
+ * `RESET_INTERVAL_DAYS` have passed since the last reset; otherwise 200 `{ reset: false, dueAt }`
+ * (v1.4, PR #20 review finding 2). 204, 200, 400, 401, or the 500 envelope.
  */
 export async function handleAdminReset(
   method: "GET" | "POST",
   request: Request,
+  now: Date,
   env: Env = process.env,
 ): Promise<Response> {
   try {
     if (!isAuthorized(request.headers.get("authorization"), env)) {
       return errorResponse(401, "unauthenticated", "Missing or wrong reset secret");
     }
+    const requestId = request.headers.get("x-request-id") ?? "none";
     let reason: AdminResetReason = "scheduled";
     if (method === "POST") {
       const read = await readBody(request);
@@ -112,9 +152,18 @@ export async function handleAdminReset(
       const parsed = parseAdminResetBody(read.body);
       if (!parsed.success) return validationErrorResponse(parsed.issues);
       reason = parsed.reason;
+    } else {
+      const last = await latestResetAt(getDb());
+      const intervalDays = resetIntervalDays(env);
+      if (last !== null && !isScheduledResetDue(last, now, intervalDays)) {
+        const dueAt = scheduledResetDueAt(last, intervalDays).toISOString();
+        console.log(`reset skipped reason=scheduled dueAt=${dueAt} requestId=${requestId}`);
+        const body: ScheduledResetSkipped = { reset: false, dueAt };
+        return Response.json(body);
+      }
     }
     const { rows } = await resetToSeed(getDb(), reason);
-    console.log(resetLogLine(reason, rows, request.headers.get("x-request-id") ?? "none"));
+    console.log(resetLogLine(reason, rows, requestId));
     return new Response(null, { status: 204 });
   } catch (error) {
     console.error(`${method} /api/admin/reset failed`, error);

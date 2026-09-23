@@ -244,3 +244,13 @@ export const AdminResetSchema = z.strictObject({
   reason: z.enum(RESET_REASONS).exclude(["test"]).default("manual"),
 });
 export type AdminResetBody = z.infer<typeof AdminResetSchema>;
+
+/**
+ * `GET /api/admin/reset` → 200 when the daily check finds no reset due yet
+ * (SPEC-reset-and-test-support §2.3 v1.4): `dueAt` is the earliest check that will reset.
+ */
+export const ScheduledResetSkippedSchema = z.strictObject({
+  reset: z.literal(false),
+  dueAt: UtcDateTime,
+});
+export type ScheduledResetSkipped = z.infer<typeof ScheduledResetSkippedSchema>;
