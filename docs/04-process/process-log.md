@@ -838,8 +838,9 @@ Append-only. Newest entry at the bottom. Template:
   `docs/03-specs/backlog.md` v1.9 (T-04 hand-offs in ten later rows); a separate PR (#9, merged)
   amending ADR-0004 and `docs/03-specs/webmcp-tools.md` to v1.0.2 (finding F1 — `z.toJSONSchema`,
   not `zod-to-json-schema`, which returns an empty schema for a Zod 4 object with no error).
-  Tests: Vitest 341 → **429** (88 new), API 17/17, E2E 3/3, `src/domain` + `src/shared` coverage
-  100 %, `npm audit` 0, secret scan clean.
+  Tests: Vitest 341 → **430** (89 new — 429 through Task 7, plus one net test from the final
+  review's fix wave, below), API 17/17, E2E 3/3, `src/domain` + `src/shared` coverage 100 %,
+  `npm audit` 0, secret scan clean.
 - **Execution:** subagent-driven, one Haiku implementer per task (every task's plan text gave
   complete, verbatim code, so the work was transcription plus testing) and one Sonnet reviewer
   per task, plus one fix round (Task 5). F1 ran as a separate Haiku subagent in its own worktree,
@@ -847,7 +848,10 @@ Append-only. Newest entry at the bottom. Template:
   owner's instruction. The controller wrote the prompt record, the session-folder review files
   and Task 7's document edits directly (the process record needs this session's own context,
   which a fresh subagent would not have); every other task ran the full dispatch → report →
-  review cycle. Ledger in `prompts/2026-09-23-T-04/progress.md`.
+  review cycle. The final whole-branch review ran on Opus (per the skill's model guidance for
+  architecture-level review) and returned "With fixes": one Important finding (the D17
+  misreading, below) and several Minor/routed items. One fix-wave dispatch (Sonnet), one scoped
+  re-review, both clean. Ledger in `prompts/2026-09-23-T-04/progress.md`.
 - **What the agent got right:** the plan's every code block was cut from a prototype that was
   itself built and gated task-by-task before being spliced in, then the whole plan was replayed
   in order on a second clean copy — every task's predicted test count held exactly through Task
@@ -857,13 +861,18 @@ Append-only. Newest entry at the bottom. Template:
   under-specified points (the test-id rule's exact shape, where F1's check should live) as
   structured questions rather than guessing either.
 - **What the agent got wrong or missed:**
-  1. Task 5's own embedded code did not implement decision D17 ("`z.uuid()` exempt from
-     `maxLength`") — the plan's prose and the plan's code disagreed, and the pre-flight
-     conflict scan (a Task 5 "interfaces" check, not a "does this task's own text agree with
-     itself" check) did not catch it. The task review did. One fix round: the type-array check
-     also missed `.nullable()`/union-typed strings (`z.toJSONSchema` writes `type:
-     ["string","null"]`, not the bare string `"string"`) — a second, unrelated gap the same
-     review found in the same file. Both fixed, re-reviewed clean.
+  1. The Task 5 task review misread decision D17's table row: `docs/04-process/plans/2026-09-23-T-04.md`
+     line 231 has four columns (`# | Decision | Why | Alternative rejected`), and "`z.uuid()`
+     exempt from `maxLength`" sits in the fourth, **"Alternative rejected"**, column — the plan
+     rejected that exemption, and its Decision column names none. The task review read the quoted
+     sentence in isolation and concluded the plan wanted the exemption; a fix round then added it
+     to `toolInputJsonSchema`, contradicting SPEC-webmcp-tools §2.4 ("any string property lacks
+     `maxLength`"), ADR-0004, and this branch's own T-15 hand-off row ("ids with `.max(36)` for
+     `toolInputJsonSchema`"). The final whole-branch review (a fresh, more careful pass) caught
+     it, cross-checked all three sources, and a fix wave reverted the exemption. The same review
+     found a real gap in the same fix round, correctly fixed: the type-array check also missed
+     `.nullable()`/union-typed strings (`z.toJSONSchema` writes `type: ["string","null"]`, not the
+     bare string `"string"`) — that part of the fix round stands.
   2. This worktree had never had `npm ci`/`postinstall` run before Task 1's `npm install zod` —
      the Prisma client `postinstall` generates had never been produced, so 2 pre-existing test
      files failed to collect and Task 1's count read 331 instead of 348. Not a code defect; the
@@ -886,13 +895,15 @@ Append-only. Newest entry at the bottom. Template:
   JSX `data-testid` string and a `getByTestId` string argument), one violation and one control
   fixture per side, not the plan's earlier four-fixture design; F1's guard is a shared,
   reusable `src/shared` function (`toolInputJsonSchema`), not a bare test with no product code.
-- **Disagreements:** none.
-- **Lessons for the process:** a plan's own decision text and its own embedded code can disagree
-  with each other — the pre-flight scan checks each task's interfaces against neighbouring
-  tasks, but a decision like D17 is a promise about behaviour the code block sitting right next
-  to it must independently keep, and nothing before the task review checked that they did.
-  Worth a line in the writing-plans skill: after writing a task's code block, re-read that task's
-  own Decisions against it, not just against the spec. Separately, a worktree that has never run
+- **Disagreements:** none — the D17 misreading (above) was an agent-to-agent correction (a task
+  review misread the plan; a later review corrected it against the plan's own text), not an
+  owner/agent disagreement.
+- **Lessons for the process:** a decision table's "Alternative rejected" column reads, in
+  isolation, exactly like a statement of the decision itself — a reviewer quoting one cell out of
+  its row lost the header that disambiguates it. The plan's own document-mirror pattern (D17's
+  neighbours: hold every guarantee to a live check, not prose) applies to the plan's own table
+  too; worth a line in the writing-plans skill: when a finding cites a decision, quote the whole
+  row including its column headers, not just the cell. Separately, a worktree that has never run
   `npm ci` is a silent trap for the first task that only runs a scoped `npm install` — the
   postinstall step (`prisma generate`) still needs to run once, and nothing before Task 1's own
   gate surfaces its absence.
@@ -900,7 +911,12 @@ Append-only. Newest entry at the bottom. Template:
   entry). T-05 (auth API) is next per the backlog; its hand-off row already names what T-04
   leaves it: parse bodies with `LoginSchema`/`SignupSchema`, the exact 401/429 `message` text,
   `retryAfterMinutes` for the banner. Recorded, not yet exercised by any test: `toolInputJsonSchema`
-  does not descend into `anyOf`/`oneOf`/`allOf`, so a `.nullable()` **object** field (as opposed
-  to a nullable string, which the Task 5 fix round does cover) could still hide an unbounded
-  string inside it — worth a check before T-11's `defineTool` leans on the helper for such a
-  shape.
+  fails open on five JSON Schema shapes its walker does not descend into — `anyOf`/`oneOf`/`allOf`
+  (so a `.nullable()` **object** field, unlike a nullable string, hides whatever is inside it),
+  `z.record`/`.catchall` (no fixed `properties` to walk), `z.tuple` (`prefixItems`, not `items`),
+  and `.meta({ id })` (a `$ref` into `$defs`, never inlined). The final whole-branch review named
+  all five and suggested failing closed instead — throwing on any keyword the walker does not
+  recognise — rather than growing the allow-list case by case; worth doing before T-11's
+  `defineTool` leans on the helper for a shape richer than a flat object. Also open for the
+  owner: SPEC-auth §6's 400 body (`{ error: "validation", issues }`) still has no `message` text,
+  though §2.10 requires one — F2's answer named only 401 and 429; T-05 needs one for 400 too.

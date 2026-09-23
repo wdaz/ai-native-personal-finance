@@ -188,3 +188,93 @@ Scan: no other conflicts found. Proceeding to Task 1.
   underlying claim is verified. (3) Flat-config rule blocks for the same rule name don't merge
   across overlapping globs — informational, no overlap exists today.
 - Task 6: complete (commits 058f3de..60ca072, review clean)
+
+## Task 7
+
+- Controller executed this task directly rather than dispatching a fresh implementer: its
+  deliverables (the prompt record, the session-folder copy, the process-log entry) need this
+  session's own conversation and ledger, which a fresh subagent would not have; the README and
+  backlog edits are mechanical and were applied directly from the brief's exact diffs.
+- Wrote `docs/04-process/prompts/2026-09-23-T-04.md` (the owner's messages verbatim, the plan
+  gate, the go-ahead, F1's parallel dispatch).
+- Wrote `task-N-review.md` for every task (verbatim copies of the reviewer messages received in
+  this conversation, since reviewers returned reports as messages, not files) and a README.md for
+  the session folder, then copied the whole workspace (minus `review-*.diff` and `plan-path`,
+  per build-workflow §7: briefs and reports, not diffs) into
+  `docs/04-process/prompts/2026-09-23-T-04/`.
+- Applied Step 1's three README diffs. Found one plan gap while doing so: the plan's own diff for
+  `src/shared/README.md` did not mention `tool-schema.ts` (Task 5, added late in v0.2) — added it
+  (`toolInputJsonSchema`, for T-11's `defineTool`) so the README describes what the folder
+  actually holds. Ruling: a documentation completeness fix, not a scope or behaviour change —
+  cost if wrong: a one-line README correction, trivially reverted.
+- Applied Step 2's backlog v1.9: status line, changelog, the T-04 row, and all ten hand-off rows
+  (T-05, T-06, T-07, T-08, T-09, T-10, T-11, T-12, T-13, T-15) verbatim from the brief.
+- Committed (`6b7fa55`): READMEs + backlog v1.9.
+- Step 3, the full gates: copied `.env.local` from the sibling `T-03-domain` worktree (this
+  worktree had none; same repo, same local dev secrets already on this machine, not sent
+  anywhere) and confirmed the T-02 Postgres container was healthy. `npm run test:all` — **exit
+  0**: secret scan (129 commits, no leaks), lint, format:check, typecheck, unit **429/429** (26
+  files, matching E10), API **17/17**, E2E **3/3** (chromium, firefox, webkit) — matching the
+  plan's prediction E16 exactly. `npm audit` → 0 vulnerabilities.
+- Committed (`9ac2df8`): prompt record, session-folder copy, process-log entry.
+- Task 7: complete (commits 60ca072..9ac2df8, controller-executed, full gates green:
+  test:all exit 0, 429/429 unit, 17/17 API, 3/3 E2E, npm audit 0)
+
+## All plan tasks complete — proceeding to the final whole-branch review.
+
+## Final whole-branch review (opus)
+
+Dispatched on `90440a1..9ac2df8` (12 commits). Verdict: **With fixes**.
+
+- **Correction to the Task 5 ruling above.** The final reviewer re-read D17's table row in the
+  plan (line 231) against its own column header (`| # | Decision | Why | Alternative rejected
+  |`) and found that "`z.uuid()` exempt from `maxLength`" sits in the **fourth column**
+  ("Alternative rejected"), not the second ("Decision") — the plan rejected the exemption; its
+  actual Decision column names none. The Task 5 review (and this controller's ruling at line
+  141-149 above) read the quoted sentence in isolation and got it backwards, corroborated by
+  nothing but itself. Three independent sources in the repository agree with the final
+  reviewer's reading: SPEC-webmcp-tools §2.4 ("any string property lacks `maxLength`", no uuid
+  carve-out), ADR-0004 ("every string input has `maxLength`"), and this branch's own T-15
+  hand-off row in `backlog.md` v1.9 ("ids with `.max(36)` for `toolInputJsonSchema`" — i.e. the
+  plan's own intent was that a uuid field needs its own explicit bound, not a structural
+  exemption). Ruling withdrawn; the earlier "Cost if wrong: none identified" line above was
+  itself wrong — the cost was exactly this: an owner-approved decision (D17), a spec line
+  (§2.4) and an ADR contradicted, caught only because a fresh, more careful review re-read the
+  table instead of trusting a prior review's paraphrase of it.
+- Real, unrelated finding, confirmed correct and not reverted: the nullable/union type-array fix
+  from the same fix round (`unboundedStrings`'s `type === "string" || type.includes("string")`
+  check) stands — the final reviewer verified it independently and found no fault with it.
+- Widened, not new: the "`unboundedStrings` doesn't descend into `anyOf`/`oneOf`" gap this
+  ledger already recorded after Task 5's re-review (as a nullable-object case only) is in fact
+  five distinct unguarded JSON Schema shapes — `anyOf`/`oneOf`/`allOf` (nullable/union objects),
+  `z.record`/`.catchall` (no fixed `properties`), `z.tuple` (`prefixItems`, not `items`), and
+  `.meta({ id })` (a `$ref` into `$defs`, never inlined). The reviewer suggested failing closed
+  (throw on any keyword the walker doesn't recognise) rather than growing the allow-list one
+  shape at a time. Recorded for T-11 (out of scope here); not fixed in this branch.
+- Other findings, adjudicated: SPEC-auth §6's 400 body still lacks the `message` §2.10 requires
+  (F2's answer named only 401/429) — routed to the owner, not fixed here, since no owner text
+  exists to fix it to. `ERROR_CODES` typed by hand in the test rather than read from the schema
+  — parked, Minor, no downstream task depends on it. The test-id rule not covering
+  `src/webmcp/**/*.tsx` — parked; no spec or owner answer named that glob in scope for T-04
+  (`src/webmcp` has no `.tsx` files yet; T-11 adds them). This branch predates PR #9's merge
+  into `main` (F1's ADR-0004/webmcp-tools wording) — merging `main` in before the PR, separately
+  from the code fix below.
+
+**Fix wave (one dispatch, per the skill's "no second fix wave" rule):** revert the `z.uuid()`
+exemption in `src/shared/tool-schema.ts` and its header comment; flip the "accepts z.uuid()" test
+to expect the throw; add a test that `z.uuid().max(36)` passes. Dispatched to a fresh Sonnet
+implementer (not a resume of Task 5's implementer — this is the final-review fix wave, a
+separate loop). Documentation corrected by the controller directly (this entry; `process-log.md`;
+the prompt record and its session-folder README) rather than by the fix subagent, since telling
+the true story needs this session's own context.
+
+Fix wave dispatched (commit `211188c`, 430/430, lint/typecheck/prettier clean). Scoped re-review
+(`final-rereview.md`): **Addressed, no new Critical/Important breakage**. Merged `main` (with
+PR #9) into `task/T-04-shared` next, then final documentation sync and commit.
+
+## Final review: complete
+
+- Findings: 1 Important (D17 misreading — fixed and re-reviewed clean), 5 Minor/routed (widened
+  T-11 note, SPEC-auth §6 400 message routed to owner, `main` merge, `src/webmcp` rule scope
+  parked, `ERROR_CODES` hand-typed parked).
+- `npm run test:all` to be re-run once more after the `main` merge, before pushing.
