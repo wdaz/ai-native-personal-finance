@@ -1,9 +1,9 @@
 import { getDb } from "./db";
 import { isTestEnv, type Env } from "./env";
-import { errorResponse } from "./http";
+import { errorResponse, validationErrorResponse } from "./http";
 import { resetToSeed } from "./reset";
 import { seedRows } from "./seed";
-import { SEED_VARIANTS, applyVariant, isSeedVariant } from "./variants";
+import { applyVariant, isSeedVariant } from "./variants";
 
 /**
  * SPEC-reset-and-test-support §2.7 — the routes E2E and API tests use to put the database
@@ -27,7 +27,7 @@ async function seed(request: Request): Promise<Response> {
   const variant =
     typeof body === "object" && body !== null && "variant" in body ? body.variant : undefined;
   if (!isSeedVariant(variant)) {
-    return errorResponse(400, "validation", `variant must be one of: ${SEED_VARIANTS.join(", ")}`);
+    return validationErrorResponse([{ path: ["variant"], code: "invalid_format" }]);
   }
   const { at } = await resetToSeed(getDb(), "test", applyVariant(seedRows(), variant));
   return Response.json({ at, variant });
