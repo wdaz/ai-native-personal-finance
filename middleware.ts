@@ -36,7 +36,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const now = new Date();
   const { pathname, search } = request.nextUrl;
   const requestId = crypto.randomUUID();
-  const nonce = crypto.randomUUID();
+  // CSP3's nonce-source grammar is base64-value (A-Z a-z 0-9 + / =); crypto.randomUUID() on
+  // its own includes "-", which is not valid base64 and risks a strict CSP parser rejecting
+  // the nonce-source expression (review finding, Copilot High). Base64-encoding it, exactly
+  // as Next's own docs do (content-security-policy.md), produces a valid token.
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
 
   const isApi = pathname.startsWith("/api/");
   const isRoot = pathname === "/";

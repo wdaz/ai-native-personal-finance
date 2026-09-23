@@ -25,18 +25,25 @@ export function evaluateAttempts(
   return { limited: true, retryAfter };
 }
 
+/**
+ * An aggregate (COUNT + MIN over the LoginAttempt(ip, at) index), not a row fetch — this ran
+ * as findMany before, returning every matching row just to read its length and first
+ * timestamp; under a shared IP (this project's own "local" fallback covers every direct,
+ * non-proxied connection under one bucket) that grows without the per-IP block capping it
+ * the way a single real IP's count is capped (Copilot review, Medium).
+ */
 export async function checkRateLimit(
   db: Db,
   ip: string,
   now: Date,
 ): Promise<{ limited: boolean; retryAfter: number }> {
   const windowStart = new Date(now.getTime() - RATE_LIMIT_WINDOW_MS);
-  const failures = await db.loginAttempt.findMany({
+  const result = await db.loginAttempt.aggregate({
     where: { ip, success: false, at: { gte: windowStart } },
-    orderBy: { at: "asc" },
-    select: { at: true },
+    _count: true,
+    _min: { at: true },
   });
-  return evaluateAttempts(failures.length, now, failures[0]?.at ?? null);
+  return evaluateAttempts(result._count, now, result._min.at);
 }
 
 export async function recordAttempt(

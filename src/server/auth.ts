@@ -10,6 +10,7 @@ import {
   SESSION_COOKIE_NAME,
   SESSION_TTL_SECONDS,
   isSessionValid,
+  readCookie,
   readSession,
   sealSession,
   sessionCookieHeader,
@@ -88,11 +89,7 @@ export async function logout(): Promise<Response> {
 }
 
 export async function session(request: Request, now: Date): Promise<Response> {
-  const cookie = request.headers
-    .get("cookie")
-    ?.split("; ")
-    .find((c) => c.startsWith(`${SESSION_COOKIE_NAME}=`))
-    ?.slice(SESSION_COOKIE_NAME.length + 1);
+  const cookie = readCookie(request.headers.get("cookie"), SESSION_COOKIE_NAME);
   const payload = await readSession(cookie);
   if (!payload) return Response.json({ authenticated: false });
   const resetAt = await latestResetAt(getDb());

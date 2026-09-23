@@ -91,6 +91,11 @@ test("ADR-0006: the CSP carries a nonce on script-src and style-src, fresh per r
 }) => {
   const NONCE_PATTERN = /'nonce-([^']+)'/;
 
+  // CSP3's nonce-source grammar is base64-value: only A-Z a-z 0-9 + / = (review finding,
+  // Copilot High — crypto.randomUUID() alone includes "-", which is not valid base64 and
+  // risks a strict CSP parser rejecting the nonce-source expression outright).
+  const VALID_BASE64 = /^[A-Za-z0-9+/]+=*$/;
+
   const first = await request.get("/api/auth/session");
   const firstCsp = first.headers()["content-security-policy"] ?? "";
   const [, firstScriptNonce] =
@@ -99,6 +104,7 @@ test("ADR-0006: the CSP carries a nonce on script-src and style-src, fresh per r
   expect(firstScriptNonce).toBeTruthy();
   expect(firstStyleNonce).toBeTruthy();
   expect(firstScriptNonce).toBe(firstStyleNonce);
+  expect(firstScriptNonce ?? "").toMatch(VALID_BASE64);
 
   const second = await request.get("/api/auth/session");
   const secondCsp = second.headers()["content-security-policy"] ?? "";

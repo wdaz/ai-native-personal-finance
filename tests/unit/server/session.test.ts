@@ -3,6 +3,7 @@ import {
   SESSION_REISSUE_AFTER_SECONDS,
   SESSION_TTL_SECONDS,
   isSessionValid,
+  readCookie,
   sessionCookieHeader,
   shouldReissue,
   type SessionPayload,
@@ -56,5 +57,24 @@ describe("sessionCookieHeader", () => {
   it("includes Secure when secure=true (HTTPS)", () => {
     const header = sessionCookieHeader("sealed-value", 3600, true);
     expect(header).toContain("; Secure");
+  });
+});
+
+describe("readCookie", () => {
+  it("finds the named cookie among several, RFC-6265-standard '; ' separated", () => {
+    expect(readCookie("a=1; pf_session=abc; b=2", "pf_session")).toBe("abc");
+  });
+
+  it("finds it when it's the only cookie", () => {
+    expect(readCookie("pf_session=abc", "pf_session")).toBe("abc");
+  });
+
+  it("finds it when separators omit the space — some non-browser clients do (Copilot review, Medium)", () => {
+    expect(readCookie("a=1;pf_session=abc;b=2", "pf_session")).toBe("abc");
+  });
+
+  it("returns undefined when the header is null or the cookie is absent", () => {
+    expect(readCookie(null, "pf_session")).toBeUndefined();
+    expect(readCookie("a=1; b=2", "pf_session")).toBeUndefined();
   });
 });

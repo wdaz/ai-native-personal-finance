@@ -63,3 +63,18 @@ export function sessionCookieHeader(
   const secureFlag = secure ? "; Secure" : "";
   return `${SESSION_COOKIE_NAME}=${sealed}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAgeSeconds}${secureFlag}`;
 }
+
+/**
+ * RFC 6265 §4.2.1 separates cookie-pairs with "; " (semicolon, space), but not every client
+ * sends the space — splitting on the literal "; " only missed a cookie sent as "a=1;b=2"
+ * (Copilot review, Medium). Splits on a semicolon and any amount of following whitespace
+ * instead.
+ */
+export function readCookie(cookieHeader: string | null, name: string): string | undefined {
+  if (!cookieHeader) return undefined;
+  const prefix = `${name}=`;
+  return cookieHeader
+    .split(/;\s*/)
+    .find((pair) => pair.startsWith(prefix))
+    ?.slice(prefix.length);
+}
