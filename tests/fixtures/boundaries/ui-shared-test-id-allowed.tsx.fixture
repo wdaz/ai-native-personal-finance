@@ -1,0 +1,6 @@
+// Linted as src/ui/shared-test-id-allowed.tsx.
+// The control: the id comes from src/shared/test-ids.ts.
+import { TEST_IDS } from "@/src/shared/test-ids";
+
+const ids: Record<string, string> = TEST_IDS;
+export const Donut = () => <svg data-testid={ids.donut} />;
