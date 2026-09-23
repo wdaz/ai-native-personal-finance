@@ -1,0 +1,62 @@
+/*
+ * The sidebar footer's rows — "Log out" and "Minimize Menu" (design export: a 56 px row, 16/32
+ * padding, 16 px gap, preset 3 in grey-300); white on hover like the nav items (SPEC-app-shell
+ * §2.2, T-07 plan D11–D12).
+ */
+.control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-200);
+  inline-size: 100%;
+  block-size: var(--nav-item-height);
+  padding: var(--spacing-200) var(--spacing-400);
+  border: none;
+  background: none;
+  color: var(--color-grey-300);
+  font: var(--text-preset-3);
+  text-align: start;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--duration-hover);
+}
+
+/* US-34 AC2: a disabled control has no hover state. */
+.control:hover:not(:disabled) {
+  color: var(--color-white);
+}
+
+/* Plan D10: the row touches the viewport's edge, so the ring is drawn inside it. */
+.control:focus-visible {
+  outline-color: var(--focus-ring-color-on-dark);
+  outline-offset: calc(-2 * var(--focus-ring-offset));
+}
+
+.control:disabled {
+  cursor: progress;
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--nav-icon-size);
+  block-size: var(--nav-icon-size);
+}
+
+/* SPEC-app-shell §2.3: the caret points the other way while minimised. */
+.flipped {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .icon {
+    transition: transform var(--duration-sidebar);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control {
+    transition: none;
+  }
+}
