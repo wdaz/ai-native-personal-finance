@@ -56,6 +56,17 @@ jobs:
           --health-interval 2s --health-timeout 5s --health-retries 30
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/personal_finance
+      SESSION_SECRET: "ci-only-session-secret-not-a-real-secret-32chars"
+      DEMO_EMAIL: "demo@example.com"
+      # bcryptjs hash of "ci-demo-password-123" (below) — a fixed demo credential the login
+      # page itself displays in production too, not a secret (ADR-0006, NFR-S1), so
+      # committing it in a public workflow file is fine. Every `$` is escaped `\$`: Next.js's
+      # env loader (@next/env, dotenv-expand under it) treats an unescaped `$digit` as
+      # variable-expansion syntax and silently truncates a raw bcrypt hash (found running
+      # T-05's API tests locally) — single-quoted YAML keeps the backslashes literal, which
+      # dotenv-expand then un-escapes back to a plain `$`.
+      DEMO_PASSWORD_HASH: '\$2b\$10\$/gyfHp0z/Dlr77T6RwYhg.hO1OyLHX.zY9BIwRM6y7bFWNi8SnTM6'
+      DEMO_PASSWORD_DISPLAY: "ci-demo-password-123"
     steps:
       - uses: actions/checkout@v5
         with:
