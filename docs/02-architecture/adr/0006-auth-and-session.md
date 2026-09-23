@@ -1,8 +1,8 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
 - Status: **Accepted** (amended 2026-09-23) · Date: 2026-09-13
-- Correction 2026-09-23 (T-06 plan finding F2, recorded as tech debt TD-1 in backlog v1.17 by
-  owner decision): the amendment below says Next reads the nonce "via the `x-nonce` request
+- Correction 2026-09-23 (T-06 plan finding F2, recorded by owner decision as tech debt **TD-1**
+  in `docs/03-specs/tech-debt.md`, linked from backlog v1.17): the amendment below says Next reads the nonce "via the `x-nonce` request
   header". It does not: Next 16.3.5 takes it from the **request's** `Content-Security-Policy`
   header (`next/dist/server/app-render/app-render.js:209-210`). `middleware.ts` sets the CSP on
   the response only; the nonce reaches the renderer because Next's router also copies
