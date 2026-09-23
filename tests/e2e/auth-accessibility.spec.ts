@@ -1,29 +1,8 @@
 import { COPY } from "@/src/shared/copy";
 import { demoCredentials } from "@/src/server/env";
-import type { Locator, Page } from "@playwright/test";
-import { expect, resetDemoData, seriousA11yViolations, test } from "../fixtures/e2e";
+import { expect, resetDemoData, seriousA11yViolations, tabTo, test } from "../fixtures/e2e";
 
 const demo = demoCredentials();
-
-/**
- * The key that moves focus to the next control. WebKit, like Safari with "Press Tab to
- * highlight each item" off (its default), reaches only text fields with Tab and skips buttons
- * and links; Option+Tab reaches every control — Playwright names that key "Alt", so the
- * code sends "Alt+Tab". Measured in T-06 (plan Task 7, Step 3): with plain Tab both
- * walkthroughs failed on WebKit at the first button; Chromium and Firefox reach every control
- * with Tab.
- */
-let tabKey = "Tab";
-test.beforeEach(({ browserName }) => {
-  tabKey = browserName === "webkit" ? "Alt+Tab" : "Tab";
-});
-
-/** Presses Tab and asserts where focus landed and that it is visibly indicated (NFR-A2). */
-async function tabTo(page: Page, target: Locator) {
-  await page.keyboard.press(tabKey);
-  await expect(target).toBeFocused();
-  await expect(target).toHaveCSS("outline-style", "solid");
-}
 
 test.beforeEach(async ({ request }) => {
   await resetDemoData(request);
