@@ -1,8 +1,43 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIResponse } from "@playwright/test";
 
 test.beforeEach(async ({ request }) => {
   await request.post("/api/test/reset");
 });
+
+/** The nonce of the response's `script-src` directive, or undefined when it has none. */
+const scriptSrcNonce = (response: APIResponse): string | undefined => {
+  const csp = response.headers()["content-security-policy"] ?? "";
+  return /'nonce-([^']+)'/.exec(csp.match(/script-src[^;]+/)?.[0] ?? "")?.[1];
+};
+
+/**
+ * T-06 plan finding F1: a 404 page the browser can run under ADR-0006's CSP. Asserts the
+ * status, that every inline `<script>` (one without `src`) and every `<style>` opening tag
+ * carries this response's own nonce, and that no `style="…"` attribute is left — a CSP nonce
+ * applies to elements, never to attributes, so only markup without them passes `style-src`.
+ * Returns the nonce so a caller can compare two requests.
+ */
+async function expectNotFoundUnderCsp(response: APIResponse): Promise<string> {
+  expect(response.status()).toBe(404);
+  const nonce = scriptSrcNonce(response);
+  expect(nonce, "the response's script-src carries a nonce").toBeTruthy();
+  const html = await response.text();
+
+  const inlineScripts = [...html.matchAll(/<script\b[^>]*>/g)]
+    .map(([tag]) => tag)
+    .filter((tag) => !/\bsrc=/.test(tag));
+  // Next inlines its RSC payload on every App Router page; none at all would mean this test
+  // matched nothing rather than that every tag passed.
+  expect(inlineScripts.length).toBeGreaterThan(0);
+  // Soft, so one run reports every kind of breakage rather than only the first.
+  expect.soft(inlineScripts.filter((tag) => !tag.includes(`nonce="${nonce}"`))).toEqual([]);
+
+  const styles = [...html.matchAll(/<style\b[^>]*>/g)].map(([tag]) => tag);
+  expect.soft(styles.filter((tag) => !tag.includes(`nonce="${nonce}"`))).toEqual([]);
+
+  expect.soft(html.match(/ style="[^"]*"/g) ?? []).toEqual([]);
+  return nonce ?? "";
+}
 
 test("an unauthenticated request to a protected page redirects to /login?next=", async ({
   request,
@@ -112,6 +147,32 @@ test("ADR-0006: the CSP carries a nonce on script-src and style-src, fresh per r
     NONCE_PATTERN.exec(secondCsp.match(/script-src[^;]+/)?.[0] ?? "") ?? [];
   expect(secondScriptNonce).toBeTruthy();
   expect(secondScriptNonce).not.toBe(firstScriptNonce);
+});
+
+test("ADR-0006, T-06 plan F1: an unknown page's 404 carries the request's nonce on every inline script and style, and no style attribute", async ({
+  request,
+}) => {
+  // Before F1, /_not-found was prerendered at build time: its inline scripts said
+  // nonce "$undefined", its <style> had none and Next's default UI used style attributes,
+  // so the browser blocked all of them on every 404.
+  const first = await expectNotFoundUnderCsp(await request.get("/definitely-not-a-page"));
+  const second = await expectNotFoundUnderCsp(await request.get("/definitely-not-a-page"));
+  expect(second).not.toBe(first);
+});
+
+test("ADR-0006, T-06 plan F1: a logged-in /overview (no page before T-07) 404s under the same nonce rules", async ({
+  request,
+}) => {
+  const login = await request.post("/api/auth/login", {
+    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
+  });
+  // Without a session /overview redirects to /login, which is itself a 404 until T-06 —
+  // this test would then pass on the wrong page. No redirects are followed, and login must
+  // have worked.
+  expect(login.status()).toBe(200);
+  const first = await expectNotFoundUnderCsp(await request.get("/overview", { maxRedirects: 0 }));
+  const second = await expectNotFoundUnderCsp(await request.get("/overview", { maxRedirects: 0 }));
+  expect(second).not.toBe(first);
 });
 
 test("SPEC-reset-and-test-support §2.6: a reset-invalidated session redirects to /login?reason=reset", async ({
