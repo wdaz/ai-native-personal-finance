@@ -27,6 +27,9 @@ test("US-32 AC1 AC3 US-34 AC1 desktop walkthrough: skip link, five nav items, fo
   const skip = page.getByRole("link", { name: COPY.skipToContent });
   await tabTo(page, skip);
   await expect(skip).toBeInViewport();
+  // §2.8 "visible on focus": unclipped, and a ring that shows on the dark sidebar it lands on.
+  await expect(skip).toHaveCSS("clip-path", "none");
+  await expect(skip).toHaveCSS("outline-color", WHITE);
 
   const nav = page.getByRole("navigation", { name: "Main" });
   for (const name of NAMES) {

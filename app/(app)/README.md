@@ -3,8 +3,8 @@
 Authenticated route group: Overview, Transactions, Budgets, Pots, Recurring Bills
 (SPEC-app-shell).
 
-T-07: `layout.tsx` (`connection()` — every page renders per request so Next applies the CSP
-nonce, ADR-0006; the origin-trial `<meta>` when `WEBMCP_ORIGIN_TRIAL_TOKEN` is set; `Shell`
+T-07: `layout.tsx` (`connection()` — keeps every page per-request, so Next applies the CSP nonce (ADR-0006),
+without relying on `app/not-found.tsx`'s own call; the origin-trial `<meta>` when `WEBMCP_ORIGIN_TRIAL_TOKEN` is set; `Shell`
 around the page), `Release2Placeholder.tsx` and the four Release 2 pages (`transactions/`,
 `budgets/`, `pots/`, `recurring-bills/`: heading and "Coming in Release 2"), and
 `overview/page.tsx` (its heading only until T-10). Page names come from `PAGE_NAMES`

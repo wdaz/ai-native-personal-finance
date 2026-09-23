@@ -6,10 +6,12 @@ import { Shell } from "@/src/ui/Shell";
 
 /**
  * SPEC-app-shell §2.1: the authenticated pages' layout (the middleware has checked the
- * session). `connection()` renders every response per request (ADR-0006): Next then puts this
- * response's CSP nonce on its inline scripts and styles — a prerendered page carries none and
- * the shell never hydrates (tests/api/app-pages.spec.ts). T-08 adds `getMeta(db)` and the
- * reset banner; T-11 the WebMCP provider (T-07 plan D1).
+ * session). Every response must render per request (ADR-0006): Next then puts its CSP nonce
+ * on the inline scripts and styles — a prerendered page carries none and the shell never
+ * hydrates. In Next 16.3.5 `app/not-found.tsx`'s own `connection()` (T-06 F1) already makes
+ * every route dynamic; this call keeps the app pages per-request without depending on that
+ * file, and tests/api/app-pages.spec.ts fails only when both calls are gone. T-08 adds
+ * `getMeta(db)` and the reset banner; T-11 the WebMCP provider (T-07 plan D1).
  */
 export default async function AppLayout({ children }: { children: ReactNode }) {
   await connection();

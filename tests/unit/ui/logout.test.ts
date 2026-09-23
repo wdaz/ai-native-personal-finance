@@ -28,7 +28,16 @@ describe("logOut (SPEC-auth §2.7, US-03 AC1–AC2)", () => {
     expect(String(log.mock.calls[0]?.[0])).toMatch(/^\[logout\].*500/);
   });
 
-  it("completes client-side through the fallback, and logs, when no answer arrives", async () => {
+  it("gives the request 10 seconds before it gives up (SPEC-auth §2.7)", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+
+    await logOut(async () => new Response(null, { status: 204 }), vi.fn());
+
+    expect(timeout).toHaveBeenCalledWith(10_000);
+    timeout.mockRestore();
+  });
+
+  it("completes client-side through the fallback, and logs, when the request fails", async () => {
     const failure = new TypeError("Failed to fetch");
     const log = vi.fn();
 

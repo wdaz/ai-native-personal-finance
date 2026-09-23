@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { inlineTags, scriptNonce } from "../fixtures/csp";
 
+// In Next 16.3.5 `app/not-found.tsx`'s own `connection()` (T-06 F1) already makes every route
+// dynamic, and `app/(app)/layout.tsx` calls it too so the app pages stay per-request without
+// depending on that file. This spec fails only when both calls are gone.
 const APP_PAGES = ["/overview", "/transactions", "/budgets", "/pots", "/recurring-bills"];
 
 // Next's own Cache-Control for a page rendered per request, in production

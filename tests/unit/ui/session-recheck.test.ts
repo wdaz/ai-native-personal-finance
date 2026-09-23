@@ -44,6 +44,23 @@ describe("recheckSessionOnRestore (US-03 AC1)", () => {
     stop();
   });
 
+  it("stays on the page when a restored page still has its session", async () => {
+    const leave = vi.fn();
+    const response = Response.json({ authenticated: true });
+    const body = vi.spyOn(response, "json");
+    const stop = recheckSessionOnRestore(window, leave, async () => response);
+
+    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+
+    // Once the answer's body is read, only microtasks remain before `leave` could be called;
+    // one macrotask turn drains them.
+    await vi.waitFor(() => expect(body).toHaveBeenCalledOnce());
+    await body.mock.results[0]?.value;
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    expect(leave).not.toHaveBeenCalled();
+    stop();
+  });
+
   it("does not ask on an ordinary page load", () => {
     const fetcher = vi.fn<typeof fetch>(answer({ authenticated: false }));
     const stop = recheckSessionOnRestore(window, vi.fn(), fetcher);

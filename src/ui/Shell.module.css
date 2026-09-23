@@ -53,3 +53,10 @@
 .skipLink:not(:focus) {
   clip-path: inset(50%);
 }
+
+/* Plan D10: at 1024 px and up the link lands on the dark sidebar, so the ring is white and
+   drawn inside the link's own dark box — visible there and on the beige page below 1024 px. */
+.skipLink:focus-visible {
+  outline-color: var(--focus-ring-color-on-dark);
+  outline-offset: calc(-2 * var(--focus-ring-offset));
+}
