@@ -35,7 +35,8 @@ async function expectNotFoundUnderCsp(response: APIResponse): Promise<string> {
   const styles = [...html.matchAll(/<style\b[^>]*>/g)].map(([tag]) => tag);
   expect.soft(styles.filter((tag) => !tag.includes(`nonce="${nonce}"`))).toEqual([]);
 
-  expect.soft(html.match(/ style="[^"]*"/g) ?? []).toEqual([]);
+  // Any whitespace, not just a space, may precede an attribute (PR #15 review).
+  expect.soft(html.match(/\sstyle="[^"]*"/g) ?? []).toEqual([]);
   return nonce ?? "";
 }
 
