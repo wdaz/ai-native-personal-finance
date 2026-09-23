@@ -1556,9 +1556,12 @@ them too").
   - `middleware.ts` forwards `x-request-id`.
   - `vercel.json` (the cron entry).
   - CI: the API and E2E jobs get placeholder `RESET_SECRET` and `CRON_SECRET` values.
-  - SPEC-reset-and-test-support v1.3 (`GET` is the scheduled reset).
-  - Tests: 64 unit tests (642 in total), 19 API tests (79), 4 E2E tests (75 on Chromium);
-    the phone keyboard walkthrough gains the banner's tab stop.
+  - SPEC-reset-and-test-support v1.3 (`GET` is the scheduled reset). SPEC-app-shell v1.4 (the
+    banner's look, the `close-circle` icon). design-tokens v1.3 (the icon's source). All three
+    are for the owner to approve with the PR.
+  - Tests: 64 unit tests (642 in total), 19 API tests (79) and 3 E2E tests (75 on Chromium).
+    The phone and desktop keyboard walkthroughs were modified to include the banner's tab
+    stop; they were not added.
 - **Plan gate:**
   - **Q1 (a).** Vercel's cron calls with a bodyless `GET`, so the route answers `GET` as the
     scheduled reset. This was verified against vercel.com once the owner allowed the domain;
@@ -1566,9 +1569,15 @@ them too").
   - **Q2 (d).** The dismiss button reuses the Claude Design prototype's modal close control.
     The owner's uploaded export had no banner design.
 - **Verification:**
+  - Not strict TDD everywhere. The unit tests, the `latestReset` tests and the `meta` tests
+    had a real RED run. The admin-reset API tests and the E2E tests were written after the
+    code they test, so they never had one. Mutations stood in for it, as T-07 recorded for
+    its own tasks.
   - The mutations below were run and reverted. Each failed exactly the test named:
     - counting `LoginAttempt` in the threshold: the D3 test;
-    - deleting `/api/meta`'s `no-store`: the header test;
+    - deleting `/api/meta`'s `no-store`: the header test. The "not cached" test still
+      passed, because Next 16 does not cache `GET` handlers anyway; the header test is the
+      real guard;
     - `latestReset` returning `new Date(0)`: the two "empty `ResetLog`" tests;
     - dropping the route's `GET`: the four `GET` tests, which got 405;
     - weakening both empty-secret guards: Review Focus 1's unit tests. With only
@@ -1616,5 +1625,7 @@ them too").
   2. In a web session, the network allowlist and the missing Docker daemon decide what can be
      verified. Say that at the plan gate, not in the PR.
   3. Timestamps come from the clock that produced them. State the zone.
-- **Next:** the owner's review of the PR. CI then runs Chromium E2E against Postgres 18.6.
+- **Next:** the owner decides on the hand-offs proposed for backlog v1.20 (plan v0.6: T-14's
+  `CRON_SECRET` in the production env, T-11's `meta.webmcp`, Release 2's `checkThreshold` call
+  sites, T-16's icon source), then reviews the PR. CI then runs Chromium E2E against Postgres 18.6.
   T-09 follows (the overview API).
