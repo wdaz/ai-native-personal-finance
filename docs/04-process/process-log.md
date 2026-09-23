@@ -1209,8 +1209,9 @@ directives), 3 E2E.
     `src/shared/schemas.ts`, which Zod's own source documents for strict CSPs, and pinned by a
     unit test. No review of the code would have found this; only running it under the real policy
     did.
-  - Every Review Focus pin was proved by reintroducing its defect: `noValidate`, `method="post"`,
-    the `next` sanitiser, the notice's `tabIndex`, the two sign-up messages, the copy-failed state.
+  - Review Focus pins were proved by reintroducing each defect: `noValidate` (on login — the
+    sign-up pin was not, see the addendum, I2), `method="post"`, the `next` sanitiser, the
+    notice's `tabIndex`, the two sign-up messages, the copy-failed state.
   - F2 was checked against Next's installed source before it went to the owner:
     `app-render.js:209-210` reads the request's CSP header, not `x-nonce`.
 - **What the agent got wrong or missed:**
@@ -1266,3 +1267,37 @@ directives), 3 E2E.
      reintroducing its defect.
 - **Next:** the whole-branch review (addendum below) and the draft PR for `task/T-06-auth-ui`.
   Then T-07, which now carries US-03 AC1–AC2's E2E (backlog v1.16).
+
+### Addendum — whole-branch review and fix pass (same day)
+
+A fresh reviewer (Opus) read the whole diff, re-ran every suite on its own port (521 unit, 43
+API, 36 Chromium + 72 Firefox/WebKit E2E), and probed the running app with throwaway scripts.
+Verdict "With fixes": 0 Critical, 2 Important, 4 Minor. It agreed with all five executor
+rulings, including the Zod `jitless` one (checked in Zod's source). Brief and report:
+`prompts/2026-09-23-T-06/final-review-{brief,report}.md`.
+
+- **I1 — fixed.** Anything typed or autofilled before the page hydrated was wiped. Both forms held
+  their values in React state starting at `""`, and the first re-render after hydration wrote that
+  `""` back into the inputs. The user then saw "Can't be empty" under fields they had filled. This
+  is the same pre-hydration window as plan D5, which made it safe (no credentials in the URL) but
+  not usable. Fix: `Field` is uncontrolled, and the forms read the values from the DOM on blur and
+  submit. That also keeps autofill that fires no events. **Plan deviation:** the reviewer offered a
+  mount-time state sync as an alternative; the uncontrolled inputs were chosen instead. Two E2E
+  tests hold every script chunk, fill the form, then release the chunks: they failed on the old
+  code and pass now.
+- **I2 — fixed.** The sign-up `noValidate` pin had never been proved; the plan had no mutation step
+  for it. The test passed without `noValidate` for the same reason the login test once did. It now
+  fills name and password first, then the email, then presses Enter. It fails without `noValidate`
+  and passes with it. The "What the agent got right" line above is corrected.
+- **Deferred minors (for the owner):**
+  - M1: on Chromium, the two "submit focused after a 429/network error" assertions pass without the
+    focus call, because a clicked, disabled button keeps focus. WebKit pins them locally.
+  - M2: the login walkthrough's comment says "Shift+Tab back", but the test focuses the field
+    programmatically.
+  - M3: `/login` and `/signup` share the `<title>` "Personal Finance" (WCAG 2.4.2). Page titles are
+    new copy, so they are the owner's call or T-07's.
+  - M4: `z.config({ jitless: true })` is a side effect of importing `schemas.ts`.
+- `npm run test:all` after the fix pass: 521 unit, 43 API, 114 E2E; `npm audit` 0.
+- **Lesson:** the executor had already met this exact wrong-reason pass on login and fixed it. It
+  did not carry the check to the sibling form. When a test is found passing for the wrong reason,
+  search for the same shape in every sibling test before moving on.
