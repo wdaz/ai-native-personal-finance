@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { demoPasswordHash } from "@/src/server/env";
+import { demoCredentials, demoPasswordHash } from "@/src/server/env";
 
 describe("demoPasswordHash", () => {
   it("returns a well-formed bcrypt hash", () => {
@@ -15,5 +15,21 @@ describe("demoPasswordHash", () => {
     expect(() => demoPasswordHash({ DEMO_PASSWORD_HASH: "\\$2b\\$10\\$notreallyahash" })).toThrow(
       /bcrypt/,
     );
+  });
+});
+
+describe("demoCredentials", () => {
+  it("returns the demo email and the displayed password", () => {
+    expect(
+      demoCredentials({ DEMO_EMAIL: "demo@example.com", DEMO_PASSWORD_DISPLAY: "shown-on-login" }),
+    ).toEqual({ email: "demo@example.com", password: "shown-on-login" });
+  });
+
+  it.each([
+    [{ DEMO_PASSWORD_DISPLAY: "shown-on-login" }],
+    [{ DEMO_EMAIL: "demo@example.com" }],
+    [{ DEMO_EMAIL: "", DEMO_PASSWORD_DISPLAY: "shown-on-login" }],
+  ])("throws when a value is missing: %j", (env) => {
+    expect(() => demoCredentials(env)).toThrow(/DEMO_EMAIL and DEMO_PASSWORD_DISPLAY/);
   });
 });

@@ -1,0 +1,81 @@
+/* SPEC-auth §2–§3, §6: the card both auth pages render in the layout's content area. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-400);
+  inline-size: 100%;
+  max-inline-size: var(--auth-card-max-width);
+  padding: var(--spacing-300) var(--spacing-250);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}
+
+.title {
+  margin: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-400);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+}
+
+/* §3 "Error": red on white is 4.7:1 (AA); red on beige-100 would be 4.3:1, below it. */
+.banner {
+  margin: 0;
+  padding: var(--spacing-150) var(--spacing-200);
+  border: var(--border-width) solid var(--color-red);
+  border-radius: var(--radius-100);
+  color: var(--color-red);
+  font: var(--text-preset-4-bold);
+}
+
+/* The reset notice (§2.1) and the sign-up demo notice (§2.6). */
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-150);
+  margin: 0;
+  padding: var(--spacing-150) var(--spacing-200);
+  border-radius: var(--radius-100);
+  background: var(--color-beige-100);
+  color: var(--color-grey-900);
+  font: var(--text-preset-4);
+}
+
+.noticeText {
+  margin: 0;
+}
+
+.switch {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-100);
+  margin: 0;
+  color: var(--color-grey-500);
+  font: var(--text-preset-4);
+}
+
+.switchLink {
+  color: var(--color-grey-900);
+  font: var(--text-preset-4-bold);
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
+}
+
+.switchLink:hover {
+  color: var(--color-grey-500);
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--spacing-400);
+  }
+}
