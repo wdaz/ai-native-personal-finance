@@ -48,7 +48,14 @@ export function isSessionValid(
   return true;
 }
 
-export function sessionCookieHeader(sealed: string, maxAgeSeconds: number): string {
-  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-  return `${SESSION_COOKIE_NAME}=${sealed}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAgeSeconds}${secure}`;
+/**
+ * SPEC-auth §2.9: "Secure (except localhost)". `secure` is decided by the caller from the
+ * request's own protocol (`request.url.startsWith("https://")`) — not `NODE_ENV`, which is
+ * "production" for `next start` locally and in the Playwright/CI webServer too (plain HTTP),
+ * where a Secure cookie would be set but never sent back by the browser (found running the
+ * API tests against `next start` on http://127.0.0.1).
+ */
+export function sessionCookieHeader(sealed: string, maxAgeSeconds: number, secure: boolean): string {
+  const secureFlag = secure ? "; Secure" : "";
+  return `${SESSION_COOKIE_NAME}=${sealed}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAgeSeconds}${secureFlag}`;
 }

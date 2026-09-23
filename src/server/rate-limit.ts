@@ -14,7 +14,10 @@ export function evaluateAttempts(
   now: Date,
   oldestFailureAt: Date | null,
 ): { limited: boolean; retryAfter: number } {
-  if (failuresInWindow <= RATE_LIMIT_MAX_FAILURES || oldestFailureAt === null) {
+  // `failuresInWindow` is the count of PRIOR failures (this attempt not yet recorded): the
+  // 10th failed attempt itself is checked with 9 prior failures and must go through (401);
+  // the 11th is checked with 10 prior failures and must be blocked (429) — SPEC-auth §4.
+  if (failuresInWindow < RATE_LIMIT_MAX_FAILURES || oldestFailureAt === null) {
     return { limited: false, retryAfter: 0 };
   }
   const clearsAt = oldestFailureAt.getTime() + RATE_LIMIT_WINDOW_MS;

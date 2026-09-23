@@ -3,6 +3,7 @@ import {
   SESSION_REISSUE_AFTER_SECONDS,
   SESSION_TTL_SECONDS,
   isSessionValid,
+  sessionCookieHeader,
   shouldReissue,
   type SessionPayload,
 } from "@/src/server/session";
@@ -41,5 +42,19 @@ describe("isSessionValid", () => {
     const now = new Date(iat + 1000);
     const resetBeforeLogin = new Date(iat - 500);
     expect(isSessionValid(session, now, resetBeforeLogin)).toBe(true);
+  });
+});
+
+describe("sessionCookieHeader", () => {
+  it("omits Secure when secure=false (plain HTTP, e.g. localhost/CI)", () => {
+    const header = sessionCookieHeader("sealed-value", 3600, false);
+    expect(header).not.toContain("Secure");
+    expect(header).toContain("HttpOnly");
+    expect(header).toContain("SameSite=Lax");
+  });
+
+  it("includes Secure when secure=true (HTTPS)", () => {
+    const header = sessionCookieHeader("sealed-value", 3600, true);
+    expect(header).toContain("; Secure");
   });
 });
