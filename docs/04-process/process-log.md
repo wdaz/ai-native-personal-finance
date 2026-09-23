@@ -965,6 +965,164 @@ Append-only. Newest entry at the bottom. Template:
   owner: SPEC-auth §6's 400 body (`{ error: "validation", issues }`) still has no `message` text,
   though §2.10 requires one — F2's answer named only 401 and 429; T-05 needs one for 400 too.
 
+## 2026-09-23 — Build (T-05): Auth API — plan, plan gate, inline implementation
+
+- **Phase:** 5 (Build the slice), Release 1.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, background session).
+- **Trigger:** owner: "Start to planing T-05" (2026-09-23, ~12:01 +04), continuing the backlog
+  order after T-04's PR #10 merged.
+- **Prompt(s):** `prompts/2026-09-23-T-05.md`.
+- **Produced:** `docs/04-process/plans/2026-09-23-T-05.md` (v0.1 → v0.2 at the plan gate);
+  `docs/03-specs/backlog.md` v1.13 (T-08 hand-off note); `docs/02-architecture/adr/0006-auth-and-session.md`
+  amended 2026-09-23 (CSP nonce dropped as tech debt); on branch `task/T-05-auth`: `src/server/http.ts`
+  (`validationErrorResponse`, `rateLimitedResponse`), `src/shared/next-path.ts`, `src/server/session.ts`,
+  `src/server/rate-limit.ts`, `src/server/auth.ts`, `app/api/auth/{login,signup,logout,session}/route.ts`,
+  `middleware.ts` (`app/page.tsx` deleted), CI/README env docs, plus fixes to `playwright.config.ts` and
+  `tests/e2e/scaffold.spec.ts` the middleware's own behaviour required. 471 unit + 31 API + 3 E2E tests
+  green (`npm run test:all`).
+- **What the agent got right:** the plan's own self-review (Q4) caught, before any code was written,
+  that `latestResetAt` had to land in T-05 rather than wait for T-08 as the backlog originally implied —
+  T-05 needs it for the resetEpoch check and T-05 runs first. Task decomposition (session/rate-limit as
+  pure-function-plus-DB-wrapper pairs) let the rate-limit boundary bug surface as a unit-test-level
+  question rather than a mystery API failure. The plan's own Review Focus list named the sliding-reissue
+  boundary, the rate-limit boundary and the two-shape error envelope in advance; all three had a task
+  whose test exercised them directly, per the plan's self-review section.
+- **What the agent got wrong or missed:** four real bugs, none caught by planning, all caught by actually
+  running the API tests end to end rather than trusting the plan's code blocks:
+  1. **Rate-limit off-by-one.** `evaluateAttempts` used `<=` against the 10-failure threshold; since
+     `checkRateLimit` passes the count of *prior* failures (the current attempt not yet recorded), `<=`
+     let an 11th failed attempt through as 401 instead of blocking it with 429. Task 5's own unit tests
+     were written with the same wrong assumption baked into their names ("allows the 10th failure") and
+     passed anyway — they encoded the bug, not a check against it. Found only when Task 6's API test (the
+     actual SPEC-auth §4 behaviour) failed. Fixed to `<`; the unit tests were renamed to state prior-failure
+     counts, not attempt ordinals, so the same mistake can't hide the same way again.
+  2. **Secure cookie over plain HTTP.** `sessionCookieHeader` gated the `Secure` attribute on
+     `NODE_ENV === "production"` — but `next start` (both local dev and the Playwright/CI `webServer`) is
+     production mode over plain HTTP. The cookie was set `Secure` and the browser/Playwright client
+     silently never sent it back; `GET /api/auth/session` read `authenticated: false` immediately after a
+     successful login, with no error anywhere in the chain. SPEC-auth's own wording — "Secure (except
+     localhost)" — was the tell: it is about the request's protocol, not the build mode. Fixed by making
+     `secure` a parameter, computed by each caller from `request.url.startsWith("https://")`.
+  3. **`$` in a bcrypt hash mangled by Next's env loader.** `@next/env` runs `dotenv-expand` on every
+     value it loads — including a plain OS environment variable, not only ones parsed from a `.env` file —
+     and treats an unescaped `$` followed by a digit as expansion syntax. A raw bcrypt hash
+     (`$2b$10$...`) was silently truncated; login with the *correct* password failed 401 with no error.
+     Fixed by escaping every `$` as `\$` in `.env.local` and in the CI workflow's single-quoted YAML value
+     (dotenv-expand un-escapes `\$` back to a literal `$`); documented in `README.md` and inline in
+     `ci.yml` for whoever edits that value next.
+  4. **`NextResponse.redirect()`'s default status is 307, not the 302 SPEC-auth names** at §2.8 and
+     §2.10 — every redirect call needed an explicit second argument.
+  5. **The middleware's own root redirect broke Playwright's `webServer` readiness probe.**
+     `playwright.config.ts` polled `baseURL` (`/`) waiting for a 2xx response to know the server was up;
+     once `/` always redirects (this task's own SPEC-auth §2.8 requirement), that probe never succeeded
+     and every `test:api`/`test:e2e` run hung for the full 180-second timeout with no error until the very
+     end — looked exactly like a hang, took real wall-clock time and a `pg_stat_activity` check (nothing
+     there) plus manual `curl` against the same running server (which answered fine) to separate "the
+     server is broken" from "Playwright's own check will never be satisfied by this response." Fixed by
+     pointing the probe at `/api/auth/session` instead (public, always 200).
+  6. A sixth, smaller miss: Task 2 changed `src/server/test-support.ts`'s 400 response shape but its own
+     verification ran only the new test file plus `npm run test:api` (Playwright) — never the full
+     `npm test` (Vitest) — and missed that `tests/unit/test-support.test.ts` (a separate file) still
+     asserted the old `message`-based body. Not found until Task 9's full-suite run. Every task from Task 9
+     onward ran the complete `npm test`, not a scoped file, before being marked done.
+- **Owner changes and reasoning:** at the plan gate the owner took bcryptjs (Q1) and the Node.js
+  middleware runtime (Q2) as recommended, approved `latestResetAt` landing in T-05 with the backlog
+  hand-off note (Q4), and applied the timing-oracle mitigation as planned (Q5) without change. Q3 (the CSP
+  nonce) needed two rounds: the owner first asked what CSP and a nonce actually are before deciding
+  anything ("CSP - nədir? Bunu ilk öncə başa sal"), then, once no inline `<script>` is planned anywhere in
+  R1, chose the simpler header with no nonce machinery — "Amma bu haqda techdept qeyd et" (but note it as
+  tech debt). That became a 2026-09-23 amendment to ADR-0006 (`script-src 'self'`, no `'nonce-…'`) rather
+  than a silent scope cut, so the ADR still says what the code does.
+- **Disagreements:** none.
+- **Lessons for the process:** (1) A plan's own unit tests can encode the same off-box-one the code has,
+  because both were written by the same reasoning at the same time without ever running against the real
+  boundary; the API test that exercises the spec's literal example ("10th → 401, 11th → 429") is the one
+  that actually catches it, and unit tests for pure functions extracted from an API path are worth a
+  second look against the *caller's* exact argument semantics, not just their own internal logic. (2) A
+  cookie's `Secure` attribute keyed on `NODE_ENV` rather than the request's actual protocol is wrong for
+  any local-dev/CI setup that runs a production build over plain HTTP — worth a standing note wherever a
+  future task sets a cookie. (3) Any secret or hash value that contains `$` and needs to reach a Next.js
+  app via environment (not just `.env.local` — any OS-level env var Next reads) needs escaping; this is
+  now documented in README and `ci.yml`, but the underlying `@next/env`/`dotenv-expand` behaviour is worth
+  a line in a shared doc (AGENTS.md or a new "gotchas" note) so the next task that adds a secret doesn't
+  rediscover it the same way. (4) `executing-plans`' task-done command should run the *whole* relevant
+  test command (`npm test`, not a single new file) from the first task, not only once a later task's
+  full-suite run happens to surface a miss — worth tightening in the skill or in this project's own
+  build-workflow.md.
+- **Next:** owner review and merge of draft PR (branch `task/T-05-auth`). T-06 (Auth UI) is next; it
+  needs `LoginForm`/`SignupForm` against these routes, and should import `sanitizeNextPath` from
+  `src/shared/next-path.ts` for its own post-login navigation rather than duplicating the allow-list
+  (already shared, per this task's Architecture section). Recorded, not yet exercised by any test: the
+  `middleware` file convention printed a deprecation warning during every build in this task ("Please use
+  'proxy' instead" — `npx @next/codemod@canary middleware-to-proxy`); harmless today, worth a follow-up
+  task before Next.js actually removes the old convention.
+
+### Addendum — whole-branch review and fix pass (same day)
+
+A fresh subagent (Opus) reviewed the full diff, ran the suite, and — unusually — actually
+exercised the running app (forged iron-session cookies, real Chromium/Firefox, a throwaway
+scratch page) rather than reading the diff alone. Found 2 Critical, 4 Important, 11 Minor;
+verified all six of the ledger's own fixes above and confirmed the timing-oracle mitigation,
+rate-limit exactness and reset-epoch handling hold under live measurement. Fixed in this PR
+(commits `77f981c`, `dd351c8`, `03ac7d4`, `09b8800`):
+
+- **C1** — the `$`-escaping fix for `.env.local` was wrongly copied into `ci.yml` too:
+  `@next/env`'s `dotenv-expand` only runs over values it *loads from a file*; a CI `env:`
+  value with no `.env*` file present reaches the app raw, so the escaped hash broke every
+  login there. Reverted to the raw hash in CI, corrected the README, and added a
+  `demoPasswordHash()` accessor that throws on a misconfigured value instead of
+  `bcrypt.compare` silently returning `false`.
+- **I1** (SPEC-reset-and-test-support §2.6) — two real gaps: the `?reason=reset` redirect
+  the spec asks for was missing (fixed), and the "cached per instance for 30 s" clause was
+  implemented, found broken (Next.js bundles `middleware.ts` and route handlers separately —
+  no shared module state, so the cache was never invalidated by a reset, silently
+  undermining "sessions end on reset"), then removed and the spec amended (v1.2) to match.
+- **I2** — SPEC-auth §7's own test list had real gaps against the plan's Review Focus items:
+  each of attempts 1–10 now asserts 401 (not just the 11th's 429), the 15-minute stale-entry
+  case is tested, the sliding re-issue and 7-day TTL are now API-tested with forged cookies,
+  and the `next=` incoming-pass-through behaviour is documented with a test.
+- **I3** — the 429 body's `message` was the full client banner text; spec and backlog both
+  want the fixed `"Too many attempts"`.
+- **I4** — not a code bug: the `no-store` test could only prove the header on a 404 (which
+  Next answers `no-store` to an anonymous request too), so it never isolated this
+  middleware's own header. Reworded honestly; a T-07 backlog hand-off (v1.14) carries the
+  real version once a genuine authenticated page exists.
+- **M3, M4, M5, M6** — the admin-secret exemption matched the whole `/api/admin/*` prefix
+  instead of exactly `POST /api/admin/reset`; a comment clarified the `X-Forwarded-For`
+  trust assumption; logout could send two `Set-Cookie` headers when the session was old
+  enough to reissue (worked only by header-merge-order accident — login/logout now skip
+  reissue); the matcher ran this middleware, DB query included, on every static asset
+  request for a logged-in visitor.
+
+**Declined to fix — surfaced to the owner instead: C2.** The shipped CSP (`script-src
+'self'`, no nonce) blocks Next's own inline RSC-payload scripts and inline styles on *every*
+App Router page — the reviewer verified this live (5 blocked scripts + 5 blocked styles in
+two browsers' consoles; a client button's `onClick` proven dead in a scratch page). This
+rests on a premise the owner was given at the plan gate ("Next.js apps normally have none")
+that turned out to be false for the RSC payload specifically. Since this reverses information
+the owner's Q3 decision was based on, and the real choice (a per-request nonce with dynamic
+rendering, vs. Next's documented `'unsafe-inline'` fallback with weaker XSS protection) is a
+security trade-off, the agent did not re-decide it alone — the corrected facts and both
+options went back to the owner in the same turn the review landed.
+
+`npm run test:all` green after the fix pass: 478 unit, 38 API, 3 E2E.
+
+### Addendum 2 — C2 resolved: CSP nonce restored (same day)
+
+The owner asked what CSP and a nonce actually do before deciding anything on C2 — answered
+plainly (a nonce lets Next's own inline scripts run while still blocking an attacker's). Once
+it was clear the "no inline script" premise was wrong (Next's RSC payload and inline styles
+are inline on every server-rendered page, confirmed by the review) and that restoring the
+nonce costs this app nothing worth trading (every session-aware page is already dynamically
+rendered), the owner approved restoring it: "et. agentlər etsin" (do it, let agents do it).
+`middleware.ts` now generates a fresh nonce per request, forwards it via `x-nonce` (Next
+applies it automatically to its own inline scripts/styles), and sets both `script-src` and
+`style-src` with `'nonce-<value>'`. ADR-0006 gets a new dated amendment (2026-09-23 (2))
+superseding the earlier no-nonce one, kept for the record rather than deleted; backlog.md
+(v1.15) hands T-06 the exact `headers()` read pattern. `npm run test:all` green again after:
+478 unit, 39 API (one new test proving the nonce differs per request and matches across both
+directives), 3 E2E.
+
 ---
 
 ## 2026-09-23 — Agent tooling: an OWASP whole-app security review skill

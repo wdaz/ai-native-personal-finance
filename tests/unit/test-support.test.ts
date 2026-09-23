@@ -80,8 +80,7 @@ describe("test-support routes (SPEC-reset-and-test-support §2.7)", () => {
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({
       error: "validation",
-      message:
-        "variant must be one of: seed, empty-pots, empty-budgets, few-transactions, no-recurring, empty-all",
+      issues: [{ path: ["variant"], code: "invalid_format" }],
     });
   });
 });

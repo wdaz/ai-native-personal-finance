@@ -92,6 +92,29 @@ commit either way.
 Copy `.env.example` to `.env.local` before running anything that touches the database or
 the session. Every variable names the ADR or spec that defines it.
 
+### Demo credentials
+
+`DEMO_PASSWORD_HASH` is a bcrypt hash — generate one for whatever password you want the local
+demo account to use:
+
+```bash
+node -e "require('bcryptjs').hash('your-password', 10).then(console.log)"
+```
+
+Escape every `$` in the result as `\$` before pasting it into `.env.local` (or any other
+`.env*` file) — Next.js's env loader (`@next/env`) runs `dotenv-expand` on every value it
+*loads from a file*, and treats an unescaped `$` followed by a digit as variable-expansion
+syntax, silently truncating a raw bcrypt hash (e.g. `$2b$10$...` becomes garbage).
+
+This applies to `.env*` files only. A value that reaches the app as a real environment
+variable with **no** `.env*` file present — CI's `env:` block, a platform's environment
+settings (e.g. Vercel) — must be the **raw, unescaped** hash: `@next/env` returns
+`process.env` untouched when there is no `.env` file to parse, so an escaped `\$` would stay
+literally in the string there and break every login instead of fixing anything.
+
+Put the plain password in `DEMO_PASSWORD_DISPLAY` (shown on the login page), and
+`SESSION_SECRET` to any string ≥ 32 characters.
+
 ## Inputs that already exist
 
 - Challenge brief and seed data: `docs/00-discovery/inputs/`
