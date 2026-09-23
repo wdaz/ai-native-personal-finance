@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { COPY } from "./copy";
-import { CATEGORIES, THEMES } from "./enums";
+import { CATEGORIES, RESET_REASONS, THEMES } from "./enums";
 import { WEBMCP_MODES } from "./env";
 
 /**
@@ -230,3 +230,16 @@ export const MetaDtoSchema = z.strictObject({
   webmcp: z.strictObject({ configuredMode: WebMcpModeSchema, originTrial: z.boolean() }),
 });
 export type MetaDto = z.infer<typeof MetaDtoSchema>;
+
+// ---------------------------------------------------------------------------------------
+// Admin reset — SPEC-reset-and-test-support §2.2
+
+/**
+ * The body of `POST /api/admin/reset`: `reason` is "scheduled", "threshold" or "manual"
+ * (default "manual"). Built from `RESET_REASONS` without "test", which only
+ * `/api/test/reset` writes (T-08 plan D4).
+ */
+export const AdminResetSchema = z.strictObject({
+  reason: z.enum(RESET_REASONS).exclude(["test"]).default("manual"),
+});
+export type AdminResetBody = z.infer<typeof AdminResetSchema>;
