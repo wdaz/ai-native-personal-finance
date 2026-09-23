@@ -1,7 +1,20 @@
 # SPEC-reset-and-test-support — Admin reset, scheduled reset, test-support routes
 
-Status: **Approved** (v1.1 — 2026-09-22: owner decisions at the T-02 plan gate; v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20 (added after review S-04/S-05/S-25)
-Changelog: v1.1 (2026-09-22, owner, T-02 plan gate) — §2.1 29 February moves to 28 February in a year without one; §2.7 `empty-all` = no pots, budgets or transactions, balance unchanged, `variant` is required, and `GET /api/test/log` lands in T-12; §5 money columns are 64-bit and become `Number` at the DTO boundary; §7 the checksum test runs in the unit suite, and the variant shapes are asserted in the database until `/api/overview` exists (T-09).
+Status: **Approved** (v1.2 — 2026-09-23: T-05's whole-branch review — §2.6's resetEpoch check drops "cached per instance for 30 s"; v1.1 — 2026-09-22: owner decisions at the T-02 plan gate; v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20 (added after review S-04/S-05/S-25)
+Changelog: v1.2 (2026-09-23, T-05's whole-branch review, finding I1) — §2.6 no longer asks for
+the resetEpoch check's `latest ResetLog.at` read to be "cached per instance for 30 s": Next.js
+builds `middleware.ts` and an `app/api/**/route.ts` handler into separate bundles, each with
+its own instantiation of any module-level state, so a plain in-memory cache in one is never
+invalidated by a write that runs through the other — `resetToSeed`'s own cache-clear call
+(tried, then removed) only ever cleared the route handlers' copy, never the middleware's,
+which is the one this check actually runs in. Reproduced directly: log in, force a second
+reset, then request a protected page — the stale-cached middleware kept answering
+authenticated for the rest of the (wrongly) cached window. A correctness guarantee this spec
+itself calls out — "sessions end on reset" — cannot depend on a cache that silently fails to
+invalidate; at R1's traffic (a portfolio demo, not a production service) one extra indexed
+`ResetLog` read per authenticated request costs nothing worth trading that guarantee for. A
+real cross-process cache (Redis, or a version counter read from the database itself) would
+solve this properly and is a fair follow-up if traffic ever justifies it. v1.1 (2026-09-22, owner, T-02 plan gate) — §2.1 29 February moves to 28 February in a year without one; §2.7 `empty-all` = no pots, budgets or transactions, balance unchanged, `variant` is required, and `GET /api/test/log` lands in T-12; §5 money columns are 64-bit and become `Number` at the DTO boundary; §7 the checksum test runs in the unit suite, and the variant shapes are asserted in the database until `/api/overview` exists (T-09).
 Implements: US-36 (persistence via the real backend), US-37 AC1 (AC3 in R2) · Constrained by: ADR-0003 (T3 test data via API), ADR-0005, ADR-0007, NFR-D3/D5, NFR-S4
 
 ## 1. Purpose
@@ -13,7 +26,7 @@ One idempotent seed/reset routine used by deployment, the scheduled job, the thr
 2.3 Vercel Cron (`vercel.json`): `0 3 */10 * *` → `POST /api/admin/reset` with `reason: "scheduled"` (Vercel sends the `CRON_SECRET`; the route accepts either secret).
 2.4 Threshold check: after every successful write in R2 (`src/server/threshold.ts`, called by repositories; in R1 wired but never triggered): if `count(rows where seeded = false) > RESET_ROW_THRESHOLD (default 2000)` or `pg_database_size(current_database()) > RESET_BYTES_THRESHOLD (default 50 MB)` → `resetToSeed(db, "threshold")` and the write returns 409 `{ error: "conflict", message: "Data was reset" }`.
 2.5 First deploy / `npm run db:reset` calls `resetToSeed(db, "manual")`, so `lastResetAt` always exists (banner is deterministic).
-2.6 Sessions end on reset (owner decision S-16): the session payload carries `resetEpoch` (ms of the latest `ResetLog.at` at login); middleware rejects a session whose `resetEpoch < latest ResetLog.at` (cached per instance for 30 s) → redirect to `/login?reason=reset` and the login page shows "The demo data was reset — please log in again" (copy appendix).
+2.6 Sessions end on reset (owner decision S-16): the session payload carries `resetEpoch` (ms of the latest `ResetLog.at` at login); middleware rejects a session whose `resetEpoch < latest ResetLog.at` (a plain per-request read — see the v1.2 changelog note on the "cached per instance" wording it replaces) → redirect to `/login?reason=reset` and the login page shows "The demo data was reset — please log in again" (copy appendix).
 2.7 Test support (only when `APP_ENV=test`; otherwise the routes do not exist — 404 — and a unit test asserts the router has no `test/*` entries in other envs):
   - `POST /api/test/reset` → `resetToSeed(db, "test")` → 200 `{ at }`.
   - `POST /api/test/seed { variant }` → reset, then apply a variant: `seed` (none), `empty-pots` (delete pots, balance unchanged), `empty-budgets`, `few-transactions` (keep the latest 3), `no-recurring` (set `recurring=false` on all), `empty-all` (no pots, budgets or transactions; balance unchanged). 200 `{ at, variant }`; 400 unknown or missing variant.

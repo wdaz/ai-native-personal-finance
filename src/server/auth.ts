@@ -2,6 +2,7 @@ import * as bcrypt from "bcryptjs";
 import { COPY } from "@/src/shared/copy";
 import { LoginSchema, SignupSchema, toErrorIssues } from "@/src/shared/schemas";
 import { getDb } from "./db";
+import { demoPasswordHash } from "./env";
 import { errorResponse, rateLimitedResponse, validationErrorResponse } from "./http";
 import { checkRateLimit, recordAttempt } from "./rate-limit";
 import { latestResetAt } from "./reset";
@@ -15,8 +16,11 @@ import {
 } from "./session";
 
 function clientIp(request: Request): string {
-  // Vercel and most proxies set this; a direct connection (local dev) has none, so fall
-  // back to a constant — the rate limit still works per-process in that case.
+  // Vercel overwrites this header rather than trusting an inbound one, so it's safe to read
+  // there (a self-hosted deployment behind a different proxy would need the same guarantee —
+  // review finding M4). Locally, next start supplies a loopback address, not undefined, so
+  // the "local" fallback below only fires when the header is genuinely absent (e.g. a direct,
+  // non-proxied connection this project doesn't otherwise exercise).
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
 }
 
@@ -25,10 +29,10 @@ export async function login(request: Request, now: Date): Promise<Response> {
   const ip = clientIp(request);
   const rate = await checkRateLimit(db, ip, now);
   if (rate.limited) {
-    return rateLimitedResponse(
-      COPY.loginRateLimited(Math.max(1, Math.ceil(rate.retryAfter / 60))),
-      rate.retryAfter,
-    );
+    // SPEC-auth §6, backlog T-05: the API's message is the fixed "Too many attempts" — the
+    // client builds the full banner ("… in N minutes") from `retryAfter` itself, via
+    // retryAfterMinutes() and COPY.loginRateLimited(minutes), not from this message.
+    return rateLimitedResponse("Too many attempts", rate.retryAfter);
   }
 
   const rawBody: unknown = await request.json().catch(() => null);
@@ -44,10 +48,7 @@ export async function login(request: Request, now: Date): Promise<Response> {
     typeof (rawBody as { password?: unknown }).password === "string"
       ? (rawBody as { password: string }).password
       : "";
-  const passwordMatches = await bcrypt.compare(
-    passwordToCompare,
-    process.env.DEMO_PASSWORD_HASH ?? "",
-  );
+  const passwordMatches = await bcrypt.compare(passwordToCompare, demoPasswordHash());
   const emailMatches = parsed.success && parsed.data.email === process.env.DEMO_EMAIL;
 
   if (!parsed.success || !emailMatches || !passwordMatches) {

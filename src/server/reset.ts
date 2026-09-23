@@ -34,7 +34,7 @@ export async function resetToSeed(
   reason: ResetReason,
   rows: SeedRows = seedRows(),
 ): Promise<ResetResult> {
-  return db.$transaction(
+  const result = await db.$transaction(
     async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(${RESET_LOCK_KEY}::bigint)`;
       // Identifiers cannot be bound parameters; the list is the constant above.
@@ -59,6 +59,7 @@ export async function resetToSeed(
     // connection, 5 s for the whole transaction) would abort it rather than serialise it.
     { maxWait: 10_000, timeout: 30_000 },
   );
+  return result;
 }
 
 /**
