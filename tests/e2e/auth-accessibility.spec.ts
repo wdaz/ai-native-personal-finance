@@ -8,9 +8,10 @@ const demo = demoCredentials();
 /**
  * The key that moves focus to the next control. WebKit, like Safari with "Press Tab to
  * highlight each item" off (its default), reaches only text fields with Tab and skips buttons
- * and links; Option+Tab reaches every control. Measured in T-06 (plan Task 7, Step 3): with
- * plain Tab both walkthroughs failed on WebKit at the first button; Chromium and Firefox
- * reach every control with Tab.
+ * and links; Option+Tab reaches every control — Playwright names that key "Alt", so the
+ * code sends "Alt+Tab". Measured in T-06 (plan Task 7, Step 3): with plain Tab both
+ * walkthroughs failed on WebKit at the first button; Chromium and Firefox reach every control
+ * with Tab.
  */
 let tabKey = "Tab";
 test.beforeEach(({ browserName }) => {
@@ -140,6 +141,17 @@ for (const width of [320, 375, 768, 1024, 1440]) {
     }
   });
 }
+
+test("US-01 US-02 NFR-A1 every page is titled 'Personal Finance - <page name>' (WCAG 2.4.2, SPEC-app-shell §2.5)", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await expect(page).toHaveTitle("Personal Finance - Login");
+  await page.goto("/signup");
+  await expect(page).toHaveTitle("Personal Finance - Sign Up");
+  await page.goto("/no-such-page");
+  await expect(page).toHaveTitle(`Personal Finance - ${COPY.notFound}`);
+});
 
 test("US-01 auth layout (SPEC-auth §6): illustration panel from 1024 px, logo bar below it", async ({
   page,

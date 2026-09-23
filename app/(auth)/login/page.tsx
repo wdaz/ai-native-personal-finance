@@ -1,9 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { demoCredentials } from "@/src/server/env";
 import { COPY } from "@/src/shared/copy";
 import styles from "../auth.module.css";
 import { DemoBox } from "./DemoBox";
 import { LoginForm } from "./LoginForm";
+
+/** SPEC-auth §6 (v1.0.5): the page name, under the root layout's title template. */
+export const metadata: Metadata = { title: "Login" };
 
 type LoginPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
