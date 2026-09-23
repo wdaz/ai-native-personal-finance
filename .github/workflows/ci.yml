@@ -56,6 +56,20 @@ jobs:
           --health-interval 2s --health-timeout 5s --health-retries 30
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/personal_finance
+      SESSION_SECRET: "ci-only-session-secret-not-a-real-secret-32chars"
+      DEMO_EMAIL: "demo@example.com"
+      # bcryptjs hash of "ci-demo-password-123" (below) — a fixed demo credential the login
+      # page itself displays in production too, not a secret (ADR-0006, NFR-S1), so
+      # committing it in a public workflow file is fine. RAW, no `\$` escaping: this value
+      # reaches the app as a real process env var, not through a .env* file, and Next's env
+      # loader (@next/env's processEnv) returns process.env untouched when it finds no .env
+      # file to parse — dotenv-expand never runs, so an escaped `\$` would stay literally in
+      # the string and break every login (found and wrongly "fixed" once during T-05's
+      # review: escaping is only for values written into a .env* file, e.g. .env.local,
+      # where @next/env's dotenv-expand step does run over everything it loads, including a
+      # pre-existing process env var of the same name).
+      DEMO_PASSWORD_HASH: "$2b$10$/gyfHp0z/Dlr77T6RwYhg.hO1OyLHX.zY9BIwRM6y7bFWNi8SnTM6"
+      DEMO_PASSWORD_DISPLAY: "ci-demo-password-123"
     steps:
       - uses: actions/checkout@v5
         with:

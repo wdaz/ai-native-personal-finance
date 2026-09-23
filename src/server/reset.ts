@@ -34,7 +34,7 @@ export async function resetToSeed(
   reason: ResetReason,
   rows: SeedRows = seedRows(),
 ): Promise<ResetResult> {
-  return db.$transaction(
+  const result = await db.$transaction(
     async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(${RESET_LOCK_KEY}::bigint)`;
       // Identifiers cannot be bound parameters; the list is the constant above.
@@ -59,4 +59,15 @@ export async function resetToSeed(
     // connection, 5 s for the whole transaction) would abort it rather than serialise it.
     { maxWait: 10_000, timeout: 30_000 },
   );
+  return result;
+}
+
+/**
+ * SPEC-auth §2.9: the reset-epoch check compares a session's `resetEpoch` against this.
+ * `null` when the table is empty — a fresh database before the first seed, which the
+ * resetEpoch check treats as "nothing to reject against" (T-05 plan gate, Q4).
+ */
+export async function latestResetAt(db: Db): Promise<Date | null> {
+  const latest = await db.resetLog.findFirst({ orderBy: { at: "desc" }, select: { at: true } });
+  return latest?.at ?? null;
 }
