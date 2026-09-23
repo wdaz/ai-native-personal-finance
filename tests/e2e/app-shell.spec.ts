@@ -54,7 +54,9 @@ test("US-33 AC1 desktop (1440 px): a full-height 300 px sidebar holds the five p
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/budgets");
 
-  expect(await sidebar(page).boundingBox()).toEqual({ x: 0, y: 0, width: 300, height: 900 });
+  await expect
+    .poll(() => sidebar(page).boundingBox())
+    .toEqual({ x: 0, y: 0, width: 300, height: 900 });
   await expect(sidebar(page).getByRole("link")).toHaveCount(5);
   await expect(mainNav(page)).toHaveCount(1);
   await expect(page.getByRole("button", { name: COPY.minimizeMenu })).toBeVisible();
@@ -67,7 +69,9 @@ test("US-33 AC1 tablet (768 px): a 74 px bottom bar with icons and labels; 'Log 
   await page.goto("/budgets");
 
   await expect(sidebar(page)).toBeHidden();
-  expect(await mainNav(page).boundingBox()).toEqual({ x: 0, y: 1024 - 74, width: 768, height: 74 });
+  await expect
+    .poll(() => mainNav(page).boundingBox())
+    .toEqual({ x: 0, y: 1024 - 74, width: 768, height: 74 });
   for (const { name } of PAGES) {
     await expect(mainNav(page).getByText(name, { exact: true })).toBeVisible();
   }
@@ -80,7 +84,9 @@ test("US-33 AC1 phone (375 px): a 52 px bottom bar with icons only, each item st
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/budgets");
 
-  expect(await mainNav(page).boundingBox()).toEqual({ x: 0, y: 812 - 52, width: 375, height: 52 });
+  await expect
+    .poll(() => mainNav(page).boundingBox())
+    .toEqual({ x: 0, y: 812 - 52, width: 375, height: 52 });
   for (const { name } of PAGES) {
     await expect(mainNav(page).getByRole("link", { name, exact: true })).toBeVisible();
     await expect(mainNav(page).getByText(name, { exact: true })).toBeHidden();
@@ -93,10 +99,15 @@ for (const width of [320, 375, 768, 1024, 1440]) {
     for (const { path, name } of PAGES) {
       await page.goto(path);
       await expect(heading(page, name)).toBeVisible();
-      const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      );
-      expect(overflow, path).toBeLessThanOrEqual(0);
+      await expect
+        .poll(
+          () =>
+            page.evaluate(
+              () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            ),
+          { message: path },
+        )
+        .toBeLessThanOrEqual(0);
     }
   });
 }
@@ -113,9 +124,12 @@ test("US-33 AC3 at 320 px every navigation item and 'Log out' is whole on screen
   ];
   for (const control of controls) {
     await expect(control).toBeInViewport({ ratio: 1 });
-    const box = await control.boundingBox();
-    expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
-    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await expect
+      .poll(async () => (await control.boundingBox())?.width ?? 0)
+      .toBeGreaterThanOrEqual(44);
+    await expect
+      .poll(async () => (await control.boundingBox())?.height ?? 0)
+      .toBeGreaterThanOrEqual(44);
   }
 });
 
@@ -136,7 +150,7 @@ test.describe("US-35 minimise the sidebar", () => {
     const expand = page.getByRole("button", { name: COPY.expandMenu });
     await expect(expand).toHaveAttribute("aria-expanded", "false");
     await expect.poll(() => width(page)).toBe(88);
-    expect(await stored(page)).toBe("collapsed");
+    await expect.poll(() => stored(page)).toBe("collapsed");
 
     await expand.click();
     await expect(page.getByRole("button", { name: COPY.minimizeMenu })).toHaveAttribute(
@@ -144,7 +158,7 @@ test.describe("US-35 minimise the sidebar", () => {
       "true",
     );
     await expect.poll(() => width(page)).toBe(300);
-    expect(await stored(page)).toBeNull();
+    await expect.poll(() => stored(page)).toBeNull();
   });
 
   test("US-35 AC1 the collapsed state persists for the session â€” across a reload and a navigation", async ({
@@ -249,17 +263,19 @@ test("US-33 US-35 NFR-A1 axe: no serious or critical violation on any app page â
   for (const { path, name } of PAGES) {
     await page.goto(path);
     await expect(heading(page, name)).toBeVisible();
-    expect(await seriousA11yViolations(page), `${path} desktop`).toEqual([]);
+    await expect
+      .poll(() => seriousA11yViolations(page), { message: `${path} desktop` })
+      .toEqual([]);
   }
 
   await page.getByRole("button", { name: COPY.minimizeMenu }).click();
   await expect(page.getByRole("button", { name: COPY.expandMenu })).toBeVisible();
-  expect(await seriousA11yViolations(page), "collapsed").toEqual([]);
+  await expect.poll(() => seriousA11yViolations(page), { message: "collapsed" }).toEqual([]);
 
   await page.setViewportSize({ width: 375, height: 812 });
   for (const { path, name } of PAGES) {
     await page.goto(path);
     await expect(heading(page, name)).toBeVisible();
-    expect(await seriousA11yViolations(page), `${path} phone`).toEqual([]);
+    await expect.poll(() => seriousA11yViolations(page), { message: `${path} phone` }).toEqual([]);
   }
 });
