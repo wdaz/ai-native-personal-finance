@@ -1301,3 +1301,25 @@ rulings, including the Zod `jitless` one (checked in Zod's source). Brief and re
 - **Lesson:** the executor had already met this exact wrong-reason pass on login and fixed it. It
   did not carry the check to the sibling form. When a test is found passing for the wrong reason,
   search for the same shape in every sibling test before moving on.
+
+### Addendum 2 — owner decisions on the minors, and PR #17's Copilot review (same day)
+
+On the draft PR, ~17:58 +04, verbatim: "M3 üçün. Bütün səhifələr üçün title qaydası. Personal
+Finance - page name. Misal: Personal Finance - Sign in. M1 və M4 tech dept əlavə olunsun." ("For
+M3: a title rule for all pages. Personal Finance - page name. Example: Personal Finance - Sign in.
+Add M1 and M4 as tech debt.") And: "iki review var onlarada bax" ("there are two reviews, look at
+them too").
+
+- **M3 → a rule for every page.** Every document title is "Personal Finance - <page name>"
+  (SPEC-app-shell v1.2 §2.5, SPEC-auth v1.0.5 §6). The root layout holds the template, and each page
+  sets its name. The agent read "page name" as the page's `<h1>`, so `/login` is "Personal Finance -
+  Login", `/signup` is "Personal Finance - Sign Up", and the 404 page is "Personal Finance - This
+  page could not be found.". The owner's example said "Sign in"; the login page is named "Login" in
+  SPEC-auth §2.1. **This reading was put to the owner.** An E2E test pins all three titles; it failed
+  first. T-07 and T-10 carry the rule for their own pages (backlog v1.18).
+- **M1, M4 → TD-4, TD-5** in `tech-debt.md` (v1.1), each named in the row of the task expected to
+  pick it up: T-13 and T-11 (backlog v1.18). M2 (a comment) stays deferred.
+- **Reviews.** PR #17 had one review on GitHub, from Copilot, with one finding: the WebKit comment
+  said "Option+Tab" while the code sends Playwright's "Alt+Tab". It was fixed by naming the key both
+  ways. The second review the owner referred to is taken to be the Opus whole-branch review above.
+- `npm run test:all`: 521 unit, 43 API, 117 E2E.
