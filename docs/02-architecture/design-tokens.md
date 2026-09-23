@@ -1,6 +1,7 @@
 # Design tokens
 
-Status: **Approved** (v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
+Status: **Approved** (v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
+Changelog: v1.1 (2026-09-23, owner decision at the T-06 plan gate, Q2) — new table "Auth layout and lines": seven values the auth screens need and the style guide never named, each read from the design export (the Auth screen of `app-prototype.html`, the input and button samples of `style-guide.html`) rather than chosen; `src/ui/tokens.css` mirrors them and `tests/unit/scaffold.test.ts` pins each one.
 Source: `../00-discovery/inputs/design/style-guide.html` (Claude Design export of the Figma style guide); the 22 colours were cross-checked against the Figma-extracted tokens of 2026-09-01 — identical. These are the **only** source for UI values (`src/ui/tokens.css`); no hard-coded hex or pixel values elsewhere.
 
 ## Colours
@@ -74,6 +75,20 @@ Implemented as utility classes `.text-preset-1` … `.text-preset-5-bold` settin
 | `--page-max-width` | 1440px | design frame |
 | `--bp-tablet` | 768px | ≥ tablet |
 | `--bp-desktop` | 1024px | ≥ desktop |
+
+## Auth layout and lines (v1.1)
+
+Source: the design export, read 2026-09-23 at the T-06 plan gate — the Auth screen of `app-prototype.html` (panel, card, headline, body, link) and the input and button samples of `style-guide.html` (border width); SPEC-auth §6 also names the 560 px panel. The prototype's modal card uses the same 560 px maximum.
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--auth-panel-width` | 560px | auth illustration panel, ≥ 1024 px |
+| `--auth-card-max-width` | 560px | login / sign-up card |
+| `--auth-panel-min-height` | 700px | auth illustration panel |
+| `--auth-headline-max-width` | 400px | auth panel headline |
+| `--auth-body-max-width` | 440px | auth panel body copy |
+| `--border-width` | 1px | input and outlined-control borders |
+| `--underline-offset` | 3px | underlined text links |
 
 ## Icons
 

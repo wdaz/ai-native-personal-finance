@@ -73,6 +73,15 @@
   --sidebar-width-min: 88px;
   --page-max-width: 1440px;
 
+  /* Auth layout and lines — design-tokens.md v1.1 (the design export's Auth screen) */
+  --auth-panel-width: 560px;
+  --auth-card-max-width: 560px;
+  --auth-panel-min-height: 700px;
+  --auth-headline-max-width: 400px;
+  --auth-body-max-width: 440px;
+  --border-width: 1px;
+  --underline-offset: 3px;
+
   /* Breakpoints (see the note at the top of this file) */
   --bp-tablet: 768px;
   --bp-desktop: 1024px;
