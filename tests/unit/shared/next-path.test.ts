@@ -12,13 +12,13 @@ describe("sanitizeNextPath", () => {
     expect(sanitizeNextPath(input)).toBe(expected);
   });
 
-  it.each([
-    ["//evil.com", "an attempted protocol-relative redirect"],
-    ["/api/x", "an API path"],
-    ["/login", "the login page itself"],
-    ["/overview#frag", "a fragment, which the pattern excludes"],
-    [null, "no next param at all"],
-  ])("falls back to /overview for %s (%s)", (input) => {
+  it.each<[string | null]>([
+    ["//evil.com"], // an attempted protocol-relative redirect
+    ["/api/x"], // an API path
+    ["/login"], // the login page itself
+    ["/overview#frag"], // a fragment, which the pattern excludes
+    [null], // no next param at all
+  ])("falls back to /overview for %s", (input) => {
     expect(sanitizeNextPath(input)).toBe("/overview");
   });
 });
