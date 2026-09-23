@@ -7,7 +7,7 @@ import {
   type ScheduledResetSkipped,
 } from "@/src/shared/schemas";
 import { getDb } from "./db";
-import { cronSecret, resetIntervalDays, type Env } from "./env";
+import { cronSecret, resetIntervalDays, resetSecret, type Env } from "./env";
 import { errorResponse, validationErrorResponse } from "./http";
 import { latestResetAt, resetToSeed } from "./reset";
 
@@ -33,17 +33,26 @@ function sameSecret(token: string | null, secret: string | null): boolean {
 }
 
 /**
- * SPEC-reset-and-test-support §2.2–2.3: `RESET_SECRET` or `CRON_SECRET`, the one Vercel sends
- * on a scheduled call. Either may be unset: an unset secret matches nothing, so the route fails
+ * SPEC-reset-and-test-support §2.2–2.3: `POST` accepts `RESET_SECRET` or `CRON_SECRET`; `GET`,
+ * the scheduled check, accepts only `CRON_SECRET`, the one Vercel sends, so a `scheduled` reset
+ * is always the cron's (`accepts: "cron"`; PR #20 review). Either may be unset: an unset secret matches nothing, so the route fails
  * closed (401) rather than answering 500. A valid `CRON_SECRET` then still runs the scheduled
  * reset when `RESET_SECRET` is missing (PR #20 review, finding 1). A missing `RESET_SECRET` is
- * still a configuration fault, so it is logged. The token is never logged.
+ * still a configuration fault, so it is logged, once per process. The token is never logged.
  */
-export function isAuthorized(header: string | null, env: Env = process.env): boolean {
+let reportedMissingResetSecret = false;
+
+export function isAuthorized(
+  header: string | null,
+  env: Env = process.env,
+  accepts: "either" | "cron" = "either",
+): boolean {
   const token = bearerToken(header);
-  const reset = env.RESET_SECRET ? env.RESET_SECRET : null;
+  const reset = resetSecret(env);
   const cron = cronSecret(env);
-  if (reset === null) {
+  // Once per process: unauthenticated requests must not be able to flood the log (PR #20 review).
+  if (reset === null && !reportedMissingResetSecret) {
+    reportedMissingResetSecret = true;
     console.error(
       "admin reset: RESET_SECRET is not set (.env.example); only CRON_SECRET can match",
     );
@@ -51,7 +60,7 @@ export function isAuthorized(header: string | null, env: Env = process.env): boo
   // Both comparisons always run, so the time taken does not say which secret matched.
   const matchesReset = sameSecret(token, reset);
   const matchesCron = sameSecret(token, cron);
-  return matchesReset || matchesCron;
+  return accepts === "cron" ? matchesCron : matchesReset || matchesCron;
 }
 
 /**
@@ -141,7 +150,8 @@ export async function handleAdminReset(
   env: Env = process.env,
 ): Promise<Response> {
   try {
-    if (!isAuthorized(request.headers.get("authorization"), env)) {
+    const accepts = method === "GET" ? "cron" : "either";
+    if (!isAuthorized(request.headers.get("authorization"), env, accepts)) {
       return errorResponse(401, "unauthenticated", "Missing or wrong reset secret");
     }
     const requestId = request.headers.get("x-request-id") ?? "none";

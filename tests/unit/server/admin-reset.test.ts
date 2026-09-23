@@ -47,6 +47,12 @@ describe("isAuthorized (SPEC-reset-and-test-support §2.2–2.3, T-08 plan D6/D7
     },
   );
 
+  it("PR #20 review: the scheduled check (GET) accepts only CRON_SECRET", () => {
+    expect(isAuthorized(`Bearer ${CRON}`, both, "cron")).toBe(true);
+    expect(isAuthorized(`Bearer ${RESET}`, both, "cron")).toBe(false);
+    expect(isAuthorized(`Bearer ${RESET}`, { RESET_SECRET: RESET }, "cron")).toBe(false);
+  });
+
   it.each([{}, { CRON_SECRET: "" }])(
     "Review Focus 1: an unset or empty CRON_SECRET matches no header at all (%j)",
     (cron) => {
@@ -68,12 +74,22 @@ describe("isAuthorized (SPEC-reset-and-test-support §2.2–2.3, T-08 plan D6/D7
     }
   });
 
-  it("both secrets unset: every request is refused, nothing throws, the fault is logged", () => {
-    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+  it("both secrets unset: every request is refused and nothing throws", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
     for (const header of [null, "", "Bearer ", "Bearer anything"]) {
       expect(isAuthorized(header, {})).toBe(false);
     }
-    expect(logged).toHaveBeenCalled();
+  });
+
+  it("PR #20 review: a missing RESET_SECRET is logged once per process, never per request, and never the token", async () => {
+    vi.resetModules();
+    const fresh = await import("@/src/server/admin-reset");
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    for (const header of [null, "Bearer anything", "Bearer else"]) {
+      expect(fresh.isAuthorized(header, { CRON_SECRET: CRON })).toBe(false);
+    }
+    expect(logged).toHaveBeenCalledTimes(1);
+    expect(String(logged.mock.calls[0]?.[0])).toMatch(/RESET_SECRET/);
     expect(String(logged.mock.calls[0]?.[0])).not.toContain("anything");
   });
 });

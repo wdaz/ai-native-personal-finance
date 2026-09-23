@@ -50,3 +50,24 @@ test("SPEC-app-shell §3: with no ResetLog row, meta is unavailable — a 500, n
   expect(response.status()).toBe(500);
   expect(ErrorEnvelopeSchema.parse(await response.json()).error).toBe("server_error");
 });
+
+test("PR #20 review: the layout never shows a reset time a client sent as x-last-reset-at", async ({
+  request,
+}) => {
+  const login = await request.post("/api/auth/login", {
+    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
+  });
+  expect(login.status()).toBe(200);
+  // With no ResetLog row the middleware reads no reset time and forwards none of its own: only
+  // its delete stands between the client's header and the layout.
+  await db.resetLog.deleteMany();
+
+  const page = await request.get("/overview", {
+    headers: { "x-last-reset-at": "2000-01-01T00:00:00.000Z" },
+    maxRedirects: 0,
+  });
+  expect(page.status()).toBe(200);
+  const html = await page.text();
+  expect(html).toContain("Overview");
+  expect(html).not.toContain("last reset 1 Jan 2000");
+});

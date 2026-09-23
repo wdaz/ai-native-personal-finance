@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getDb } from "@/src/server/db";
+import { LAST_RESET_AT_HEADER } from "@/src/server/meta";
 import { latestResetAt } from "@/src/server/reset";
 import {
   SESSION_COOKIE_NAME,
@@ -119,6 +120,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     forwardedHeaders.set("Content-Security-Policy", csp);
     forwardedHeaders.set("x-nonce", nonce);
     forwardedHeaders.set("x-request-id", requestId);
+    // The latest reset time, already read for the session check, for the (app) layout's banner:
+    // one ResetLog read per page instead of two. A client's own copy is always removed, and the
+    // value is set only when this request read it (PR #20 review).
+    forwardedHeaders.delete(LAST_RESET_AT_HEADER);
+    if (resetAt) forwardedHeaders.set(LAST_RESET_AT_HEADER, resetAt.toISOString());
     response = NextResponse.next({ request: { headers: forwardedHeaders } });
   }
 

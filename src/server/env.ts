@@ -88,8 +88,10 @@ export function webmcpOriginTrialToken(env: Env = process.env): string | null {
  */
 function positiveInt(name: string, raw: string | undefined, fallback: number): number {
   if (raw === undefined || raw === "") return fallback;
-  const value = Number(raw);
-  if (!Number.isInteger(value) || value <= 0) {
+  // Digits only, no leading zero: `Number` alone accepts "0x10", "1e1" and " 10 " (PR #20
+  // review). The integer check still catches a value beyond Number.MAX_SAFE_INTEGER.
+  const value = /^[1-9]\d*$/.test(raw) ? Number(raw) : Number.NaN;
+  if (!Number.isSafeInteger(value)) {
     throw new Error(`${name} must be a positive whole number (.env.example), not "${raw}"`);
   }
   return value;
@@ -110,13 +112,14 @@ export function resetBytesThreshold(env: Env = process.env): number {
   return positiveInt("RESET_BYTES_THRESHOLD", env.RESET_BYTES_THRESHOLD, 52_428_800);
 }
 
-/** SPEC-reset-and-test-support §2.2: the admin reset's Bearer secret. No default. */
-export function resetSecret(env: Env = process.env): string {
+/**
+ * SPEC-reset-and-test-support §2.2: the operator's Bearer secret for `POST /api/admin/reset`.
+ * `null`, never `""`, when unset: an unset secret matches nothing, so the route fails closed
+ * (PR #20 review). The route and the tests read it only through this function.
+ */
+export function resetSecret(env: Env = process.env): string | null {
   const secret = env.RESET_SECRET;
-  if (!secret) {
-    throw new Error("RESET_SECRET is not set: copy .env.example to .env.local (README)");
-  }
-  return secret;
+  return secret ? secret : null;
 }
 
 /**

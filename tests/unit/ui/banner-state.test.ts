@@ -41,17 +41,19 @@ describe("banner-state (SPEC-app-shell §2.6)", () => {
     sessionStorage.setItem(BANNER_STORAGE_KEY, RESET);
     expect(isBannerDismissed(RESET)).toBe(true);
   });
+});
 
-  it("storage that throws on read shows the banner rather than breaking the page", () => {
+describe("banner-state when storage fails (createSessionStore's policy)", () => {
+  it("storage that throws on read shows the banner", async () => {
+    vi.resetModules();
+    const state = await import("@/src/ui/banner-state");
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new DOMException("blocked", "SecurityError");
     });
-    expect(isBannerDismissed(RESET)).toBe(false);
+    expect(state.isBannerDismissed(RESET)).toBe(false);
   });
-});
 
-describe("banner-state when storage refuses writes", () => {
-  it("still hides the banner for this reset, for the rest of the page", async () => {
+  it("storage that refuses a write still hides the banner for this reset, for the rest of the page", async () => {
     vi.resetModules();
     const state = await import("@/src/ui/banner-state");
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {

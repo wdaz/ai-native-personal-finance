@@ -1,4 +1,16 @@
 import type { NextConfig } from "next";
+import { WEBMCP_MODES } from "./src/shared/env";
+
+// `||`, not `??`: an empty WEBMCP_MODE is "polyfill" here too, as src/server/env.ts's
+// configuredWebmcpMode reads it for GET /api/meta. An unknown value (a typo, "Polyfill") fails
+// the build here rather than reaching runtime, where it would make getMeta throw and the reset
+// banner disappear (T-08, PR #20 review).
+const webmcpMode = process.env.WEBMCP_MODE || "polyfill";
+if (!WEBMCP_MODES.some((mode) => mode === webmcpMode)) {
+  throw new Error(
+    `WEBMCP_MODE must be one of ${WEBMCP_MODES.join(", ")}, not "${webmcpMode}" (SPEC-webmcp-tools §2.1)`,
+  );
+}
 
 /**
  * SPEC-webmcp-tools §2.1 — `WEBMCP_MODE` is the documented knob; the client reads it as
@@ -13,9 +25,7 @@ const nextConfig: NextConfig = {
   // tests/unit/next-config.test.ts holds it off.
   agentRules: false,
   env: {
-    // `||`, not `??`: an empty WEBMCP_MODE is "polyfill" here too, as src/server/env.ts's
-    // configuredWebmcpMode reads it for GET /api/meta (T-08, PR #20 review, finding 5).
-    NEXT_PUBLIC_WEBMCP_MODE: process.env.WEBMCP_MODE || "polyfill",
+    NEXT_PUBLIC_WEBMCP_MODE: webmcpMode,
     NEXT_PUBLIC_APP_ENV: process.env.APP_ENV ?? "development",
   },
 };

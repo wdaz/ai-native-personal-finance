@@ -66,9 +66,14 @@ describe("resetIntervalDays (SPEC-app-shell §5)", () => {
     expect(resetIntervalDays({ RESET_INTERVAL_DAYS: "7" })).toBe(7);
   });
 
-  it.each(["ten", "0", "-1", "2.5"])("throws on an invalid value %s", (value) => {
-    expect(() => resetIntervalDays({ RESET_INTERVAL_DAYS: value })).toThrow(/RESET_INTERVAL_DAYS/);
-  });
+  it.each(["ten", "0", "-1", "2.5", "0x10", "1e1", " 10 ", "010", "+5", "99999999999999999"])(
+    "throws on an invalid value %j",
+    (value) => {
+      expect(() => resetIntervalDays({ RESET_INTERVAL_DAYS: value })).toThrow(
+        /RESET_INTERVAL_DAYS/,
+      );
+    },
+  );
 });
 
 describe("resetRowThreshold / resetBytesThreshold (SPEC-reset-and-test-support §2.4)", () => {
@@ -95,9 +100,9 @@ describe("resetSecret (SPEC-reset-and-test-support §2.2)", () => {
     expect(resetSecret({ RESET_SECRET: "s3cret" })).toBe("s3cret");
   });
 
-  it("throws when unset or empty — there is no default for a secret", () => {
-    expect(() => resetSecret({})).toThrow(/RESET_SECRET/);
-    expect(() => resetSecret({ RESET_SECRET: "" })).toThrow(/RESET_SECRET/);
+  it("is null when unset or empty — never an empty string a request could match", () => {
+    expect(resetSecret({})).toBeNull();
+    expect(resetSecret({ RESET_SECRET: "" })).toBeNull();
   });
 });
 

@@ -25,6 +25,12 @@ test.beforeEach(async ({ request }) => {
 
 const bearer = (secret: string) => ({ Authorization: `Bearer ${secret}` });
 
+function reset(): string {
+  const secret = resetSecret();
+  if (!secret) throw new Error("RESET_SECRET must be set for the API tests (.env.example, CI env)");
+  return secret;
+}
+
 function cron(): string {
   const secret = cronSecret();
   if (!secret) throw new Error("CRON_SECRET must be set for the API tests (.env.example, CI env)");
@@ -52,14 +58,14 @@ async function expectUnauthenticated(response: APIResponse): Promise<void> {
 test("US-37 AC1 POST with the reset secret and no body resets, reason manual", async ({
   request,
 }) => {
-  const response = await request.post("/api/admin/reset", { headers: bearer(resetSecret()) });
+  const response = await request.post("/api/admin/reset", { headers: bearer(reset()) });
   expect(response.status()).toBe(204);
   expect(await resetReasons()).toEqual(["manual"]);
 });
 
 test("US-37 AC1 POST with reason threshold records it", async ({ request }) => {
   const response = await request.post("/api/admin/reset", {
-    headers: bearer(resetSecret()),
+    headers: bearer(reset()),
     data: { reason: "threshold" },
   });
   expect(response.status()).toBe(204);
@@ -78,14 +84,17 @@ test("US-37 AC1 T-08 plan Q1: GET with CRON_SECRET — Vercel's daily cron call 
   expect(await resetReasons()).toEqual(["scheduled"]);
 });
 
-test("US-37 AC1 GET with the reset secret is the scheduled reset too", async ({ request }) => {
+test("PR #20 review: GET is the cron's alone — the reset secret gets 401 and resets nothing", async ({
+  request,
+}) => {
   await lastResetDaysAgo(10);
   const response = await request.get("/api/admin/reset", {
-    headers: bearer(resetSecret()),
+    headers: bearer(reset()),
     maxRedirects: 0,
   });
-  expect(response.status()).toBe(204);
-  expect(await resetReasons()).toEqual(["scheduled"]);
+  expect(response.status()).toBe(401);
+  expect(ErrorEnvelopeSchema.parse(await response.json()).error).toBe("unauthenticated");
+  expect(await resetReasons()).toEqual(["test"]);
 });
 
 test("US-37 AC1 PR #20 review finding 2: the daily check before the interval has passed resets nothing — 200 with the due time", async ({
@@ -113,7 +122,7 @@ test("SPEC-reset-and-test-support §2.2: POST always resets, however recent the 
   request,
 }) => {
   const response = await request.post("/api/admin/reset", {
-    headers: bearer(resetSecret()),
+    headers: bearer(reset()),
     data: { reason: "scheduled" },
   });
   expect(response.status()).toBe(204);
@@ -138,7 +147,7 @@ test("SPEC-reset-and-test-support §2.2: no Authorization header — 401, nothin
 test("SPEC-reset-and-test-support §2.2: a wrong or empty secret — 401, nothing reset", async ({
   request,
 }) => {
-  for (const headers of [bearer("not-the-secret"), bearer(""), { Authorization: resetSecret() }]) {
+  for (const headers of [bearer("not-the-secret"), bearer(""), { Authorization: reset() }]) {
     await expectUnauthenticated(await request.post("/api/admin/reset", { headers }));
   }
 });
@@ -153,7 +162,7 @@ test("SPEC-reset-and-test-support §2.2: reason test, an unknown reason, an extr
   ];
   for (const { data, path } of cases) {
     const response = await request.post("/api/admin/reset", {
-      headers: bearer(resetSecret()),
+      headers: bearer(reset()),
       data,
     });
     expect(response.status()).toBe(400);
@@ -162,7 +171,7 @@ test("SPEC-reset-and-test-support §2.2: reason test, an unknown reason, an extr
     ]);
   }
   const badJson = await request.post("/api/admin/reset", {
-    headers: { ...bearer(resetSecret()), "Content-Type": "application/json" },
+    headers: { ...bearer(reset()), "Content-Type": "application/json" },
     data: "{not json",
   });
   expect(badJson.status()).toBe(400);

@@ -7,7 +7,13 @@ import { isBannerDismissed, subscribeBanner, writeBannerDismissed } from "./bann
 import { CloseCircleIcon } from "./icons/CloseCircleIcon";
 import styles from "./ResetBanner.module.css";
 
-/** The server cannot read sessionStorage; it renders the banner shown. */
+/**
+ * The server cannot read sessionStorage; it renders the banner shown. Known cost, accepted (T-08
+ * plan D8; PR #20 review): after a dismissal, a full load (a reload, the login redirect) paints
+ * the banner and removes it once hydrated — a flash and a shift of the page by the banner's
+ * height. First visits, far more common, get no shift. Avoiding it needs a cookie the server
+ * can read, and SPEC-app-shell §2.6 names sessionStorage.
+ */
 const shownOnTheServer = () => false;
 
 type ResetBannerProps = {
