@@ -47,3 +47,22 @@ export function demoPasswordHash(env: Env = process.env): string {
   }
   return hash;
 }
+
+export type DemoCredentials = Readonly<{ email: string; password: string }>;
+
+/**
+ * ADR-0006, SPEC-auth §2.2, §2.6: the demo account the login page shows and the sign-up
+ * notice repeats — `DEMO_EMAIL` and the plain-text `DEMO_PASSWORD_DISPLAY`. Like
+ * `demoPasswordHash`, a missing value throws instead of rendering an empty demo box.
+ */
+export function demoCredentials(env: Env = process.env): DemoCredentials {
+  const email = env.DEMO_EMAIL;
+  const password = env.DEMO_PASSWORD_DISPLAY;
+  if (!email || !password) {
+    throw new Error(
+      "DEMO_EMAIL and DEMO_PASSWORD_DISPLAY must both be set: copy .env.example to .env.local " +
+        "(README, Demo credentials)",
+    );
+  }
+  return { email, password };
+}
