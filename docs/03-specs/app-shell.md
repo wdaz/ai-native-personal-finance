@@ -1,7 +1,7 @@
 # SPEC-app-shell — Authenticated layout: sidebar, bottom navigation, minimise, banner, footer
 
-Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
-Changelog: v0.2 — S-10 indicator owned by WebMcpProvider; S-11 server-side meta; S-14 US-35 confirmed R1 (PRD amended); S-24 meta DTO + OT meta tag; S-25 deterministic lastResetAt; S-27 names/storage; S-35 test rows.
+Status: **Approved** (v1.1 — 2026-09-23: §2.6 banner interval from `meta.resetIntervalDays`; v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
+Changelog: v1.1 (2026-09-23, owner decision at the T-04 plan gate) — §2.6: the banner writes the configured interval, `meta.resetIntervalDays` (§5), as `.env.example` already said; the copy appendix (user-stories v1.2) reads "every {days} days". v0.2 — S-10 indicator owned by WebMcpProvider; S-11 server-side meta; S-14 US-35 confirmed R1 (PRD amended); S-24 meta DTO + OT meta tag; S-25 deterministic lastResetAt; S-27 names/storage; S-35 test rows.
 Implements: US-33, US-34, US-35, US-37 AC2, US-41 (indicator slot), US-03 (logout button slot) · Constrained by: ADR-0002, ADR-0004, design-tokens.md, NFR-A · Design: prototype sidebar (expanded 300 px / collapsed 88 px), tablet/mobile bottom bar; style guide "Sidebar"
 
 ## 1. Purpose
@@ -13,7 +13,7 @@ The frame every authenticated page lives in: navigation across the five pages, r
 2.3 Minimise (US-35, Release 1 by owner decision S-14): toggle collapses width to 88 px, hides labels (icons keep `aria-label`), flips the caret icon; accessible name "Minimize Menu" when expanded, "Expand Menu" when collapsed; `aria-expanded` reflects state; `sessionStorage["pf.sidebar"] = "collapsed"` when collapsed, key removed when expanded; no layout shift of page content beyond the width change (transition 200 ms, respects `prefers-reduced-motion`).
 2.4 Tablet (768–1023 px) and mobile (< 768 px): sidebar hidden; fixed bottom bar with the five items — tablet shows icon + label, mobile icon only with `aria-label`; active item styled as in the design (beige-100 tab with top radius). Page content gets bottom padding equal to the bar height. Footer actions move to the page header's right side: agent indicator (compact dot) and a "Log out" icon button.
 2.5 Page header: each page renders `<PageHeader title primaryAction?>`; `<h1>` text preset 1.
-2.6 Reset banner: if `meta.lastResetAt` exists, a slim bar above the content: "Demo data resets every 10 days · last reset {date, e.g. 12 Sep 2026}" with a dismiss button ("Dismiss notice"); dismissed state in `sessionStorage["pf.banner"]`; role="status".
+2.6 Reset banner: if `meta.lastResetAt` exists, a slim bar above the content: "Demo data resets every {resetIntervalDays} days · last reset {date, e.g. 12 Sep 2026}" (`COPY.resetBanner`; "1 day" when the interval is 1) with a dismiss button ("Dismiss notice"); dismissed state in `sessionStorage["pf.banner"]`; role="status".
 2.7 Navigation is client-side (`<Link>`); the current page is announced (`aria-current="page"`).
 2.8 Skip link "Skip to content" as the first focusable element, visible on focus.
 

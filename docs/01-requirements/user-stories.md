@@ -1,6 +1,6 @@
 # User stories
 
-Status: **Approved** (v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · Author(s): Agent (draft) · Date: 2026-09-08
+Status: **Approved** (v1.2 — 2026-09-23 amendments, owner decisions at the T-04 plan gate: the copy appendix's demo banner takes the configured interval (`{days}`), and three R1 additions give the sign-up maxima their messages; v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · Author(s): Agent (draft) · Date: 2026-09-08
 Source: `../00-discovery/inputs/challenge-brief.md` (brief), `../00-discovery/problem-statement.md` (PS), `../00-discovery/inputs/design/` (design; visual reference only)
 Conventions: ids are stable; priorities Must/Should/Could; every story lists ≥1 error or boundary criterion; "Agent tool" names the WebMCP tool the story implies (final set decided in NFR-W / ADR). Business "today" is **19 Aug 2026** and the current month is **August 2026** (OQ-4); seed dates are shifted +2 years at seed time. **Where the design and `data.json` differ, `data.json` wins** (owner decision R-01). Every budget and pot has a server-generated `id`; tools take and return ids (R-26). Validation copy: see the copy table at the end of this document (R-07). Money is USD, shown with two decimals and a sign as in the design.
 
@@ -280,7 +280,7 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | Delete pot | confirm | Are you sure you want to delete this pot? This action cannot be reversed, and all the data inside it will be removed forever. |
 | Transactions | no results | No transactions match your search |
 | Bills | no results | No bills match your search |
-| Demo banner | always | Demo data resets every 10 days · last reset <date> |
+| Demo banner | always | Demo data resets every {days} days · last reset <date> |
 | After reset | stale request | Data was reset — reloading |
 
 ### R1 additions (2026-09-20, owner-approved with the Release 1 specs)
@@ -303,3 +303,8 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | R2 placeholder pages | body | Coming in Release 2 |
 | Agent tools indicator | states | Agent tools: checking… / native · N / polyfill · N / unavailable (titles in SPEC-webmcp-tools §2.7) |
 | Stale write after reset (R2) | 409 | Data was reset — reloading |
+| Sign-up name | > 60 characters | Maximum 60 characters |
+| Email | > 254 characters | Enter a valid email address |
+| Password (sign-up) | > 128 characters | Maximum 128 characters |
+
+`{N}` and `{days}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 day").
