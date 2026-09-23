@@ -123,4 +123,6 @@ model LoginAttempt {
   seeded    Boolean  @default(false)
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([ip, at])
 }
