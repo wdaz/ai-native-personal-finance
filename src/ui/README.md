@@ -19,3 +19,8 @@ T-07: the app shell — `Shell` (skip link, `<main>`, the back/forward-cache ses
 `OriginTrialMeta`; `nav.ts` (`PAGE_NAMES`, `NAV_ITEMS`, `isActive`); `cx.ts`. `icons/` gains
 the five navigation icons and the minimise caret (challenge assets) and `SignOutIcon`
 (Phosphor, MIT); `Logo` gains `LogoSmall`. Their component tests are in `tests/unit/ui/`.
+
+T-08: `ResetBanner` (SPEC-app-shell §2.6 — `banner-state.ts` keeps
+`sessionStorage["pf.banner"]`; dismissing it moves focus to `<main>`), rendered by `Shell` from
+the `meta` the `(app)` layout reads; `icons/CloseCircleIcon` — the Claude Design prototype's
+modal close control, drawn inline there, not one of the Figma icons (T-08 plan Q2 (d)).

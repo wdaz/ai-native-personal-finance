@@ -1537,3 +1537,84 @@ them too").
     logout labels stay spec text in the components — the owner's answer at T-06's plan gate, Q1
     (b), recorded in SPEC-auth v1.0.4's changelog, and plan D3; `copy.test.ts` mirrors the copy
     appendix row by row, and these labels are not rows of it.
+
+## 2026-09-23 — Build (T-08): App shell part 2 — meta, reset banner, admin reset
+
+- **Phase:** 5 — Build the slice (Release 1).
+- **Participants:** Owner; Agent (Claude Code on the web — planned on Sonnet 5, executed on
+  Opus 5.5 after the owner switched models, with an Opus 5.5 advisor reviewing the approach).
+- **Trigger:** backlog T-08, after T-07 merged (PR #19).
+- **Prompt(s):** `prompts/2026-09-23-T-08.md`.
+- **Produced:**
+  - Plan: `plans/2026-09-23-T-08.md`, v0.1–v0.5.
+  - Server: `src/server/meta.ts`, `threshold.ts` and `admin-reset.ts`; `reset.ts` gains
+    `latestReset`; `env.ts` gains six accessors.
+  - Routes: `app/api/meta/route.ts` and `app/api/admin/reset/route.ts` (`GET` + `POST`).
+  - Shared: `AdminResetSchema` in `src/shared/schemas.ts`.
+  - UI: `src/ui/ResetBanner.tsx`, `banner-state.ts` and `icons/CloseCircleIcon.tsx`; `Shell`
+    and the `(app)` layout are wired to meta.
+  - `middleware.ts` forwards `x-request-id`.
+  - `vercel.json` (the cron entry).
+  - CI: the API and E2E jobs get placeholder `RESET_SECRET` and `CRON_SECRET` values.
+  - SPEC-reset-and-test-support v1.3 (`GET` is the scheduled reset).
+  - Tests: 64 unit tests (642 in total), 19 API tests (79), 4 E2E tests (75 on Chromium);
+    the phone keyboard walkthrough gains the banner's tab stop.
+- **Plan gate:**
+  - **Q1 (a).** Vercel's cron calls with a bodyless `GET`, so the route answers `GET` as the
+    scheduled reset. This was verified against vercel.com once the owner allowed the domain;
+    it was first answered from trained knowledge, and the plan said so.
+  - **Q2 (d).** The dismiss button reuses the Claude Design prototype's modal close control.
+    The owner's uploaded export had no banner design.
+- **Verification:**
+  - The mutations below were run and reverted. Each failed exactly the test named:
+    - counting `LoginAttempt` in the threshold: the D3 test;
+    - deleting `/api/meta`'s `no-store`: the header test;
+    - `latestReset` returning `new Date(0)`: the two "empty `ResetLog`" tests;
+    - dropping the route's `GET`: the four `GET` tests, which got 405;
+    - weakening both empty-secret guards: Review Focus 1's unit tests. With only
+      `cronSecret` weakened, `sameSecret`'s own guard still held, and `env.test.ts` pins
+      `cronSecret` separately;
+    - removing the focus hand-off: the Enter-dismiss test;
+    - keeping the dismissal in memory only: the reload step.
+  - The `x-request-id` forwarding was checked **by hand**: a real `POST` answered with
+    `x-request-id: 1b21a2f2-…`, and the server logged
+    `reset reason=manual rows=59 requestId=1b21a2f2-…`. No automated test isolates the
+    forwarding (the same situation as TD-1's M6).
+- **What the agent got right:** the cron finding, first from memory, then confirmed against
+  the live docs. Rendering the canvas-drawn prototype and logging into it instead of trusting
+  an empty grep. Keeping the design export out of the repository.
+- **What the agent got wrong or missed:**
+  1. The v0.1 plan's code had tests that could not fail. The advisor caught them before any
+     code was written:
+     - an unset-`CRON_SECRET` HTTP test that the server's `.env.local` made impossible, plus a
+       top-level `test.skip` that would have skipped the whole file;
+     - a "not cached" test that slept 1.1 s on a wrong premise (`ResetLog.at` has millisecond
+       precision, not second);
+     - admin tests that asserted status codes but never the `ResetLog` row;
+     - a mutation claim for D12 that no test backed.
+  2. The plan missed that the shared `toErrorIssues` throws on the admin body's issue codes,
+     which would have turned a bad `reason` into a 500.
+  3. The plan's D8 (`setState` in an effect) would have failed ESLint's `react-hooks` v7.
+  4. The plan missed that `.github/workflows/ci.yml` sets no `RESET_SECRET`, so every admin
+     test would have failed in CI.
+  5. The go-ahead was first logged as "~22:18 +04". The container's clock is UTC. Corrected.
+- **Environment (differs from CI; the PR says so):**
+  - Node 26.10.0 installed by hand.
+  - Postgres 16.13 run locally (CI uses 18.6); there is no Docker daemon.
+  - Chromium r1194 through a session-local Playwright config (Playwright 1.63 expects r1243).
+  - Firefox and WebKit are not installed, so `npm run test:e2e` across three engines, and
+    therefore `npm run test:all`, was not run.
+  - Everything else ran: the secret scan (240 commits, after unshallowing the clone), lint,
+    format, typecheck, unit, API, E2E on Chromium, and `npm audit`.
+- **Owner changes and reasoning:** the owner supplied the design reference twice: the
+  prototype, then the full export as a zip. They allowed `vercel.com` so Q1 could be checked,
+  and answered "tövsiyə olunanlarla başla".
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A plan's test code needs the same adversarial reading as the product code: ask whether
+     each test can fail at all.
+  2. In a web session, the network allowlist and the missing Docker daemon decide what can be
+     verified. Say that at the plan gate, not in the PR.
+  3. Timestamps come from the clock that produced them. State the zone.
+- **Next:** the owner's review of the PR. CI then runs Chromium E2E against Postgres 18.6.
+  T-09 follows (the overview API).

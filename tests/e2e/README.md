@@ -22,7 +22,9 @@ Playwright browser tests, one journey per story, on Chromium, Firefox and WebKit
 - The app shell: `app-shell.spec.ts` (US-33 layouts at 1440/768/375 and 320, US-34 hover,
   US-35 minimise, titles, placeholders, axe), `app-shell-keyboard.spec.ts` (US-32
   walkthroughs, focus rings), `logout.spec.ts` (US-03 AC1–AC2, the back/forward-cache
-  re-check through a synthetic `pageshow`).
+  re-check through a synthetic `pageshow`). T-08 adds US-37 AC2 (the reset banner's date,
+  its dismissal for the tab, 320 px) to `app-shell.spec.ts`, and the banner's tab stop and
+  focus hand-off to `app-shell-keyboard.spec.ts`.
 - CI runs Chromium (T-06); Firefox and WebKit join in T-13. `npm run test:e2e` runs all three
   locally.
 
