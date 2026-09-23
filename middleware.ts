@@ -13,17 +13,24 @@ import {
 import { sanitizeNextPath } from "@/src/shared/next-path";
 
 // SPEC-auth §2.9: Node.js runtime, not the Edge default — the reset-epoch check needs the
-// same Prisma/pg client src/server/db.ts uses elsewhere (T-05 plan gate Q2).
+// same Prisma/pg client src/server/db.ts uses elsewhere (T-05 plan gate Q2). The matcher
+// excludes any path with a file extension (avatars and other `public/` assets, favicon) as
+// well as `_next/*` — none of these need a session check, and running the resetEpoch DB
+// query and setting `Cache-Control: no-store` on every image request for a logged-in visitor
+// was needless cost and defeated the browser's own asset caching (review finding M6).
 export const config = {
   runtime: "nodejs",
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|.*\\..*).*)"],
 };
 
 const PROTECTED = /^\/(overview|transactions|budgets|pots|recurring-bills)(\/|$)/;
 const AUTH_PAGES = /^\/(login|signup)$/;
 const PUBLIC_API = /^\/api\/(auth\/(login|signup|session)|meta)$/;
 const TEST_API = /^\/api\/test\//;
-const ADMIN_API = /^\/api\/admin\//;
+// SPEC-auth §2.10 names exactly POST /api/admin/reset as secret-protected — not the whole
+// /api/admin/* prefix (review finding M3: the prefix form exempted any other admin path from
+// the session check too).
+const ADMIN_API = /^\/api\/admin\/reset$/;
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const now = new Date();
@@ -43,12 +50,20 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const payload = await readSession(cookie);
   const resetAt = payload ? await latestResetAt(getDb()) : null;
   const authenticated = payload !== null && isSessionValid(payload, now, resetAt);
+  // SPEC-reset-and-test-support §2.6: a session rejected *only* because of the resetEpoch
+  // check (otherwise still within its TTL) gets its own redirect reason — distinct from
+  // never having had a session at all, so the login page can show "The demo data was reset"
+  // (review finding I1).
+  const resetInvalidated = payload !== null && !authenticated && isSessionValid(payload, now, null);
 
   let response: NextResponse;
 
   if (isRoot) {
     response = NextResponse.redirect(
-      new URL(authenticated ? "/overview" : "/login", request.url),
+      new URL(
+        authenticated ? "/overview" : resetInvalidated ? "/login?reason=reset" : "/login",
+        request.url,
+      ),
       302,
     );
   } else if (needsSession && !authenticated) {
@@ -59,10 +74,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       );
     } else {
       const next = sanitizeNextPath(`${pathname}${search}`);
-      response = NextResponse.redirect(
-        new URL(`/login?next=${encodeURIComponent(next)}`, request.url),
-        302,
-      );
+      const loginUrl = new URL(resetInvalidated ? "/login?reason=reset" : "/login", request.url);
+      loginUrl.searchParams.set("next", next);
+      response = NextResponse.redirect(loginUrl, 302);
     }
   } else if (!isApi && AUTH_PAGES.test(pathname) && authenticated) {
     response = NextResponse.redirect(new URL("/overview", request.url), 302);
@@ -70,7 +84,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     response = NextResponse.next();
   }
 
-  if (authenticated && payload && shouldReissue(payload, now)) {
+  // Skip the reissue on logout (and login, which seals its own fresh cookie) — otherwise an
+  // old-enough session sends two Set-Cookie headers in one response, and only header-merge
+  // order happens to make the clear win (review finding M5).
+  const skipsReissue = pathname === "/api/auth/logout" || pathname === "/api/auth/login";
+  if (!skipsReissue && authenticated && payload && shouldReissue(payload, now)) {
     const secure = request.url.startsWith("https://");
     const resealed = await sealSession({
       sub: "demo",
