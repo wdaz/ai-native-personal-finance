@@ -1,7 +1,7 @@
 # SPEC-auth — Demo login, sign-up screen, logout, session
 
-Status: **Approved** (v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
-Changelog: v0.2 — S-15 blur rule per US-31; S-16 sessions end on reset; S-17 route matrix + error envelope; S-18 rate-limit maths; S-29 back-navigation; S-30 `next` rule.
+Status: **Approved** (v1.0.1 — 2026-09-23: §6 error bodies carry `message`; v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20
+Changelog: v1.0.1 (2026-09-23, owner decision at the T-04 plan gate, finding F2) — §6's 401 and 429 bodies show the `message` §2.10 requires; §2.10 is unchanged. v0.2 — S-15 blur rule per US-31; S-16 sessions end on reset; S-17 route matrix + error envelope; S-18 rate-limit maths; S-29 back-navigation; S-30 `next` rule.
 Implements: US-01, US-02, US-03, US-31 (for these forms), US-32 (for these screens) · Constrained by: ADR-0006, ADR-0002, NFR-S1/S2/S4/S6, NFR-A · Design: `inputs/design/app-prototype.html` "Auth" screen (illustration panel left, form card right; mobile: form only, illustration hidden)
 
 ## 1. Purpose
@@ -46,7 +46,7 @@ A visitor logs in with the demo account shown on the page and reaches Overview; 
 ### API
 | Method | Path | Body (Zod) | Responses |
 |--------|------|------------|-----------|
-| POST | `/api/auth/login` | `LoginSchema { email, password }` | 200 `{ ok: true }` + Set-Cookie · 400 `{ error: "validation", issues }` · 401 `{ error: "invalid_credentials" }` · 429 `{ error: "rate_limited", retryAfter }` |
+| POST | `/api/auth/login` | `LoginSchema { email, password }` | 200 `{ ok: true }` + Set-Cookie · 400 `{ error: "validation", issues }` · 401 `{ error: "invalid_credentials", message: "Email or password is incorrect" }` · 429 `{ error: "rate_limited", message: "Too many attempts", retryAfter }` |
 | POST | `/api/auth/signup` | `SignupSchema { name(1–60), email, password(8–128) }` | 200 `{ code: "demo_instance" }` · 400 validation |
 | POST | `/api/auth/logout` | — | 204 + cookie cleared |
 | GET | `/api/auth/session` | — | 200 `{ authenticated: boolean }` (used by E2E and the shell) |
