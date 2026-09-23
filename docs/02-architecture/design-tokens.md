@@ -1,7 +1,7 @@
 # Design tokens
 
-Status: **Approved** (v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
-Changelog: v1.1 (2026-09-23, owner decision at the T-06 plan gate, Q2) — new table "Auth layout and lines": seven values the auth screens need and the style guide never named, each read from the design export (the Auth screen of `app-prototype.html`, the input and button samples of `style-guide.html`) rather than chosen; `src/ui/tokens.css` mirrors them and `tests/unit/scaffold.test.ts` pins each one.
+Status: **Approved** (v1.2 — 2026-09-23: app shell tokens and the sign-out icon, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
+Changelog: v1.2 (2026-09-23, owner decision at the T-07 plan gate, Q3/Q4) — new table "App shell": nine values the sidebar and the bottom bar need and the style guide never named, each read from the design export (the sidebar, tablet and mobile bar markup of `app-prototype.html` and `style-guide.html`) or from SPEC-app-shell §2.3/§4 rather than chosen; two are durations, so the value column now accepts `ms`. The Icons section adds Phosphor `sign-out` (fill) as a project addition (28 icons) and notes that the navigation icons and the minimise caret are the challenge's starter assets. `src/ui/tokens.css` mirrors the table; `tests/unit/scaffold.test.ts` parses `px` and `ms` values and pins each one. v1.1 (2026-09-23, owner decision at the T-06 plan gate, Q2) — new table "Auth layout and lines": seven values the auth screens need and the style guide never named, each read from the design export (the Auth screen of `app-prototype.html`, the input and button samples of `style-guide.html`) rather than chosen; `src/ui/tokens.css` mirrors them and `tests/unit/scaffold.test.ts` pins each one.
 Source: `../00-discovery/inputs/design/style-guide.html` (Claude Design export of the Figma style guide); the 22 colours were cross-checked against the Figma-extracted tokens of 2026-09-01 — identical. These are the **only** source for UI values (`src/ui/tokens.css`); no hard-coded hex or pixel values elsewhere.
 
 ## Colours
@@ -90,9 +90,25 @@ Source: the design export, read 2026-09-23 at the T-06 plan gate — the Auth sc
 | `--border-width` | 1px | input and outlined-control borders |
 | `--underline-offset` | 3px | underlined text links |
 
+## App shell (v1.2)
+
+Source: the design export, read 2026-09-23 at the T-07 plan gate — the sidebar, tablet and mobile bar markup of `app-prototype.html` (row height, bar width and gaps, transitions, `max-width: 104px`) and of `style-guide.html`'s "Sidebar" section; SPEC-app-shell §2.3 (200 ms) and §4 (bar heights 52 / 74 px, 44 px tap target).
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--nav-item-height` | 56px | sidebar navigation row and footer rows |
+| `--nav-indicator-width` | 4px | the current page's green bar (left in the sidebar, bottom in the bottom bar) |
+| `--nav-icon-size` | 24px | the icon box in navigation items and sidebar controls |
+| `--bottom-nav-height-mobile` | 52px | bottom bar, below 768 px |
+| `--bottom-nav-height-tablet` | 74px | bottom bar, 768–1023 px |
+| `--bottom-nav-item-max-width` | 104px | bottom-bar tab |
+| `--tap-target-min` | 44px | minimum control size, e.g. the header's "Log out" |
+| `--duration-sidebar` | 200ms | sidebar width and caret transition |
+| `--duration-hover` | 150ms | colour transition on navigation items and controls |
+
 ## Icons
 
-Phosphor Icons (27 used, listed in the style guide: arrow-fat-lines-left, arrows-down-up, barbell, book-open-text, caret-down/right/up, chart-donut, check-circle, dots-three-outline, eye, eye-slash, filter, house, jar-fill, list-bullets, magnifying-glass, music-note, network, potted-plant, receipt, shield-plus, sort, video, warehouse, warning-circle, wrench). Inlined as SVG components in `src/ui/icons/` with `aria-hidden` unless interactive.
+Phosphor Icons (27 used, listed in the style guide, plus `sign-out` (fill) added by T-07 as a project addition — the design has no logout control; MIT-licensed, taken from `github.com/phosphor-icons/core`: arrow-fat-lines-left, arrows-down-up, barbell, book-open-text, caret-down/right/up, chart-donut, check-circle, dots-three-outline, eye, eye-slash, filter, house, jar-fill, list-bullets, magnifying-glass, music-note, network, potted-plant, receipt, shield-plus, sort, video, warehouse, warning-circle, wrench). The five navigation icons and the minimise caret are the challenge's starter SVGs (`icon-nav-*.svg`, `icon-minimize-menu.svg`), the same Phosphor glyphs. Inlined as SVG components in `src/ui/icons/` with `aria-hidden` unless interactive.
 
 ## Component states (style guide)
 

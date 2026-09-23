@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -10,7 +10,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 
 | Id | Title | Status | Picked up by |
 |----|-------|--------|--------------|
-| TD-1 | The CSP nonce reaches Next through an undocumented header copy | Open | the first task that changes `middleware.ts` — TD-2 is the natural one |
+| TD-1 | The CSP nonce reaches Next through an undocumented header copy | Open | **T-07** (owner decision 2026-09-23, T-07 plan gate Q1 (d): it changes `middleware.ts` for the logout fallback) |
 | TD-2 | `middleware.ts` uses a deprecated file convention (`proxy`) | Open | a small follow-up task, before Next removes the old convention |
 | TD-3 | `/_global-error` is prerendered, without the CSP nonce | Open | whichever task first gives the app an error UI of its own |
 | TD-4 | Two "submit is focused after an error" E2E assertions prove nothing on Chromium | Open | T-13 (WebKit joins CI), or any task that touches those tests |

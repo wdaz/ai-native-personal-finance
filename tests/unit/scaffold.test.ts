@@ -50,9 +50,9 @@ describe("T-01 scaffold", () => {
       if (token && hex) documentedColours.set(token, hex.toLowerCase());
     }
 
-    // Spacing, radii, layout and breakpoints: | `--token` | 8px | and | `--token` | 8px | use |
+    // Spacing, radii, layout, breakpoints, auth and shell values: | `--token` | 8px | and | `--token` | 8px | use |; v1.2's two durations are written in ms
     const documentedPixels = new Map<string, string>();
-    for (const match of tokensDoc.matchAll(/^\|\s*`(--[a-z0-9-]+)`\s*\|\s*(\d+px)\s*\|/gm)) {
+    for (const match of tokensDoc.matchAll(/^\|\s*`(--[a-z0-9-]+)`\s*\|\s*(\d+(?:px|ms))\s*\|/gm)) {
       const [, token, value] = match;
       if (token && value) documentedPixels.set(token, value);
     }
@@ -71,15 +71,16 @@ describe("T-01 scaffold", () => {
     // `700 2rem / 120% var(--font-family-base)`
     const fontShorthand = /^(\d+) ([\d.]+)rem \/ (\d+%) var\(--font-family-base\)$/;
 
-    it("documents at least the 22 colours, 7 presets, 11 spacings, 8 layout and 7 auth/line tokens", () => {
-      expect(documentedTokens.size).toBeGreaterThanOrEqual(55);
+    it("documents at least the 22 colours, 7 presets, 11 spacings, 8 layout, 7 auth/line and 9 app shell tokens", () => {
+      expect(documentedTokens.size).toBeGreaterThanOrEqual(64);
     });
 
     it("parses a value for every documented token", () => {
       expect(documentedColours.size).toBe(22);
       expect(documentedPresets.size).toBe(7);
-      // 11 spacings + 8 radii/layout/breakpoints (v1.0) + 7 auth layout and lines (v1.1).
-      expect(documentedPixels.size).toBe(26);
+      // 11 spacings + 8 radii/layout/breakpoints (v1.0) + 7 auth layout and lines (v1.1)
+      // + 9 app shell values, two of them durations (v1.2).
+      expect(documentedPixels.size).toBe(35);
       // Nothing documented may escape the three value checks below — a new table in the
       // document has to be given a parser here rather than silently going unchecked.
       const valued = new Set([

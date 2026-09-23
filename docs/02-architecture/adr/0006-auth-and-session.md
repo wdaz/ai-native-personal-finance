@@ -1,6 +1,20 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
 - Status: **Accepted** (amended 2026-09-23) · Date: 2026-09-13
+- Amendment 2026-09-23 (3) (owner decision, T-07 plan gate, Q1 (a)): **a logout whose request
+  fails still ends the session.** US-03 AC2 says logout always completes client-side, but the
+  session cookie is `httpOnly`, so only a response can clear it, and the middleware sends a
+  logged-in visitor away from `/login` (SPEC-auth §2.8) — a failed `POST /api/auth/logout`
+  would leave the user on Overview, still logged in. Now: the client logs the failure and
+  navigates to `/login?reason=logout` (a full page load); for that URL only, when the browser
+  marks the navigation `Sec-Fetch-Site: same-origin`, the middleware clears `pf_session`
+  (`Max-Age=0`) and renders the login page instead of redirecting. Any other `Sec-Fetch-Site`
+  (`cross-site`, `same-site`, `none`, or absent) keeps the redirect and the session, so a link
+  on another site cannot log anyone out (logout CSRF). Alternatives not taken: **(b)** amend
+  US-03 AC2 to "the failure is logged and the user stays logged in" — a user on a shared
+  computer would believe they had logged out; **(c)** show an error and keep the session —
+  with the server down the user could not leave. Consequence: one `GET` can now clear a
+  session, from a same-origin navigation only. SPEC-auth v1.0.6 carries the behaviour.
 - Correction 2026-09-23 (T-06 plan finding F2, recorded by owner decision as tech debt **TD-1**
   in `docs/03-specs/tech-debt.md`, linked from backlog v1.17): the amendment below says Next
   reads the nonce "via the `x-nonce` request header". It does not: Next 16.3.5 takes it from the

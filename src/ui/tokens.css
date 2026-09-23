@@ -1,5 +1,5 @@
 /*
- * Design tokens — generated from docs/02-architecture/design-tokens.md (Approved v1.0).
+ * Design tokens — generated from docs/02-architecture/design-tokens.md (Approved v1.2).
  * This file is the ONLY place design values are written. Do not hard-code a hex or a
  * pixel value anywhere else (design-tokens.md, header).
  *
@@ -81,6 +81,17 @@
   --auth-body-max-width: 440px;
   --border-width: 1px;
   --underline-offset: 3px;
+
+  /* App shell — design-tokens.md v1.2 (the design export's sidebar and bottom bar) */
+  --nav-item-height: 56px;
+  --nav-indicator-width: 4px;
+  --nav-icon-size: 24px;
+  --bottom-nav-height-mobile: 52px;
+  --bottom-nav-height-tablet: 74px;
+  --bottom-nav-item-max-width: 104px;
+  --tap-target-min: 44px;
+  --duration-sidebar: 200ms;
+  --duration-hover: 150ms;
 
   /* Breakpoints (see the note at the top of this file) */
   --bp-tablet: 768px;
