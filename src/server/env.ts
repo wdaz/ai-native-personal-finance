@@ -1,3 +1,5 @@
+import { WEBMCP_MODES } from "@/src/shared/env";
+
 /**
  * Server-side environment. Read on every call rather than captured at import, so a route
  * handler sees the environment of the process it runs in and a test can pass its own.
@@ -74,4 +76,65 @@ export function demoCredentials(env: Env = process.env): DemoCredentials {
 export function webmcpOriginTrialToken(env: Env = process.env): string | null {
   const token = env.WEBMCP_ORIGIN_TRIAL_TOKEN?.trim();
   return token ? token : null;
+}
+
+/**
+ * A documented default when the variable is unset or empty (.env.example: "Default 10",
+ * "Defaults 2000 rows / 50 MB"); a value that is set but is not a positive whole number is a
+ * configuration mistake and throws, like the accessors above (T-08 plan D10).
+ */
+function positiveInt(name: string, raw: string | undefined, fallback: number): number {
+  if (raw === undefined || raw === "") return fallback;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`${name} must be a positive whole number (.env.example), not "${raw}"`);
+  }
+  return value;
+}
+
+/** SPEC-app-shell §5: the banner's "every {days} days". */
+export function resetIntervalDays(env: Env = process.env): number {
+  return positiveInt("RESET_INTERVAL_DAYS", env.RESET_INTERVAL_DAYS, 10);
+}
+
+/** SPEC-reset-and-test-support §2.4: user-created rows before a threshold reset. */
+export function resetRowThreshold(env: Env = process.env): number {
+  return positiveInt("RESET_ROW_THRESHOLD", env.RESET_ROW_THRESHOLD, 2000);
+}
+
+/** SPEC-reset-and-test-support §2.4: database size in bytes before a threshold reset. */
+export function resetBytesThreshold(env: Env = process.env): number {
+  return positiveInt("RESET_BYTES_THRESHOLD", env.RESET_BYTES_THRESHOLD, 52_428_800);
+}
+
+/** SPEC-reset-and-test-support §2.2: the admin reset's Bearer secret. No default. */
+export function resetSecret(env: Env = process.env): string {
+  const secret = env.RESET_SECRET;
+  if (!secret) {
+    throw new Error("RESET_SECRET is not set: copy .env.example to .env.local (README)");
+  }
+  return secret;
+}
+
+/**
+ * SPEC-reset-and-test-support §2.3: the secret Vercel sends on a scheduled call. Unset outside
+ * a Vercel deployment, so it is optional — and `null`, never `""`, so that an empty value can
+ * never be what a missing Authorization header matches (T-08 plan D7).
+ */
+export function cronSecret(env: Env = process.env): string | null {
+  const secret = env.CRON_SECRET;
+  return secret ? secret : null;
+}
+
+export type WebMcpMode = (typeof WEBMCP_MODES)[number];
+
+/** SPEC-app-shell §5 `webmcp.configuredMode`; .env.example: "Default polyfill". */
+export function configuredWebmcpMode(env: Env = process.env): WebMcpMode {
+  const mode = env.WEBMCP_MODE;
+  if (!mode) return "polyfill";
+  const known = WEBMCP_MODES.find((m) => m === mode);
+  if (!known) {
+    throw new Error(`WEBMCP_MODE must be one of ${WEBMCP_MODES.join(", ")}, not "${mode}"`);
+  }
+  return known;
 }
