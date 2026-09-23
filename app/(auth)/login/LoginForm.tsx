@@ -20,11 +20,11 @@ const FIELDS: readonly LoginField[] = ["email", "password"];
  * submit posts to /api/auth/login and, on 200, replaces the URL with the sanitised `next`
  * (T-05's allow-list, shared with the middleware). `flushSync` commits a state change before
  * focus moves, so focus lands on an enabled field whose message is already linked (plan D7).
- * `method="post"` + `noValidate`: plan D5.
+ * `method="post"` + `noValidate`: plan D5. The inputs are uncontrolled (see `Field`): the
+ * values are read from the DOM, so anything typed or autofilled before hydration is kept.
  */
 export function LoginForm({ next }: { next: string | null }) {
   const router = useRouter();
-  const [values, setValues] = useState<Record<LoginField, string>>({ email: "", password: "" });
   const [errors, setErrors] = useState<FieldErrors<LoginField>>({});
   const [banner, setBanner] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -33,15 +33,20 @@ export function LoginForm({ next }: { next: string | null }) {
   const submitRef = useRef<HTMLButtonElement>(null);
   const fieldRefs = { email: emailRef, password: passwordRef };
 
-  const change = (field: LoginField) => (value: string) =>
-    setValues((current) => ({ ...current, [field]: value }));
-  const blur = (field: LoginField) => () =>
-    setErrors((current) => ({ ...current, [field]: fieldErrors(LoginSchema, values)[field] }));
+  const read = (): Record<LoginField, string> => ({
+    email: emailRef.current?.value ?? "",
+    password: passwordRef.current?.value ?? "",
+  });
+  function validateOnBlur(field: LoginField) {
+    const message = fieldErrors(LoginSchema, read())[field];
+    setErrors((current) => ({ ...current, [field]: message }));
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting) return;
 
+    const values = read();
     const found = fieldErrors(LoginSchema, values);
     const firstInvalid = FIELDS.find((field) => found[field] !== undefined);
     if (firstInvalid) {
@@ -84,8 +89,8 @@ export function LoginForm({ next }: { next: string | null }) {
     flushSync(() => {
       setBanner(loginFailureMessage(response.status, body));
       setSubmitting(false);
-      if (response.status === 401) setValues((current) => ({ ...current, password: "" }));
     });
+    if (response.status === 401 && passwordRef.current) passwordRef.current.value = "";
     (response.status === 401 ? passwordRef : submitRef).current?.focus();
   }
 
@@ -104,12 +109,10 @@ export function LoginForm({ next }: { next: string | null }) {
           type="email"
           autoComplete="email"
           maxLength={EMAIL_MAX}
-          value={values.email}
           error={errors.email}
           disabled={submitting}
           inputRef={emailRef}
-          onChange={change("email")}
-          onBlur={blur("email")}
+          onBlur={() => validateOnBlur("email")}
         />
         <PasswordField
           id="login-password"
@@ -117,12 +120,10 @@ export function LoginForm({ next }: { next: string | null }) {
           label="Password"
           autoComplete="current-password"
           maxLength={PASSWORD_MAX}
-          value={values.password}
           error={errors.password}
           disabled={submitting}
           inputRef={passwordRef}
-          onChange={change("password")}
-          onBlur={blur("password")}
+          onBlur={() => validateOnBlur("password")}
         />
       </div>
       <Button ref={submitRef} type="submit" disabled={submitting}>

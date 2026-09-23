@@ -25,14 +25,11 @@ type SignupFormProps = { demoEmail: string; demoPassword: string };
  * posts to /api/auth/signup, which always answers `demo_instance` — the form is then replaced
  * by the notice, which takes focus (plan D7). A 400's codes become field messages (§2.10);
  * a server error shows "Something went wrong. Try again" and a request that got no answer
- * says the server can't be reached (plan Q1 (c), D16).
+ * says the server can't be reached (plan Q1 (c), D16). The inputs are uncontrolled (see
+ * `Field`): the values are read from the DOM, so anything typed or autofilled before hydration
+ * is kept.
  */
 export function SignupForm({ demoEmail, demoPassword }: SignupFormProps) {
-  const [values, setValues] = useState<Record<SignupField, string>>({
-    name: "",
-    email: "",
-    password: "",
-  });
   const [errors, setErrors] = useState<FieldErrors<SignupField>>({});
   const [banner, setBanner] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -44,10 +41,15 @@ export function SignupForm({ demoEmail, demoPassword }: SignupFormProps) {
   const noticeRef = useRef<HTMLDivElement>(null);
   const fieldRefs = { name: nameRef, email: emailRef, password: passwordRef };
 
-  const change = (field: SignupField) => (value: string) =>
-    setValues((current) => ({ ...current, [field]: value }));
-  const blur = (field: SignupField) => () =>
-    setErrors((current) => ({ ...current, [field]: fieldErrors(SignupSchema, values)[field] }));
+  const read = (): Record<SignupField, string> => ({
+    name: nameRef.current?.value ?? "",
+    email: emailRef.current?.value ?? "",
+    password: passwordRef.current?.value ?? "",
+  });
+  function validateOnBlur(field: SignupField) {
+    const message = fieldErrors(SignupSchema, read())[field];
+    setErrors((current) => ({ ...current, [field]: message }));
+  }
 
   function showFieldErrors(found: FieldErrors<SignupField>): boolean {
     const firstInvalid = FIELDS.find((field) => found[field] !== undefined);
@@ -72,6 +74,7 @@ export function SignupForm({ demoEmail, demoPassword }: SignupFormProps) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting) return;
+    const values = read();
     if (showFieldErrors(fieldErrors(SignupSchema, values))) return;
 
     flushSync(() => {
@@ -128,12 +131,10 @@ export function SignupForm({ demoEmail, demoPassword }: SignupFormProps) {
           label="Name"
           autoComplete="name"
           maxLength={NAME_MAX}
-          value={values.name}
           error={errors.name}
           disabled={submitting}
           inputRef={nameRef}
-          onChange={change("name")}
-          onBlur={blur("name")}
+          onBlur={() => validateOnBlur("name")}
         />
         <Field
           id="signup-email"
@@ -142,12 +143,10 @@ export function SignupForm({ demoEmail, demoPassword }: SignupFormProps) {
           type="email"
           autoComplete="email"
           maxLength={EMAIL_MAX}
-          value={values.email}
           error={errors.email}
           disabled={submitting}
           inputRef={emailRef}
-          onChange={change("email")}
-          onBlur={blur("email")}
+          onBlur={() => validateOnBlur("email")}
         />
         <PasswordField
           id="signup-password"
@@ -156,12 +155,10 @@ export function SignupForm({ demoEmail, demoPassword }: SignupFormProps) {
           autoComplete="new-password"
           maxLength={PASSWORD_MAX}
           helper="Passwords must be at least 8 characters"
-          value={values.password}
           error={errors.password}
           disabled={submitting}
           inputRef={passwordRef}
-          onChange={change("password")}
-          onBlur={blur("password")}
+          onBlur={() => validateOnBlur("password")}
         />
       </div>
       <Button ref={submitRef} type="submit" disabled={submitting}>

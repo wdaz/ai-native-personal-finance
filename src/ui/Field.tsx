@@ -5,8 +5,6 @@ export type FieldProps = {
   id: string;
   name: string;
   label: string;
-  value: string;
-  onChange: (value: string) => void;
   onBlur?: () => void;
   type?: "text" | "email" | "password";
   autoComplete?: string;
@@ -25,13 +23,16 @@ export type FieldProps = {
  * SPEC-auth §6: label, input, helper, error. US-31 AC2 / NFR-A5: the error is linked through
  * `aria-describedby` (first, then the helper) and sits in a polite live region that is always
  * rendered, so a message that appears on blur is announced.
+ *
+ * The input is uncontrolled: its value lives in the DOM and the form reads it through
+ * `inputRef` on blur and on submit. A controlled input starts at "" in React state, and the
+ * first re-render after hydration wrote that "" over anything typed or autofilled before the
+ * scripts ran (T-06 final review, I1).
  */
 export function Field({
   id,
   name,
   label,
-  value,
-  onChange,
   onBlur,
   type = "text",
   autoComplete,
@@ -58,13 +59,11 @@ export function Field({
           name={name}
           type={type}
           className={trailing ? `${styles.input} ${styles.withTrailing}` : styles.input}
-          value={value}
           autoComplete={autoComplete}
           maxLength={maxLength}
           disabled={disabled}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          onChange={(event) => onChange(event.target.value)}
           onBlur={onBlur}
         />
         {trailing}

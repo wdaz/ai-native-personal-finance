@@ -44,8 +44,14 @@ test("US-02 AC1 a malformed email and a short password show their own messages",
   page,
 }) => {
   await page.goto("/signup");
-  await fillSignup(page, "Alex", "alex@", "short");
-  await createButton(page).click();
+  // Name and password first, then the email, then Enter in the email field: the email is
+  // never blurred, so only the submit handler can show its message — and it runs only if the
+  // browser's own `type="email"` check does not block the submit first (it would, without
+  // `noValidate`; final review I2).
+  await nameField(page).fill("Alex");
+  await passwordField(page).fill("short");
+  await emailField(page).fill("alex@");
+  await emailField(page).press("Enter");
 
   await expect(emailField(page)).toHaveAccessibleDescription(COPY.emailInvalid);
   await expect(passwordField(page)).toHaveAccessibleDescription(
@@ -127,4 +133,34 @@ test("US-02 a request that gets no answer says the server can't be reached (plan
   await expect(page.getByText(COPY.signupUnreachable)).toHaveAttribute("role", "alert");
   await expect(page.getByText(COPY.signupFailed)).toHaveCount(0);
   await expect(createButton(page)).toBeFocused();
+});
+
+test("US-02 AC2 what was typed before the page hydrated is kept and submits (final review I1)", async ({
+  page,
+}) => {
+  // A slow network (or an autofill) fills the fields before the scripts run: hold every
+  // script chunk, fill, then let them through.
+  let release: () => void = () => {};
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/_next/static/**/*.js", async (route) => {
+    await held;
+    await route.continue();
+  });
+  await page.goto("/signup", { waitUntil: "commit" });
+  await fillSignup(page, "Alex", "alex@example.com", "long-enough-password");
+  release();
+
+  // Hydrated once the toggle works; that click is also the first re-render of the form.
+  await expect(async () => {
+    await page.getByRole("button", { name: "Show password" }).click();
+    await expect(passwordField(page)).toHaveAttribute("type", "text");
+  }).toPass();
+  await expect(nameField(page)).toHaveValue("Alex");
+  await expect(emailField(page)).toHaveValue("alex@example.com");
+
+  await createButton(page).click();
+  const notice = page.getByRole("status").filter({ hasText: COPY.goToLogin });
+  await expect(notice).toContainText(COPY.signupDisabled(demo.email, demo.password));
 });

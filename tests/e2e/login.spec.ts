@@ -202,4 +202,34 @@ test.describe("after a successful login", () => {
 
     await expect(page).toHaveURL(`${baseURL}/overview`);
   });
+
+  test("US-01 AC1 what was typed before the page hydrated is kept and logs in (final review I1)", async ({
+    page,
+    baseURL,
+  }) => {
+    // A slow network (or an autofill) fills the fields before the scripts run: hold every
+    // script chunk, fill, then let them through.
+    let release: () => void = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/_next/static/**/*.js", async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto("/login", { waitUntil: "commit" });
+    await fillLogin(page, demo.email, demo.password);
+    release();
+
+    // Hydrated once the toggle works; that click is also the first re-render of the form.
+    await expect(async () => {
+      await page.getByRole("button", { name: "Show password" }).click();
+      await expect(passwordField(page)).toHaveAttribute("type", "text");
+    }).toPass();
+    await expect(emailField(page)).toHaveValue(demo.email);
+    await expect(passwordField(page)).toHaveValue(demo.password);
+
+    await loginButton(page).click();
+    await expect(page).toHaveURL(`${baseURL}/overview`);
+  });
 });
