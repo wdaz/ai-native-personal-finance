@@ -1,6 +1,6 @@
 ---
 name: owasp-security-review
-description: Whole-application security review against the 131-item OWASP Web Application Security Testing checklist. Records PASS / FAIL / BY DESIGN / N/A / NOT TESTED with evidence for every item and writes a findings report traced to the NFR-S requirements. Use this whenever the user asks for a security audit, pentest, OWASP check, security checklist, "is the app secure", a hardening review before a release or before the repository goes public, or a check of one area across the whole app (sessions, CSRF, XSS, headers, auth, rate limits), even if they never say "OWASP". Not for the changes of a single diff, PR or branch (use security-review for that), and not for implementing fixes.
+description: Whole-application security review against the 131-item OWASP Web Application Security Testing checklist. Records PASS / FAIL / BY DESIGN / N/A / NOT TESTED with evidence for every item and writes a findings report traced to the NFR-S requirements. Use this whenever the user asks for a security audit, pentest, OWASP check, security checklist, "is the app secure", a hardening review before a release or before the repository goes public, or a check of one area across the whole app (sessions, CSRF, XSS, headers, auth, rate limits), even if they never say "OWASP". Not for the changes of a single diff, PR or branch (use Claude Code's built-in `/security-review` command for that), and not for implementing fixes.
 ---
 
 # OWASP security review

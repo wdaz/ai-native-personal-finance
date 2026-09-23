@@ -3,10 +3,23 @@
 Source: [OWASP](https://www.owasp.org/index.php/Web_Application_Security_Testing_Cheat_Sheet)
 (Web Application Security Testing Cheat Sheet), as supplied by the owner on 2026-09-23.
 
-The **Item** column is the OWASP text, verbatim. The **ID** column and the
-**How to verify** column are this skill's own additions: the IDs are stable so
-that reports can be compared across runs, and the hints are starting points,
-not OWASP guidance and not the only acceptable method.
+**Attribution and licence.** Adapted from the OWASP Foundation's _Web
+Application Security Testing Cheat Sheet_, whose checklist was last on the OWASP
+wiki in
+[revision 236456 (2017-12-29)](https://wiki.owasp.org/index.php?title=Web_Application_Security_Testing_Cheat_Sheet&oldid=236456).
+The archived wiki's content is available under
+[Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+(the wiki footer, checked 2026-09-23). This file is an adaptation shared under
+the same licence, CC BY-SA 4.0, whatever the licence of the rest of the
+repository. Changes from the original: item IDs and the **How to verify** column
+added, lists turned into tables, and item wording taken from the copy the owner
+supplied. That copy matches the 2017 revision word for word in 102 of the 131
+items and rewords the other 29.
+
+The **Item** column is the owner-supplied copy's text, verbatim. The **ID**
+column and the **How to verify** column are this skill's own additions: the IDs
+are stable so that reports can be compared across runs, and the hints are
+starting points, not OWASP guidance and not the only acceptable method.
 
 131 items: INFO 14 · CONF 8 · TRAN 6 · AUTHN 16 · SESS 13 · AUTHZ 5 · VAL 32 ·
 DOS 4 · BIZ 5 · CRYP 5 · FILE 8 · CARD 11 · HTML5 4.
