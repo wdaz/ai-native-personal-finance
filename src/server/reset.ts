@@ -71,3 +71,17 @@ export async function latestResetAt(db: Db): Promise<Date | null> {
   const latest = await db.resetLog.findFirst({ orderBy: { at: "desc" }, select: { at: true } });
   return latest?.at ?? null;
 }
+
+/**
+ * SPEC-reset-and-test-support §6, SPEC-app-shell §5: `MetaDto.lastResetAt` is "always present"
+ * — the first seed writes a `ResetLog` row (§2.5). An empty table means the database was never
+ * seeded, a configuration fault: this throws rather than return a date nothing wrote, and the
+ * `(app)` layout treats the throw as "meta unavailable" (SPEC-app-shell §3; T-08 plan D1).
+ */
+export async function latestReset(db: Db): Promise<Date> {
+  const at = await latestResetAt(db);
+  if (!at) {
+    throw new Error("No ResetLog row exists: the database was never seeded (README, db:reset)");
+  }
+  return at;
+}
