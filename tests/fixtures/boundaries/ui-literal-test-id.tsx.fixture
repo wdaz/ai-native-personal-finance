@@ -1,0 +1,3 @@
+// Linted as src/ui/literal-test-id.tsx.
+// ADR-0003: a data-testid typed as a string instead of taken from src/shared/test-ids.ts.
+export const Donut = () => <svg data-testid="donut" />;

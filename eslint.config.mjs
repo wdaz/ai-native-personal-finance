@@ -207,6 +207,26 @@ const config = [
       ],
     },
   },
+  {
+    // ADR-0003 and NFR-T6: a `data-testid` is listed once, in src/shared/test-ids.ts; the UI
+    // renders it and the E2E test finds it through that object. A string literal in either
+    // place is a second, unlisted id. Other spellings (`data-testid={"x"}`, a template,
+    // `locator("[data-testid=…]")`) are left to review, as NFR-T6 says (owner, T-04 plan gate).
+    files: ["app/**/*.tsx", "src/ui/**/*.tsx", "tests/e2e/**/*.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "JSXAttribute[name.name='data-testid'] > Literal",
+          message: "ADR-0003: take the data-testid from TEST_IDS in src/shared/test-ids.ts.",
+        },
+        {
+          selector: "CallExpression[callee.property.name='getByTestId'] > Literal.arguments",
+          message: "ADR-0003: take the test id from TEST_IDS in src/shared/test-ids.ts.",
+        },
+      ],
+    },
+  },
   prettier,
 ];
 

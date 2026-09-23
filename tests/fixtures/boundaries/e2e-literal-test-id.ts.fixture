@@ -1,0 +1,5 @@
+// Linted as tests/e2e/literal-test-id.spec.ts.
+// ADR-0003: a test id typed into the test instead of read from src/shared/test-ids.ts.
+import type { Page } from "@playwright/test";
+
+export const donut = (page: Page) => page.getByTestId("donut");

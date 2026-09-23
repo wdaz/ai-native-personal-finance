@@ -1,0 +1,53 @@
+<!-- tests/unit/shared/copy.test.ts: the appendix under another heading. -->
+
+## Messages (R-07)
+
+Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge design; where the design has no copy, the text below is the decision.
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Any required field | empty | Can't be empty |
+| Email | malformed | Enter a valid email address |
+| Password (sign-up) | < 8 characters | Password must be at least 8 characters |
+| Login | wrong credentials | Email or password is incorrect |
+| Sign-up | valid submit | This is a demo instance — sign up is disabled. Use the demo account: <email> / <password> |
+| Amount fields | not a number / > 2 decimals | Enter an amount with up to two decimals |
+| Amount fields | ≤ 0 | Amount must be greater than 0 |
+| Amount fields | > 999,999,999.99 | Amount is too large |
+| Add money | > current balance | Amount exceeds your current balance |
+| Withdraw | > pot total | Amount exceeds this pot's total |
+| Pot name | > 30 characters | Maximum 30 characters |
+| Pot name | duplicate | A pot with this name already exists |
+| Budget category | all used | All categories already have a budget |
+| Delete budget | confirm | Are you sure you want to delete this budget? This action cannot be reversed, and all the data inside it will be removed forever. |
+| Delete pot | confirm | Are you sure you want to delete this pot? This action cannot be reversed, and all the data inside it will be removed forever. |
+| Transactions | no results | No transactions match your search |
+| Bills | no results | No bills match your search |
+| Demo banner | always | Demo data resets every {days} days · last reset <date> |
+| After reset | stale request | Data was reset — reloading |
+
+### R1 additions (2026-09-20, owner-approved with the Release 1 specs)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Login | network/server error | Something went wrong. Try again |
+| Login | rate limited | Too many attempts. Try again in {N} minutes |
+| Login | after demo reset (`?reason=reset`) | The demo data was reset — please log in again |
+| Login demo box | copy failed | Copy failed — select the text |
+| Login button | submitting | Logging in… |
+| Sign-up notice | link | Go to login |
+| Overview | load error | Couldn't load your overview · button: Retry |
+| Overview pots | empty | No pots yet · link: Add a pot |
+| Overview budgets | empty | No budgets yet · link: Add a budget |
+| Overview transactions | empty | No transactions yet |
+| Banner | dismiss button | Dismiss notice |
+| Shell | skip link | Skip to content |
+| Sidebar toggle | names | Minimize Menu / Expand Menu |
+| R2 placeholder pages | body | Coming in Release 2 |
+| Agent tools indicator | states | Agent tools: checking… / native · N / polyfill · N / unavailable (titles in SPEC-webmcp-tools §2.7) |
+| Stale write after reset (R2) | 409 | Data was reset — reloading |
+| Sign-up name | > 60 characters | Maximum 60 characters |
+| Email | > 254 characters | Enter a valid email address |
+| Password (sign-up) | > 128 characters | Maximum 128 characters |
+
+`{N}` and `{days}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 day").

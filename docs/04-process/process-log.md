@@ -814,3 +814,153 @@ Append-only. Newest entry at the bottom. Template:
   unverified): `boundaries/include` does not cover `prisma/**`, so `scripts` → `prisma/seed.ts` →
   `src/server` is an unguarded path; `toCents`'s 1e-6 tolerance may refuse valid amounts above
   about $85.9 million, which matters only if a later task reuses it for input.
+
+## 2026-09-23 — Phase 5: T-04 shared schemas, enums, copy and test ids
+
+- **Phase:** 5 — Build the slice (Release 1)
+- **Participants:** Owner / Agent (Claude Code: Opus 5.5 wrote the plan, Sonnet 5 controlled the
+  execution; subagents below)
+- **Trigger:** backlog T-04, after T-03 merged (PR #8); ran in parallel with a separate small
+  docs fix (F1, below).
+- **Prompt(s):** `prompts/2026-09-23-T-04.md`; plan `plans/2026-09-23-T-04.md` (v0.2);
+  execution record `prompts/2026-09-23-T-04/`
+- **Produced:** `src/shared/enums.ts` (`CATEGORIES`, `THEMES`, `RESET_REASONS`, the data-model.md
+  spellings, mirror-tested against the document, the seed's maps and `tokens.css`); `copy.ts`
+  (`COPY`, `retryAfterMinutes`, mirror-tested row by row against the user-stories appendix);
+  `schemas.ts` (`LoginSchema`, `SignupSchema`, `ErrorEnvelopeSchema`, `OverviewDtoSchema`,
+  `MetaDtoSchema`); `tool-schema.ts` (`toolInputJsonSchema`, plan finding F1 — throws when a
+  Zod-to-JSON-Schema conversion comes back empty or any string lacks `maxLength`); `test-ids.ts`
+  (an empty, typed registry) and an ADR-0003 ESLint rule that keeps every `data-testid` in it;
+  `src/server/http.ts`'s `ApiErrorCode` bound to the shared envelope's own type; `zod` 4.6.5 as a
+  dependency. Documents: `docs/01-requirements/user-stories.md` v1.2 (three appendix rows, the
+  banner's `{days}` parameter), `docs/03-specs/app-shell.md` v1.1 (§2.6 reads the configured
+  interval), `docs/03-specs/auth.md` v1.0.1 (finding F2 — §6's 401/429 bodies carry `message`),
+  `docs/03-specs/backlog.md` v1.9 (T-04 hand-offs in ten later rows); a separate PR (#9, merged)
+  amending ADR-0004 and `docs/03-specs/webmcp-tools.md` to v1.0.2 (finding F1 — `z.toJSONSchema`,
+  not `zod-to-json-schema`, which returns an empty schema for a Zod 4 object with no error).
+  Tests: Vitest 341 → **447** (106 new — 429 through Task 7, one net test from the final review's
+  fix wave, six from the Copilot fail-closed fix, ten from the 400-body redesign, one from the
+  login/signup security split, below), API
+  17/17, E2E 3/3, `src/domain` + `src/shared` coverage 100 %,
+  `npm audit` 0, secret scan clean.
+- **Execution:** subagent-driven, one Haiku implementer per task (every task's plan text gave
+  complete, verbatim code, so the work was transcription plus testing) and one Sonnet reviewer
+  per task, plus one fix round (Task 5). F1 ran as a separate Haiku subagent in its own worktree,
+  dispatched and merged in parallel with T-04's own tasks rather than as one of them, per the
+  owner's instruction. The controller wrote the prompt record, the session-folder review files
+  and Task 7's document edits directly (the process record needs this session's own context,
+  which a fresh subagent would not have); every other task ran the full dispatch → report →
+  review cycle. The final whole-branch review ran on Opus (per the skill's model guidance for
+  architecture-level review) and returned "With fixes": one Important finding (the D17
+  misreading, below) and several Minor/routed items. One fix-wave dispatch (Sonnet), one scoped
+  re-review, both clean. Ledger in `prompts/2026-09-23-T-04/progress.md`.
+- **What the agent got right:** the plan's every code block was cut from a prototype that was
+  itself built and gated task-by-task before being spliced in, then the whole plan was replayed
+  in order on a second clean copy — every task's predicted test count held exactly through Task
+  4, and Task 5's and 6's counts, once corrected for Task 5's own fix round, held too. 32
+  mutations against the new code were all killed. The owner's plan-gate reply was pasted text
+  with no words of its own; the agent asked how much of it to act on and surfaced two
+  under-specified points (the test-id rule's exact shape, where F1's check should live) as
+  structured questions rather than guessing either.
+- **What the agent got wrong or missed:**
+  1. The Task 5 task review misread decision D17's table row: `docs/04-process/plans/2026-09-23-T-04.md`
+     line 231 has four columns (`# | Decision | Why | Alternative rejected`), and "`z.uuid()`
+     exempt from `maxLength`" sits in the fourth, **"Alternative rejected"**, column — the plan
+     rejected that exemption, and its Decision column names none. The task review read the quoted
+     sentence in isolation and concluded the plan wanted the exemption; a fix round then added it
+     to `toolInputJsonSchema`, contradicting SPEC-webmcp-tools §2.4 ("any string property lacks
+     `maxLength`"), ADR-0004, and this branch's own T-15 hand-off row ("ids with `.max(36)` for
+     `toolInputJsonSchema`"). The final whole-branch review (a fresh, more careful pass) caught
+     it, cross-checked all three sources, and a fix wave reverted the exemption. The same review
+     found a real gap in the same fix round, correctly fixed: the type-array check also missed
+     `.nullable()`/union-typed strings (`z.toJSONSchema` writes `type: ["string","null"]`, not the
+     bare string `"string"`) — that part of the fix round stands.
+  2. This worktree had never had `npm ci`/`postinstall` run before Task 1's `npm install zod` —
+     the Prisma client `postinstall` generates had never been produced, so 2 pre-existing test
+     files failed to collect and Task 1's count read 331 instead of 348. Not a code defect; the
+     controller ran `npx prisma generate` once and it did not recur.
+  3. The controller's own dispatch to Task 6 mis-added the plan's numbers (said "+5 new tests"
+     when the design is "+7"), so Task 6's actual 429 looked like a 2-test overshoot against a
+     427 the controller itself had miscalculated — traced and explained before review, not a
+     defect anywhere in the plan or the code.
+  4. The plan's `src/shared/README.md` diff (Task 7) did not mention `tool-schema.ts`, added
+     late in v0.2 revision 5 — a one-line README gap, fixed while applying the diff.
+- **Copilot review (PR #10):** three comments — `unboundedStrings` doesn't recurse into
+  `anyOf`/`oneOf`/`allOf`/`$ref`/tuples/records ("Medium"; the same gap the final review had
+  already named and deferred to T-11); the `getByTestId` ESLint selector "looks malformed"
+  ("Medium" — checked directly: `page.getByTestId("donut")` is caught, a template literal and an
+  identifier are not, exactly as intended; a false positive from Copilot, not fixed); SPEC-auth
+  §6's 400 example still lacks `message` ("Low"; the same item the final review had already
+  routed to the owner). The owner chose to fix the first in this PR via a subagent, leave the
+  second (verified false), and hold the third (still awaiting a decision on the message text):
+  commit `16dfe06` (fail-closed on the five shapes, six new tests, 430 → 436); reviewed, Approved,
+  no findings. The owner then answered the third, verbatim: "400 body is { error: 'validation',
+  issues: [{ path, code }] } — no message field, no Zod default strings, no echoed values;
+  codes: required, invalid_format, too_short, too_long. Client maps path+code to the copy
+  appendix, same as 401/429 map error to banner text" — with the reasoning line "API carries
+  codes only; copy lives in the client — consistent with 401/429, avoids leaking input or
+  duplicating UI text." This is a real design decision, not documentation: `message` on
+  `ErrorEnvelopeSchema` became optional; `ErrorIssueSchema` narrowed from a loose Zod-issue
+  passthrough (`code`, `path`, `message`, plus whatever Zod added) to a strict `{ path, code }`
+  with `code` one of the four named values; `toErrorIssues` now maps every Zod issue
+  `LoginSchema`/`SignupSchema` can produce to one of them (measured against the real schemas
+  first — `invalid_type`→required, `too_small` with `minimum:1`→required else →too_short,
+  `too_big`→too_long, `invalid_format`→invalid_format — and throws on anything unmapped rather
+  than mis-report). SPEC-auth → v1.0.2; `backlog.md` → v1.10 (T-05's hand-off had the stale
+  `{ error, message, issues }` shape from before this decision — corrected). 10 new/rewritten
+  tests; 7 mutations against the mapping function, all killed. Vitest 436 → 446; reviewed
+  independently against real `LoginSchema`/`SignupSchema` output (not just the tests), Approved.
+  The owner then raised a security point unprompted: distinct `path`/`code` values on a *login*
+  failure are themselves an oracle — a caller can tell "wrong password" from "malformed email"
+  from "this field is required" without ever guessing a real credential. Two clarifying
+  questions (scope: login only, or login and signup too; status: 401 or 400 with the
+  `invalid_credentials` code) got, verbatim, "Yalnız login (Recommended)" and "401, mesajla
+  birgə (Recommended)". `POST /api/auth/login` now never sends 400 at all: any `LoginSchema`
+  failure answers 401 `{ error: "invalid_credentials", message: "Email or password is incorrect"
+  }`, identical to a genuinely wrong password — collapsing "malformed" and "wrong" into one
+  response. `POST /api/auth/signup` is unaffected (no credential store to protect). No
+  `src/shared/schemas.ts` code changed for this — `LoginSchema` and the `issues`/`code` machinery
+  are unchanged and still used (by `SignupSchema` and by the client's on-page validation before a
+  request is ever sent); this is purely which envelope a *route* chooses to send, and T-05 (out
+  of scope here) is the first task with a route to choose it. The existing tests that used
+  `LoginSchema` to exercise the generic mapper were switched to `SignupSchema`, the schema that
+  actually ships this body, plus one new test locking in the 401 collapse and noting `LoginSchema`
+  itself is still exercised (just never turned into a validation 400). SPEC-auth → v1.0.3;
+  `backlog.md` → v1.11. Vitest 446 → 447.
+- **Owner changes and reasoning:** at the plan gate the owner took every recommendation, with
+  conditions: the enum schemas' lists must be the documents' *full* lists so T-09 can test its
+  Prisma map against them; two new copy rows plus one reused row, short and unpunctuated like the
+  existing ones; the rate-limit minutes keep SPEC-auth §4's formula and only pluralise, with
+  `retryAfter`=30→"1 minute" and 90→"2 minutes" as explicit test cases; the reset banner takes
+  `{days}` from `GET /api/meta`, never a literal 10; `ApiErrorCode` stays as a name, now bound to
+  `z.infer` of the shared envelope, with `errorResponse`'s signature and body unchanged; SPEC-auth
+  amended in the same PR for F2. Two points needed narrowing beyond the plan's own questions,
+  answered through the structured question tool: the test-id rule is exactly two selectors (a
+  JSX `data-testid` string and a `getByTestId` string argument), one violation and one control
+  fixture per side, not the plan's earlier four-fixture design; F1's guard is a shared,
+  reusable `src/shared` function (`toolInputJsonSchema`), not a bare test with no product code.
+- **Disagreements:** none — the D17 misreading (above) was an agent-to-agent correction (a task
+  review misread the plan; a later review corrected it against the plan's own text), not an
+  owner/agent disagreement.
+- **Lessons for the process:** a decision table's "Alternative rejected" column reads, in
+  isolation, exactly like a statement of the decision itself — a reviewer quoting one cell out of
+  its row lost the header that disambiguates it. The plan's own document-mirror pattern (D17's
+  neighbours: hold every guarantee to a live check, not prose) applies to the plan's own table
+  too; worth a line in the writing-plans skill: when a finding cites a decision, quote the whole
+  row including its column headers, not just the cell. Separately, a worktree that has never run
+  `npm ci` is a silent trap for the first task that only runs a scoped `npm install` — the
+  postinstall step (`prisma generate`) still needs to run once, and nothing before Task 1's own
+  gate surfaces its absence.
+- **Next:** owner review and merge of draft PR (branch `task/T-04-shared`, opened after this
+  entry). T-05 (auth API) is next per the backlog; its hand-off row already names what T-04
+  leaves it: parse bodies with `LoginSchema`/`SignupSchema`, the exact 401/429 `message` text,
+  `retryAfterMinutes` for the banner. Recorded, not yet exercised by any test: `toolInputJsonSchema`
+  fails open on five JSON Schema shapes its walker does not descend into — `anyOf`/`oneOf`/`allOf`
+  (so a `.nullable()` **object** field, unlike a nullable string, hides whatever is inside it),
+  `z.record`/`.catchall` (no fixed `properties` to walk), `z.tuple` (`prefixItems`, not `items`),
+  and `.meta({ id })` (a `$ref` into `$defs`, never inlined). The final whole-branch review named
+  all five and suggested failing closed instead — throwing on any keyword the walker does not
+  recognise — rather than growing the allow-list case by case; worth doing before T-11's
+  `defineTool` leans on the helper for a shape richer than a flat object. Also open for the
+  owner: SPEC-auth §6's 400 body (`{ error: "validation", issues }`) still has no `message` text,
+  though §2.10 requires one — F2's answer named only 401 and 429; T-05 needs one for 400 too.

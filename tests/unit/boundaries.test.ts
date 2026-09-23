@@ -152,6 +152,18 @@ const violations = [
     ruleId: "no-restricted-syntax",
     message: "ADR-0005: inject a Clock instead of calling Date()",
   },
+  {
+    fixture: "ui-literal-test-id.tsx.fixture",
+    lintAs: "src/ui/literal-test-id.tsx",
+    ruleId: "no-restricted-syntax",
+    message: "ADR-0003: take the data-testid from TEST_IDS",
+  },
+  {
+    fixture: "e2e-literal-test-id.ts.fixture",
+    lintAs: "tests/e2e/literal-test-id.spec.ts",
+    ruleId: "no-restricted-syntax",
+    message: "ADR-0003: take the test id from TEST_IDS",
+  },
 ];
 
 /**
@@ -189,6 +201,15 @@ const allowed = [
     fixture: "webmcp-imports-shared-allowed.ts.fixture",
     lintAs: "src/webmcp/imports-shared-allowed.ts",
   },
+  {
+    // ADR-0003: an id read from TEST_IDS is the one form the test-id rule allows.
+    fixture: "ui-shared-test-id-allowed.tsx.fixture",
+    lintAs: "src/ui/shared-test-id-allowed.tsx",
+  },
+  {
+    fixture: "e2e-shared-test-id-allowed.ts.fixture",
+    lintAs: "tests/e2e/shared-test-id-allowed.spec.ts",
+  },
 ];
 
 // The rules only see an import that resolves; an unresolved one is classified external
@@ -200,9 +221,10 @@ const importTargets = [
   "src/webmcp/README.md",
   "app/(app)/README.md",
   "src/shared/env.ts",
+  "src/shared/test-ids.ts",
 ];
 
-describe("eslint enforces ADR-0002 and ADR-0005 (tests/fixtures/boundaries)", () => {
+describe("eslint enforces ADR-0002, ADR-0003 and ADR-0005 (tests/fixtures/boundaries)", () => {
   it.each(importTargets)("the fixtures' import target %s exists", (target) => {
     expect(existsSync(join(repoRoot, target))).toBe(true);
   });

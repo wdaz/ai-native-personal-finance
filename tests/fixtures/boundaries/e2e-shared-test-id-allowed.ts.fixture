@@ -1,0 +1,7 @@
+// Linted as tests/e2e/shared-test-id-allowed.spec.ts.
+// The control: the id comes from src/shared/test-ids.ts.
+import type { Page } from "@playwright/test";
+import { TEST_IDS } from "@/src/shared/test-ids";
+
+const ids: Record<string, string> = TEST_IDS;
+export const donut = (page: Page) => page.getByTestId(ids.donut ?? "");

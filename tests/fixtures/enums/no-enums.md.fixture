@@ -1,0 +1,5 @@
+<!-- tests/unit/shared/enums.test.ts: data-model.md without its enum lists. -->
+
+| `ResetLog` | `at`, reasons (`scheduled` \| `threshold` \| `manual` \| `test`) | latest exposed via `/api/meta` | US-37 |
+
+The enums are listed elsewhere.

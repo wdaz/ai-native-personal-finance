@@ -18,10 +18,10 @@ and the real resolver, without a single illegal file existing in the tree.
 
 ## What is covered
 
-Every rule ADR-0002 and ADR-0005 state has at least one fixture that violates it, and
-every layer pair they permit has one that must stay silent. The two halves matter equally:
-a config that reported nothing would pass no violation case, and a config that reported
-everything would pass no control.
+Every rule ADR-0002, ADR-0003 (test ids) and ADR-0005 state has at least one fixture that
+violates it, and every layer pair they permit has one that must stay silent. The two halves
+matter equally: a config that reported nothing would pass no violation case, and a config
+that reported everything would pass no control.
 
 | Violates                                   | Fixtures                                                                                                                              |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -31,16 +31,18 @@ everything would pass no control.
 | `scripts` → anything but `shared`/`domain` | `server`                                                                                                                              |
 | Prisma outside `src/server`                | from `app` (`@prisma/client`, the `/edge` sub-path and the generated client in `src/server/generated/prisma`), `src/ui`, `src/shared` |
 | ADR-0005's clock rule                      | `new Date()`, `Date()` and `Date.now()`, in `src/domain` **and** `src/server`                                                         |
+| ADR-0003's test-id rule                    | a string as `data-testid` in `src/ui` and as `getByTestId`'s argument in `tests/e2e`                                                  |
 
-| Must report nothing                                           | Fixture                          |
-| ------------------------------------------------------------- | -------------------------------- |
-| `domain` → `shared`                                           | `domain-imports-shared-allowed`  |
-| `app` → `server`                                              | `app-imports-server-allowed`     |
-| `server` → `domain`                                           | `server-imports-domain-allowed`  |
-| `scripts` → `shared`                                          | `scripts-imports-shared-allowed` |
-| `scripts` → `domain`                                          | `scripts-imports-domain-allowed` |
-| `webmcp` → `shared`                                           | `webmcp-imports-shared-allowed`  |
-| `new Date(<value>)` in `domain` — a fixed date, not the clock | `domain-parses-date-allowed`     |
+| Must report nothing                                                   | Fixture                                                   |
+| --------------------------------------------------------------------- | --------------------------------------------------------- |
+| `domain` → `shared`                                                   | `domain-imports-shared-allowed`                           |
+| `app` → `server`                                                      | `app-imports-server-allowed`                              |
+| `server` → `domain`                                                   | `server-imports-domain-allowed`                           |
+| `scripts` → `shared`                                                  | `scripts-imports-shared-allowed`                          |
+| `scripts` → `domain`                                                  | `scripts-imports-domain-allowed`                          |
+| `webmcp` → `shared`                                                   | `webmcp-imports-shared-allowed`                           |
+| `new Date(<value>)` in `domain` — a fixed date, not the clock         | `domain-parses-date-allowed`                              |
+| a `data-testid` taken from `TEST_IDS`, in `src/ui` and in `tests/e2e` | `ui-shared-test-id-allowed`, `e2e-shared-test-id-allowed` |
 
 The violation cases also assert `severity === 2`. ADR-0002 says "CI must fail on
 violations"; a rule demoted to a warning would still be reported, and `eslint` would still
