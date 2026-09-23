@@ -1625,7 +1625,6 @@ them too").
   2. In a web session, the network allowlist and the missing Docker daemon decide what can be
      verified. Say that at the plan gate, not in the PR.
   3. Timestamps come from the clock that produced them. State the zone.
-- **Next:** the owner decides on the hand-offs proposed for backlog v1.20 (plan v0.6: T-14's
-  `CRON_SECRET` in the production env, T-11's `meta.webmcp`, Release 2's `checkThreshold` call
-  sites, T-16's icon source), then reviews the PR. CI then runs Chromium E2E against Postgres 18.6.
-  T-09 follows (the overview API).
+- **Next:** the owner answered "Bəli. Hamısı bir pr-da" ("Yes. All in one PR"). Backlog v1.20
+  (the hand-offs to T-11, T-14, T-15 and T-16) rides in T-08's PR. Then comes the owner's
+  review, with CI running Chromium E2E against Postgres 18.6. T-09 follows (the overview API).
