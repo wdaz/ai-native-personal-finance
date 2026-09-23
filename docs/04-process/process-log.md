@@ -1518,9 +1518,22 @@ them too").
   - M8: reduced motion is untested.
   - M9: `100vh` versus `100dvh` on mobile Safari.
   - M10: unused exports.
-  - M11: `isLogoutFallback` does not check the request method.
+  - M11: `isLogoutFallback` does not check the request method (fixed below, after PR #19's Copilot review).
   - M12: small CSS duplication.
 - **TD-6.** The owner pasted a `next dev` console log (~20:41 +04) full of CSP violations — React's
   eval check and Next's dev overlay — and asked ("Zəhmət olmasa TD-6 qeydini yarat.", ~20:44 +04)
   for a tech-debt entry. It is TD-6 in `docs/03-specs/tech-debt.md` v1.4, commit `b2da9de`, on
   this branch (TD-4 and TD-5 were added the same way on T-06's), to be named in the PR.
+- **PR #19's Copilot review — four findings, one accepted.**
+  - Accepted: `isLogoutFallback` keyed only on `Sec-Fetch-Site: same-origin`, so a same-origin
+    `fetch()`, XHR or iframe to `/login?reason=logout` could clear the session in the background
+    (the same gap as M11, the missing method check). The controller/agent ruled it valid: the
+    spec text already said `GET`, and the design intent was a navigation. The middleware now also
+    requires `GET`, `Sec-Fetch-Mode: navigate` and `Sec-Fetch-Dest: document`; an absent header
+    keeps the redirect. SPEC-auth v1.0.7 and a dated note in ADR-0006 record it; API tests pin a
+    `cors` fetch, an iframe, absent mode and dest headers, and a `POST`. Removing each guard in
+    turn failed its test (method: the `POST` test; mode: the `fetch` test; dest: the iframe test).
+  - Declined, three findings: "move `"Main"` / `"Log out"` into `COPY`". The navigation and
+    logout labels stay spec text in the components — the owner's answer at T-06's plan gate, Q1
+    (b), recorded in SPEC-auth v1.0.4's changelog, and plan D3; `copy.test.ts` mirrors the copy
+    appendix row by row, and these labels are not rows of it.

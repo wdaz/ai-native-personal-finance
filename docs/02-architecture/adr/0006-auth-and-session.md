@@ -15,6 +15,12 @@
   computer would believe they had logged out; **(c)** show an error and keep the session —
   with the server down the user could not leave. Consequence: one `GET` can now clear a
   session, from a same-origin navigation only. SPEC-auth v1.0.6 carries the behaviour.
+- Note 2026-09-23 (Copilot review of PR #19; accepted by the controller/agent, not an owner
+  decision): amendment (3) said the middleware clears the session when the browser marks the
+  navigation `Sec-Fetch-Site: same-origin`. That admitted any same-origin request to
+  `/login?reason=logout` — a `fetch()`, an XHR, an iframe — not only a navigation. The
+  middleware now also requires `GET`, `Sec-Fetch-Mode: navigate` and `Sec-Fetch-Dest: document`;
+  an absent header fails closed. Nothing else in amendment (3) changes. SPEC-auth v1.0.7.
 - Correction 2026-09-23 (T-06 plan finding F2, recorded by owner decision as tech debt **TD-1**
   in `docs/03-specs/tech-debt.md`, linked from backlog v1.17): the amendment below says Next
   reads the nonce "via the `x-nonce` request header". It does not: Next 16.3.5 takes it from the
