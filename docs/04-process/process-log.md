@@ -1650,4 +1650,12 @@ them too").
   restarted. The failing E2E tests' 500s came from that, not from the code.
 - **Lesson:** next's `loadConfig` caches by path, so a test that loads one config under several
   environments must copy it to a fresh directory for each load.
+- **Finding 2, decided and fixed:** the owner answered "Bu pr-da düzəlt. Tövsiyyə ilə davam et".
+  - The cron is daily, and the route resets once `RESET_INTERVAL_DAYS` have passed, with one
+    hour of slack. ADR-0007 has a dated amendment, and SPEC-reset-and-test-support is at v1.4.
+  - Six unit tests pin the due arithmetic: the 10th day's early check, the 9th day's late
+    check, the exact boundary, the interval, and a database with no reset.
+  - The API tests backdate `ResetLog.at` for the due cases and add a not-due case (200 with
+    `dueAt`, nothing reset).
+  - Mutation: making the check never skip failed the not-due test. Reverted.
 
