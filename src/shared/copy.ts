@@ -68,4 +68,9 @@ export const COPY = {
 
   // R1 additions (T-06 plan F1): the 404 page, in the words of Next's default not-found page
   notFound: "This page could not be found.",
+
+  // R1 additions (T-06 plan gate, Q1 (c)): sign-up's failures — the generic text on a server
+  // error only (owner decision); a request that got no answer says so.
+  signupFailed: "Something went wrong. Try again",
+  signupUnreachable: "Can't reach the server. Check your connection and try again",
 } as const;

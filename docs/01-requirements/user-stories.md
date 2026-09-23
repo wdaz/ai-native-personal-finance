@@ -1,6 +1,6 @@
 # User stories
 
-Status: **Approved** (v1.2 — 2026-09-23 amendments, owner decisions at the T-04 plan gate: the copy appendix's demo banner takes the configured interval (`{days}`), and three R1 additions give the sign-up maxima their messages; v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · **Proposed v1.3** — 2026-09-23: a not-found row for the 404 page, plan T-06 finding F1 — pending the owner's approval in PR #15's review · Author(s): Agent (draft) · Date: 2026-09-08
+Status: **Approved** (v1.4 — 2026-09-23 amendment, owner decision at the T-06 plan gate (Q1 (c)): sign-up's failure rows — "Something went wrong. Try again" on a server error only, a network failure its own message; v1.3 — 2026-09-23: a not-found row for the 404 page, plan T-06 finding F1 — approved by the owner, who merged PR #15; v1.2 — 2026-09-23 amendments, owner decisions at the T-04 plan gate: the copy appendix's demo banner takes the configured interval (`{days}`), and three R1 additions give the sign-up maxima their messages; v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · Author(s): Agent (draft) · Date: 2026-09-08
 Source: `../00-discovery/inputs/challenge-brief.md` (brief), `../00-discovery/problem-statement.md` (PS), `../00-discovery/inputs/design/` (design; visual reference only)
 Conventions: ids are stable; priorities Must/Should/Could; every story lists ≥1 error or boundary criterion; "Agent tool" names the WebMCP tool the story implies (final set decided in NFR-W / ADR). Business "today" is **19 Aug 2026** and the current month is **August 2026** (OQ-4); seed dates are shifted +2 years at seed time. **Where the design and `data.json` differ, `data.json` wins** (owner decision R-01). Every budget and pot has a server-generated `id`; tools take and return ids (R-26). Validation copy: see the copy table at the end of this document (R-07). Money is USD, shown with two decimals and a sign as in the design.
 
@@ -307,5 +307,7 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | Email | > 254 characters | Enter a valid email address |
 | Password (sign-up) | > 128 characters | Maximum 128 characters |
 | Any page | not found (404) | This page could not be found. |
+| Sign-up | server error (5xx, or an answer the client cannot read) | Something went wrong. Try again |
+| Sign-up | network error (no response) | Can't reach the server. Check your connection and try again |
 
 `{N}` and `{days}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 day").
