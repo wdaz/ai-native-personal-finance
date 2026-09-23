@@ -1,0 +1,24 @@
+/* The 404 page (app/not-found.tsx). Design values come only from src/ui/tokens.css. */
+
+.page {
+  display: grid;
+  place-content: center;
+  gap: var(--spacing-100);
+  min-height: 100vh;
+  padding: var(--spacing-400) var(--spacing-200);
+  text-align: center;
+}
+
+.status {
+  margin: 0;
+  font: var(--text-preset-1);
+  letter-spacing: 0;
+  color: var(--color-grey-900);
+}
+
+.message {
+  margin: 0;
+  font: var(--text-preset-4);
+  letter-spacing: 0;
+  color: var(--color-grey-500);
+}
