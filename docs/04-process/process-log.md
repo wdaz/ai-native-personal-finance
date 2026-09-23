@@ -838,8 +838,9 @@ Append-only. Newest entry at the bottom. Template:
   `docs/03-specs/backlog.md` v1.9 (T-04 hand-offs in ten later rows); a separate PR (#9, merged)
   amending ADR-0004 and `docs/03-specs/webmcp-tools.md` to v1.0.2 (finding F1 — `z.toJSONSchema`,
   not `zod-to-json-schema`, which returns an empty schema for a Zod 4 object with no error).
-  Tests: Vitest 341 → **446** (105 new — 429 through Task 7, one net test from the final review's
-  fix wave, six from the Copilot fail-closed fix, ten from the 400-body redesign, below), API
+  Tests: Vitest 341 → **447** (106 new — 429 through Task 7, one net test from the final review's
+  fix wave, six from the Copilot fail-closed fix, ten from the 400-body redesign, one from the
+  login/signup security split, below), API
   17/17, E2E 3/3, `src/domain` + `src/shared` coverage 100 %,
   `npm audit` 0, secret scan clean.
 - **Execution:** subagent-driven, one Haiku implementer per task (every task's plan text gave
@@ -907,7 +908,25 @@ Append-only. Newest entry at the bottom. Template:
   `too_big`→too_long, `invalid_format`→invalid_format — and throws on anything unmapped rather
   than mis-report). SPEC-auth → v1.0.2; `backlog.md` → v1.10 (T-05's hand-off had the stale
   `{ error, message, issues }` shape from before this decision — corrected). 10 new/rewritten
-  tests; 7 mutations against the mapping function, all killed. Vitest 436 → 446.
+  tests; 7 mutations against the mapping function, all killed. Vitest 436 → 446; reviewed
+  independently against real `LoginSchema`/`SignupSchema` output (not just the tests), Approved.
+  The owner then raised a security point unprompted: distinct `path`/`code` values on a *login*
+  failure are themselves an oracle — a caller can tell "wrong password" from "malformed email"
+  from "this field is required" without ever guessing a real credential. Two clarifying
+  questions (scope: login only, or login and signup too; status: 401 or 400 with the
+  `invalid_credentials` code) got, verbatim, "Yalnız login (Recommended)" and "401, mesajla
+  birgə (Recommended)". `POST /api/auth/login` now never sends 400 at all: any `LoginSchema`
+  failure answers 401 `{ error: "invalid_credentials", message: "Email or password is incorrect"
+  }`, identical to a genuinely wrong password — collapsing "malformed" and "wrong" into one
+  response. `POST /api/auth/signup` is unaffected (no credential store to protect). No
+  `src/shared/schemas.ts` code changed for this — `LoginSchema` and the `issues`/`code` machinery
+  are unchanged and still used (by `SignupSchema` and by the client's on-page validation before a
+  request is ever sent); this is purely which envelope a *route* chooses to send, and T-05 (out
+  of scope here) is the first task with a route to choose it. The existing tests that used
+  `LoginSchema` to exercise the generic mapper were switched to `SignupSchema`, the schema that
+  actually ships this body, plus one new test locking in the 401 collapse and noting `LoginSchema`
+  itself is still exercised (just never turned into a validation 400). SPEC-auth → v1.0.3;
+  `backlog.md` → v1.11. Vitest 446 → 447.
 - **Owner changes and reasoning:** at the plan gate the owner took every recommendation, with
   conditions: the enum schemas' lists must be the documents' *full* lists so T-09 can test its
   Prisma map against them; two new copy rows plus one reused row, short and unpunctuated like the

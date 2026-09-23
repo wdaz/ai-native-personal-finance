@@ -32,20 +32,34 @@ describe("ErrorEnvelope (SPEC-auth §2.10)", () => {
   });
 
   it("accepts a 400 validation body with no message — owner decision, T-04 plan gate finding 3", () => {
+    // SignupSchema, not LoginSchema: login never sends this body at all (§2.10, security
+    // decision below) — signup is the schema that actually ships a validation/issues 400.
     const body = JSON.parse(
       JSON.stringify({
         error: "validation",
-        issues: issuesOf(LoginSchema, { email: "", password: "" }),
+        issues: issuesOf(SignupSchema, { name: "", email: "", password: "" }),
       }),
     );
     expect(body.message).toBeUndefined();
     expect(ErrorEnvelopeSchema.parse(body)).toEqual({
       error: "validation",
       issues: [
+        { path: ["name"], code: "required" },
         { path: ["email"], code: "required" },
         { path: ["password"], code: "required" },
       ],
     });
+  });
+
+  it("POST /api/auth/login never sends 400 — a LoginSchema failure is 401 invalid_credentials, not validation (owner decision, security)", () => {
+    // The endpoint gives no oracle for which field, or which kind of failure, a request hit:
+    // a malformed body and a genuinely wrong email/password read identically.
+    expect(valid({ error: "invalid_credentials", message: "Email or password is incorrect" })).toBe(
+      true,
+    );
+    // LoginSchema itself still runs (T-06 uses it for on-page validation before ever sending a
+    // request); this only says the route never turns its failure into a 400 issues body.
+    expect(issuesOf(LoginSchema, { email: "", password: "" }).length).toBeGreaterThan(0);
   });
 
   it("accepts rate_limited with a whole, positive number of seconds", () => {
@@ -101,27 +115,30 @@ describe("ErrorIssueSchema — path and code only (owner decision, T-04 plan gat
   });
 });
 
-describe("toErrorIssues — every case LoginSchema/SignupSchema can produce (measured, T-04 plan gate finding 3)", () => {
+describe("toErrorIssues — every case SignupSchema can produce (measured, T-04 plan gate finding 3); a generic ZodError-to-issues mapper, not auth-specific — LoginSchema uses it too (its own test above), even though POST /api/auth/login never ships the result", () => {
   it("a missing or wrong-typed field is required", () => {
-    expect(issuesOf(LoginSchema, {})).toEqual([
-      { path: ["email"], code: "required" },
-      { path: ["password"], code: "required" },
+    expect(issuesOf(SignupSchema, { email: "a@b.co", password: "p".repeat(10) })).toEqual([
+      { path: ["name"], code: "required" },
     ]);
-    expect(issuesOf(LoginSchema, { email: 5, password: "x" })).toEqual([
-      { path: ["email"], code: "required" },
+    expect(issuesOf(SignupSchema, { name: 5, email: "a@b.co", password: "p".repeat(10) })).toEqual([
+      { path: ["name"], code: "required" },
     ]);
   });
 
   it("a malformed email is invalid_format", () => {
-    expect(issuesOf(LoginSchema, { email: "not-an-email", password: "x" })).toEqual([
-      { path: ["email"], code: "invalid_format" },
-    ]);
+    expect(
+      issuesOf(SignupSchema, { name: "n", email: "not-an-email", password: "p".repeat(10) }),
+    ).toEqual([{ path: ["email"], code: "invalid_format" }]);
   });
 
   it("an email over 254 characters is too_long — the client maps it to the same copy as invalid_format", () => {
-    expect(issuesOf(LoginSchema, { email: "a".repeat(250) + "@b.co", password: "x" })).toEqual([
-      { path: ["email"], code: "too_long" },
-    ]);
+    expect(
+      issuesOf(SignupSchema, {
+        name: "n",
+        email: "a".repeat(250) + "@b.co",
+        password: "p".repeat(10),
+      }),
+    ).toEqual([{ path: ["email"], code: "too_long" }]);
   });
 
   it("a name over 60 or a password over 128 characters is too_long", () => {
