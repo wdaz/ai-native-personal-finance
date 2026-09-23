@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { COPY } from "./copy";
+import { CATEGORIES, THEMES } from "./enums";
+import { WEBMCP_MODES } from "./env";
 
 /**
  * The request and response schemas of docs/02-architecture/data-model.md ("Request/response
@@ -10,6 +12,13 @@ import { COPY } from "./copy";
  * Request schemas are `z.object` (unknown keys are dropped); response schemas are
  * `z.strictObject`, so an API test fails when a route leaks a field the spec does not list.
  */
+
+// ---------------------------------------------------------------------------------------
+// Enums
+
+export const CategorySchema = z.enum(CATEGORIES);
+export const ThemeSchema = z.enum(THEMES);
+export const WebMcpModeSchema = z.enum(WEBMCP_MODES);
 
 // ---------------------------------------------------------------------------------------
 // Auth — SPEC-auth §4, §6; messages from the copy appendix (US-31)
@@ -105,3 +114,76 @@ export const toErrorIssues = (error: z.ZodError): ErrorIssue[] =>
     ...issue,
     path: issue.path.map((key) => (typeof key === "symbol" ? String(key) : key)),
   }));
+
+// ---------------------------------------------------------------------------------------
+// Overview — SPEC-overview §6 ("cents; dates ISO-8601 UTC")
+
+/** Money: integer cents, within `Number.MAX_SAFE_INTEGER` (`BigInt` is converted by then). */
+const Cents = z.int();
+const NonNegativeCents = z.int().nonnegative();
+/** "ISO-8601 UTC": `Date#toISOString()`; an offset or a time without a zone is refused. */
+const UtcDateTime = z.iso.datetime();
+/** SPEC-reset-and-test-support §2.1: "avatar path → basename key". */
+export const AVATAR_KEY = /^[a-z0-9-]+$/;
+
+/** SPEC-overview §2.3, §2.5: the first four pots and budgets; §2.4: the latest five transactions. */
+export const OVERVIEW_LIST_MAX = { pots: 4, budgets: 4, transactions: 5 } as const;
+
+export const OverviewDtoSchema = z.strictObject({
+  balance: z.strictObject({ current: Cents, income: Cents, expenses: Cents }),
+  pots: z.strictObject({
+    total: NonNegativeCents,
+    items: z
+      .array(
+        z.strictObject({
+          id: z.uuid(),
+          name: z.string().min(1).max(30),
+          total: NonNegativeCents,
+          theme: ThemeSchema,
+        }),
+      )
+      .max(OVERVIEW_LIST_MAX.pots),
+  }),
+  transactions: z
+    .array(
+      z.strictObject({
+        id: z.uuid(),
+        name: z.string().min(1).max(60),
+        avatar: z.string().regex(AVATAR_KEY),
+        amount: Cents,
+        date: UtcDateTime,
+      }),
+    )
+    .max(OVERVIEW_LIST_MAX.transactions),
+  budgets: z.strictObject({
+    spent: NonNegativeCents,
+    limit: NonNegativeCents,
+    items: z
+      .array(
+        z.strictObject({
+          id: z.uuid(),
+          category: CategorySchema,
+          maximum: z.int().positive(),
+          spent: NonNegativeCents,
+          theme: ThemeSchema,
+        }),
+      )
+      .max(OVERVIEW_LIST_MAX.budgets),
+  }),
+  bills: z.strictObject({
+    paid: NonNegativeCents,
+    upcoming: NonNegativeCents,
+    dueSoon: NonNegativeCents,
+  }),
+});
+export type OverviewDto = z.infer<typeof OverviewDtoSchema>;
+
+// ---------------------------------------------------------------------------------------
+// Meta — SPEC-app-shell §5
+
+export const MetaDtoSchema = z.strictObject({
+  lastResetAt: UtcDateTime,
+  resetIntervalDays: z.int().positive(),
+  webmcp: z.strictObject({ configuredMode: WebMcpModeSchema, originTrial: z.boolean() }),
+});
+export type MetaDto = z.infer<typeof MetaDtoSchema>;
