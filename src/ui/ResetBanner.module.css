@@ -1,0 +1,47 @@
+/*
+ * SPEC-app-shell §2.6: "a slim bar above the content". No design covers the banner; it is a
+ * white card on the beige page like the design's other blocks (radius 12 px), text preset 4 in
+ * grey-900. The dismiss control is the design's modal close button — a 32 px icon in grey-500,
+ * grey-900 on hover — inside a 44 px tap target (§4; T-08 plan Q2 (d)).
+ */
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-200);
+  padding: var(--spacing-50) var(--spacing-50) var(--spacing-50) var(--spacing-200);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}
+
+.text {
+  margin: 0;
+  color: var(--color-grey-900);
+  font: var(--text-preset-4);
+}
+
+.dismiss {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--tap-target-min);
+  block-size: var(--tap-target-min);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-100);
+  background: none;
+  color: var(--color-grey-500);
+  cursor: pointer;
+  transition: color var(--duration-hover);
+}
+
+.dismiss:hover {
+  color: var(--color-grey-900);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dismiss {
+    transition: none;
+  }
+}

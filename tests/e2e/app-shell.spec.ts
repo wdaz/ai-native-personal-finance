@@ -1,5 +1,7 @@
 import type { Page } from "@playwright/test";
+import { resetIntervalDays } from "@/src/server/env";
 import { COPY } from "@/src/shared/copy";
+import { formatDate } from "@/src/shared/dates";
 import { TEST_IDS } from "@/src/shared/test-ids";
 import { expect, loginViaApi, resetDemoData, seriousA11yViolations, test } from "../fixtures/e2e";
 
@@ -278,4 +280,78 @@ test("US-33 US-35 NFR-A1 axe: no serious or critical violation on any app page �
     await expect(heading(page, name)).toBeVisible();
     await expect.poll(() => seriousA11yViolations(page), { message: `${path} phone` }).toEqual([]);
   }
+});
+
+/**
+ * US-37 AC2, SPEC-app-shell §2.6 and §7: the banner states the policy and the date of the
+ * `ResetLog` row `/api/test/reset` wrote (UTC); the dismissal lasts for the tab — a client-side
+ * navigation and a reload keep it (sessionStorage), and every test starts in a fresh context.
+ */
+test("US-37 AC2 the reset banner shows the reset's date; dismissed, it stays gone for the session", async ({
+  page,
+  request,
+}) => {
+  // A reset of this test's own, whose `at` the banner must show; it ends the session, so log in again.
+  const { at } = (await (await request.post("/api/test/reset")).json()) as { at: string };
+  await loginViaApi(page);
+  await page.goto("/overview");
+
+  const banner = page.getByRole("status");
+  await expect(banner).toHaveText(COPY.resetBanner(resetIntervalDays(), formatDate(at)));
+  // It leads the page: above the page's heading.
+  await expect
+    .poll(async () => {
+      const [bannerBox, headingBox] = [
+        await banner.boundingBox(),
+        await heading(page, "Overview").boundingBox(),
+      ];
+      return Boolean(bannerBox && headingBox && bannerBox.y < headingBox.y);
+    })
+    .toBe(true);
+
+  const dismiss = page.getByRole("button", { name: COPY.dismissNotice });
+  await expect(dismiss).toHaveCSS("color", GREY_500);
+  await dismiss.hover();
+  await expect(dismiss).toHaveCSS("color", GREY_900);
+  await dismiss.click();
+  await expect(banner).toHaveCount(0);
+
+  await mainNav(page).getByRole("link", { name: "Transactions", exact: true }).click();
+  await expect(heading(page, "Transactions")).toBeVisible();
+  await expect(page.getByRole("status")).toHaveCount(0);
+  await page.reload();
+  await expect(heading(page, "Transactions")).toBeVisible();
+  await expect(page.getByRole("status")).toHaveCount(0);
+});
+
+test("US-37 AC2 on a phone the banner and its 44 px dismiss button fit at 320 px", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto("/overview");
+  const dismiss = page.getByRole("button", { name: COPY.dismissNotice });
+  await expect(page.getByRole("status")).toBeInViewport({ ratio: 1 });
+  await expect
+    .poll(async () => (await dismiss.boundingBox())?.width ?? 0, { message: "tap target" })
+    .toBeGreaterThanOrEqual(44);
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+    .toBeLessThanOrEqual(320);
+});
+
+test("US-37 AC2 a dismissal lasts only until the next reset: after it, the banner is back with the new date", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/overview");
+  await page.getByRole("button", { name: COPY.dismissNotice }).click();
+  await expect(page.getByRole("status")).toHaveCount(0);
+
+  // The reset ends the session (SPEC-reset-and-test-support §2.6); the same tab logs in again.
+  const { at } = (await (await request.post("/api/test/reset")).json()) as { at: string };
+  await loginViaApi(page);
+  await page.goto("/overview");
+  await expect(page.getByRole("status")).toHaveText(
+    COPY.resetBanner(resetIntervalDays(), formatDate(at)),
+  );
 });

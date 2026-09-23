@@ -70,6 +70,10 @@ jobs:
       # pre-existing process env var of the same name).
       DEMO_PASSWORD_HASH: "$2b$10$/gyfHp0z/Dlr77T6RwYhg.hO1OyLHX.zY9BIwRM6y7bFWNi8SnTM6"
       DEMO_PASSWORD_DISPLAY: "ci-demo-password-123"
+      # T-08: /api/admin/reset's two Bearer secrets (SPEC-reset-and-test-support §2.2–2.3).
+      # CI-only placeholders that guard nothing real; production's live in Vercel's env.
+      RESET_SECRET: "ci-only-reset-secret-not-a-real-secret"
+      CRON_SECRET: "ci-only-cron-secret-not-a-real-secret"
     steps:
       - uses: actions/checkout@v5
         with:
@@ -113,6 +117,10 @@ jobs:
       DEMO_EMAIL: "demo@example.com"
       DEMO_PASSWORD_HASH: "$2b$10$/gyfHp0z/Dlr77T6RwYhg.hO1OyLHX.zY9BIwRM6y7bFWNi8SnTM6"
       DEMO_PASSWORD_DISPLAY: "ci-demo-password-123"
+      # T-08: /api/admin/reset's two Bearer secrets (SPEC-reset-and-test-support §2.2–2.3).
+      # CI-only placeholders that guard nothing real; production's live in Vercel's env.
+      RESET_SECRET: "ci-only-reset-secret-not-a-real-secret"
+      CRON_SECRET: "ci-only-cron-secret-not-a-real-secret"
     steps:
       - uses: actions/checkout@v5
         with:

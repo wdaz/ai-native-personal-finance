@@ -10,3 +10,6 @@ locally). Each test resets it; it holds demo data only.
 - `reset.spec.ts` — `resetToSeed` (SPEC-reset-and-test-support §2.1, §4)
 - `schema.spec.ts` — the constraints the database enforces (data model, NFR-S3)
 - `test-support.spec.ts` — `/api/test/reset` and `/api/test/seed` (§2.7)
+- `threshold.spec.ts` — `checkThreshold` against real rows (§2.4; failed logins never count)
+- `meta.spec.ts` — `GET /api/meta` (SPEC-app-shell §3, §5)
+- `admin-reset.spec.ts` — `/api/admin/reset` GET/POST, each `ResetLog` reason, 400/401 (§2.2–2.3)

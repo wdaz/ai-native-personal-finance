@@ -42,6 +42,11 @@ test("US-32 AC1 AC3 US-34 AC1 desktop walkthrough: skip link, five nav items, fo
     await tabTo(page, control);
     await expect(control).toHaveCSS("outline-color", WHITE);
   }
+  // T-08: then the reset banner's dismiss button, the first stop in the page — on its white
+  // card the global grey-900 ring.
+  const dismiss = page.getByRole("button", { name: COPY.dismissNotice });
+  await tabTo(page, dismiss);
+  await expect(dismiss).toHaveCSS("outline-color", GREY_900);
 
   await nav.getByRole("link", { name: "Pots", exact: true }).focus();
   await page.keyboard.press("Enter");
@@ -85,8 +90,9 @@ test("US-35 AC1 AC2 US-32 minimised: Space toggles and focus stays; the tab orde
 });
 
 /**
- * US-32 AC3 — the phone walkthrough (375 px): Tab → "Skip to content" → the header's "Log out" →
- * the five bottom-bar items. Enter on the last navigates.
+ * US-32 AC3 — the phone walkthrough (375 px): Tab → "Skip to content" → the reset banner's
+ * "Dismiss notice" (it sits above the page header, T-08) → the header's "Log out" → the five
+ * bottom-bar items. Enter on the last navigates.
  */
 test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the five bottom-bar items; Enter navigates", async ({
   page,
@@ -96,10 +102,22 @@ test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the five bot
   await page.goto("/pots");
 
   await tabTo(page, page.getByRole("link", { name: COPY.skipToContent }));
+  await tabTo(page, page.getByRole("button", { name: COPY.dismissNotice }));
   await tabTo(page, page.getByRole("main").getByRole("button", { name: "Log out" }));
   const nav = page.getByRole("navigation", { name: "Main" });
   for (const name of NAMES) await tabTo(page, nav.getByRole("link", { name, exact: true }));
 
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(`${baseURL}/recurring-bills`);
+});
+
+test("US-37 AC2 US-32 dismissing the reset banner with Enter hands focus to the page, not to <body>", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/overview");
+  await page.getByRole("button", { name: COPY.dismissNotice }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("status")).toHaveCount(0);
+  await expect(page.getByRole("main")).toBeFocused();
 });

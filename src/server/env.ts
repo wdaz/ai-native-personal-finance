@@ -1,3 +1,8 @@
+import { WEBMCP_MODES } from "@/src/shared/env";
+// Type only: a runtime import of schemas.ts would pull zod and copy.ts into the middleware
+// bundle, which imports this file through db.ts (PR #20 review, finding 8).
+import type { WebMcpMode } from "@/src/shared/schemas";
+
 /**
  * Server-side environment. Read on every call rather than captured at import, so a route
  * handler sees the environment of the process it runs in and a test can pass its own.
@@ -74,4 +79,70 @@ export function demoCredentials(env: Env = process.env): DemoCredentials {
 export function webmcpOriginTrialToken(env: Env = process.env): string | null {
   const token = env.WEBMCP_ORIGIN_TRIAL_TOKEN?.trim();
   return token ? token : null;
+}
+
+/**
+ * A documented default when the variable is unset or empty (.env.example: "Default 10",
+ * "Defaults 2000 rows / 50 MB"); a value that is set but is not a positive whole number is a
+ * configuration mistake and throws, like the accessors above (T-08 plan D10).
+ */
+function positiveInt(name: string, raw: string | undefined, fallback: number): number {
+  if (raw === undefined || raw === "") return fallback;
+  // Digits only, no leading zero: `Number` alone accepts "0x10", "1e1" and " 10 " (PR #20
+  // review). The integer check still catches a value beyond Number.MAX_SAFE_INTEGER.
+  const value = /^[1-9]\d*$/.test(raw) ? Number(raw) : Number.NaN;
+  if (!Number.isSafeInteger(value)) {
+    throw new Error(`${name} must be a positive whole number (.env.example), not "${raw}"`);
+  }
+  return value;
+}
+
+/** SPEC-app-shell §5: the banner's "every {days} days". */
+export function resetIntervalDays(env: Env = process.env): number {
+  return positiveInt("RESET_INTERVAL_DAYS", env.RESET_INTERVAL_DAYS, 10);
+}
+
+/** SPEC-reset-and-test-support §2.4: user-created rows before a threshold reset. */
+export function resetRowThreshold(env: Env = process.env): number {
+  return positiveInt("RESET_ROW_THRESHOLD", env.RESET_ROW_THRESHOLD, 2000);
+}
+
+/** SPEC-reset-and-test-support §2.4: database size in bytes before a threshold reset. */
+export function resetBytesThreshold(env: Env = process.env): number {
+  return positiveInt("RESET_BYTES_THRESHOLD", env.RESET_BYTES_THRESHOLD, 52_428_800);
+}
+
+/**
+ * SPEC-reset-and-test-support §2.2: the operator's Bearer secret for `POST /api/admin/reset`.
+ * `null`, never `""`, when unset: an unset secret matches nothing, so the route fails closed
+ * (PR #20 review). The route and the tests read it only through this function.
+ */
+export function resetSecret(env: Env = process.env): string | null {
+  const secret = env.RESET_SECRET;
+  return secret ? secret : null;
+}
+
+/**
+ * SPEC-reset-and-test-support §2.3: the secret Vercel sends on a scheduled call. Unset outside
+ * a Vercel deployment, so it is optional — and `null`, never `""`, so that an empty value can
+ * never be what a missing Authorization header matches (T-08 plan D7).
+ */
+export function cronSecret(env: Env = process.env): string | null {
+  const secret = env.CRON_SECRET;
+  return secret ? secret : null;
+}
+
+/**
+ * SPEC-app-shell §5 `webmcp.configuredMode`; .env.example: "Default polyfill". Unset and empty
+ * both mean "polyfill", the same rule next.config.ts applies to NEXT_PUBLIC_WEBMCP_MODE, so the
+ * server's meta and the client's build agree (PR #20 review, finding 5).
+ */
+export function configuredWebmcpMode(env: Env = process.env): WebMcpMode {
+  const mode = env.WEBMCP_MODE;
+  if (!mode) return "polyfill";
+  const known = WEBMCP_MODES.find((m) => m === mode);
+  if (!known) {
+    throw new Error(`WEBMCP_MODE must be one of ${WEBMCP_MODES.join(", ")}, not "${mode}"`);
+  }
+  return known;
 }

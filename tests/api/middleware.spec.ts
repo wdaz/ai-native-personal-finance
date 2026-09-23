@@ -90,8 +90,9 @@ test("an unauthenticated request to a protected API answers 401 unauthenticated"
 test("SPEC-auth §2.10: only POST /api/admin/reset is secret-protected, not the whole /api/admin/* prefix", async ({
   request,
 }) => {
-  // /api/admin/reset itself has no route handler yet (T-08) — 404 either way; the point is
-  // that a *different* admin path still goes through the session check (review finding M3).
+  // /api/admin/reset has its own secret check since T-08 (tests/api/admin-reset.spec.ts); the
+  // point here is that a *different* admin path still goes through the session check (review
+  // finding M3).
   const response = await request.get("/api/admin/something-else");
   expect(response.status()).toBe(401);
 });

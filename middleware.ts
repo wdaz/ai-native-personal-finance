@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getDb } from "@/src/server/db";
+import { LAST_RESET_AT_HEADER } from "@/src/server/meta";
 import { latestResetAt } from "@/src/server/reset";
 import {
   SESSION_COOKIE_NAME,
@@ -112,10 +113,18 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     // Content-Security-Policy header (next/dist/server/app-render/app-render.js:209-210) — set
     // it there, as Next's content-security-policy guide does, rather than relying on Next
     // copying the response header onto the request (TD-1, closed by T-07). `x-nonce` is for our
-    // own <Script> components, read with `headers()`.
+    // own <Script> components, read with `headers()`. `x-request-id` carries the id this
+    // response's X-Request-Id header gets, so a route handler's log line can name the same id
+    // (SPEC-reset-and-test-support §2.2; T-08 plan D12).
     const forwardedHeaders = new Headers(request.headers);
     forwardedHeaders.set("Content-Security-Policy", csp);
     forwardedHeaders.set("x-nonce", nonce);
+    forwardedHeaders.set("x-request-id", requestId);
+    // The latest reset time, already read for the session check, for the (app) layout's banner:
+    // one ResetLog read per page instead of two. A client's own copy is always removed, and the
+    // value is set only when this request read it (PR #20 review).
+    forwardedHeaders.delete(LAST_RESET_AT_HEADER);
+    if (resetAt) forwardedHeaders.set(LAST_RESET_AT_HEADER, resetAt.toISOString());
     response = NextResponse.next({ request: { headers: forwardedHeaders } });
   }
 

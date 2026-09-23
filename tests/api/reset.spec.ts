@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import pg from "pg";
 import { createDb, type Db } from "@/src/server/db";
 import { databaseUrl } from "@/src/server/env";
-import { RESET_LOCK_KEY, resetToSeed } from "@/src/server/reset";
+import { RESET_LOCK_KEY, latestReset, resetToSeed } from "@/src/server/reset";
 import { seedRows } from "@/src/server/seed";
 import { applyVariant } from "@/src/server/variants";
 import { insertedRows, storedRows } from "@/tests/fixtures/database";
@@ -101,4 +101,15 @@ test("US-36 a reset that fails part-way leaves the previous data (§2.1: one tra
   const broken = { ...rows, budgets: [...rows.budgets, rows.budgets[0]!] }; // duplicate category
   await expect(resetToSeed(db, "test", broken)).rejects.toMatchObject({ code: "P2002" });
   expect(await storedRows(db)).toEqual(before);
+});
+
+test("T-08 plan D1: latestReset returns the latest ResetLog.at", async () => {
+  const result = await resetToSeed(db, "manual");
+  expect(await latestReset(db)).toEqual(result.at);
+});
+
+test("T-08 plan D1: latestReset throws when ResetLog is empty — it never makes a date up", async () => {
+  await resetToSeed(db, "test");
+  await db.resetLog.deleteMany();
+  await expect(latestReset(db)).rejects.toThrow(/ResetLog/);
 });
