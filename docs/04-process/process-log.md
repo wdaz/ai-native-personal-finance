@@ -1351,8 +1351,8 @@ them too").
       `tests/fixtures/csp.ts`, `tests/api/app-pages.spec.ts`.
     - Task 5: `session-recheck.ts` (the back/forward-cache re-check) and `logout.spec.ts`
       (US-03 AC1–AC2).
-    - Task 6: `tabTo` in the E2E fixtures, `app-shell.spec.ts` (26 tests) and
-      `app-shell-keyboard.spec.ts` (4 walkthroughs).
+    - Task 6: `tabTo` in the E2E fixtures, `app-shell.spec.ts` (22 tests) and
+      `app-shell-keyboard.spec.ts` (4 walkthroughs) — 26 tests in the two files.
     - Task 7: the layer READMEs, TD-1 marked Closed, this entry, the prompt record and seven
       screenshots (Overview and Transactions at 1440, 768 and 375 px; Transactions minimised at
       1440 px).
@@ -1387,7 +1387,7 @@ them too").
      away and the layout's call removed, they became `○` and five tests failed on an inline
      `<script>` with no nonce. So `tests/api/app-pages.spec.ts` guards "at least one of the two
      `connection()` calls", and today the layout's is redundant: the mutation in Review Focus 4
-     bites only with both removed. The layout's doc comment (plan D1, ADR-0006) says its call is
+     bites only with both removed. The layout's doc comment (ADR-0006, plan D4) says its call is
      what makes the pages per-request — true only when the not-found one is absent — so it
      overstates. The controller kept the call (SPEC-app-shell, ADR-0006 and D4 mandate it, and it
      stops the pages depending on `not-found.tsx`); rewording the comment, and a note at the top of
@@ -1407,7 +1407,8 @@ them too").
      against the E2E rule "`expect.poll` where a value is read" (ADR-0003, the Definition of
      Done). The plan's own code had them, so the plan text lost to the binding rule. One fix round
      converted every one-shot read with the expected values unchanged (`4730dda`); the keyboard
-     spec had none. 78 tests (26 × 3 engines) passed afterwards.
+     spec had none. The two files together — 26 tests (22 + 4) on each of three engines, 78 runs —
+     passed afterwards.
   4. **Task 2's middleware mutation, and TD-1.** The mutation check on the middleware exception
      (Focus 2) was done as planned. TD-1 was fixed in the same middleware change, as the owner
      decided at the gate (Q1 (d)); the nonce API tests and the E2E CSP guard stayed green.
@@ -1471,3 +1472,55 @@ them too").
   the `docs/03-specs/tech-debt.md` change (TD-1 Closed), and a follow-up commit adds its number
   and date to TD-1's "Closed" line. Then T-08 (the reset banner and `getMeta` in the `(app)`
   layout).
+
+### Addendum — 2026-09-23, whole-branch review
+
+- **Verdict:** With fixes, 0 Critical (the most capable model reviewed `5b15220..e8b7926`). One
+  fix wave, two commits: the code and tests, then this documentation.
+- **I1 — the "Skip to content" focus ring was invisible on desktop.** `.skipLink` is
+  `position: absolute` with no positioned ancestor, so it sits at 16 px / 16 px of the viewport —
+  at 1024 px and up on the grey-900 sidebar, over the logo. The global `:focus-visible` ring is
+  grey-900, so ring, sidebar and link box were the same colour. Measured in the production build
+  before the fix: at 1440, 768 and 375 px the ring was `rgb(32, 31, 36)`, 2 px outside the box;
+  only at 768 and 375 px did the link sit on the beige page, where it showed. The same defect
+  class as Review Focus 5. The walkthrough had asserted only `outline-style` (in `tabTo`) and
+  `toBeInViewport`, so "visible on focus" (SPEC-app-shell §2.8) was asserted nowhere. Fix: plan
+  D10's rule for the skip link — `outline-color: var(--focus-ring-color-on-dark)` with the offset
+  drawn inside the box — measured white at all three widths, and the screenshot at 1440 px shows
+  the ring. The desktop walkthrough now asserts the skip link's `outline-color` is white and its
+  `clip-path` is `none`. Mutation: removing the rule failed the walkthrough (`outline-color`
+  `rgb(32, 31, 36)`, not white); always-clipping the link (`.skipLink:not(:focus)` → `.skipLink`)
+  failed it too, at `toBeInViewport` (ratio 0), which comes before the `clip-path` line.
+- **I2 — the go-ahead quote.** It is the owner's own command message, verbatim
+  "/superpowers:subagent-driven-development istifadə edərək T-07 icrasına başla", 2026-09-23
+  ~19:06 +04, recorded in the SDD ledger. The quote here and in the prompt record is exact; no
+  change.
+- **M1** — the comments on `connection()` (the layout, the head of `tests/api/app-pages.spec.ts`,
+  `app/(app)/README.md`) were reworded to what is true: `app/not-found.tsx`'s own call already
+  makes every route dynamic in Next 16.3.5, the layout's call keeps the app pages per-request
+  without depending on that file, and `app-pages.spec.ts` fails only when both are gone. The call
+  stays (the deferred item under "wrong", 1, is done).
+- **M2** — this entry's corrections: `app-shell.spec.ts` has 22 tests, not 26 (26 is the sum with
+  the keyboard spec, verified with `npx playwright test --list`), the `connection()` decision is
+  D4, not D1, and the prompt record's account of the branch (it first ran on `worktree-T-07-app-shell`, renamed to `task/T-07-app-shell`).
+- **M3** — TD-1's "Closed" line needs the PR's number and date; the controller adds them once
+  the PR exists.
+- **M4** — a unit test pins the 10 s logout timeout (SPEC-auth §2.7): `AbortSignal.timeout` is
+  called with `10_000`, asserted as the literal so the constant cannot drift with it. Changing the
+  constant to 60 000 failed it. The "no answer" logout test is renamed for what it simulates (the
+  request fails).
+- **M5** — a unit test for `pageshow` with `persisted: true` while the session lives: `leave` is
+  not called. It awaits the answer's body and one macrotask turn, no fixed sleep; making the
+  re-check leave unconditionally failed it.
+- **Deferred minors, triaged "may stay"** (the reviewer's numbering):
+  - M6: TD-1 is closed by construction — no test isolates the forwarded-header line.
+  - M7: the footer rows sit 4 px left of the navigation rows — compare with the design export.
+  - M8: reduced motion is untested.
+  - M9: `100vh` versus `100dvh` on mobile Safari.
+  - M10: unused exports.
+  - M11: `isLogoutFallback` does not check the request method.
+  - M12: small CSS duplication.
+- **TD-6.** The owner pasted a `next dev` console log (~20:41 +04) full of CSP violations — React's
+  eval check and Next's dev overlay — and asked ("Zəhmət olmasa TD-6 qeydini yarat.", ~20:44 +04)
+  for a tech-debt entry. It is TD-6 in `docs/03-specs/tech-debt.md` v1.4, commit `b2da9de`, on
+  this branch (TD-4 and TD-5 were added the same way on T-06's), to be named in the PR.
