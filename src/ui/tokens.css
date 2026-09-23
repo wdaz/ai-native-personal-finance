@@ -1,7 +1,7 @@
 /*
  * Design tokens — generated from docs/02-architecture/design-tokens.md (Approved v1.2).
- * This file is the ONLY place design values are written. Do not hard-code a hex or a
- * pixel value anywhere else (design-tokens.md, header).
+ * This file is the ONLY place design values are written. Do not hard-code a hex, a
+ * pixel or a millisecond value anywhere else (design-tokens.md, header).
  *
  * The document states sizes in px. The presets below convert them to `rem` at the 16px
  * default (32px = 2rem …) so that a reader who raises the browser font size scales the
