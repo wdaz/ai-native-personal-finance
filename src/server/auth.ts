@@ -44,7 +44,10 @@ export async function login(request: Request, now: Date): Promise<Response> {
     typeof (rawBody as { password?: unknown }).password === "string"
       ? (rawBody as { password: string }).password
       : "";
-  const passwordMatches = await bcrypt.compare(passwordToCompare, process.env.DEMO_PASSWORD_HASH ?? "");
+  const passwordMatches = await bcrypt.compare(
+    passwordToCompare,
+    process.env.DEMO_PASSWORD_HASH ?? "",
+  );
   const emailMatches = parsed.success && parsed.data.email === process.env.DEMO_EMAIL;
 
   if (!parsed.success || !emailMatches || !passwordMatches) {

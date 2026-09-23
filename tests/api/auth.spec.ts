@@ -16,7 +16,9 @@ test.beforeEach(async ({ request }) => {
   await request.post("/api/test/reset");
 });
 
-test("US-01 correct demo credentials log in, wrong ones answer generic 401", async ({ request }) => {
+test("US-01 correct demo credentials log in, wrong ones answer generic 401", async ({
+  request,
+}) => {
   const bad = await request.post("/api/auth/login", {
     data: { email: process.env.DEMO_EMAIL, password: "wrong-password" },
   });
@@ -66,7 +68,9 @@ test("the 11th failed attempt in 15 minutes answers 429 with Retry-After", async
 });
 
 test("a successful login clears the IP's failure count", async ({ request }) => {
-  await request.post("/api/auth/login", { data: { email: process.env.DEMO_EMAIL, password: "wrong" } });
+  await request.post("/api/auth/login", {
+    data: { email: process.env.DEMO_EMAIL, password: "wrong" },
+  });
   await request.post("/api/auth/login", {
     data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
   });
@@ -80,7 +84,9 @@ test("US-02 signup always answers demo_instance, 400 on invalid input", async ({
   expect(ok.status()).toBe(200);
   expect(await ok.json()).toEqual({ code: "demo_instance" });
 
-  const bad = await request.post("/api/auth/signup", { data: { name: "", email: "x", password: "short" } });
+  const bad = await request.post("/api/auth/signup", {
+    data: { name: "", email: "x", password: "short" },
+  });
   expect(bad.status()).toBe(400);
   const body = (await bad.json()) as { error: string; issues: unknown[]; message?: string };
   expect(body.error).toBe("validation");

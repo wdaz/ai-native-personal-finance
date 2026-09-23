@@ -7,7 +7,10 @@ describe("errorResponse", () => {
     const response = errorResponse(401, "invalid_credentials", "Email or password is incorrect");
     expect(response.status).toBe(401);
     const body = (await response.json()) as ErrorEnvelope;
-    expect(body).toEqual({ error: "invalid_credentials", message: "Email or password is incorrect" });
+    expect(body).toEqual({
+      error: "invalid_credentials",
+      message: "Email or password is incorrect",
+    });
   });
 });
 

@@ -55,7 +55,11 @@ export function isSessionValid(
  * where a Secure cookie would be set but never sent back by the browser (found running the
  * API tests against `next start` on http://127.0.0.1).
  */
-export function sessionCookieHeader(sealed: string, maxAgeSeconds: number, secure: boolean): string {
+export function sessionCookieHeader(
+  sealed: string,
+  maxAgeSeconds: number,
+  secure: boolean,
+): string {
   const secureFlag = secure ? "; Secure" : "";
   return `${SESSION_COOKIE_NAME}=${sealed}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAgeSeconds}${secureFlag}`;
 }
