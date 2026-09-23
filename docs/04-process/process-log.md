@@ -1141,3 +1141,38 @@ directives), 3 E2E.
 - **Disagreements:** Copilot's finding (1) was right that the reference was unclear but wrong that the skill is missing. The fix is the clearer wording, not a new file.
 - **Lesson:** a generic checklist's "how to test" hints needed changing in twelve rows once read against this repository's ADRs and specs. A second agent that reads those documents before approving is the cheap check. Separately, "verbatim" held against the paste but not against the original source, which only a check of the upstream revision could show. Cite the upstream revision, not the copy.
 - **Next:** owner review and merge of PR #12. Then, optionally, a first real run of the skill against `main`, where the T-05 auth code now lives. The repository has no `LICENSE` file, which was not in this change's scope and is left to the owner.
+
+---
+
+## 2026-09-23 — Build (T-06 plan F1): 404 pages under the CSP
+
+- **Phase:** 5 (Build the slice). A defect fix ahead of T-06, in its own PR. No spec or ADR changed; user-stories gains one copy row, pending the owner's approval.
+- **Participants:** Owner (decision) / Agent (Claude Code, Opus 5.5): a subagent in its own git worktree, started by the T-06 session.
+- **Trigger:** F1 from the T-06 plan gate, prepared by a separate subagent before T-06, owner decision 2026-09-23. `/_not-found` was prerendered at build time, so Next could not put ADR-0006's per-request CSP nonce on its inline scripts and `<style>`. Next's default not-found UI also used `style` attributes, which no nonce can allow (a nonce covers elements, not attributes). Every 404 therefore rendered unstyled with its client JavaScript blocked. That meant any unknown URL, and, for a logged-in user, every R1 app page until the tasks that build them.
+- **Prompt(s):** `prompts/2026-09-23-F1-not-found-csp.md` (the brief, verbatim).
+- **Produced:**
+  - `tests/api/middleware.spec.ts`: two API tests, one for `/definitely-not-a-page` and one for `/overview` with a session. The second asserts the login succeeded and follows no redirects, because `/login` is itself a 404 until T-06 and would otherwise pass for the wrong page. Each asserts 404; every inline `<script>` and every `<style>` carries the response's own nonce; no `style="…"` attribute; a fresh nonce on a second request. At least one inline script must exist, so the test cannot pass by matching nothing.
+  - `app/not-found.tsx` and `app/not-found.module.css`: `await connection()`, then a `<main>` with "404" as a `<p>` and `COPY.notFound` as the `<h1>`. Styled with tokens only, with no `style` prop and no `next/image`. A `metadata` export keeps Next's default tab title, "404: This page could not be found.".
+  - user-stories v1.3: one "R1 additions" row, `| Any page | not found (404) | This page could not be found. |`, **pending owner approval**. The same commit adds `COPY.notFound` and updates the copy mirror test and its reworded-appendix fixture.
+- **Evidence:**
+  - RED (commit `a1bedd6`, observed on `main` at `79f5d24`, before the branch was rebased onto `1869065`): both new tests failed with 5 inline `<script>` and 1 `<style>` without the nonce, plus 4 `style` attributes (API run: 2 failed, 39 passed). GREEN after the fix: 41/41.
+  - Route table: `○ /_not-found` before, `ƒ /_not-found` after. `prerender-manifest.json` routes: `/_global-error` and `/_not-found` before, `/_global-error` only after.
+  - Chromium, via a throwaway script that was not committed, on `/definitely-not-a-page` and on a logged-in `/overview`, per page:
+    - Before: 10 CSP violations (5 `script-src-elem`, 1 `style-src-elem`, 4 `style-src-attr`), 11 console errors, and 1 page error (React #412: the RSC payload never arrived).
+    - After: 0 violations, 0 page errors, and 1 console error, which is the document's own 404 status.
+  - Gates, rerun on the rebased branch: lint, format and typecheck clean; 485 unit tests, 41 API tests, 3 E2E tests (Chromium, Firefox, WebKit); `npm audit` 0. The rebased build shows the same route table, and the browser check gives the same counts.
+- **What the agent got right:** it checked Next's installed source and ran a throwaway dynamic build before writing the fix. That confirmed both that `connection()` in `not-found.tsx` moves the route to ƒ and that the nonce then reaches the HTML. It also found the surprise below.
+- **What the agent got wrong or missed:**
+  - Its first attempt at the title rendered `<title>` in JSX, as Next's own default page does. In a per-request render the layout's metadata `<title>` streams first, so the tab read "Personal Finance". The browser check caught it, and a `metadata` export replaced it, leaving a single `<title>`.
+  - It stopped its experiment server with `pkill -f "next start"`, which could have hit another session's server. Only its own was running; from then on it killed only the PID listening on 3107.
+- **Surprises:**
+  - **Next does not read `x-nonce`.** Next 16.3.5 takes the nonce from the *request's* `Content-Security-Policy` header (`parseRequestHeaders` in `next/dist/server/app-render/app-render.js`; the bundled `content-security-policy.md` says the same). `middleware.ts` sets the CSP only on the response, and forwards only `x-nonce`, which is there for app code to read through `headers()`. It works because Next's router also copies every middleware response header onto the request (`resolve-routes.js`: `resHeaders[key] = value; req.headers[key] = value;`). That behaviour is undocumented; the documented pattern sets the CSP on the forwarded request headers as well. The comment in `middleware.ts` and ADR-0006's 2026-09-23 (2) amendment both say Next reads the nonce from `x-nonce`, which is inaccurate. This is out of F1's scope (the brief said not to touch `middleware.ts`) and left for a separate small PR. Until then, the new API tests are the regression guard: if Next stops copying the header, they fail.
+  - **`/_global-error` is not covered.** It is prerendered the same way (5 inline scripts, 1 `<style>`, 7 `style` attributes, no nonce), and this fix does not reach it. `global-error.tsx` must be a client component that renders its own `<html>` and `<body>`, so it cannot call `connection()`. A trial build with `connection()` in the root layout, reverted afterwards, still listed `/_global-error` as prerendered. It is left as a known limitation: it renders only when a page crashes and no nearer error boundary catches the error (there is no `error.tsx` yet).
+- **Owner changes and reasoning:** none yet. The copy row and the PR await review. The row keeps Next's full stop, as the brief asked, while the owner had asked for T-04's additions to be short and without a full stop. Dropping the full stop is the owner's call.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  - A CSP-with-nonce review should read the build's route table: every ○ route is one Next could not nonce.
+  - Claims about framework internals should be checked against the installed source (`node_modules/next/dist`), not against the comment next to the code. Here the comment named the wrong header, and the code worked for an undocumented reason.
+- **Next:** owner review of the draft PR `fix/not-found-csp`, starting with the copy row. Then T-06. Candidates for separate small PRs:
+  1. Set the CSP on the forwarded request headers in `middleware.ts`, and correct its comment and ADR-0006's wording.
+  2. `/_global-error` under the CSP, if the owner wants it before Release 1 ships.
