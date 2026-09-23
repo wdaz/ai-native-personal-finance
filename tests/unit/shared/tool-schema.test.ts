@@ -61,8 +61,13 @@ describe("toolInputJsonSchema (ADR-0004, SPEC-webmcp-tools §2.4; T-04 plan F1)"
     expect(() => toolInputJsonSchema(schema)).toThrow("Tool input strings need a maxLength: note");
   });
 
-  it("accepts z.uuid() — exempt from maxLength per plan D17", () => {
+  it("throws on a bare z.uuid() without maxLength — D17 rejected exempting it", () => {
     const schema = z.object({ id: z.uuid() });
+    expect(() => toolInputJsonSchema(schema)).toThrow("Tool input strings need a maxLength: id");
+  });
+
+  it("accepts z.uuid().max(36) — Release 2's documented pattern", () => {
+    const schema = z.object({ id: z.uuid().max(36) });
     expect(() => toolInputJsonSchema(schema)).not.toThrow();
   });
 });
