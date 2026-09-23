@@ -4,8 +4,8 @@
 - Clarification 2026-09-23 (owner, T-08 — plan gate Q1 (a) and PR #20's review, finding 2): the
   scheduled reset is `GET /api/admin/reset` from a **daily** Vercel cron (`0 3 * * *`); Vercel
   sends a bodyless `GET` with `CRON_SECRET` as its Bearer token, and the route resets only once
-  `RESET_INTERVAL_DAYS` have passed since the last reset. `POST` with `{ reason }` stays the
-  operator's reset. The threshold check counts user-created rows only (transactions, budgets,
+  `RESET_INTERVAL_DAYS` have passed since the last reset; `GET` accepts only `CRON_SECRET`.
+  `POST` with `{ reason }` stays the operator's reset, with either secret. The threshold check counts user-created rows only (transactions, budgets,
   pots) — not `ResetLog` or `LoginAttempt`. See ADR-0007's amendment of the same date and
   SPEC-reset-and-test-support v1.4.
 - Clarification 2026-09-22 (owner, T-02 plan gate): money columns are integer cents stored as

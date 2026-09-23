@@ -21,6 +21,7 @@ the five navigation icons and the minimise caret (challenge assets) and `SignOut
 (Phosphor, MIT); `Logo` gains `LogoSmall`. Their component tests are in `tests/unit/ui/`.
 
 T-08: `ResetBanner` (SPEC-app-shell §2.6 — `banner-state.ts` keeps
-`sessionStorage["pf.banner"]`; dismissing it moves focus to `<main>`), rendered by `Shell` from
+`sessionStorage["pf.banner"]`, the dismissed reset's date, through `session-store.ts`, which
+`sidebar-state.ts` now shares; dismissing it moves focus to `<main>`), rendered by `Shell` from
 the `meta` the `(app)` layout reads; `icons/CloseCircleIcon` — the Claude Design prototype's
 modal close control, drawn inline there, not one of the Figma icons (T-08 plan Q2 (d)).
