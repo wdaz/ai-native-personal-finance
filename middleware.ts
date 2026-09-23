@@ -32,17 +32,23 @@ const TEST_API = /^\/api\/test\//;
 // the session check too).
 const ADMIN_API = /^\/api\/admin\/reset$/;
 
-// SPEC-auth §2.7–2.8 (v1.0.6), ADR-0006 (2026-09-23, T-07 plan gate): where the logout button
+// SPEC-auth §2.7–2.8 (v1.0.7), ADR-0006 (2026-09-23, T-07 plan gate): where the logout button
 // goes when POST /api/auth/logout failed. The browser still holds the httpOnly session cookie,
 // which only a response can clear — so this one navigation clears it and shows the login page
-// instead of bouncing a logged-in visitor to /overview. Only a same-origin navigation
-// qualifies: a link or form on another site (logout CSRF), a typed URL ("none") or a browser
-// that sends no Sec-Fetch-Site keeps the redirect.
+// instead of bouncing a logged-in visitor to /overview. Only a same-origin GET *document
+// navigation* qualifies (Copilot review of PR #19): a link or form on another site (logout
+// CSRF), a typed URL ("none"), a same-origin fetch()/XHR/iframe/prefetch (Sec-Fetch-Mode or
+// -Dest differ), a non-GET method, or a browser that sends no fetch metadata keeps the
+// redirect — an absent header fails closed. logOut()'s `window.location.assign` is exactly
+// such a navigation, so the button's path is unchanged.
 function isLogoutFallback(request: NextRequest): boolean {
   return (
+    request.method === "GET" &&
     request.nextUrl.pathname === "/login" &&
     request.nextUrl.searchParams.get("reason") === "logout" &&
-    request.headers.get("sec-fetch-site") === "same-origin"
+    request.headers.get("sec-fetch-site") === "same-origin" &&
+    request.headers.get("sec-fetch-mode") === "navigate" &&
+    request.headers.get("sec-fetch-dest") === "document"
   );
 }
 

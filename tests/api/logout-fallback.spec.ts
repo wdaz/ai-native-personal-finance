@@ -2,13 +2,21 @@ import { type APIRequestContext, expect, test } from "@playwright/test";
 import { SessionResponseSchema } from "@/src/shared/schemas";
 
 /**
- * SPEC-auth §2.7–2.8 (v1.0.6), ADR-0006 (2026-09-23, T-07 plan gate): when
+ * SPEC-auth §2.7–2.8 (v1.0.7), ADR-0006 (2026-09-23, T-07 plan gate): when
  * POST /api/auth/logout fails, the client navigates to /login?reason=logout. For a same-origin
- * navigation only, the middleware clears the session cookie and renders the login page
- * instead of redirecting a logged-in visitor to /overview. Any other Sec-Fetch-Site — a link
- * on another site (logout CSRF), a typed URL ("none"), a browser that sends none — keeps the
- * redirect and the session.
+ * GET document navigation only, the middleware clears the session cookie and renders the login
+ * page instead of redirecting a logged-in visitor to /overview. Any other request — another
+ * Sec-Fetch-Site (a link on another site is logout CSRF; "none" is a typed URL), another
+ * Sec-Fetch-Mode or -Dest (a same-origin fetch, an iframe), another method, or a browser that
+ * sends none of the headers — keeps the redirect and the session.
  */
+
+// What a browser sends for `window.location.assign("/login?reason=logout")` from an app page.
+const NAVIGATION = {
+  "sec-fetch-site": "same-origin",
+  "sec-fetch-mode": "navigate",
+  "sec-fetch-dest": "document",
+};
 
 const demo = { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY };
 
@@ -36,7 +44,7 @@ test("US-03 AC2 a same-origin GET /login?reason=logout clears a live session and
 }) => {
   await logIn(request);
   const response = await request.get("/login?reason=logout", {
-    headers: { "sec-fetch-site": "same-origin" },
+    headers: NAVIGATION,
     maxRedirects: 0,
   });
 
@@ -53,7 +61,12 @@ for (const site of ["cross-site", "same-site", "none", undefined]) {
   }) => {
     await logIn(request);
     const response = await request.get("/login?reason=logout", {
-      headers: site ? { "sec-fetch-site": site } : {},
+      // Mode and Dest stay as a navigation's, so only the Site guard is under test.
+      headers: {
+        "sec-fetch-mode": NAVIGATION["sec-fetch-mode"],
+        "sec-fetch-dest": NAVIGATION["sec-fetch-dest"],
+        ...(site ? { "sec-fetch-site": site } : {}),
+      },
       maxRedirects: 0,
     });
 
@@ -67,7 +80,7 @@ test("US-03 AC2 a visitor with no session just gets the login page — nothing t
   request,
 }) => {
   const response = await request.get("/login?reason=logout", {
-    headers: { "sec-fetch-site": "same-origin" },
+    headers: NAVIGATION,
     maxRedirects: 0,
   });
 
@@ -78,10 +91,47 @@ test("US-03 AC2 a visitor with no session just gets the login page — nothing t
 test("SPEC-auth §2.8: any other reason keeps the logged-in redirect", async ({ request }) => {
   await logIn(request);
   const response = await request.get("/login?reason=reset", {
-    headers: { "sec-fetch-site": "same-origin" },
+    headers: NAVIGATION,
     maxRedirects: 0,
   });
 
   expect(response.status()).toBe(302);
+  expect(await isLoggedIn(request)).toBe(true);
+});
+
+// A same-origin request that is not a document navigation — a fetch(), an XHR, an iframe, a
+// prefetch — must not be able to end the session in the background.
+const notANavigation: [string, Record<string, string>][] = [
+  ["a fetch (Sec-Fetch-Mode: cors)", { ...NAVIGATION, "sec-fetch-mode": "cors" }],
+  ["an iframe (Sec-Fetch-Dest: iframe)", { ...NAVIGATION, "sec-fetch-dest": "iframe" }],
+  ["Sec-Fetch-Mode and -Dest absent", { "sec-fetch-site": NAVIGATION["sec-fetch-site"] }],
+];
+
+for (const [what, headers] of notANavigation) {
+  test(`US-03 AC2 same-origin but ${what}: the logout fallback does not apply — 302 /overview, the session lives`, async ({
+    request,
+  }) => {
+    await logIn(request);
+    const response = await request.get("/login?reason=logout", { headers, maxRedirects: 0 });
+
+    expect(response.status()).toBe(302);
+    expect(response.headers()["location"]).toContain("/overview");
+    expect(setCookies(response.headersArray())).toEqual([]);
+    expect(await isLoggedIn(request)).toBe(true);
+  });
+}
+
+test("US-03 AC2 a same-origin POST to /login?reason=logout does not apply the fallback — the session lives", async ({
+  request,
+}) => {
+  await logIn(request);
+  const response = await request.post("/login?reason=logout", {
+    headers: NAVIGATION,
+    maxRedirects: 0,
+  });
+
+  expect(response.status()).toBe(302);
+  expect(response.headers()["location"]).toContain("/overview");
+  expect(setCookies(response.headersArray())).toEqual([]);
   expect(await isLoggedIn(request)).toBe(true);
 });
