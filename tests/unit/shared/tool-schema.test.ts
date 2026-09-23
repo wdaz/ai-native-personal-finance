@@ -70,4 +70,37 @@ describe("toolInputJsonSchema (ADR-0004, SPEC-webmcp-tools §2.4; T-04 plan F1)"
     const schema = z.object({ id: z.uuid().max(36) });
     expect(() => toolInputJsonSchema(schema)).not.toThrow();
   });
+
+  it("throws on a nullable object field — anyOf, not a type array", () => {
+    const schema = z.object({ pot: z.object({ note: z.string() }).nullable() });
+    expect(() => toolInputJsonSchema(schema)).toThrow('uses "anyOf"');
+  });
+
+  it("throws on a union of objects — anyOf", () => {
+    const schema = z.object({
+      x: z.union([z.object({ a: z.string() }), z.object({ b: z.string() })]),
+    });
+    expect(() => toolInputJsonSchema(schema)).toThrow('uses "anyOf"');
+  });
+
+  it("throws on a tuple — prefixItems", () => {
+    const schema = z.object({ pair: z.tuple([z.string(), z.string()]) });
+    expect(() => toolInputJsonSchema(schema)).toThrow('uses "prefixItems"');
+  });
+
+  it("throws on a record — additionalProperties as a schema", () => {
+    const schema = z.object({ tags: z.record(z.string(), z.string()) });
+    expect(() => toolInputJsonSchema(schema)).toThrow('uses "additionalProperties" as a schema');
+  });
+
+  it("throws on a catchall — additionalProperties as a schema", () => {
+    const schema = z.object({ extra: z.object({}).catchall(z.string()) });
+    expect(() => toolInputJsonSchema(schema)).toThrow('uses "additionalProperties" as a schema');
+  });
+
+  it("throws on a .meta() schema reused twice — $ref", () => {
+    const Pot = z.object({ name: z.string() }).meta({ id: "Pot" });
+    const schema = z.object({ pot: Pot, otherPot: Pot });
+    expect(() => toolInputJsonSchema(schema)).toThrow('uses "$ref"');
+  });
 });

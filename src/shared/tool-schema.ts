@@ -7,7 +7,10 @@ import { z } from "zod";
  * an error (T-04 plan, E7), and an empty schema passes every check that looks for a missing
  * property. So a tool's input must come back as an object schema, and every string in it must
  * carry a `maxLength` — an `enum` or `const` is bounded by its values.
- * Anything else throws when the tool is defined, not when an agent calls it.
+ * Anything else throws when the tool is defined, not when an agent calls it. A schema using
+ * `anyOf`, `oneOf`, `allOf`, `$ref`, a tuple's `prefixItems`, or a record/catchall's
+ * schema-valued `additionalProperties` is rejected outright rather than silently passed —
+ * flatten such a shape or extend the guard.
  */
 
 type JsonSchema = z.core.JSONSchema.BaseSchema;
@@ -18,6 +21,15 @@ const toInputJsonSchema: Convert = (schema) => z.toJSONSchema(schema, { io: "inp
 const isSchema = (value: unknown): value is JsonSchema =>
   typeof value === "object" && value !== null;
 
+const UNCHECKED_KEYWORDS = [
+  "anyOf",
+  "oneOf",
+  "allOf",
+  "$ref",
+  "prefixItems",
+  "patternProperties",
+] as const;
+
 /** The paths of every string without a `maxLength`, e.g. `name` or `tags[]`. */
 function unboundedStrings(node: JsonSchema, path: string): string[] {
   const isString =
@@ -25,6 +37,17 @@ function unboundedStrings(node: JsonSchema, path: string): string[] {
   if (isString) {
     const bounded = node.maxLength !== undefined || node.enum !== undefined || "const" in node;
     return bounded ? [] : [path];
+  }
+  const unchecked = UNCHECKED_KEYWORDS.find((keyword) => keyword in node);
+  if (unchecked !== undefined) {
+    throw new Error(
+      `Tool input schema at "${path || "(root)"}" uses "${unchecked}", which this guard does not check — flatten the schema or extend the guard`,
+    );
+  }
+  if (isSchema(node.additionalProperties)) {
+    throw new Error(
+      `Tool input schema at "${path || "(root)"}" uses "additionalProperties" as a schema (a record or catchall), which this guard does not check — flatten the schema or extend the guard`,
+    );
   }
   const properties = Object.entries(node.properties ?? {}).flatMap(([key, child]) =>
     isSchema(child) ? unboundedStrings(child, path ? `${path}.${key}` : key) : [],
