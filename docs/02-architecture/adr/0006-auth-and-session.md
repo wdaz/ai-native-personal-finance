@@ -1,6 +1,12 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
-- Status: **Accepted** (amended 2026-09-20) · Date: 2026-09-13
+- Status: **Accepted** (amended 2026-09-23) · Date: 2026-09-13
+- Amendment 2026-09-23 (owner decision, T-05 plan gate Q3, tech debt): the CSP ships as
+  `script-src 'self'`, **no inline nonce** — R1's App Router pages have no inline `<script>`
+  tag, so the nonce machinery (per-request token, `x-nonce` header) has nothing to protect
+  yet and is deferred rather than built unused. If a later task adds an inline script, that
+  task adds the nonce then. `frame-ancestors`, `Referrer-Policy`, `X-Content-Type-Options`
+  are unaffected.
 - Amendment 2026-09-20 (owner decision S-16/S-17/S-18): sessions **end on demo reset** via a `resetEpoch` claim compared with the latest `ResetLog.at` (still stateless); the middleware public list also includes `POST /api/auth/signup` and `GET /api/auth/session`, and `POST /api/auth/logout` requires no session; the rate limit counts **failed** attempts only. · Author(s): Agent, Owner (decisions Q1/OQ-1/R-25)
 - Driven by: US-01–US-03, US-39 AC4, NFR-S1/S2/S6, PRD OQ-1
 
@@ -13,7 +19,10 @@ Exactly one demo account; the sign-up screen is UI-complete but creates nothing;
 - Middleware protects `(app)/*` routes (redirect to `/login?next=…`) and `api/*` except `auth/login`, `meta`, `admin/reset` (own secret) and `test/*` (test env only). Tools inherit the cookie because they call the same API (`credentials: "include"` is implicit same-origin).
 - Sign-up: `POST /api/auth/signup` validates with the shared schema and always returns `{ code: "demo_instance" }` (OQ-1).
 - Rate limit: 10 login attempts / 15 min per IP via an Upstash-free approach — a small `LoginAttempt` table with a cleanup on reset (S4).
-- Headers: CSP (`default-src 'self'`; scripts self + inline nonce; no third-party), `frame-ancestors 'none'`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` left default so `tools` stays `self` (S6).
+- Headers: CSP (`default-src 'self'; script-src 'self'`; no inline nonce — 2026-09-23
+  amendment, tech debt; no third-party), `frame-ancestors 'none'`, `Referrer-Policy:
+  strict-origin-when-cross-origin`, `Permissions-Policy` left default so `tools` stays `self`
+  (S6).
 
 ## Alternatives considered
 **A. This — chosen.**
