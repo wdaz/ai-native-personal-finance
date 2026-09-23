@@ -1,12 +1,28 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
 - Status: **Accepted** (amended 2026-09-23) · Date: 2026-09-13
-- Amendment 2026-09-23 (owner decision, T-05 plan gate Q3, tech debt): the CSP ships as
-  `script-src 'self'`, **no inline nonce** — R1's App Router pages have no inline `<script>`
-  tag, so the nonce machinery (per-request token, `x-nonce` header) has nothing to protect
-  yet and is deferred rather than built unused. If a later task adds an inline script, that
-  task adds the nonce then. `frame-ancestors`, `Referrer-Policy`, `X-Content-Type-Options`
-  are unaffected.
+- Amendment 2026-09-23 (2) (owner decision, T-05 whole-branch review finding C2): the CSP
+  nonce is **restored**, superseding the same-day amendment below. That amendment's premise
+  — "R1's App Router pages have no inline `<script>` tag" — was wrong: Next.js emits its own
+  RSC-payload data as inline `<script>` tags, and inline `<style>` tags, on every
+  server-rendered page, whether or not the app writes one itself. Verified live during
+  review (Chromium and Firefox both logged 5 blocked inline scripts and 5 blocked inline
+  styles on a page rendered under the no-nonce CSP; a client component's `onClick` handler
+  was confirmed dead). `middleware.ts` now generates one nonce per request, forwards it to
+  Server Components via the `x-nonce` request header (Next.js applies it automatically to
+  its own inline scripts/styles and to any `<Script nonce={...}>` — no other per-tag wiring
+  needed), and sets `script-src 'self' 'nonce-<value>'; style-src 'self' 'nonce-<value>'`.
+  Cost: any page relying on this must render dynamically (no static generation, ISR, or
+  PPR) — immaterial here, since every session-aware page already reads the session cookie
+  and is dynamic by Next's own default; only the public `/login`/`/signup` pages (T-06) lose
+  static generation, at this app's traffic. `frame-ancestors`, `Referrer-Policy`,
+  `X-Content-Type-Options` are unaffected, as before.
+- Amendment 2026-09-23 (owner decision, T-05 plan gate Q3, tech debt) — **superseded by the
+  amendment above; kept for the record.** The CSP shipped as `script-src 'self'`, no inline
+  nonce — R1's App Router pages have no inline `<script>` tag, so the nonce machinery
+  (per-request token, `x-nonce` header) has nothing to protect yet and is deferred rather
+  than built unused. If a later task adds an inline script, that task adds the nonce then.
+  `frame-ancestors`, `Referrer-Policy`, `X-Content-Type-Options` are unaffected.
 - Amendment 2026-09-20 (owner decision S-16/S-17/S-18): sessions **end on demo reset** via a `resetEpoch` claim compared with the latest `ResetLog.at` (still stateless); the middleware public list also includes `POST /api/auth/signup` and `GET /api/auth/session`, and `POST /api/auth/logout` requires no session; the rate limit counts **failed** attempts only. · Author(s): Agent, Owner (decisions Q1/OQ-1/R-25)
 - Driven by: US-01–US-03, US-39 AC4, NFR-S1/S2/S6, PRD OQ-1
 
@@ -19,10 +35,11 @@ Exactly one demo account; the sign-up screen is UI-complete but creates nothing;
 - Middleware protects `(app)/*` routes (redirect to `/login?next=…`) and `api/*` except `auth/login`, `meta`, `admin/reset` (own secret) and `test/*` (test env only). Tools inherit the cookie because they call the same API (`credentials: "include"` is implicit same-origin).
 - Sign-up: `POST /api/auth/signup` validates with the shared schema and always returns `{ code: "demo_instance" }` (OQ-1).
 - Rate limit: 10 login attempts / 15 min per IP via an Upstash-free approach — a small `LoginAttempt` table with a cleanup on reset (S4).
-- Headers: CSP (`default-src 'self'; script-src 'self'`; no inline nonce — 2026-09-23
-  amendment, tech debt; no third-party), `frame-ancestors 'none'`, `Referrer-Policy:
-  strict-origin-when-cross-origin`, `Permissions-Policy` left default so `tools` stays `self`
-  (S6).
+- Headers: CSP (`default-src 'self'; script-src 'self' 'nonce-<value>'; style-src 'self'
+  'nonce-<value>'`, one nonce per request via `middleware.ts` and the `x-nonce` request
+  header — 2026-09-23 (2) amendment; no third-party), `frame-ancestors 'none'`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` left default so
+  `tools` stays `self` (S6).
 
 ## Alternatives considered
 **A. This — chosen.**

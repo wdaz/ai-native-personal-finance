@@ -86,6 +86,28 @@ test("an incoming ?next= on /login passes through unsanitised — T-06's client 
   expect(response.status()).not.toBe(302);
 });
 
+test("ADR-0006: the CSP carries a nonce on script-src and style-src, fresh per request", async ({
+  request,
+}) => {
+  const NONCE_PATTERN = /'nonce-([^']+)'/;
+
+  const first = await request.get("/api/auth/session");
+  const firstCsp = first.headers()["content-security-policy"] ?? "";
+  const [, firstScriptNonce] =
+    NONCE_PATTERN.exec(firstCsp.match(/script-src[^;]+/)?.[0] ?? "") ?? [];
+  const [, firstStyleNonce] = NONCE_PATTERN.exec(firstCsp.match(/style-src[^;]+/)?.[0] ?? "") ?? [];
+  expect(firstScriptNonce).toBeTruthy();
+  expect(firstStyleNonce).toBeTruthy();
+  expect(firstScriptNonce).toBe(firstStyleNonce);
+
+  const second = await request.get("/api/auth/session");
+  const secondCsp = second.headers()["content-security-policy"] ?? "";
+  const [, secondScriptNonce] =
+    NONCE_PATTERN.exec(secondCsp.match(/script-src[^;]+/)?.[0] ?? "") ?? [];
+  expect(secondScriptNonce).toBeTruthy();
+  expect(secondScriptNonce).not.toBe(firstScriptNonce);
+});
+
 test("SPEC-reset-and-test-support §2.6: a reset-invalidated session redirects to /login?reason=reset", async ({
   request,
 }) => {

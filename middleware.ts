@@ -36,6 +36,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const now = new Date();
   const { pathname, search } = request.nextUrl;
   const requestId = crypto.randomUUID();
+  const nonce = crypto.randomUUID();
 
   const isApi = pathname.startsWith("/api/");
   const isRoot = pathname === "/";
@@ -81,7 +82,13 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   } else if (!isApi && AUTH_PAGES.test(pathname) && authenticated) {
     response = NextResponse.redirect(new URL("/overview", request.url), 302);
   } else {
-    response = NextResponse.next();
+    // Next.js reads the nonce back out of this request header while rendering (ADR-0006,
+    // content-security-policy.md's "How nonces work in Next.js") and applies it to its own
+    // inline RSC-payload scripts, framework scripts and inline styles automatically — no
+    // per-tag wiring needed on our side for anything Next itself emits.
+    const forwardedHeaders = new Headers(request.headers);
+    forwardedHeaders.set("x-nonce", nonce);
+    response = NextResponse.next({ request: { headers: forwardedHeaders } });
   }
 
   // Skip the reissue on logout (and login, which seals its own fresh cookie) — otherwise an
@@ -106,9 +113,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     response.headers.set("Cache-Control", "no-store");
   }
   response.headers.set(
-    // ADR-0006, 2026-09-23 amendment: no inline nonce — R1 has no inline <script>.
+    // ADR-0006, 2026-09-23 amendment (restored): Next's own RSC-payload scripts and inline
+    // styles are inline on every server-rendered page, so both script-src and style-src need
+    // the nonce, not just script-src.
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self'; frame-ancestors 'none'",
+    `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; frame-ancestors 'none'`,
   );
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("X-Content-Type-Options", "nosniff");

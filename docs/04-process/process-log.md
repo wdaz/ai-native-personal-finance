@@ -1106,3 +1106,19 @@ security trade-off, the agent did not re-decide it alone — the corrected facts
 options went back to the owner in the same turn the review landed.
 
 `npm run test:all` green after the fix pass: 478 unit, 38 API, 3 E2E.
+
+### Addendum 2 — C2 resolved: CSP nonce restored (same day)
+
+The owner asked what CSP and a nonce actually do before deciding anything on C2 — answered
+plainly (a nonce lets Next's own inline scripts run while still blocking an attacker's). Once
+it was clear the "no inline script" premise was wrong (Next's RSC payload and inline styles
+are inline on every server-rendered page, confirmed by the review) and that restoring the
+nonce costs this app nothing worth trading (every session-aware page is already dynamically
+rendered), the owner approved restoring it: "et. agentlər etsin" (do it, let agents do it).
+`middleware.ts` now generates a fresh nonce per request, forwards it via `x-nonce` (Next
+applies it automatically to its own inline scripts/styles), and sets both `script-src` and
+`style-src` with `'nonce-<value>'`. ADR-0006 gets a new dated amendment (2026-09-23 (2))
+superseding the earlier no-nonce one, kept for the record rather than deleted; backlog.md
+(v1.15) hands T-06 the exact `headers()` read pattern. `npm run test:all` green again after:
+478 unit, 39 API (one new test proving the nonce differs per request and matches across both
+directives), 3 E2E.
