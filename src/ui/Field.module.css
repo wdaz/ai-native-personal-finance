@@ -1,0 +1,57 @@
+/*
+ * design-tokens.md "Component states": inputs — beige-500 border, grey-500 on hover, grey-900
+ * when focused; helper text preset 5, grey-500, right-aligned; error text preset 5, red.
+ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-50);
+}
+
+.label {
+  color: var(--color-grey-500);
+}
+
+.control {
+  position: relative;
+  display: flex;
+}
+
+.input {
+  flex: 1;
+  min-inline-size: 0;
+  padding: var(--spacing-150) var(--spacing-250);
+  border: var(--border-width) solid var(--color-beige-500);
+  border-radius: var(--radius-100);
+  background: var(--color-white);
+  color: var(--color-grey-900);
+  font: var(--text-preset-4);
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--color-grey-500);
+}
+
+.input:focus {
+  border-color: var(--color-grey-900);
+}
+
+.input:disabled {
+  color: var(--color-grey-300);
+}
+
+/* Room for a trailing control: its inset, its width, the gap before the text. */
+.withTrailing {
+  padding-inline-end: calc(var(--spacing-250) + var(--spacing-200) * 2);
+}
+
+.helper {
+  margin: 0;
+  color: var(--color-grey-500);
+  text-align: end;
+}
+
+.error {
+  margin: 0;
+  color: var(--color-red);
+}
