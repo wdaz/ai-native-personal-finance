@@ -1,7 +1,8 @@
 # 0004 — WebMCP adapter: one module, page-scoped registries, polyfill baseline, client-side confirmation
 
-- Status: **Accepted** (clarified 2026-09-20) · Date: 2026-09-13
+- Status: **Accepted** (clarified 2026-09-20, 2026-09-23) · Date: 2026-09-13
 - Clarification 2026-09-20 (review S-08/S-21/S-22): tool `structuredContent` is the API DTO unchanged (integer cents) plus `{ currency: "USD", unit: "cents" }`; the adapter dispatches one `toolchange` per completed batch on `document` and on the `ModelContext` object; registration carries a generation counter so an unmount cancels pending registration. · Author(s): Agent (proposal; carries forward the prior attempt's ADR-0003), Owner (decisions of 2026-09-13)
+- Clarification 2026-09-23 (T-04 plan gate, finding F1): the JSON Schema conversion is Zod 4's own `z.toJSONSchema(schema, { io: "input" })`, not `zod-to-json-schema` — that package returns an empty schema for a Zod 4 object with no error (evidence E7, `docs/04-process/plans/2026-09-23-T-04.md`). `z.toJSONSchema`'s default `reused: "inline"` behaviour already inlines every repeated sub-schema instead of writing a `$ref`, which is what `zod-to-json-schema`'s `$refStrategy: "none"` asked for — no extra option is needed for a tool's flat input object (evidence E17, same plan).
 - Driven by: NFR-W1–W9, US-38–US-41, research note (F1–F3, F8, F9), owner decisions R-16 (client-side confirmation) and R-23 (page-scoped)
 
 ## Context
@@ -11,7 +12,7 @@ The spec entry point is `document.modelContext` (draft 2026-09-04); it was renam
 `src/webmcp/` contains:
 
 - `adapter.ts` — `getModelContext()`: returns `document.modelContext` if present at first call (**mode = native**); otherwise dynamically imports `@mcp-b/webmcp-polyfill`, installs it (**mode = polyfill**); if `WEBMCP_MODE=off` or the import fails, returns `null` (**mode = off**). Exposes `register(tools)`, `unregisterAll()`, `mode()`. After registration it sets `document.documentElement.dataset.webmcp = "ready"` and dispatches `toolchange`. No `navigator.modelContext` fallback.
-- `tools/<page>.ts` — one registry per page (`overview`, `transactions`, `budgets`, `pots`, `recurring-bills`), each exporting `ToolDefinition[]` built from the shared Zod schemas (`zod-to-json-schema`) with annotations: read → `readOnlyHint`, mutating/delete → `consequentialHint`, user-text outputs → `untrustedContentHint`. Names per spec charset; descriptions ≤ 200 chars; every string input has `maxLength`.
+- `tools/<page>.ts` — one registry per page (`overview`, `transactions`, `budgets`, `pots`, `recurring-bills`), each exporting `ToolDefinition[]` built from the shared Zod schemas (`z.toJSONSchema`) with annotations: read → `readOnlyHint`, mutating/delete → `consequentialHint`, user-text outputs → `untrustedContentHint`. Names per spec charset; descriptions ≤ 200 chars; every string input has `maxLength`.
 - `WebMcpProvider` (client component) mounted in each page's client layout: on mount `register(pageTools)`, on unmount `unregisterAll()`. Nothing is registered on the login page.
 - Tool `execute` functions call the same `fetch` wrappers the UI uses (`src/shared/api-client.ts`), never Prisma. Results are structured content (`{ content: [{ type: "text", text: JSON.stringify(dto) }], structuredContent: dto }`); errors are `{ isError: true, code, message }` — never thrown.
 - **Delete flow:** `delete_pot({ id })` → adapter dispatches an app event → the page opens the same `ConfirmDeleteDialog` the UI uses → user confirms → client calls `DELETE /api/pots/:id` → tool resolves `{ deleted: true }`; cancel/abort → `{ code: "cancelled" }`; second call while open → `{ code: "busy" }`; unknown id → `{ code: "not_found" }`. The server sees a normal delete (owner decision R-16).
