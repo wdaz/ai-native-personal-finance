@@ -1,0 +1,75 @@
+/*
+ * SPEC-app-shell §2.2–2.3 and the design export's sidebar: grey-900, corners 0 16 16 0, the
+ * logo block padded 40/32, the nav column with a 24 px right gutter (8 px minimised), 24 px
+ * between the blocks and below the last. Hidden below 1024 px (§2.4).
+ */
+.sidebar {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    position: sticky;
+    inset-block-start: 0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: var(--spacing-300);
+    inline-size: var(--sidebar-width);
+    block-size: 100vh;
+    padding-block-end: var(--spacing-300);
+    overflow: hidden auto;
+    border-radius: 0 var(--radius-200) var(--radius-200) 0;
+    background: var(--color-grey-900);
+  }
+
+  .collapsed {
+    inline-size: var(--sidebar-width-min);
+  }
+}
+
+/* Plan D5: only a toggle the user made animates; restoring the stored state does not. */
+.animated {
+  transition: inline-size var(--duration-sidebar) ease;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-500) var(--spacing-400);
+  color: var(--color-white);
+}
+
+.nav {
+  flex: 1;
+}
+
+.nav,
+.footer {
+  padding-inline-end: var(--spacing-300);
+}
+
+.collapsed .nav,
+.collapsed .footer {
+  padding-inline-end: var(--spacing-100);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-50);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated {
+    transition: none;
+  }
+}
