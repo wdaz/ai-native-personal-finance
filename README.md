@@ -54,7 +54,7 @@ cp .env.example .env.local      # local settings; DATABASE_URL already points at
 docker compose up -d --wait     # Postgres 18 on localhost:5432
 npm run db:reset                # apply migrations, then load the seed
 npm run dev                     # develop on http://localhost:3000
-npm run test:all                # secret scan, lint, format, typecheck, unit, API and E2E
+npm run test:all                # secret scan, lint, format, typecheck, unit + coverage, traceability, API, E2E
 ```
 
 `.npmrc` sets `strict-allow-scripts=true`; if `npm ci` stops with `ESTRICTALLOWSCRIPTS`, review
@@ -96,11 +96,13 @@ commit either way.
 | `npm run typecheck`           | `tsc --noEmit`, strict                                                                                           |
 | `npm run secrets:scan`        | Gitleaks on all commit diffs and messages — first in `test:all`                                                  |
 | `npm test`                    | Vitest — `tests/unit`                                                                                            |
+| `npm run test:coverage`       | `npm test` with the coverage gate: at least 90 % of statements in `src/domain` (`vitest.thresholds.json`)        |
+| `npm run traceability`        | Every Release 1 story id (`docs/03-specs/release-1-stories.txt`) is named in a test title (NFR-T2)               |
 | `npm run test:api`            | Playwright request-context tests — `tests/api`, one worker, against the app with `APP_ENV=test` and the database |
 | `npm run db:reset`            | `prisma migrate deploy`, then the seed (`prisma/seed.ts`)                                                        |
 | `npm run db:drift`            | `prisma migrate diff`, migrated database vs `prisma/schema.prisma`; exit 2 on drift, also run by `test:api`
 | `npm run seed:figures`        | SPEC-overview §4.3 printed from `prisma/data.json` (`scripts/seed-figures.ts`) — checked by `npm test`           |
-| `npm run test:e2e`            | Playwright on Chromium, Firefox and WebKit — `tests/e2e`, one worker, each test from a reset; CI runs Chromium  |
+| `npm run test:e2e`            | Playwright on Chromium, Firefox and WebKit — `tests/e2e`, one worker, each test from a reset; CI runs all three |
 | `npm run build` / `npm start` | Production build and server                                                                                      |
 
 Copy `.env.example` to `.env.local` before running anything that touches the database or
