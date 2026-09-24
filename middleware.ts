@@ -170,6 +170,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("X-Content-Type-Options", "nosniff");
+  // ADR-0006, amendment (5): a document served without this header reports
+  // `originAgentCluster === false` in Firefox and WebKit, and @mcp-b/webmcp-polyfill@5.1.0
+  // (validateOriginAgentCluster) then throws SecurityError from registerTool, getTools and
+  // executeTool — no WebMCP tool works there. Chromium's default is already true.
+  response.headers.set("Origin-Agent-Cluster", "?1");
 
   return response;
 }

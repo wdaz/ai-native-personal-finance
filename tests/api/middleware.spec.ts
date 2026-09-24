@@ -194,3 +194,18 @@ test("SPEC-reset-and-test-support §2.6: a reset-invalidated session redirects t
   expect(location).toContain("reason=reset");
   expect(location).toContain("next=%2Ftransactions");
 });
+
+test("ADR-0006 (5): every response asks for its own agent cluster, so Firefox and Safari can run the WebMCP polyfill", async ({
+  request,
+}) => {
+  for (const path of ["/login", "/signup", "/no-such-page", "/api/auth/session"]) {
+    const response = await request.get(path);
+    expect(response.headers()["origin-agent-cluster"], path).toBe("?1");
+  }
+  await request.post("/api/auth/login", {
+    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
+  });
+  const overview = await request.get("/overview");
+  expect(overview.status()).toBe(200);
+  expect(overview.headers()["origin-agent-cluster"], "/overview").toBe("?1");
+});
