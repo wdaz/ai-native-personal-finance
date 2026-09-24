@@ -2942,3 +2942,47 @@ them too").
   leaves 2 failures and fails `toBe(0)`), and the "session reflects login state" test and
   `tests/api/admin-reset.spec.ts`'s session test (each asserts `authenticated: true` right after).
 - **Next:** the owner reviews and merges; T-14.
+
+## 2026-09-24 — Phase 5: the first two CodeQL alerts, both in tests
+
+- **Phase:** 5 (Build the slice), Release 1 — a small test-only fix after T-13.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5)
+- **Trigger:** the owner sent the link to code-scanning alert #1. CodeQL default setup (JS/TS
+  and Actions) first analysed `main` on 2026-09-24 and reported two open alerts, both
+  classified "test" and both "high" by rule, not by reach — neither file ships.
+- **Prompt(s):** none — the conversation itself.
+- **Produced:** branch `test/codeql-alerts`:
+  - `tests/api/middleware.spec.ts` — alert #1, `js/bad-tag-filter` ("does not match upper case
+    `<SCRIPT>` tags"): `expectNotFoundUnderCsp`'s `<script>` and `<style>` tag scans and its
+    `src=` filter are case-insensitive, as the browser is.
+  - `tests/unit/ui/overview/ThemeBar.test.tsx` — alert #2, `js/incomplete-sanitization`:
+    `ruleColour` escapes every RegExp metacharacter instead of only `"`.
+  - this entry.
+- **What the agent got right:** measured old against new on scratch input before changing
+  anything. Alert #1 was a real false pass: the old scan reported no violation for an
+  unnonced `<SCRIPT>`. Making only the tag regex case-insensitive would have broken the test
+  the other way — `<SCRIPT SRC="/a.js">` then counts as inline, because the `src=` filter still
+  missed `SRC=` — so both carry `i`. Alert #2 changes no regex that runs today: the old
+  `'\\"'` was an identity escape inside the RegExp source (it matches `"` either way), and the
+  new escape yields the same source for all 15 `THEMES`; it only stops a future theme with a
+  metacharacter (`A+B`) from missing its own rule (old: `undefined`, new: `a-b`). With the
+  change: `ThemeBar.test.tsx` 18 passed, `middleware.spec.ts` 14 passed against a local
+  `next build && next start` (the two 404 tests included, so the wider scan finds no false
+  match in Next's markup); `typecheck`, `lint`, `format:check` clean.
+- **What the agent got wrong or missed:** nothing found yet; CI's `API tests (Postgres)` job is
+  the proof on Linux.
+- **Owner changes and reasoning:** none yet. Fixing rather than dismissing follows the owner's
+  preference for zero open advisories over accepted ones; dismissing an alert stays the
+  owner's call.
+- **Disagreements:** none.
+- **Lessons for the process:** a scanner's finding in a test is still worth reading as a test
+  finding — here "does not match `<SCRIPT>`" meant "passes when it should fail". Fix the
+  sibling filter in the same change, or the fix inverts the failure.
+- **Not changed here, for the owner:** the repository is public (GitHub records it since
+  2026-09-20) and CodeQL default setup, secret scanning, push protection and Dependabot
+  security updates are on. Two texts no longer match that state: the `secret scan` job's
+  comment in `.github/workflows/ci.yml` ("code scanning needs GitHub Code Security,
+  unavailable while the repository is private") and T-16's backlog row, which lists the flip
+  and those settings as still to do. Reconciling them is T-16's.
+- **Next:** the owner reviews and merges; the alerts close when the fix reaches `main`'s next
+  CodeQL analysis; T-14.
