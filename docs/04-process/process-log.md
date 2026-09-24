@@ -2067,7 +2067,9 @@ them too").
 - **Prompt(s):** none recorded as a file — the two messages above are the whole brief.
 - **Produced:** `src/server/csp.ts` (`buildCsp`); `middleware.ts` calls it; `tests/unit/server/csp.test.ts`
   (12 tests); one API test in `tests/api/middleware.spec.ts`; ADR-0006 amendment 2026-09-24 (4),
-  **Proposed**; `docs/03-specs/tech-debt.md` v1.5 (TD-6 "Fix in review"); this entry.
+  **Proposed**; `docs/03-specs/tech-debt.md` v1.5 (TD-6 "Fix in review"); a README note under
+  "Run locally" (the development policy is relaxed, the shipped one is checked by the
+  production-build suites); this entry.
 - **What the agent got right:** the question was vague, so it found the cause before proposing
   anything — the CSP has no `'unsafe-eval'`, and `next dev` needs it — and found that TD-6
   already recorded it, with the owner's own console paste. It did not change the policy until
@@ -2097,4 +2099,6 @@ them too").
   **Not run:** the E2E suites (Chromium/Firefox/WebKit) — they run the production build, whose
   policy is unchanged and pinned; and no server-side render error was provoked under `next dev`,
   so React's `eval` path for error stacks is covered by the policy but was not exercised.
+- **Owner check:** the owner asked for the app to be run locally ("local run et. yoxlayım") and
+  checks it themselves under `npm run dev`; their result is not recorded here.
 - **Next:** the owner accepts or amends ADR-0006 (4); then the PR merges and TD-6 is marked Closed.

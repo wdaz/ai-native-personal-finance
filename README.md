@@ -60,6 +60,14 @@ npm run test:all                # secret scan, lint, format, typecheck, unit, AP
 (SPEC-reset-and-test-support §2.5). The API and E2E tests reset the same database; it holds
 demo data only.
 
+`npm run dev` sends a **relaxed** Content-Security-Policy, so the console stays free of the
+`eval()` and inline-style errors Next's own development tooling would otherwise raise: under
+`next dev` only, `script-src` adds `'unsafe-eval'` and `style-src` is `'self' 'unsafe-inline'`
+(ADR-0006, amendment 2026-09-24 (4); `src/server/csp.ts`). The policy that ships is the
+strict one, and the API and E2E suites run it against `next build && next start` (ADR-0003) —
+so a CSP violation of your own code shows up there, not under `npm run dev`. To see the
+shipped policy by hand: `npm run build && npm run start`.
+
 `npm ci` does not download the Playwright browsers, so `playwright install` is
 a one-off after the install on each machine; without it the browser tests stop
 at *Executable doesn't exist*.
