@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -84,7 +84,9 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   response) — submit with `.click()`. In Chromium and Firefox a clicked button keeps focus while
   it is disabled, so it is still focused when the form re-enables, and the assertion passes
   whether or not the code moves focus. Only WebKit, where focus drops to `<body>`, tests the call —
-  and CI runs Chromium only until T-13.
+  and CI runs Chromium only until T-13. (Update 2026-09-24: since T-13's Task 10, CI runs Firefox
+  and WebKit as well; the first CI run of those legs is the evidence for Linux, because only
+  macOS was measured locally.)
 - **Risk:** someone removes the focus call; CI stays green; a keyboard user on Safari lands on
   `<body>` after the error and restarts from the top of the page. `npm run test:all` (WebKit
   included) would still catch it locally.
@@ -95,8 +97,9 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   button (the reviewer measured this). T-13's WebKit CI job also closes the gap.
 - **Closed:** 2026-09-24, T-13 (`task/T-13-ci-hardening`; the PR number is added when it is
   opened) — the four tests submit with `press("Enter")` in the password field. Proven: with
-  the three focus calls neutralised (`LoginForm.tsx` — the 429/network `submitRef.current?.focus()`
-  deleted and the 401/other ternary made `passwordRef : passwordRef` — and `SignupForm.tsx`'s
+  the three focus calls neutralised (`LoginForm.tsx` — the network-failure
+  `submitRef.current?.focus()` (line 78) deleted and the 401-vs-other ternary (line 94, which
+  serves the 429) made `passwordRef : passwordRef` — and `SignupForm.tsx`'s
   `submitRef.current?.focus()` deleted), all four fail on Chromium with `Expected: focused` /
   `Received: inactive` on the Login and Create Account buttons; restored, all four pass on
   Chromium, Firefox and WebKit.
