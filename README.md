@@ -94,7 +94,7 @@ commit either way.
 | `npm run lint`                | ESLint, including the ADR-0002 import boundaries                                                                 |
 | `npm run format:check`        | Prettier                                                                                                         |
 | `npm run typecheck`           | `tsc --noEmit`, strict                                                                                           |
-| `npm run secrets:scan`        | Gitleaks on all commit diffs, not messages — first in `test:all`                                                 |
+| `npm run secrets:scan`        | Gitleaks on all commit diffs and messages — first in `test:all`                                                  |
 | `npm test`                    | Vitest — `tests/unit`                                                                                            |
 | `npm run test:api`            | Playwright request-context tests — `tests/api`, one worker, against the app with `APP_ENV=test` and the database |
 | `npm run db:reset`            | `prisma migrate deploy`, then the seed (`prisma/seed.ts`)                                                        |

@@ -60,6 +60,9 @@ lines are outside the URI form this project uses (Prisma reads `DATABASE_URL`). 
 covers generic high-entropy strings either; that is why T-16 rotates every secret that was
 ever real before the repository goes public, rather than trusting a green scan.
 
-Commit messages and annotated tag messages are never scanned: `gitleaks git` reads diffs
-only (measured on 2026-09-22 in the T-02a final review). A secret typed only into a message
-is outside both the hook and CI.
+`gitleaks git` reads diffs only (measured on 2026-09-22 in the T-02a final review), so a
+secret typed only into a commit or annotated tag message was outside both the hook and CI.
+Since T-13 the history scan (the CI `secret scan` job and `npm run secrets:scan`) also feeds
+every commit message and annotated-tag message to `gitleaks stdin` with this repository's
+config. The pre-commit hook still cannot see a message that is being written; a
+`commit-msg` hook would be needed (out of scope).
