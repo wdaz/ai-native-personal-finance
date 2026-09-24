@@ -1,0 +1,26 @@
+/*
+ * SPEC-webmcp-tools §2.7: "small, non-intrusive" (US-41 AC1). No design source names a size or
+ * colour for this indicator (plan D5) — the row reuses the sidebar footer's own text colour and
+ * spacing rhythm; the dot is a plain circle, same pattern as an avatar's `border-radius: 50%`
+ * (src/ui/overview/TransactionsCard.module.css).
+ */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-150);
+  padding: var(--spacing-100) var(--spacing-400);
+  color: var(--color-grey-300);
+}
+
+.text {
+  font: var(--text-preset-5);
+}
+
+.dot {
+  flex-shrink: 0;
+  display: inline-block;
+  inline-size: var(--spacing-100);
+  block-size: var(--spacing-100);
+  border-radius: 50%;
+  background: var(--color-grey-500);
+}
