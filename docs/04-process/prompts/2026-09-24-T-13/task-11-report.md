@@ -137,4 +137,18 @@ commits not amended). Line numbers were re-read from the files before each edit.
   `npm run format:check` "All matched files use Prettier code style!" (before the commit; only the
   report copy changed after), `npm run typecheck` clean, actionlint `exit=0`.
 - The copy of this report in `docs/04-process/prompts/2026-09-24-T-13/task-11-report.md` was
-  refreshed to this text in a follow-up commit.
+  refreshed to this text in a follow-up commit (`d034674`).
+
+## Fix wave, round 2
+
+Commit `82b8dc3` `docs(process): say which fix rounds had a scoped re-review, and tighten two
+phrases`: the scoped-re-review sentence (Task 3's two fix rounds and the fix round after each
+whole-branch review, PR-A and T-13; other follow-ups covered by the whole-branch review) and "a review
+after each of Tasks 1-10 (Task 11 was covered by the whole-branch review)" in the process-log
+Participants line; the same sentence in `prompts/2026-09-24-T-13.md` (the "each task" phrase does not
+occur there); "will be proved only when `install-scripts.test.ts` case 2 passes on the first CI run";
+backlog T-15 "nine of the ten reviewed tasks". The process-log "Verified" line now ties each secret-scan
+figure to its head: `94b7c3a` 340 commits (reviewer, and again the fix wave), `bb059dc` 341 commits; it
+says heads after `bb059dc` are not recorded there because a record cannot name its own commit.
+Real runs at the new head `82b8dc3`: `npm run secrets:scan` 343 commits scanned, no leaks in the diffs
+(10.94 MB) or the messages (160.39 KB); `npm run format:check` clean; `npm run typecheck` clean.
