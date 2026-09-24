@@ -210,16 +210,20 @@ describe("register/unregisterAll (SPEC §2.2, plan Q1 — AbortController per ge
     context.registerTool.mockImplementationOnce(async () => {
       throw new Error("duplicate name");
     });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
     await adapter.register([fakeTool("broken"), fakeTool("ok")]);
 
     expect(context.registerTool).toHaveBeenCalledTimes(2);
     expect(adapter.registeredTools()).toEqual(["ok"]);
     expect(document.documentElement.dataset.webmcp).toBe("ready");
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]?.[0]).toContain('"broken"');
+    warn.mockRestore();
   });
 });
 
-describe("a rejected registration is reported, not swallowed (T-13 plan Q2)", () => {
+describe("a rejected registration is reported, not swallowed (SPEC-webmcp-tools §2.2, §2.7 v1.0.5)", () => {
   const securityError = () => new DOMException("", "SecurityError");
 
   it("every tool rejected: warns per tool, stays ready, names the failure on <html>, reports unavailable", async () => {
@@ -276,7 +280,52 @@ describe("a rejected registration is reported, not swallowed (T-13 plan Q2)", ()
 
     await adapter.register([fakeTool("a")]); // the mock's default resolves
     expect(document.documentElement.dataset.webmcpError).toBeUndefined();
+    expect(adapter.mode()).toBe("polyfill");
     expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+
+  it("the next register() clears the previous failure without an unregisterAll in between", async () => {
+    const adapter = await freshAdapter({ NEXT_PUBLIC_WEBMCP_MODE: "polyfill" });
+    const { context } = await polyfillReady();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    context.registerTool.mockImplementationOnce(async () => {
+      throw securityError();
+    });
+    await adapter.register([fakeTool("a")]);
+    expect(adapter.mode()).toBe("unavailable");
+    expect(document.documentElement.dataset.webmcpError).toBe("a: SecurityError");
+
+    await adapter.register([fakeTool("a")]); // the mock's default resolves
+
+    expect(document.documentElement.dataset.webmcpError).toBeUndefined();
+    expect(adapter.mode()).toBe("polyfill");
+    expect(adapter.registeredTools()).toEqual(["a"]);
+    warn.mockRestore();
+  });
+
+  it("a superseded generation stays silent: its late rejection neither warns nor sets the error", async () => {
+    const adapter = await freshAdapter({ NEXT_PUBLIC_WEBMCP_MODE: "polyfill" });
+    const { context } = await polyfillReady();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    let rejectFirst: (reason: unknown) => void = () => undefined;
+    context.registerTool.mockImplementationOnce(
+      () =>
+        new Promise<void>((_, reject) => {
+          rejectFirst = reject;
+        }),
+    );
+
+    const first = adapter.register([fakeTool("a")]);
+    await vi.waitFor(() => expect(context.registerTool).toHaveBeenCalledTimes(1));
+    const second = adapter.register([fakeTool("b")]); // aborts the first generation
+    rejectFirst(securityError()); // the first generation's rejection arrives only now
+    await Promise.all([first, second]);
+
+    expect(warn).not.toHaveBeenCalled();
+    expect(document.documentElement.dataset.webmcpError).toBeUndefined();
+    expect(adapter.mode()).toBe("polyfill");
+    expect(adapter.registeredTools()).toEqual(["b"]);
     warn.mockRestore();
   });
 

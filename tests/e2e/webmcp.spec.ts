@@ -219,5 +219,5 @@ test("US-38 US-41: when the runtime refuses every registration the page says so 
     "data-webmcp-error",
     /get_balance: SecurityError/,
   );
-  expect(warnings.join("\n")).toContain('could not register tool "get_balance"');
+  await expect.poll(() => warnings.join("\n")).toContain('could not register tool "get_balance"');
 });
