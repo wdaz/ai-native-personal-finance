@@ -80,7 +80,9 @@ jobs:
           # Prefix the list here with "+" to use these queries and those in the config file.
 
           # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-          # queries: security-extended,security-and-quality
+          # MEASUREMENT (owner request 2026-09-24): security-and-quality, which contains
+          # security-extended, run on this PR to count what it finds before the suite is chosen.
+          queries: security-and-quality
 
       # If the analyze step fails for one of the languages you are analyzing with
       # "We were unable to automatically build your code", modify the matrix above
