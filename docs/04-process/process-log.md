@@ -2509,7 +2509,7 @@ them too").
 - **Trigger:** `/superpowers:writing-plans t-13` after T-12 merged (PR #27, `838e0f5`).
 - **Prompt(s):** none — the session was started by the slash command alone. The execution brief
   is saved under `prompts/2026-09-24-T-13.md` when the plan is executed (plan Task 11) — done on
-  PR #29 (`docs/04-process/prompts/2026-09-24-T-13.md`, with the briefs and reports in a folder of
+  PR #29 (`prompts/2026-09-24-T-13.md`, with the briefs and reports in a folder of
   the same name).
 - **Produced:** `docs/04-process/plans/2026-09-24-T-13.md` (11 tasks plus PR-A, 8 open questions,
   13 findings); this entry. Nothing else in the tree changed: every code block in the plan was
@@ -2553,7 +2553,7 @@ them too").
   all three engines with the change). The owner asked what Q2 meant before answering: it was
   worded around a console warning only, without saying who reads a console — a plan-gate question
   should say who is affected (lesson from T-02a repeated). Mid-session the owner asked
-  for the worktree-bootstrap lesson to be recorded in the progress log and in the owner's notes;
+  for the worktree-bootstrap lesson to be recorded in the process log (the owner said "progress log") and in the owner's notes;
   it is here, in the plan's Global Constraints, and in the Claude memory `worktree-node-setup`.
   (Read "owner's notes" as that memory; if `build-workflow.md`'s rules of thumb was meant, it is an
   Approved document and needs the owner's go-ahead.)
