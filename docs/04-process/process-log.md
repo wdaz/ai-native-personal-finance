@@ -2508,7 +2508,9 @@ them too").
   review of the approach before the plan was written)
 - **Trigger:** `/superpowers:writing-plans t-13` after T-12 merged (PR #27, `838e0f5`).
 - **Prompt(s):** none — the session was started by the slash command alone. The execution brief
-  is saved under `prompts/2026-09-24-T-13.md` when the plan is executed (plan Task 11).
+  is saved under `prompts/2026-09-24-T-13.md` when the plan is executed (plan Task 11) — done on
+  PR #29 (`docs/04-process/prompts/2026-09-24-T-13.md`, with the briefs and reports in a folder of
+  the same name).
 - **Produced:** `docs/04-process/plans/2026-09-24-T-13.md` (11 tasks plus PR-A, 8 open questions,
   13 findings); this entry. Nothing else in the tree changed: every code block in the plan was
   written to the worktree, run and removed again (plan finding F13).
@@ -2542,7 +2544,8 @@ them too").
   `npm run test:coverage` pass. API and E2E additionally need Postgres (`docker compose up -d
   --wait`) and a git-ignored `.env.local` (the main checkout has none; this session wrote one from
   the CI values in `ci.yml`, `\$`-escaping the bcrypt hash as dotenv requires).
-- **Owner changes and reasoning:** at the plan gate — Q2 answered (Q1, Q3–Q8 pending): a failed
+- **Owner changes and reasoning:** at the plan gate — Q2 answered first (the other answers are
+  listed after this paragraph): a failed
   WebMCP registration must be reported even though `data-webmcp` stays `ready`, and a connected
   model must be able to tell WebMCP is unreachable — the plan's Task A2 was rewritten to an
   indicator state, a `data-webmcp-error` attribute and a `console.warn`, with a SPEC amendment,
@@ -2554,8 +2557,22 @@ them too").
   it is here, in the plan's Global Constraints, and in the Claude memory `worktree-node-setup`.
   (Read "owner's notes" as that memory; if `build-workflow.md`'s rules of thumb was meant, it is an
   Approved document and needs the owner's go-ahead.)
+- **Owner answers to Q1–Q8, completed after execution (2026-09-24):** Q1 yes — PR-A is a separate
+  PR (merged as #28); Q2 decided as recorded above; Q3 option A, four legs (Chromium × polyfill and
+  off, Firefox × polyfill, WebKit × polyfill); Q6 yes, the dated ADR-0003 clarification; execution
+  method subagent-driven with Opus 5.5 reviewers. **Q4 = B** (route list and 404 scan), **Q5 = yes**
+  (message scan), **Q7** keep the Prisma overrides with the removal note to T-16 and **Q8** deny
+  `fsevents` were taken as the recommended answers after the owner's message about "the four
+  questions" and then "start"; the owner did not confirm them one by one, so they are **open for
+  confirmation**, as the PR #29 description says. The cost if any is wrong is rework of Tasks 6, 7
+  and 8 only.
 - **Disagreements:** one open point, not a disagreement with the owner — whether the trial
   files above breach the plan gate (lesson 4). The plan's header says so too.
+- **Owner decisions still open after execution:** (1) whether writing and running the trial files
+  before the plan-gate answer breaches `build-workflow.md` §2 (lesson 4 proposes the wording "scratch
+  verification in the planning worktree, nothing kept"); (2) whether the worktree-bootstrap rule
+  (lesson 1) belongs in `build-workflow.md`'s rules of thumb, an Approved document that only the
+  owner changes; (3) confirmation of Q4, Q5, Q7 and Q8 above.
 - **Lessons for the process:**
   1. Worktree bootstrap is a fixed two-command step; the plan's first task (and any brief that
      runs tests in a worktree) states it. Whether it belongs in `build-workflow.md`'s rules of
@@ -2573,5 +2590,12 @@ them too").
      edited five tracked files in its own worktree. If the owner wants that allowed, §2 should say
      "scratch verification in the planning worktree, nothing kept"; if not, the plan's code stays
      unrun until execution.
-- **Next:** the owner answers Q1–Q8. Then PR-A (`fix/origin-agent-cluster`) is opened from
-  `origin/main`, merged by the owner, and `task/T-13-ci-hardening` executes Tasks 1–11.
+- **Next (written at the plan gate):** the owner answers Q1–Q8. Then PR-A (`fix/origin-agent-cluster`)
+  is opened from `origin/main`, merged by the owner, and `task/T-13-ci-hardening` executes Tasks 1–11.
+- **Outcome (2026-09-24, after execution):** the plan was executed the same day. PR-A is PR #28, merged
+  (`99298f9` on `main`); T-13 is PR #29, a draft on `task/T-13-ci-hardening` (Tasks 1–11, rebased onto
+  `99298f9`). PR-A and T-13 ran in parallel except Task 10, as planned. The execution entry, "2026-09-24
+  — Phase 5: T-13 CI hardening — execution", is on PR #29, not here. What differed from this plan is
+  listed in the plan's section "Execution — what differed from this plan (2026-09-24)". Next: the
+  owner reviews and merges #29 and this documentation PR and answers the open decisions above, and the
+  first CI run on Firefox and WebKit is the evidence for the Linux legs.
