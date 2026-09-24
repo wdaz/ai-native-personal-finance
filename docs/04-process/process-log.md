@@ -2163,3 +2163,38 @@ them too").
      available" from `docker compose` alone.
 - **Next:** T-12 (R1 tools, `get_balance`/`get_overview_summary`, via-marker logging,
   `src/shared/api-client.ts`, E2E in polyfill/off modes) per backlog v1.20.
+
+### Addendum — 2026-09-24, PR #24's CI: a real regression in 4 pre-existing E2E tests
+
+- **Trigger:** the owner asked for a PR ("PR yarat"); PR #24 opened and subscribed. CI's "E2E
+  (Chromium)" job failed on the very first push (`4b6a70b`): 4 of the 90 `tests/e2e` tests —
+  none of them new, all pre-existing `ResetBanner` tests in `app-shell.spec.ts` and
+  `app-shell-keyboard.spec.ts`.
+- **Root cause, this task's own:** `ResetBanner` has always been `role="status"` with no
+  distinguishing name or testid, and every one of these tests located it with a bare
+  `page.getByRole("status")`, correct as long as it was the only such element on the page. T-11's
+  `AgentToolsStatus` indicator is also `role="status"` (SPEC-webmcp-tools §2.7) and is now
+  mounted on every authenticated page — a second, independent live region the pre-existing
+  locators could not distinguish from the banner, failing with a strict-mode violation
+  ("resolved to 2 elements") or, worse, a `toHaveCount(0)` that could never pass once the
+  indicator was always present. Confirmed from the CI job's own log (`get_job_logs`), not
+  guessed from the diff.
+- **Fixed:** `TEST_IDS.resetBanner` added and set as `data-testid` on `ResetBanner`'s root
+  `div` — exactly the case ADR-0003 names a `data-testid` fallback for ("the accessible tree is
+  ambiguous"), not a new exception to it. All 7 occurrences across the two spec files (more than
+  the 4 CI reported failing; the rest happened to pass by accident of ordering/content, not by
+  being correct) switched from `page.getByRole("status")` to
+  `page.getByTestId(TEST_IDS.resetBanner)`.
+- **Verified, not just reasoned:** reproduced locally first (same 4 failures, same error text,
+  against a real Postgres and a real Chromium at `/opt/pw-browsers/chromium` via a session-local
+  `playwright.local.config.ts`, deleted before committing), then re-ran the same two spec files
+  after the fix — 30/30 passed — then the full `tests/e2e` suite — 90/90 passed. `npx tsc
+  --noEmit`, `npm run lint`, `npm run format:check`, `npm test` (796), `npm run test:api` (91)
+  all re-run and green.
+- **Lesson:** a `role="status"` (or any non-unique ARIA role) locator with no name filter is an
+  implicit "there is exactly one of these" assumption that a later, unrelated task can silently
+  break by adding a second live region to the same page — this is exactly why ADR-0003 keeps
+  `data-testid` as a named fallback rather than leaving every locator to roles alone; a bare-role
+  locator on a shared layout (the shell, not a single feature's own page) is worth a second look
+  the next time one is added.
+- **Pushed:** `fix(e2e): T-11's status role collides with the reset banner's own locators`.
