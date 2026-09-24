@@ -33,6 +33,10 @@ Default environment is `node`; a file that needs a DOM starts with
 
 Run: `npm test`.
 
+`coverage-gate.test.ts` (T-13) runs a nested Vitest on `tests/fixtures/coverage-gate/` and
+expects the gate to fail; `childEnv()` strips `VITEST*`, `npm_config_*` and `NODE_V8_COVERAGE`
+for child processes.
+
 T-12: `webmcp/` gains `tool-result.test.ts` (the status → code mapping; `toolError` omits `issues`
 and `retryAfter` when absent), `overview-tools.test.ts` (both tools' `execute` against a stubbed
 `fetch`: success shape, each error code, never rejects), `registry.test.ts` (iterates

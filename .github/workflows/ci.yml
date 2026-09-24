@@ -41,8 +41,8 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Unit tests
-        run: npm test
+      - name: Unit tests and the coverage gate (src/domain >= 90 % statements)
+        run: npm run test:coverage
 
   api:
     name: API tests (Postgres)
