@@ -2542,7 +2542,14 @@ them too").
   `npm run test:coverage` pass. API and E2E additionally need Postgres (`docker compose up -d
   --wait`) and a git-ignored `.env.local` (the main checkout has none; this session wrote one from
   the CI values in `ci.yml`, `\$`-escaping the bcrypt hash as dotenv requires).
-- **Owner changes and reasoning:** at the plan gate — pending (Q1–Q8). Mid-session the owner asked
+- **Owner changes and reasoning:** at the plan gate — Q2 answered (Q1, Q3–Q8 pending): a failed
+  WebMCP registration must be reported even though `data-webmcp` stays `ready`, and a connected
+  model must be able to tell WebMCP is unreachable — the plan's Task A2 was rewritten to an
+  indicator state, a `data-webmcp-error` attribute and a `console.warn`, with a SPEC amendment,
+  and its code run in the worktree (85 unit tests; the E2E fails on the old adapter and passes on
+  all three engines with the change). The owner asked what Q2 meant before answering: it was
+  worded around a console warning only, without saying who reads a console — a plan-gate question
+  should say who is affected (lesson from T-02a repeated). Mid-session the owner asked
   for the worktree-bootstrap lesson to be recorded in the progress log and in the owner's notes;
   it is here, in the plan's Global Constraints, and in the Claude memory `worktree-node-setup`.
   (Read "owner's notes" as that memory; if `build-workflow.md`'s rules of thumb was meant, it is an
