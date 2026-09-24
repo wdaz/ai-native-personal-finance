@@ -36,6 +36,10 @@ Playwright browser tests, one journey per story, on Chromium, Firefox and WebKit
   counts transaction avatars specifically — the sidebar logo and the donut are both
   `<svg role="img">`, not `<img>`.
 
+- `axe-routes.spec.ts` (T-13) scans every route once per engine, the 404 page included, and fails
+  on a serious or critical axe violation. The route list is `tests/fixtures/a11y-routes.ts`;
+  `tests/unit/a11y-routes.test.ts` fails when a page under `app/` is not on it.
+
 Run: `npm run test:e2e`.
 
 - `webmcp.spec.ts` and `webmcp-off.spec.ts` (T-12): the two Release 1 tools in a real browser.
