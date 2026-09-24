@@ -2429,7 +2429,8 @@ them too").
   it is here, in the plan's Global Constraints, and in the Claude memory `worktree-node-setup`.
   (Read "owner's notes" as that memory; if `build-workflow.md`'s rules of thumb was meant, it is an
   Approved document and needs the owner's go-ahead.)
-- **Disagreements:** none.
+- **Disagreements:** one open point, not a disagreement with the owner — whether the trial
+  files above breach the plan gate (lesson 4). The plan's header says so too.
 - **Lessons for the process:**
   1. Worktree bootstrap is a fixed two-command step; the plan's first task (and any brief that
      runs tests in a worktree) states it. Whether it belongs in `build-workflow.md`'s rules of
@@ -2440,8 +2441,12 @@ them too").
      all three engines' results until CI runs them (T-13 Task 10).
   3. A test file that contains fake test calls is itself scanned by the traceability check — build
      fixtures from parts.
-  4. Run the plan's code before the gate: doing so here corrected six defects the first draft
-     carried (plan F13), and T-12's lesson 4 (format what you paste) was applied by running
-     Prettier on the files.
+  4. *Proposal, owner decides:* run the plan's code before the gate. Doing so here corrected
+     six defects the first draft carried (plan F13), and applied T-12's lesson 4 (format what you
+     paste). It also conflicts with `build-workflow.md` §2 ("no write tool runs before" the
+     owner's reply): the session wrote, ran and removed about twenty trial files and temporarily
+     edited five tracked files in its own worktree. If the owner wants that allowed, §2 should say
+     "scratch verification in the planning worktree, nothing kept"; if not, the plan's code stays
+     unrun until execution.
 - **Next:** the owner answers Q1–Q8. Then PR-A (`fix/origin-agent-cluster`) is opened from
   `origin/main`, merged by the owner, and `task/T-13-ci-hardening` executes Tasks 1–11.
