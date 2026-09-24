@@ -2840,3 +2840,65 @@ them too").
   CI run against the T-16 hand-off list in `backlog.md` v1.22, accepts or amends the ADR-0003 clarification,
   and merges; the plan branch's docs PR (status line, planning entry) appends to this file's end
   too, so expect a trivial conflict there; T-14 next, with the npm 11.19 check.
+
+## 2026-09-24 — Phase 5: T-13 follow-ups — the owner's decisions after the merge
+
+- **Phase:** 5 (Build the slice), Release 1 — after T-13 (PRs #28, #29, #30 merged; `main` at
+  `3558005`).
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5)
+- **Trigger:** the T-13 entries left owner decisions open (the planning entry's "Owner decisions
+  still open after execution", the execution entry's "Next"). The owner asked for them to be
+  explained plainly first ("Detallı və aydın yaz sorğuları anlamıram yoxsa." — "Write in detail and
+  clearly, otherwise I do not understand the requests."), then answered.
+- **Prompt(s):** none — the conversation itself.
+- **Produced:** branch `chore/T-13-followups`:
+  - `docs/02-architecture/adr/0003-testing-strategy.md` — the 2026-09-24 traceability clarification
+    is **Accepted** (the owner's words quoted in it) with the owner's condition; the "proposed"
+    markers are gone.
+  - `docs/04-process/build-workflow.md` v1.2 — §2 (plan gate) allows scratch verification in the
+    planning worktree, nothing kept; a rule of thumb for the worktree bootstrap.
+  - `docs/03-specs/backlog.md` v1.23 — the blank line that split the T-15 and T-16 rows into a table
+    and a paragraph is gone; T-15 carries the owner's condition on ADR-0003 (Release 2's story list
+    and a release-aware script); T-16's item (4) is updated.
+  - `.github/workflows/ci.yml` — the `verify` job's checkout sets `persist-credentials: false`, like
+    the other four jobs.
+  - this entry.
+- **What the agent got right:** each decision was put where the repository keeps that kind of
+  decision (AGENTS.md §2): the ADR's acceptance in the ADR, the process rules in
+  `build-workflow.md`, the release condition as a hand-off in the backlog row of the task that opens
+  Release 2's spec work.
+- **What the agent got wrong or missed:** the earlier reports asked for these decisions in
+  shorthand ("ADR-0003 clarification is Proposed", "plan-gate decisions", "separate small PRs")
+  without saying what each meant, why it was asked or what answer was needed; the owner could not
+  act on them. A request to the owner says what the thing is, why it matters, the options, and the
+  agent's recommendation — the lesson T-02a and the T-13 planning entry (Q2) already recorded.
+- **Owner changes and reasoning:**
+  1. ADR-0003's traceability clarification — accepted: "Qəbul edirəm. Amma növbəti releasdə öz
+     əksini tapmalıdır." ("Accepted. But it must be reflected in the next release.") Today
+     `scripts/traceability.ts` names Release 1, its list file and PRD §5's `### Release 1` heading
+     in code (a deferred minor of T-13's review), so Release 2 needs a change there, not only a new
+     list; handed to T-15.
+  2. Scratch verification before the plan gate — option A: "A". The T-13 planning session wrote,
+     ran and removed about twenty trial files in its own worktree before the owner's answer; that
+     caught six defects (plan F13) but broke the letter of §2. §2 now allows it, with "nothing kept"
+     and "the plan says what was run".
+  3. The worktree bootstrap as a rule of thumb — "Bəli" ("Yes").
+  4. Q4 = B, Q5 = yes, Q7 = keep the overrides (removal note to T-16), Q8 = deny `fsevents` —
+     confirmed: "Q4/Q5/Q7/Q8 - təsdiqləyirəm" ("I confirm"). They were taken as the recommended
+     answers at T-13's start; T-13 needs no rework.
+  5. The three small out-of-scope fixes found during T-13: the backlog table — "düzəlt" ("fix");
+     `persist-credentials: false` on `verify` — "düzəlt"; the unchecked logins in
+     `tests/api/middleware.spec.ts` — the owner asked whether it is needed now, since `middleware`
+     is to become `proxy` (TD-2). Answer given: the rename does not touch those tests — they call
+     the app over HTTP (`request.post("/api/auth/login")`, `request.get("/transactions")`) and never
+     import `middleware.ts`, so they keep their meaning after the codemod; the fix (`expect(login.status()).toBe(200)`
+     after each login, as the file's own T-13 test does) is independent of TD-2 and small. Not done
+     here: the owner asked a question, not for the fix; it waits for the owner's answer.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A question to the owner is written for someone who did not follow the session: what, why,
+     options, a recommendation, and the exact answer format — then it gets answered in one message.
+  2. A condition attached to an acceptance ("it must be reflected in the next release") is written
+     into the backlog row of the task that will meet it, or it is lost.
+- **Next:** the owner reviews and merges `chore/T-13-followups`; answers whether the
+  `middleware.spec.ts` login checks should be added now (independent of TD-2) or left; T-14.
