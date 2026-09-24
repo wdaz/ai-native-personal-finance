@@ -1,7 +1,8 @@
 # 0003 — Testing strategy: pyramid, tooling and rules
 
-- Status: **Accepted** (amended; clarified 2026-09-23) · Date: 2026-09-13 · Author(s): Agent (proposal; carries forward the prior attempt's ADR-0002 thinking), Owner (decision)
+- Status: **Accepted** (amended; clarified 2026-09-23; clarification 2026-09-24 proposed, not yet accepted) · Date: 2026-09-13 · Author(s): Agent (proposal; carries forward the prior attempt's ADR-0002 thinking), Owner (decision)
 - Clarification 2026-09-23 (owner decision at the T-06 plan gate, Q4): E2E authenticates **per test** through `loginViaApi` (`tests/fixtures/e2e.ts`) — `POST /api/auth/login` from the page's own request context, which shares the browser's cookies, after the test's reset — instead of one stored `storageState` per run. A reset ends every session (ADR-0006, 2026-09-20 amendment) and every E2E test starts from one, so a state saved once per run would be dead by the second test.
+- Clarification 2026-09-24 — **Proposed by the agent, awaiting the owner's acceptance** (T-13 plan gate, Q6: the owner answered that the clarification is wanted; its wording is not yet accepted): the traceability script checks the stories of the release being built — `docs/03-specs/release-1-stories.txt`, generated from PRD §5 — instead of every id in `user-stories.md`; an id in a test title that `user-stories.md` does not define also fails it. The next release regenerates the list.
 - Driven by: NFR-T1–T10, NFR-A1–A5, PRD M1/M2/M5, US-38 AC3, research note §Implications 3
 
 ## Context
@@ -20,7 +21,7 @@ Testing is a headline claim (S1). The suite must be readable, traceable to stori
 
 Test data: a `test-support` route (`/api/test/reset`, `/api/test/seed`) exists only when `APP_ENV=test`; a unit test asserts it is absent otherwise. Auth in E2E via ~~a stored `storageState` created once per run~~ a per-test API login after the test's reset (clarification 2026-09-23). E2E targets `next build && next start` on a throwaway Neon branch (or local Postgres in Docker) — never `next dev`.
 
-Commands: `npm test` (unit + component), `npm run test:api`, `npm run test:e2e`, `npm run test:all` (what CI runs). Traceability: a script greps `US-\d\d` across `tests/` and fails CI if any story id from `user-stories.md` is missing.
+Commands: `npm test` (unit + component), `npm run test:api`, `npm run test:e2e`, `npm run test:all` (what CI runs). Traceability: a script greps `US-\d\d` across `tests/` and fails CI if any story id of the release being built (`docs/03-specs/release-1-stories.txt`) is not named in a test title (clarification 2026-09-24, proposed).
 
 ## Alternatives considered
 **A. This pyramid — chosen.**

@@ -48,3 +48,8 @@ and a nested Vitest on `tests/fixtures/coverage-gate/` must fail with the thresh
 `childEnv()` strips `VITEST*`, `npm_config_*` and `NODE_V8_COVERAGE` for child processes. The real
 gate runs only under `npm run test:coverage` (CI, `npm run test:all`); `npm test` runs these
 checks of it, not the gate itself.
+
+T-13: `traceability.test.ts` checks the NFR-T2 scan (`scripts/traceability.ts`): every Release 1 story
+id is in a `test`/`it`/`describe` title of some suite under `tests/`. The scan reads this very file
+too, so its fixtures are built by a `call(fn, title)` helper — a literal `test("US-…")` here would
+name a story no real test names, and mask a missing one.

@@ -44,6 +44,9 @@ jobs:
       - name: Unit tests and the coverage gate (src/domain >= 90 % statements)
         run: npm run test:coverage
 
+      - name: Traceability (NFR-T2, Release 1 stories)
+        run: npm run traceability
+
   api:
     name: API tests (Postgres)
     runs-on: ubuntu-latest
