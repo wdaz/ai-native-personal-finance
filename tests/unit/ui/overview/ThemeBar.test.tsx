@@ -18,7 +18,9 @@ const moduleCss = readFileSync(join(repoRoot, "src/ui/overview/ThemeBar.module.c
  * `--color-red`) would have passed every assertion here.
  */
 function ruleColour(css: string, theme: string): string | undefined {
-  const escaped = theme.replace(/"/g, '\\"');
+  // Every RegExp metacharacter, so a theme name matches only itself (CodeQL
+  // js/incomplete-sanitization, alert #2). No THEMES entry has one today.
+  const escaped = theme.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = new RegExp(
     `\\.bar\\[data-theme="${escaped}"\\]\\s*\\{\\s*background:\\s*var\\(--color-([a-z-]+)\\)`,
   ).exec(css);
