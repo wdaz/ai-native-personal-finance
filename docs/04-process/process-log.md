@@ -2721,11 +2721,10 @@ them too").
      later step.
   7. **Two reviews per risky task were worth it**, but the re-review of a fix found a new
      defect in the fix (Task 3's US-41 title) — a fix to a scanner is itself scanned.
-- **Next:** the controller opens the PR from `task/T-13-ci-hardening` (its description quotes the
-  Definition of Done checklist ticked; GitHub applies the new template only from the default
-  branch, so the agent must paste it) and reads the first CI run against the T-16 hand-off list
-  in `backlog.md` v1.22; after the PR exists, a small commit fills the PR number into TD-4's
-  closing line in `tech-debt.md` (the sentence "the PR number is added when it is opened" is
-  still there; TD-5 shows it gets forgotten); the owner accepts or amends the ADR-0003 clarification,
+- **Next:** the controller opened the draft PR #29 from `task/T-13-ci-hardening` (its description
+  quotes the Definition of Done checklist; GitHub applies the new template only from the default
+  branch, so the agent pasted it) and a small commit then filled the PR number into TD-4's closing
+  line in `tech-debt.md` (TD-5 shows the number gets forgotten otherwise); the owner reads the first
+  CI run against the T-16 hand-off list in `backlog.md` v1.22, accepts or amends the ADR-0003 clarification,
   and merges; the plan branch's docs PR (status line, planning entry) appends to this file's end
   too, so expect a trivial conflict there; T-14 next, with the npm 11.19 check.

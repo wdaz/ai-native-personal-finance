@@ -95,8 +95,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 - **Fix:** submit those four tests with Enter in the last field instead of `.click()` — focus then
   sits in the input, which the form disables, so only the code's focus call can put it on the
   button (the reviewer measured this). T-13's WebKit CI job also closes the gap.
-- **Closed:** 2026-09-24, T-13 (`task/T-13-ci-hardening`; the PR number is added when it is
-  opened) — the four tests submit with `press("Enter")` in the password field. Proven: with
+- **Closed:** 2026-09-24, T-13 (`task/T-13-ci-hardening`, PR #29) — the four tests submit with `press("Enter")` in the password field. Proven: with
   the three focus calls neutralised (`LoginForm.tsx` — the network-failure
   `submitRef.current?.focus()` (line 78) deleted and the 401-vs-other ternary (line 94, which
   serves the 429) made `passwordRef : passwordRef` — and `SignupForm.tsx`'s
