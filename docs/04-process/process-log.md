@@ -2682,6 +2682,18 @@ them too").
   `refs/remotes/origin/*` and tags — every remote branch (including `worktree-t-13-plan` and
   `docs/T-06-plan-v0.3`) and the pull request's merge commit — where locally only local refs were
   measured.
+- **First CI run (added after PR #29 was opened):** GitHub Actions run 36022443021 on head
+  `7c807bf` (event `pull_request`, conclusion success): all eight checks passed — `lint ·
+  typecheck · unit`, `API tests (Postgres)`, `E2E (Chromium, polyfill)`, `E2E (Chromium, off)`,
+  `E2E (Firefox, polyfill)`, `E2E (WebKit, polyfill)`, `npm audit`, `secret scan`. From the verify
+  job's log: the Install step printed no `Unknown project config` line (only an `eslint`
+  deprecation warning) and added 620 packages; the unit step passed 958 tests in 77 files, which
+  includes `install-scripts.test.ts` on the runner; `traceability: all 18 Release 1 stories are
+  named in a test title`. So the risks above resolved as follows: Firefox and WebKit pass on the
+  Linux runner (including WebKit's `Alt+Tab` path and TD-4's four tests), `E2E (Chromium, off)`
+  passed with T-13's new specs, and the drift spec and the message scan passed on the runner. Still
+  not shown by this run: the `concurrency` behaviour (needs a second push to the same PR and two
+  merges to `main`), a native browser other than Playwright's engines, and Vercel's npm (T-14).
 - **Owner changes and reasoning:** the answers to the plan's Q1–Q8, as the controller relayed them:
   Q1 — PR-A stays a separate PR, merged first (the owner's rule since T-02: a defect outside a
   task's scope gets its own small PR); Q2 — a failed WebMCP registration must be reported even
