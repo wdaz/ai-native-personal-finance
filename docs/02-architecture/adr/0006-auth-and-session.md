@@ -1,6 +1,25 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
-- Status: **Accepted** (amended 2026-09-23) · Date: 2026-09-13
+- Status: **Accepted** (amended 2026-09-24) · Date: 2026-09-13
+- Amendment 2026-09-24 (4) — **Accepted by the owner, 2026-09-24** ("Hamısını accept et" —
+  "accept all"; drafted by the agent, accepted after it was explained that a PR is not an
+  acceptance). Owner decision 2026-09-24: TD-6 option (b) — under `next dev`
+  the CSP is relaxed, so the development console stops filling with violations that come from
+  Next's own tooling and a real violation from this repository's code is not lost in them.
+  **In development only** (`process.env.NODE_ENV === "development"`, exact match), `script-src`
+  gains `'unsafe-eval'` (React reconstructs server error stacks in the browser with `eval`) and
+  `style-src` becomes `'self' 'unsafe-inline'` instead of `'self' 'nonce-<value>'` (Next's
+  overlay injects `<style>` tags without a nonce, and a nonce in the list would make browsers
+  ignore `'unsafe-inline'`). Both follow Next's content-security-policy guide, "Development vs
+  Production Considerations". **Everything else is unchanged:** the production policy is the
+  one above, byte for byte; `test`, `production`, unset and any other `NODE_ENV` value get it
+  too (the relaxation is opt-in, so it fails closed). The policy is built by
+  `buildCsp` in `src/server/csp.ts`; `tests/unit/server/csp.test.ts` pins both variants and
+  `tests/api/middleware.spec.ts` pins the production one on a real response of the production
+  build (ADR-0003: the API and E2E suites never run against `next dev`, so the CSP guard keeps
+  guarding the shipped policy). Alternative not chosen: TD-6 option (a) — leave the policy and
+  document the noise in the README. Consequence to watch: the development policy no longer
+  catches an un-nonced inline `<style>` of our own; the production-build suites still do.
 - Amendment 2026-09-23 (3) (owner decision, T-07 plan gate, Q1 (a)): **a logout whose request
   fails still ends the session.** US-03 AC2 says logout always completes client-side, but the
   session cookie is `httpOnly`, so only a response can clear it, and the middleware sends a

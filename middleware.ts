@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { buildCsp } from "@/src/server/csp";
 import { getDb } from "@/src/server/db";
 import { LAST_RESET_AT_HEADER } from "@/src/server/meta";
 import { latestResetAt } from "@/src/server/reset";
@@ -62,7 +63,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // the nonce-source expression (review finding, Copilot High). Base64-encoding it, exactly
   // as Next's own docs do (content-security-policy.md), produces a valid token.
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const csp = `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; frame-ancestors 'none'`;
+  // One policy per environment, built in src/server/csp.ts: the production string is pinned
+  // there and by the API suite; only `next dev` relaxes it (ADR-0006 amendment (4), TD-6).
+  const csp = buildCsp(nonce, process.env.NODE_ENV);
 
   const isApi = pathname.startsWith("/api/");
   const isRoot = pathname === "/";

@@ -2058,6 +2058,64 @@ them too").
   heading and link as DOM siblings, so this is no less precise, just name- instead of
   order-based. Re-verified: `npm test` 758, `test:api` 91, `test:e2e` (chromium) 90.
 
+## 2026-09-24 — Phase 5: TD-6 development variant of the CSP
+
+- **Phase:** 5 (Build the slice), Release 1 — tech debt, not a numbered task.
+- **Participants:** Owner / Agent (Claude Code, local session in a worktree).
+- **Trigger:** the owner asked, verbatim: "niyə local run eval problemi verir" ("why does the
+  local run give an eval problem"), then answered the agent's two options with "b".
+- **Prompt(s):** none recorded as a file — the two messages above are the whole brief.
+- **Produced:** `src/server/csp.ts` (`buildCsp`); `middleware.ts` calls it; `tests/unit/server/csp.test.ts`
+  (12 tests); one API test in `tests/api/middleware.spec.ts`; ADR-0006 amendment 2026-09-24 (4),
+  (Proposed when drafted; accepted by the owner later the same day, see below);
+  `docs/03-specs/tech-debt.md` v1.5 (TD-6 "Fix in review"); a README note under
+  "Run locally" (the development policy is relaxed, the shipped one is checked by the
+  production-build suites); this entry.
+- **What the agent got right:** the question was vague, so it found the cause before proposing
+  anything — the CSP has no `'unsafe-eval'`, and `next dev` needs it — and found that TD-6
+  already recorded it, with the owner's own console paste. It did not change the policy until
+  the owner picked an option, because any policy change is an ADR-0006 amendment. It checked the
+  result on real servers: `next dev` sends the relaxed policy, `next build && next start` sends
+  the unchanged production one.
+- **What the agent got wrong or missed:** the first API run failed 4 tests because it had not
+  set `CRON_SECRET` (the failure text names it) — an environment slip, not a code defect; it
+  first verified only the header, not the console the owner complained about, until the
+  advisor pointed that out; it `cd`-ed out of the worktree into the main checkout
+  mid-session, which the harness refused until it re-entered the worktree; and it first
+  symlinked `node_modules` from the main checkout, which Turbopack rejects ("points out of the
+  filesystem root") — a real `npm ci` was needed for the `next dev` check.
+- **Owner changes and reasoning:** the owner accepted ADR-0006 amendment (4) at 12:25 +04
+  with "Hamısını accept et" ("accept all"), after asking whether opening the PR already counted
+  as acceptance ("PR yaranması bunun təsdiqi sayılmır?") — it does not: `governance.md` gives
+  the owner alone "accepts ADRs" and "merges code", and forbids the agent to mark anything
+  Accepted. The agent recorded the acceptance only on that explicit statement. "All" was read as
+  the one pending amendment (the four earlier ones were already owner decisions); the agent
+  asked no further question and kept the amendment inside ADR-0006, not a new ADR — see the
+  next bullet.
+- **Disagreements:** none.
+- **Lessons for the process:** a dev-only relaxation of a security policy needs a test on the
+  *production* side, not just on the new branch — the API test pins the shipped policy so the
+  relaxation cannot leak; the unit test alone would pass even if `middleware.ts` passed the
+  wrong `NODE_ENV`.
+- **Verified:** `npm test` 770 passed (758 before + the 12 new), `typecheck`, `lint` and
+  `format:check` clean; `npm run test:api` 92 passed (91 before + the new pin test) against a
+  production build and a throwaway Postgres on port 5433 (not the owner's `postgres-data`
+  volume); `next dev` and `next build && next start` each answered with the expected header;
+  and `/login` and `/signup` under `next dev` in headless Chromium, reloaded, logged no CSP
+  violation, no `eval` error and a connected HMR (the only warning is an unused-preload notice).
+  **Not run:** the E2E suites (Chromium/Firefox/WebKit) — they run the production build, whose
+  policy is unchanged and pinned; and no server-side render error was provoked under `next dev`,
+  so React's `eval` path for error stacks is covered by the policy but was not exercised.
+- **Open question for the owner (not answered):** `governance.md` line 40 says "Never modify an
+  Approved/Accepted document — propose a new version or a superseding ADR". ADR-0006 was
+  already Accepted, and the agent added amendment (4) to it, as the four earlier amendments
+  (owner decisions) had been. The agent offered a new, separate ADR instead (it would take the next number, 0008 — no ADR 0008 exists; the last is 0007); the owner's
+  "accept all" did not choose it, so the amendment stays in ADR-0006 unless the owner says
+  otherwise.
+- **Owner check:** the owner asked for the app to be run locally ("local run et. yoxlayım") and
+  checks it themselves under `npm run dev`; their result is not recorded here.
+- **Next:** the owner merges PR #23; TD-6 is then marked Closed.
+
 ## 2026-09-24 — Phase 5: T-11 WebMCP adapter
 
 - **Phase:** 5 (Build the slice), Release 1.

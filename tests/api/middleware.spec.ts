@@ -137,6 +137,22 @@ test("ADR-0006: the CSP carries a nonce on script-src and style-src, fresh per r
   expect(secondScriptNonce).not.toBe(firstScriptNonce);
 });
 
+// ADR-0006 amendment 2026-09-24 (4), TD-6: `next dev` gets a relaxed policy, so this suite —
+// which always runs against `next build && next start` (ADR-0003) — pins the production one
+// byte for byte. If the development relaxation ever leaked into a build, this fails.
+test("ADR-0006 (4): the production CSP is exactly the pinned policy, with no unsafe-* source", async ({
+  request,
+}) => {
+  const response = await request.get("/api/auth/session");
+  const csp = response.headers()["content-security-policy"] ?? "";
+  const [, nonce] = /'nonce-([^']+)'/.exec(csp) ?? [];
+  expect(nonce).toBeTruthy();
+  expect(csp).toBe(
+    `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'; frame-ancestors 'none'`,
+  );
+  expect(csp).not.toContain("unsafe-");
+});
+
 test("ADR-0006, T-06 plan F1: an unknown page's 404 carries the request's nonce on every inline script and style, and no style attribute", async ({
   request,
 }) => {
