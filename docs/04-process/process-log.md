@@ -2510,9 +2510,10 @@ them too").
   planning entry completed. The plan's status line and the planning entry get their update
   (executed; what differed) in a separate docs PR from the plan branch.
 - **Participants:** Owner / Agent (Claude Code) — a controller agent with one implementer subagent
-  per task (Sonnet 5), a review after each task (Opus 5.5, `governance.md` v1.3); a scoped
-  re-review followed only Task 3's two fix rounds, and the other follow-up commits are covered by
-  the whole-branch review; the execution method, subagent-driven
+  per task (Sonnet 5), a review after each of Tasks 1–10 (Task 11 was covered by the
+  whole-branch review; Opus 5.5, `governance.md` v1.3); a scoped re-review followed Task 3's two
+  fix rounds and the fix round after each whole-branch review (PR-A, T-13); the other follow-up
+  commits are covered by the whole-branch review; the execution method, subagent-driven
   development, is the owner's choice as relayed by the controller. This entry was written by the
   Task 11 implementer (Sonnet 5) from the controller's ledger and the per-task reports.
 - **Trigger:** the owner's answers to the plan's Q1–Q8 and the go-ahead. Recorded in the
@@ -2580,8 +2581,8 @@ them too").
   — enforced with an `esbuild@0.28.2` entry removed (`ESTRICTALLOWSCRIPTS`), tolerant of the absent
   `fsevents` — measured in a `node:26` container (node 26.10.0, npm 11.19.1) in a scratch
   directory after a first pass skipped it on a controller instruction that was too broad (the
-  flag was also passed on the command line there; `.npmrc` alone on Linux is proved only by
-  `install-scripts.test.ts` case 2 on the first CI run).
+  flag was also passed on the command line there; `.npmrc` alone on Linux will be proved only when
+  `install-scripts.test.ts` case 2 passes on the first CI run).
   Every guard was made to fail on purpose before it was trusted, except the two cases under
   "Not shown failing" below: mutation runs are quoted in
   each report (the old regex scanner 18 failed, the skip logic off 16 failed, a fake route,
@@ -2649,7 +2650,8 @@ them too").
     propagating through `status=$?`.
 - **Verified, not reasoned:** on `ccc71d0` plus this task's edits (documents, the `package.json`
   note, the README; `c8cf471`, which changed only `ci.yml` comments and `tests/e2e/README.md`,
-  was committed at 19:17 and may or may not have been in the tree the run started from), macOS, Postgres 18 from `compose.yaml`, nothing else on port 3000 —
+  was committed at 19:17 and may or may not have been in the tree the run started from), macOS,
+  Postgres 18 from `compose.yaml`, nothing else on port 3000 —
   `npm run test:all` exited 0: secret scan "337 commits scanned … no leaks found" for the diffs
   and "no leaks found" for the messages (both labelled in the output); lint, format check and
   typecheck clean; unit + coverage 77 files, 958 tests passed, statements 99.5 % (401/403);
@@ -2658,9 +2660,12 @@ them too").
   skips per engine are the off-mode spec a polyfill build does not run). `npm audit
   --audit-level=high`: "found 0 vulnerabilities". `actionlint` (`rhysd/actionlint:latest` in
   Docker, exit status written to a file): no output, `exit=0`. The overrides re-measurement above
-  is a run too (4 high without them). After the final review, `scripts/secret-scan.sh history`
-  was re-run at head `94b7c3a` by the whole-branch reviewer: 340 commits scanned, no leaks in
-  the diffs or the messages; the fix wave's re-run at the same head gave the same result.
+  is a run too (4 high without them). After the whole-branch review, `scripts/secret-scan.sh
+  history` was re-run three times: at head `94b7c3a`, by the whole-branch reviewer, 340 commits
+  scanned, no leaks in the diffs or the messages; at `94b7c3a` again by the fix wave, the same
+  result; and at `bb059dc` by the fix wave, 341 commits, no leaks in either. A run cannot name the
+  commit that contains this line, so heads after `bb059dc` are not recorded here; the last run
+  is in the report of Task 11.
 - **Not verified:** the CI verdict of every new leg and of the workflow edits — the branch is
   pushed, no PR is open when this entry was written; Firefox and WebKit on Linux (all local runs
   were macOS; WebKit's `Alt+Tab` path and TD-4's four tests are the Linux-sensitive ones); the
