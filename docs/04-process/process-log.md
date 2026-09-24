@@ -2116,7 +2116,7 @@ them too").
   checks it themselves under `npm run dev`; their result is not recorded here.
 - **Next:** the owner merges PR #23; TD-6 is then marked Closed.
 - **Update, 2026-09-24 12:40 +04:** the owner merged PR #23 (merge `dc2dba3`). TD-6 is marked
-  Closed in `docs/03-specs/tech-debt.md` (v1.6) by a follow-up docs PR from `docs/td-6-closed`.
+  Closed in `docs/03-specs/tech-debt.md` (v1.7) by a follow-up docs PR from `docs/td-6-closed`.
 
 ## 2026-09-24 — Phase 5: T-11 WebMCP adapter
 
