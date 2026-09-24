@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { COPY } from "@/src/shared/copy";
 import { TEST_IDS } from "@/src/shared/test-ids";
+import { useAgentToolsIndicator } from "./agent-tools-indicator";
 import { cx } from "./cx";
 import { MinimizeMenuIcon } from "./icons/MinimizeMenuIcon";
 import { LogoLarge, LogoSmall } from "./Logo";
@@ -24,6 +25,7 @@ const expandedOnTheServer = () => false;
  */
 export function Sidebar() {
   const pathname = usePathname();
+  const indicator = useAgentToolsIndicator();
   const collapsed = useSyncExternalStore(
     subscribeSidebar,
     readSidebarCollapsed,
@@ -57,6 +59,11 @@ export function Sidebar() {
         </ul>
       </nav>
       <div className={styles.footer}>
+        {collapsed ? (
+          <span className={styles.indicatorCollapsed}>{indicator?.compact}</span>
+        ) : (
+          indicator?.sidebar
+        )}
         <LogoutButton variant="sidebar" collapsed={collapsed} />
         <button
           type="button"

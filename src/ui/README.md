@@ -35,3 +35,11 @@ attribute — a plain SVG presentation attribute, not the `style` prop, so the C
 and `donut-geometry.ts` (pure `donutSegments`, unit-tested without rendering). `icons/` gains
 `JarIcon` (Phosphor `jar-fill`, MIT — design-tokens.md already named it, unlike `sign-out`'s
 project addition). Avatars are bare `<img>` (still no `next/image`, per T-06's rule above).
+
+T-11: `agent-tools-indicator.ts` — a `ReactNode` slot context (`sidebar`/`compact`), no
+`src/webmcp` knowledge; `app/(app)/layout.tsx` is the one file that fills it, from
+`AgentToolsStatus` (`src/webmcp` — this layer may not import that one, ADR-0002). `Sidebar` and
+`PageHeader` each place whichever slot fits their layout; `PageHeader` becomes a Client
+Component for the `useContext` call. `Sidebar.module.css` gains `.indicatorCollapsed`
+(centres the indicator's compact dot in the 88 px collapsed rail — no design source for this
+placement, T-11 plan D5).

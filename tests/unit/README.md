@@ -22,4 +22,13 @@ Default environment is `node`; a file that needs a DOM starts with
   logic split out here (`evaluateThreshold`, `isAuthorized`, `parseAdminResetBody`, `labelMap`
   and the `CATEGORY_LABEL`/`THEME_LABEL` maps it builds, `toOverviewDto`).
 
+- `webmcp/` (T-11): `// @vitest-environment jsdom` throughout — `adapter.ts` touches
+  `document`/`window`. `adapter.test.ts` uses `vi.resetModules()` and a fresh dynamic
+  `import("@/src/webmcp/adapter")` per test (module-level singleton state — generation, mode,
+  registered names — would otherwise leak between cases in the same file) and mocks
+  `@mcp-b/webmcp-polyfill` with `vi.mock`. `defineTool.test.ts` is a plain function-call suite,
+  no DOM needed but the pragma is kept for the file's consistency with its siblings.
+  `WebMcpProvider.test.tsx` and `AgentToolsStatus.test.tsx` follow `ui/`'s own Testing Library
+  convention above.
+
 Run: `npm test`.

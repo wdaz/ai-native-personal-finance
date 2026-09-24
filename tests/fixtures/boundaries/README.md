@@ -52,10 +52,12 @@ exit 0 were `--max-warnings 0` ever dropped from the `lint` script.
 
 `boundaries/dependencies` classifies an import by the path it _resolves to_; an import
 that does not resolve is treated as external and is allowed by policy. The target
-therefore has to exist. `src/server` and `src/domain` hold modules since T-02 and T-03, and
-their fixtures import `src/server/db` and `src/domain/clock`; `src/webmcp` and `app/(app)`
-hold none yet, so their fixtures import the only file each contains. The layer is what is
-being asserted, not the module's contents, and a side-effect import states that plainly.
+therefore has to exist. `src/server`, `src/domain` and `src/webmcp` hold modules since T-02,
+T-03 and T-11, and their fixtures import `src/server/db`, `src/domain/clock` and
+`src/webmcp/adapter`; `app/(app)` holds a real layout and pages by now too, but nothing here
+has repointed its fixture yet (`domain-imports-app.ts.fixture` still imports
+`app/(app)/README.md` — pre-existing, not a T-11 change). The layer is what is being
+asserted, not the module's contents, and a side-effect import states that plainly.
 
 If one of those targets is ever deleted the import stops resolving, the rule stops
 firing, and the test fails loudly rather than the guarantee lapsing in silence.

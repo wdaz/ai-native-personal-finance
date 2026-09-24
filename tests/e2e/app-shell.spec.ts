@@ -296,7 +296,9 @@ test("US-37 AC2 the reset banner shows the reset's date; dismissed, it stays gon
   await loginViaApi(page);
   await page.goto("/overview");
 
-  const banner = page.getByRole("status");
+  // getByTestId, not getByRole("status"): T-11's AgentToolsStatus indicator is also
+  // role="status" on every authenticated page now, so the role alone is ambiguous.
+  const banner = page.getByTestId(TEST_IDS.resetBanner);
   await expect(banner).toHaveText(COPY.resetBanner(resetIntervalDays(), formatDate(at)));
   // It leads the page: above the page's heading.
   await expect
@@ -318,10 +320,10 @@ test("US-37 AC2 the reset banner shows the reset's date; dismissed, it stays gon
 
   await mainNav(page).getByRole("link", { name: "Transactions", exact: true }).click();
   await expect(heading(page, "Transactions")).toBeVisible();
-  await expect(page.getByRole("status")).toHaveCount(0);
+  await expect(page.getByTestId(TEST_IDS.resetBanner)).toHaveCount(0);
   await page.reload();
   await expect(heading(page, "Transactions")).toBeVisible();
-  await expect(page.getByRole("status")).toHaveCount(0);
+  await expect(page.getByTestId(TEST_IDS.resetBanner)).toHaveCount(0);
 });
 
 test("US-37 AC2 on a phone the banner and its 44 px dismiss button fit at 320 px", async ({
@@ -330,7 +332,7 @@ test("US-37 AC2 on a phone the banner and its 44 px dismiss button fit at 320 px
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto("/overview");
   const dismiss = page.getByRole("button", { name: COPY.dismissNotice });
-  await expect(page.getByRole("status")).toBeInViewport({ ratio: 1 });
+  await expect(page.getByTestId(TEST_IDS.resetBanner)).toBeInViewport({ ratio: 1 });
   await expect
     .poll(async () => (await dismiss.boundingBox())?.width ?? 0, { message: "tap target" })
     .toBeGreaterThanOrEqual(44);
@@ -345,13 +347,13 @@ test("US-37 AC2 a dismissal lasts only until the next reset: after it, the banne
 }) => {
   await page.goto("/overview");
   await page.getByRole("button", { name: COPY.dismissNotice }).click();
-  await expect(page.getByRole("status")).toHaveCount(0);
+  await expect(page.getByTestId(TEST_IDS.resetBanner)).toHaveCount(0);
 
   // The reset ends the session (SPEC-reset-and-test-support §2.6); the same tab logs in again.
   const { at } = (await (await request.post("/api/test/reset")).json()) as { at: string };
   await loginViaApi(page);
   await page.goto("/overview");
-  await expect(page.getByRole("status")).toHaveText(
+  await expect(page.getByTestId(TEST_IDS.resetBanner)).toHaveText(
     COPY.resetBanner(resetIntervalDays(), formatDate(at)),
   );
 });

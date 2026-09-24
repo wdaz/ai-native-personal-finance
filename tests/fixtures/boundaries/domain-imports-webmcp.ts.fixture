@@ -2,4 +2,4 @@
 // ADR-0002: domain imports nothing from webmcp. ADR-0004 keeps the adapter replaceable by
 // making the dependency one-way; domain reaching into it would tie the business rules to
 // a browser API.
-import "@/src/webmcp/README.md";
+import "@/src/webmcp/adapter";
