@@ -3063,3 +3063,33 @@ them too").
 - **Next:** the owner reviews and merges `docs/pre-T-14-plan`. Then T-13a's plan gate
   (`/superpowers:writing-plans t-13a`), one task per session, each with its own plan, PR and
   entry. The release-strategy discussion is next session.
+
+## 2026-09-24 — Owner accepts ADR-0006 amendment (5) and SPEC-webmcp-tools v1.0.5
+
+- **Phase:** 5 (Build the slice), Release 1 — a document status change; no code.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5)
+- **Trigger:** the previous entry's first open item: ADR-0006 amendment (5) (`Origin-Agent-Cluster:
+  ?1`) and SPEC-webmcp-tools v1.0.5 (a rejected tool registration is reported) still read "proposed,
+  awaiting the owner", though PR #28 had merged their code. The owner answered "2. Bəli" (yes).
+- **Prompt(s):** none — the conversation itself.
+- **Produced:** branch `docs/accept-adr-0006-5`:
+  - `docs/02-architecture/adr/0006-auth-and-session.md` — the status line no longer calls amendment
+    (5) proposed; the amendment reads "Accepted by the owner, 2026-09-24", in the wording amendment
+    (4) uses.
+  - `docs/03-specs/webmcp-tools.md` — v1.0.5 reads approved by the owner, in the status line, the
+    changelog and its reference to amendment (5).
+  - this entry.
+- **What the agent got right:** only the live documents changed. The plan, prompt records and
+  earlier entries that describe the amendment as proposed are history and stay as written.
+- **What the agent got wrong or missed:** the acceptance was first committed on
+  `docs/pre-T-14-plan`, together with an edit to the previous entry (moving this item from "open"
+  to "decided"). The owner had merged PR #35 at the same moment. The push re-created the deleted
+  branch instead of reaching the pull request, and the edit would have rewritten a merged entry of
+  this append-only log. The acceptance commit was cherry-picked onto a fresh branch from `main`,
+  this entry replaces the edit, and the stray branch was deleted. Lesson: check a pull request's
+  state (`gh pr view`), not the local remote-tracking ref, right before pushing to its branch.
+- **Owner changes and reasoning:** "2. Bəli" — accepted as proposed.
+- **Disagreements:** none.
+- **Lessons for the process:** an acceptance that arrives after the code has merged is still worth
+  recording promptly. Until then, the specs and ADRs describe the running code as unapproved.
+- **Next:** the owner reviews and merges; T-13a's plan gate.
