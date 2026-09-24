@@ -2902,3 +2902,43 @@ them too").
      into the backlog row of the task that will meet it, or it is lost.
 - **Next:** the owner reviews and merges `chore/T-13-followups`; answers whether the
   `middleware.spec.ts` login checks should be added now (independent of TD-2) or left; T-14.
+
+## 2026-09-24 — Phase 5: API tests check the login they depend on
+
+- **Phase:** 5 (Build the slice), Release 1 — a small test-only fix after T-13.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5)
+- **Trigger:** the previous entry left one question open: add `expect(login.status()).toBe(200)`
+  after the unchecked logins in `tests/api/middleware.spec.ts` (a deferred minor of PR-A's
+  review), now or after TD-2's `middleware` → `proxy` rename? The rename does not touch these
+  HTTP-level tests; the owner answered "yes".
+- **Prompt(s):** none — the conversation itself.
+- **Produced:** branch `test/middleware-login-checks`:
+  - `tests/api/middleware.spec.ts` — a `logInAsDemo(request)` helper that asserts the login's 200
+    with a message; all five logins in the file use it (three were unchecked, two checked inline).
+  - `tests/api/auth.spec.ts` — the "US-03 logout clears the cookie" test asserts its login.
+  - this entry.
+- **What the agent got right:** measured before and after with the demo password deliberately
+  wrong (`DEMO_PASSWORD_DISPLAY=wrong-password`; the server checks the hash, so only the tests'
+  logins fail). Before the change: the three `middleware.spec.ts` tests failed, but at
+  assertions that read like middleware bugs — "Expected: 302, Received: 200" on `/login`,
+  `"/login"` instead of `"/overview"`, no `reason=reset` — and **the logout test in
+  `auth.spec.ts` passed**: its end state ("not authenticated") is also its start state, so
+  without a session it proved nothing. After the change: all six login-dependent tests fail at
+  the login, "POST /api/auth/login with the demo credentials — Expected: 200, Received: 401".
+  With the real password: both files 25 passed; `typecheck`, `lint`, `format:check`,
+  `traceability` clean.
+- **What the agent got wrong or missed:** the explanation the owner answered said a failed login
+  could let the `middleware.spec.ts` tests pass silently. Measured, it cannot — they fail, only
+  misleadingly (PR-A's final review had said the same for the reset test); the one test that
+  did pass silently was in `auth.spec.ts`, found while looking for the same pattern. The claim
+  should have been measured before it was made.
+- **Owner changes and reasoning:** "yes" to the fix. The `auth.spec.ts` change is outside the
+  file named in the question but the same defect, and the only case that passed vacuously; it
+  is a separate commit, so it can be dropped on request.
+- **Disagreements:** none.
+- **Lessons for the process:** a test whose final assertion equals its starting state must assert
+  the step in between. Other unchecked logins remain and do not pass vacuously, so they are left:
+  `tests/api/auth.spec.ts` "a successful login clears the IP's failure count" (a failed login
+  leaves 2 failures and fails `toBe(0)`), and the "session reflects login state" test and
+  `tests/api/admin-reset.spec.ts`'s session test (each asserts `authenticated: true` right after).
+- **Next:** the owner reviews and merges; T-14.

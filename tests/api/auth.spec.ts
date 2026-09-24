@@ -119,9 +119,12 @@ test("US-03 logout clears the cookie and works with no session", async ({ reques
   const withoutSession = await request.post("/api/auth/logout");
   expect(withoutSession.status()).toBe(204);
 
-  await request.post("/api/auth/login", {
+  const login = await request.post("/api/auth/login", {
     data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
   });
+  // The end state below ("not authenticated") is also the start state: without a session to
+  // end, the test would pass having proved nothing (it did, measured with a wrong password).
+  expect(login.status(), "POST /api/auth/login with the demo credentials").toBe(200);
   const loggedOut = await request.post("/api/auth/logout");
   expect(loggedOut.status()).toBe(204);
   const session = await request.get("/api/auth/session");

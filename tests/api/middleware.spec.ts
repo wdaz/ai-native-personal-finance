@@ -1,8 +1,21 @@
-import { expect, test, type APIResponse } from "@playwright/test";
+import { expect, test, type APIRequestContext, type APIResponse } from "@playwright/test";
 
 test.beforeEach(async ({ request }) => {
   await request.post("/api/test/reset");
 });
+
+/**
+ * Logs the demo account in and fails right here when that did not work. Unchecked, a failed
+ * login leaves the request unauthenticated and the test fails later at an assertion that reads
+ * like a middleware bug (measured 2026-09-24 with a wrong password: "Expected: 302, Received:
+ * 200" on /login, "/login" instead of "/overview", no `reason=reset`).
+ */
+async function logInAsDemo(request: APIRequestContext): Promise<void> {
+  const login = await request.post("/api/auth/login", {
+    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
+  });
+  expect(login.status(), "POST /api/auth/login with the demo credentials").toBe(200);
+}
 
 /** The nonce of the response's `script-src` directive, or undefined when it has none. */
 const scriptSrcNonce = (response: APIResponse): string | undefined => {
@@ -49,9 +62,7 @@ test("an unauthenticated request to a protected page redirects to /login?next=",
 });
 
 test("an authenticated request to /login redirects to /overview", async ({ request }) => {
-  await request.post("/api/auth/login", {
-    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
-  });
+  await logInAsDemo(request);
   const response = await request.get("/login", { maxRedirects: 0 });
   expect(response.status()).toBe(302);
   expect(response.headers()["location"]).toContain("/overview");
@@ -61,9 +72,7 @@ test("/ redirects to /overview when authenticated, /login otherwise", async ({ r
   const loggedOut = await request.get("/", { maxRedirects: 0 });
   expect(loggedOut.headers()["location"]).toContain("/login");
 
-  await request.post("/api/auth/login", {
-    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
-  });
+  await logInAsDemo(request);
   const loggedIn = await request.get("/", { maxRedirects: 0 });
   expect(loggedIn.headers()["location"]).toContain("/overview");
 });
@@ -167,13 +176,10 @@ test("ADR-0006, T-06 plan F1: an unknown page's 404 carries the request's nonce 
 test("ADR-0006, T-06 plan F1: a logged-in unknown app path 404s under the same nonce rules", async ({
   request,
 }) => {
-  const login = await request.post("/api/auth/login", {
-    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
-  });
   // Without a session a protected path redirects to /login and this would test the wrong
   // page — login must have worked, and no redirect is followed. /overview has a page since
   // T-07 (plan Q2); a path below a protected prefix still passes the session check first.
-  expect(login.status()).toBe(200);
+  await logInAsDemo(request);
   const path = "/transactions/no-such-page";
   const first = await expectNotFoundUnderCsp(await request.get(path, { maxRedirects: 0 }));
   const second = await expectNotFoundUnderCsp(await request.get(path, { maxRedirects: 0 }));
@@ -183,9 +189,7 @@ test("ADR-0006, T-06 plan F1: a logged-in unknown app path 404s under the same n
 test("SPEC-reset-and-test-support §2.6: a reset-invalidated session redirects to /login?reason=reset", async ({
   request,
 }) => {
-  await request.post("/api/auth/login", {
-    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
-  });
+  await logInAsDemo(request);
   await request.post("/api/test/reset"); // a later ResetLog row than the one at login time
 
   const response = await request.get("/transactions", { maxRedirects: 0 });
@@ -202,12 +206,9 @@ test("ADR-0006 (5): every response asks for its own agent cluster, so Firefox an
     const response = await request.get(path);
     expect(response.headers()["origin-agent-cluster"], path).toBe("?1");
   }
-  const login = await request.post("/api/auth/login", {
-    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
-  });
   // Without a session /overview redirects to /login?next= (a 200 with the header, once followed)
   // and this would test the wrong page — login must have worked, and no redirect is followed.
-  expect(login.status()).toBe(200);
+  await logInAsDemo(request);
   const overview = await request.get("/overview", { maxRedirects: 0 });
   expect(overview.status()).toBe(200);
   expect(overview.headers()["origin-agent-cluster"], "/overview").toBe("?1");
