@@ -2109,7 +2109,7 @@ them too").
 - **Open question for the owner (not answered):** `governance.md` line 40 says "Never modify an
   Approved/Accepted document — propose a new version or a superseding ADR". ADR-0006 was
   already Accepted, and the agent added amendment (4) to it, as the four earlier amendments
-  (owner decisions) had been. The agent offered a separate ADR (0008) instead; the owner's
+  (owner decisions) had been. The agent offered a new, separate ADR instead (it would take the next number, 0008 — no ADR 0008 exists; the last is 0007); the owner's
   "accept all" did not choose it, so the amendment stays in ADR-0006 unless the owner says
   otherwise.
 - **Owner check:** the owner asked for the app to be run locally ("local run et. yoxlayım") and
