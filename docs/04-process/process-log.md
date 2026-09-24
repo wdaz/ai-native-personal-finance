@@ -1679,16 +1679,17 @@ them too").
 
 - **Phase:** 5 (Build the slice), Release 1.
 - **Participants:** Owner / Agent (Claude Code, on Claude Code's web/cloud environment).
-- **Trigger:** the owner's message, verbatim: "Start planing T-09" (the prior turn's summary
-  carries "T-08 başlayanda lazım olacaq?", the last question of T-08, already answered and
-  merged as PR #20).
+- **Trigger:** the owner's message, verbatim: "T-09 planlamağa başla" ("Start planning T-09").
+  This followed T-08's completion: PR #20 had merged, and the owner's last question about it
+  (whether `CRON_SECRET` would be needed at T-14) had already been answered.
 - **Prompt(s):** `prompts/2026-09-24-T-09.md`.
 - **Produced:** `docs/04-process/plans/2026-09-24-T-09.md`; `src/server/overview.ts`
-  (`CATEGORY_LABEL`/`THEME_LABEL`, `categoryLabel`/`themeLabel`, the pure `toOverviewDto`,
-  `getOverview(db, clock)`); `app/api/overview/route.ts`; `tests/unit/server/overview.test.ts`
-  (8 tests); `tests/api/overview.spec.ts` (9 tests, one per seed variant plus 401, `no-store`,
-  the "never seeded" 500); a comment fix in `tests/api/middleware.spec.ts`; the READMEs
-  (`app/api`, `src/server`, `tests/unit`, `tests/api`) this entry.
+  (`labelMap`, `CATEGORY_LABEL`/`THEME_LABEL`, `categoryLabel`/`themeLabel`, the pure
+  `toOverviewDto`, `getOverview(db, clock)`); `app/api/overview/route.ts`;
+  `tests/unit/server/overview.test.ts` (13 tests); `tests/api/overview.spec.ts` (9 tests, one
+  per seed variant plus 401, `no-store`, the "never seeded" 500); a comment fix in
+  `tests/api/middleware.spec.ts`; the READMEs (`app/api`, `src/server`, `tests/unit`,
+  `tests/api`), this entry.
 - **What the agent got right:** the session branch had to be restarted from `origin/main`
   before planning, because GitHub deletes a merged PR's branch — caught by checking
   `git fetch origin main` before writing anything. The plan needed no owner questions:
@@ -1719,6 +1720,21 @@ them too").
   no existing `tests/api` spec does) with an independent oracle built from `seedRows()` and
   `applyVariant()` directly, computed for all six variants against the domain's own
   `overviewSummary` — stronger than the original per-variant shape spot-checks.
+
+  6. A second advisor pass, after Tasks 1–2 were committed, found the map-construction guard
+     itself was only one-directional: it walked `CATEGORIES`/`THEMES` and checked each label
+     against the generated Prisma enum, but never checked the *reverse* — a Prisma member with
+     no matching label would have built successfully (10 entries, matching `CATEGORIES`'
+     own length) and only thrown "Unmapped category" at request time, the exact risk the
+     doc comment claimed was closed at import time. `overview.ts`'s two maps are now built by
+     one exported, directly-testable function, `labelMap(labels, prismaEnum)`, that also
+     checks the two sides are the same size and that no two labels collide on one Prisma key —
+     three checks that together make the map a true bijection, not just complete on one side.
+     Also caught: the plan's own execution — `toOverviewDto`'s `BudgetRow` generic constraint
+     included `spent`, which is not part of the input `overviewSummary` takes (it computes
+     `spent`); the type error surfaced immediately at `npm run typecheck` and the constraint
+     was narrowed to match `OverviewSummary`'s own `B & { spent: number }` typing of its output
+     items.
 - **Mutations run and reverted, each caught by the test that should catch it:**
   - `categoryLabel()` removed from the transactions side only: `budgets.spent` dropped from
     `$338.00` to exactly `$165.00` (`Dining Out` and `Personal Care` lost their spelling match;
@@ -1729,11 +1745,22 @@ them too").
     database needed.
   - The route's `Cache-Control: no-store` header removed: the exact-header API test failed
     (`undefined`, not even a framework default).
-- **Environment (differs from CI; noted for the PR):** Node 26.10.0 and local Postgres 16
-  from the T-08 session were already in place and reused; no Docker daemon. This task added no
-  E2E test, so the Chromium/Firefox/WebKit gap T-08 recorded does not apply here — `npm test`
-  (694), `npm run test:api` (91), lint, format, typecheck and the full-history secret scan all
-  ran and passed.
+  - `"Dining Out"` removed from `src/shared/enums.ts`'s `CATEGORIES` (simulating a Prisma
+    category no label covers): `CATEGORY_LABEL`'s construction threw `"9 labels but 10 Prisma
+    keys"` the moment any module importing `overview.ts` loaded — the one-directional version
+    (finding 6) would have let this through silently.
+
+  Not run as a live mutation: a missing `BigInt`→`Number` conversion. `PotInput.total` and
+  the rest are typed `number`; passing a raw `bigint` fails `tsc`/`next build` before any test
+  runs, which is a stronger guarantee than a runtime 500 — the plan's Review Focus 2 predicted
+  the weaker, runtime version and was not itself exercised.
+- **Environment (differs from CI; noted for the PR):** Node 26.10.0 and the local Postgres 16
+  process (`pg_ctl`, not a container — there is no Docker daemon in this environment) from the
+  T-08 session were already running and were reused as is. This task adds no E2E test of its
+  own, but the existing suite was run anyway, through T-08's session-local Playwright config
+  (Chromium r1194 only, matching what this environment has): 76/76 passed, confirming nothing
+  regressed. `npm test` (699), `npm run test:api` (91), lint, format, typecheck, `npm audit`
+  (0) and the full-history secret scan all ran and passed.
 - **Owner changes and reasoning:** none yet — awaiting review.
 - **Disagreements:** none.
 - **Lessons for the process:**
@@ -1744,5 +1771,10 @@ them too").
   2. An "independent oracle" test is only independent if it does not import the module whose
      wiring is in question for the values it is checking, and does not rely on an unproven
      import path just because it looks convenient.
+  3. "Checked against the live enum" is not the same claim as "checked in both directions" —
+     a completeness check that only walks one side's own list can never notice what the other
+     side has and it does not. A second advisor pass, after the code was committed and not
+     just after the plan was written, is what caught this one; the first pass reviewed the
+     plan's design, not the executed code's actual guard.
 - **Next:** T-10 (Overview UI) fills `app/(app)/overview/page.tsx`'s body from `getOverview`,
   per backlog v1.20.

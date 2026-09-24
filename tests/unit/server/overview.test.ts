@@ -6,6 +6,7 @@ import {
   CATEGORY_LABEL,
   THEME_LABEL,
   categoryLabel,
+  labelMap,
   themeLabel,
   toOverviewDto,
 } from "@/src/server/overview";
@@ -46,6 +47,41 @@ describe("CATEGORY_LABEL / THEME_LABEL (SPEC-overview §6, T-04 hand-off)", () =
   it("categoryLabel/themeLabel throw on a value the map does not have (violation fixture, DoD v1.1)", () => {
     expect(() => categoryLabel("NotACategory" as never)).toThrow(/Unmapped category/);
     expect(() => themeLabel("NotATheme" as never)).toThrow(/Unmapped theme/);
+  });
+});
+
+describe("labelMap (both directions — DoD v1.1 violation fixtures)", () => {
+  it("throws when a label has no matching Prisma key, same size on both sides", () => {
+    expect(() => labelMap(["Foo"], { Bar: "Bar" })).toThrow(/"Foo".*has no matching Prisma key/);
+  });
+
+  it("throws when a Prisma enum has a key no label covers — a size mismatch", () => {
+    expect(() => labelMap(["Foo"], { Foo: "Foo", Extra: "Extra" })).toThrow(
+      /1 labels but 2 Prisma keys/,
+    );
+  });
+
+  it("throws when two labels collide on the same Prisma key", () => {
+    expect(() => labelMap(["A B", "AB"], { AB: "AB", C: "C" })).toThrow(
+      /two labels map to the same Prisma key/,
+    );
+  });
+
+  it("builds the map when the two sides truly agree", () => {
+    expect([
+      ...labelMap(["Dining Out", "Bills"], { DiningOut: "DiningOut", Bills: "Bills" }),
+    ]).toEqual([
+      ["DiningOut", "Dining Out"],
+      ["Bills", "Bills"],
+    ]);
+  });
+
+  it("does not fall for the inherited-property trap a bare `in` check would (Object.hasOwn)", () => {
+    // "constructor" in {} is true (Object.prototype) — a bare `in` check would accept this
+    // label and set Object.prototype.constructor (the Object function) as its "Prisma value".
+    expect(() => labelMap(["constructor"], { Foo: "Foo" })).toThrow(
+      /"constructor".*has no matching Prisma key "constructor"/,
+    );
   });
 });
 

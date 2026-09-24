@@ -13,35 +13,47 @@ type PrismaTheme = (typeof PrismaThemeEnum)[keyof typeof PrismaThemeEnum];
  * (`prisma/schema.prisma`'s `@map`). Built, not hand-typed (T-09 plan D2 — a hand-typed
  * reverse table could swap two entries without any test noticing): one entry per name in
  * `src/shared/enums.ts`, which `tests/unit/shared/enums.test.ts` already holds to
- * data-model.md, checked here against the *live* generated Prisma enum, so a name this
- * project documents but `prisma/schema.prisma` does not (or the reverse) throws at import
- * time rather than passing silently. Keys are plain `string`, the same loose-key convention
- * `seed.ts`'s own `CATEGORY_BY_NAME`/`THEME_BY_HEX` already use — `categoryLabel`/`themeLabel`
- * below are the precisely-typed accessors production code calls.
+ * data-model.md, checked here against the *live* generated Prisma enum in both directions —
+ * a label with no matching Prisma key, or a Prisma key no label covers (caught by the count
+ * check below, since two equal-size, fully-matched, non-colliding sets are a bijection) —
+ * throws at import time rather than passing silently (a one-directional check, an earlier
+ * version of this function, would have let the second case through unnoticed until a request
+ * for the never-mapped value threw "Unmapped category" at runtime instead). Keys are plain
+ * `string`, the same loose-key convention `seed.ts`'s own `CATEGORY_BY_NAME`/`THEME_BY_HEX`
+ * already use — `categoryLabel`/`themeLabel` below are the precisely-typed accessors
+ * production code calls. `Object.hasOwn`, not `in` — `"constructor" in {}` is `true`.
  */
-function despacedCategory(label: string): PrismaCategory {
-  const key = label.replaceAll(" ", "");
-  if (!(key in PrismaCategoryEnum)) {
-    throw new Error(`"${label}" (src/shared/enums.ts) has no matching Prisma Category "${key}"`);
+export function labelMap<Label extends string, PrismaValue extends string>(
+  labels: readonly Label[],
+  prismaEnum: Record<string, PrismaValue>,
+): ReadonlyMap<PrismaValue, Label> {
+  const prismaKeys = Object.keys(prismaEnum);
+  if (labels.length !== prismaKeys.length) {
+    throw new Error(
+      `${labels.length} labels but ${prismaKeys.length} Prisma keys — the two enums have drifted`,
+    );
   }
-  return key as PrismaCategory;
+  const map = new Map<PrismaValue, Label>();
+  for (const label of labels) {
+    const key = label.replaceAll(" ", "");
+    if (!Object.hasOwn(prismaEnum, key)) {
+      throw new Error(`"${label}" (src/shared/enums.ts) has no matching Prisma key "${key}"`);
+    }
+    // Safe: Object.hasOwn just confirmed key is an own, defined property of prismaEnum.
+    map.set(prismaEnum[key]!, label);
+  }
+  if (map.size !== labels.length) {
+    throw new Error("two labels map to the same Prisma key — the two enums have drifted");
+  }
+  return map;
 }
 
-function despacedTheme(label: string): PrismaTheme {
-  const key = label.replaceAll(" ", "");
-  if (!(key in PrismaThemeEnum)) {
-    throw new Error(`"${label}" (src/shared/enums.ts) has no matching Prisma Theme "${key}"`);
-  }
-  return key as PrismaTheme;
-}
-
-export const CATEGORY_LABEL: ReadonlyMap<string, Category> = new Map(
-  CATEGORIES.map((label) => [despacedCategory(label), label]),
+export const CATEGORY_LABEL: ReadonlyMap<string, Category> = labelMap(
+  CATEGORIES,
+  PrismaCategoryEnum,
 );
 
-export const THEME_LABEL: ReadonlyMap<string, Theme> = new Map(
-  THEMES.map((label) => [despacedTheme(label), label]),
-);
+export const THEME_LABEL: ReadonlyMap<string, Theme> = labelMap(THEMES, PrismaThemeEnum);
 
 export function categoryLabel(category: PrismaCategory): Category {
   const label = CATEGORY_LABEL.get(category);
