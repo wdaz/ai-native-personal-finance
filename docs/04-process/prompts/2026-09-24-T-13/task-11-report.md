@@ -93,3 +93,48 @@ before the run (`lsof -i :3000` empty):
 - The controller's model and any owner wording of the execution go-ahead beyond the ledger's summary.
 - The process-log entry says the branch is "pushed, no PR open": true per the ledger, not re-checked
   against GitHub.
+
+## Fix wave (after the whole-branch review)
+
+Commit `bb059dc` `docs(process): correct the T-13 records after the whole-branch review` (earlier
+commits not amended). Line numbers were re-read from the files before each edit.
+
+- **I-1 (a) counts.** Recounted against the ledger and `git log`: all ten task reviews found
+  something; Tasks 2-8 and 10 (`c8cf471`) got follow-up commits, Task 9's wording was fixed in Task 11,
+  Task 1's `persist-credentials` minor was deferred, so nine led to a fix. The ledger agrees with the
+  controller's text; the process-log "Counts" paragraph and the T-15 hand-off in `backlog.md` now say
+  so, and "Task 10's review verdict" is gone from "Not verified" (the sentence reads well without it).
+  This corrects my own earlier "8 of 9" (Task 10's review was finished by then).
+- **I-1 (b)** `git log --oneline origin/main..HEAD` gives 20 commits before Task 11's first commit
+  (19 + `c8cf471`); "20 commits precede", Task 10 is `ccc71d0`, `c8cf471`, Task 11 follows `c8cf471`;
+  the "Task 10's own wording" bullet was added with the controller's text.
+- **I-1 (c)** "scoped re-review" claim corrected in the process-log Participants line and in
+  `prompts/2026-09-24-T-13.md`: only Task 3's two fix rounds had one (ledger lines for `rereview-t13-3`
+  and `rereview-t13-3b`; no other T-13 task had a scoped re-review).
+- **I-1 (d)** "except the two cases under 'Not shown failing' below".
+- **M-1** the Linux Docker check also passed the flag on the command line; added with the case-2 pointer.
+- **M-2** "Task 3 assumed 875; it was 878 after Task 2's follow-up (888 after its own 10)".
+- **M-3** the reviewer's `secrets:scan` at `94b7c3a` (340 commits, no leaks) is in the entry, attributed
+  to the whole-branch reviewer. My own runs: at `94b7c3a` 340 commits, no leaks (diffs and messages);
+  after `bb059dc` 341 commits, no leaks (diffs 10.93 MB, messages 159.98 KB).
+- **M-4** Task 5's accepted deviation (stale fixture built from the DoD) added to the entry.
+- **M-5** README `db:drift` row padded and closed with ` |` (checked: same length as the other ASCII rows).
+- **M-6** `tests/fixtures/README.md` names `listedWithoutPage` (`04dc381`, unchanged by the rebase).
+- **M-7** `tests/api/README.md` names the `LoginAttempt`-dropped fixture.
+- **First-CI-run risks 1-3** added to the T-16 hand-off in `backlog.md` as items (5)-(7) and to the
+  entry's "Not verified": Chromium-off never ran the new specs (only Firefox off measured, 106/11/0),
+  the drift spec first meets the CI Postgres service container, the message scan reads every ref.
+  Item 3 was checked against `scripts/secret-scan.sh` (`git log --all`, tags via `for-each-ref`);
+  `postgres:18.6-alpine` is the image of the `api` and `e2e` service containers in `ci.yml` (lines 56
+  and 125) and of the local compose database, so the difference is the container, not the version.
+- **Verified-section wording:** the entry now says `c8cf471` (committed 19:17:01) may or may not have
+  been in the tree the `test:all` run started from; the run's secret-scan output is stamped 7:17PM.
+  `format:check` and actionlint were re-run afterwards, at the final head.
+- **Not done, as ruled:** M-8 — a blank line between the T-15 and T-16 rows of `backlog.md`
+  (line 80 now; it existed before this task) breaks the table so T-16 renders as text; a separate small
+  PR. M-9 is the controller's.
+- **Checks after the commit (each its own command):** `npm run secrets:scan` clean (above),
+  `npm run format:check` "All matched files use Prettier code style!" (before the commit; only the
+  report copy changed after), `npm run typecheck` clean, actionlint `exit=0`.
+- The copy of this report in `docs/04-process/prompts/2026-09-24-T-13/task-11-report.md` was
+  refreshed to this text in a follow-up commit.
