@@ -21,7 +21,7 @@ Testing is a headline claim (S1). The suite must be readable, traceable to stori
 
 Test data: a `test-support` route (`/api/test/reset`, `/api/test/seed`) exists only when `APP_ENV=test`; a unit test asserts it is absent otherwise. Auth in E2E via ~~a stored `storageState` created once per run~~ a per-test API login after the test's reset (clarification 2026-09-23). E2E targets `next build && next start` on a throwaway Neon branch (or local Postgres in Docker) — never `next dev`.
 
-Commands: `npm test` (unit + component), `npm run test:api`, `npm run test:e2e`, `npm run test:all` (what CI runs). Traceability: a script greps `US-\d\d` across `tests/` and fails CI if any story id of the release being built (`docs/03-specs/release-1-stories.txt`) is not named in a test title (clarification 2026-09-24, proposed).
+Commands: `npm test` (unit + component), `npm run test:api`, `npm run test:e2e`, `npm run test:all` (what CI runs). Traceability: a script ~~greps `US-\d\d` across `tests/` and fails CI if any story id from `user-stories.md` is missing~~ fails CI if any story id of the release being built (`docs/03-specs/release-1-stories.txt`) is not named in a test title (clarification 2026-09-24, proposed).
 
 ## Alternatives considered
 **A. This pyramid — chosen.**

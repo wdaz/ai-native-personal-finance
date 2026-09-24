@@ -50,6 +50,10 @@ gate runs only under `npm run test:coverage` (CI, `npm run test:all`); `npm test
 checks of it, not the gate itself.
 
 T-13: `traceability.test.ts` checks the NFR-T2 scan (`scripts/traceability.ts`): every Release 1 story
-id is in a `test`/`it`/`describe` title of some suite under `tests/`. The scan reads this very file
-too, so its fixtures are built by a `call(fn, title)` helper — a literal `test("US-…")` here would
-name a story no real test names, and mask a missing one.
+id is in the title of a `test`/`it`/`describe`/`test.describe` call in some `*.test.ts(x)` or
+`*.spec.ts(x)` under `tests/` (`fixtures/` and helper files excluded). The scan reads the syntax
+tree, so a story id in a comment, a string, a skipped test or group, a regular expression's `.test()`
+or Zod's `.describe()` does not count; each of those has a fixture (built as a string by `call()`)
+that must be reported, next to one positive control per accepted form. A conditional
+`test.skip(cond, …)` is out of scope. `run(root)` is the whole CLI, so the exit code and messages
+are tested against a throwaway repository.
