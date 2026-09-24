@@ -1,4 +1,5 @@
 import { COPY } from "@/src/shared/copy";
+import { TEST_IDS } from "@/src/shared/test-ids";
 import { expect, loginViaApi, resetDemoData, tabTo, test } from "../fixtures/e2e";
 
 const NAMES = ["Overview", "Transactions", "Budgets", "Pots", "Recurring Bills"] as const;
@@ -118,6 +119,8 @@ test("US-37 AC2 US-32 dismissing the reset banner with Enter hands focus to the 
   await page.goto("/overview");
   await page.getByRole("button", { name: COPY.dismissNotice }).focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("status")).toHaveCount(0);
+  // getByTestId, not getByRole("status"): T-11's AgentToolsStatus indicator is also
+  // role="status" on every authenticated page now, so the role alone is ambiguous.
+  await expect(page.getByTestId(TEST_IDS.resetBanner)).toHaveCount(0);
   await expect(page.getByRole("main")).toBeFocused();
 });

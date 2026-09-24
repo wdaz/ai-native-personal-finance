@@ -2115,3 +2115,144 @@ them too").
 - **Owner check:** the owner asked for the app to be run locally ("local run et. yoxlayım") and
   checks it themselves under `npm run dev`; their result is not recorded here.
 - **Next:** the owner merges PR #23; TD-6 is then marked Closed.
+
+## 2026-09-24 — Phase 5: T-11 WebMCP adapter
+
+- **Phase:** 5 (Build the slice), Release 1.
+- **Participants:** Owner / Agent (Claude Code, on Claude Code's web/cloud environment).
+- **Trigger:** the owner's message, verbatim: "T-11 planlamasına başla" ("Start planning T-11").
+  Followed by "start" at the plan gate, accepting both findings below "as recommended".
+- **Prompt(s):** `prompts/2026-09-24-T-11.md`.
+- **Produced:** `docs/04-process/plans/2026-09-24-T-11.md`; `src/webmcp/types.ts`, `adapter.ts`,
+  `defineTool.ts`, `status-context.ts`, `WebMcpProvider.tsx`, `WebMcpTools.tsx`,
+  `AgentToolsStatus.tsx` (+ `.module.css`); `src/ui/agent-tools-indicator.tsx`
+  (`AgentToolsIndicatorProvider`, a plain `ReactNode` slot — plan D1); edits to
+  `app/(app)/layout.tsx`, `src/ui/Sidebar.tsx` (+ `.module.css`), `src/ui/PageHeader.tsx`
+  (becomes a Client Component), `src/ui/Shell.tsx` (doc comment only); `package.json` +
+  `package-lock.json` (`@mcp-b/webmcp-polyfill@^5.1.0`); `tests/unit/webmcp/adapter.test.ts`,
+  `defineTool.test.ts`, `WebMcpProvider.test.tsx`, `AgentToolsStatus.test.tsx` (38 tests);
+  `docs/03-specs/webmcp-tools.md` v1.0.3; `docs/03-specs/tech-debt.md` v1.5 (TD-5 closed);
+  the boundary fixture repoint (`domain-imports-webmcp.ts.fixture` → `src/webmcp/adapter`) and
+  its README; the READMEs (`src/webmcp`, `src/ui`, `tests/unit`); this entry.
+- **What the agent got right:** the plan gate re-checked ADR-0004/SPEC-webmcp-tools §2.2
+  against the actually-installed `@mcp-b/webmcp-polyfill@5.1.0` — reading its `dist/index.js`
+  and README directly, not trusting the spec text or the 2026-09-08 research note — and found
+  two places the API had moved since the spec was written (Q1: no `unregisterTool(name)`, tool
+  lifetime is `AbortSignal`-based instead; Q2: a tool's registered `execute` receives only the
+  raw input, never a runtime signal). Both were presented as recommendations at the gate and
+  accepted with "start"; the SPEC-webmcp-tools v1.0.3 changelog records Q1 as a spec correction,
+  matching the T-04 plan gate's own precedent for a similar package-vs-spec drift
+  (`zod-to-json-schema` → `z.toJSONSchema`). The `AbortController`-per-generation design (D2)
+  turned out to need no extra bookkeeping: the runtime's own `signal?.throwIfAborted()` before
+  adding a tool, and its `abort` listener removing one, already give "drop a stale generation"
+  and "remove everything the last `register()` added" for free.
+- **What the agent got wrong or missed:** the plan's Decision D1 (a `ReactNode` slot in
+  `src/ui`, populated from `app/(app)/layout.tsx`, so `src/ui` never imports `src/webmcp`) was
+  right in shape but wrong in one specific: the first implementation rendered
+  `<AgentToolsIndicatorContext.Provider value={...}>` directly from `app/(app)/layout.tsx` (a
+  Server Component), reading `.Provider` off a context object imported from a `"use client"`
+  module. Every one of this task's 38 unit tests passed — jsdom component tests render each
+  piece in isolation and never cross an actual RSC server/client boundary, so they could not
+  have caught this. It surfaced only when the app was actually run: `docker compose` has no
+  daemon in this environment (as T-09's entry already noted), but this sandbox does have a
+  native PostgreSQL 16 (`service postgresql start`, not tried before), so a real `db:reset` +
+  `next dev`/`next start` + a Playwright script driven at `/opt/pw-browsers/chromium` (not
+  `npx playwright test`, whose pinned Chromium version is not the one installed here) logging
+  in as the demo account and opening `/overview` reproduced, verbatim: `pageerror: Element type
+  is invalid: expected a string ... but got: undefined. ... Check the render method of
+  `AppLayout`.` — every authenticated page, not just the indicator, failed to render
+  ("This page couldn't load"). The fix (also verified by re-running the exact same script
+  against the exact same session, now succeeding) wraps the `.Provider` usage in a real
+  component, `AgentToolsIndicatorProvider`, entirely inside the `"use client"` file —
+  `app/(app)/layout.tsx` now only ever renders it as a plain element, the same shape
+  `WebMcpProvider` (which never had this bug) already used for its own context. Recorded in
+  `src/ui/agent-tools-indicator.tsx`'s own doc comment and as a new `build-workflow.md` rule of
+  thumb, so the next task reaches for the component wrapper first rather than by luck.
+- **Verified, not reasoned — the crash and the fix, both run:** before the fix, the Playwright
+  script's console listener recorded the `pageerror` above and `H1` read "This page couldn't
+  load"; after the fix, the identical script (same login, same `/overview` navigation) recorded
+  zero `pageerror`s, `H1` read "Overview", and the sidebar's indicator read `aria-label="Agent
+  tools: polyfill · 0"` with `title="Provided by a polyfill; no built-in agent yet"` — checked
+  in the expanded sidebar, the collapsed sidebar (US-35, the indicator becomes a centred dot,
+  plan D5), and at 500 px width (the page header's compact dot before "Log out"), under both
+  `next dev` and a clean `next build && next start`. The production build's console carried
+  zero CSP violations (TD-6 is dev-only, confirmed directly rather than assumed) and
+  `document.modelContext` was a real object — the polyfill loaded and installed for real in an
+  actual Chromium, not a mock. `npm audit --audit-level=high`: 0. A second, real bug the same
+  run caught and fixed before it shipped: `register()`'s first draft counted every tool in its
+  input array as registered even when the runtime's own `registerTool` call for one of them had
+  rejected; `Promise.allSettled` plus filtering `registeredNames` to the `fulfilled` results
+  fixed it, and a unit test (`adapter.test.ts`, "does not block the others ... is not counted
+  as registered") pins the corrected behaviour by making one `registerTool` call reject and
+  asserting the rejected tool's name is absent from `registeredTools()`.
+- **Also found and fixed while writing `AgentToolsStatus`'s own component test:** the ARIA
+  `status` role does not compute its accessible name from content (unlike, e.g., `button`) — the
+  sidebar row, which relied on visible text plus a `title` attribute, had its accessible *name*
+  silently become the `title` string instead of the live status text (`getByRole("status",
+  {name: ...})` found nothing until this was fixed). Both variants now set `aria-label`
+  explicitly; the inner text span is `aria-hidden` to avoid a double announcement.
+- **Environment (differs from other sessions' entries; noted for the PR):** Node v22.22.2 (repo
+  requires `>=26`, an `EBADENGINE` warning on every `npm install` here — not changed, since it is
+  this sandbox, not the repository, that is behind). No Docker daemon; PostgreSQL 16 was started
+  as a native service instead (`service postgresql start`, a password and a `personal_finance`
+  database created for this session only). `npx playwright test --project=chromium` failed all
+  90 tests immediately with "browser not found" — the pinned `@playwright/test` version's
+  expected Chromium build is not the one at `/opt/pw-browsers`; not attempted to fix (a sandbox
+  packaging detail outside this task), and worked around for this task's own verification with a
+  standalone script pointed at the installed binary directly, described above. `npm test` 796
+  (758 + this task's 38), `npm run test:api` 91 (unchanged — T-11 adds no route), `npx tsc
+  --noEmit`/`npm run lint`/`npm run format:check` clean, `npm run build` clean (Turbopack).
+- **Owner changes and reasoning:** none yet — awaiting review.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A Provider around a context created in a `"use client"` module must be a real component
+     rendered entirely inside that module (`export function XProvider({ children, ... }) {
+     return <XContext value={...}>{children}</XContext>; }`); a Server Component must never
+     read a property — `.Provider` included — off the imported context object itself. This is
+     now a `build-workflow.md` rule of thumb.
+  2. A unit-test suite that renders every piece in isolation (jsdom, one component at a time)
+     cannot catch a defect that only exists at the seam between a Server Component and a
+     `"use client"` module — that seam is only real inside Next's own RSC bundler. The DoD's
+     "start the dev server and use the feature in a browser" line is not optional polish for a
+     shell-level change even when the feature itself (an indicator showing "0 tools") looks too
+     small to need it; this task's whole app would have shipped broken without it.
+  3. This sandbox has a usable native PostgreSQL the Docker-first instructions do not mention —
+     worth a line in the environment notes so a future session does not re-conclude "no database
+     available" from `docker compose` alone.
+- **Next:** T-12 (R1 tools, `get_balance`/`get_overview_summary`, via-marker logging,
+  `src/shared/api-client.ts`, E2E in polyfill/off modes) per backlog v1.20.
+
+### Addendum — 2026-09-24, PR #24's CI: a real regression in 4 pre-existing E2E tests
+
+- **Trigger:** the owner asked for a PR ("PR yarat"); PR #24 opened and subscribed. CI's "E2E
+  (Chromium)" job failed on the very first push (`4b6a70b`): 4 of the 90 `tests/e2e` tests —
+  none of them new, all pre-existing `ResetBanner` tests in `app-shell.spec.ts` and
+  `app-shell-keyboard.spec.ts`.
+- **Root cause, this task's own:** `ResetBanner` has always been `role="status"` with no
+  distinguishing name or testid, and every one of these tests located it with a bare
+  `page.getByRole("status")`, correct as long as it was the only such element on the page. T-11's
+  `AgentToolsStatus` indicator is also `role="status"` (SPEC-webmcp-tools §2.7) and is now
+  mounted on every authenticated page — a second, independent live region the pre-existing
+  locators could not distinguish from the banner, failing with a strict-mode violation
+  ("resolved to 2 elements") or, worse, a `toHaveCount(0)` that could never pass once the
+  indicator was always present. Confirmed from the CI job's own log (`get_job_logs`), not
+  guessed from the diff.
+- **Fixed:** `TEST_IDS.resetBanner` added and set as `data-testid` on `ResetBanner`'s root
+  `div` — exactly the case ADR-0003 names a `data-testid` fallback for ("the accessible tree is
+  ambiguous"), not a new exception to it. All 7 occurrences across the two spec files (more than
+  the 4 CI reported failing; the rest happened to pass by accident of ordering/content, not by
+  being correct) switched from `page.getByRole("status")` to
+  `page.getByTestId(TEST_IDS.resetBanner)`.
+- **Verified, not just reasoned:** reproduced locally first (same 4 failures, same error text,
+  against a real Postgres and a real Chromium at `/opt/pw-browsers/chromium` via a session-local
+  `playwright.local.config.ts`, deleted before committing), then re-ran the same two spec files
+  after the fix — 30/30 passed — then the full `tests/e2e` suite — 90/90 passed. `npx tsc
+  --noEmit`, `npm run lint`, `npm run format:check`, `npm test` (796), `npm run test:api` (91)
+  all re-run and green.
+- **Lesson:** a `role="status"` (or any non-unique ARIA role) locator with no name filter is an
+  implicit "there is exactly one of these" assumption that a later, unrelated task can silently
+  break by adding a second live region to the same page — this is exactly why ADR-0003 keeps
+  `data-testid` as a named fallback rather than leaving every locator to roles alone; a bare-role
+  locator on a shared layout (the shell, not a single feature's own page) is worth a second look
+  the next time one is added.
+- **Pushed:** `fix(e2e): T-11's status role collides with the reset banner's own locators`.

@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { COPY } from "@/src/shared/copy";
 import { formatDate } from "@/src/shared/dates";
+import { TEST_IDS } from "@/src/shared/test-ids";
 import { isBannerDismissed, subscribeBanner, writeBannerDismissed } from "./banner-state";
 import { CloseCircleIcon } from "./icons/CloseCircleIcon";
 import styles from "./ResetBanner.module.css";
@@ -38,7 +39,7 @@ export function ResetBanner({ lastResetAt, resetIntervalDays, onDismissed }: Res
   if (dismissed) return null;
 
   return (
-    <div role="status" className={styles.banner}>
+    <div role="status" data-testid={TEST_IDS.resetBanner} className={styles.banner}>
       <p className={styles.text}>{COPY.resetBanner(resetIntervalDays, formatDate(lastResetAt))}</p>
       <button
         type="button"

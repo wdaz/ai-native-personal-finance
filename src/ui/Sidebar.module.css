@@ -68,6 +68,14 @@
   flex-direction: column;
 }
 
+/* T-11 plan D5: no design source for the collapsed rail's indicator placement — centred in the
+   88 px rail, the same vertical rhythm as the row buttons below it. */
+.indicatorCollapsed {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--spacing-200);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animated {
     transition: none;
