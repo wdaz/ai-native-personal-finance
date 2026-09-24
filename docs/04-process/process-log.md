@@ -2047,3 +2047,13 @@ them too").
   "violation fixture" is only proof once it has actually been run against the *unfixed* code and
   seen to fail — this review supplied that for finding 1 where the implementing session's own
   test had not.
+- **A fifth, self-caught defect, found preparing the PR description (not by the reviewer):**
+  `tests/e2e/overview.spec.ts` used `.first()`/`.nth()`/`.last()` in six places to pick one of
+  the four "See Details ›"/"View All ›" links — a rule `tests/e2e/README.md` and
+  `definition-of-done.md` both name explicitly ("no `.first()`"), and no other file in
+  `tests/e2e` uses any of the three. Caught while re-reading the DoD checklist line by line to
+  write the PR body, not by the earlier review (which read the file for what it asserted, not
+  for this specific convention). Fixed with a `cardLink(page, heading, label)` helper that
+  scopes each link by its own card's heading instead of its position — every card wraps its
+  heading and link as DOM siblings, so this is no less precise, just name- instead of
+  order-based. Re-verified: `npm test` 758, `test:api` 91, `test:e2e` (chromium) 90.
