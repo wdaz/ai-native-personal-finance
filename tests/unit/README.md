@@ -33,10 +33,6 @@ Default environment is `node`; a file that needs a DOM starts with
 
 Run: `npm test`.
 
-`coverage-gate.test.ts` (T-13) runs a nested Vitest on `tests/fixtures/coverage-gate/` and
-expects the gate to fail; `childEnv()` strips `VITEST*`, `npm_config_*` and `NODE_V8_COVERAGE`
-for child processes.
-
 T-12: `webmcp/` gains `tool-result.test.ts` (the status → code mapping; `toolError` omits `issues`
 and `retryAfter` when absent), `overview-tools.test.ts` (both tools' `execute` against a stubbed
 `fetch`: success shape, each error code, never rejects), `registry.test.ts` (iterates
@@ -44,3 +40,11 @@ and `retryAfter` when absent), `overview-tools.test.ts` (both tools' `execute` a
 `OverviewTools.test.tsx` and two cases in `defineTool.test.ts` (validation `issues`).
 `shared/api-client.test.ts` covers `apiGet`'s outcomes and `server/request-log.test.ts` the ring
 buffer (cap, exact-match, stdout outside test); `test-support.test.ts` gains the `GET log` cases.
+
+T-13: `coverage-gate.test.ts` checks the ≥ 90 % statements gate on `src/domain` (NFR-T1) three ways —
+`vitest.thresholds.json` names the domain glob at 90; the real `vitest.config.ts` imports it and
+its `coverage.include` selects a domain file (a glob that selects nothing would pass silently);
+and a nested Vitest on `tests/fixtures/coverage-gate/` must fail with the threshold named.
+`childEnv()` strips `VITEST*`, `npm_config_*` and `NODE_V8_COVERAGE` for child processes. The real
+gate runs only under `npm run test:coverage` (CI, `npm run test:all`); `npm test` runs these
+checks of it, not the gate itself.
