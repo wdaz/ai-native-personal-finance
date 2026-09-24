@@ -25,8 +25,15 @@ Playwright browser tests, one journey per story, on Chromium, Firefox and WebKit
   re-check through a synthetic `pageshow`). T-08 adds US-37 AC2 (the reset banner's date,
   its dismissal for the tab, 320 px) to `app-shell.spec.ts`, and the banner's tab stop and
   focus hand-off to `app-shell-keyboard.spec.ts`.
-- CI runs Chromium (T-06); Firefox and WebKit join in T-13. `npm run test:e2e` runs all three
-  locally.
+- CI runs four legs of this suite (T-06, T-13): `E2E (Chromium, polyfill)`, `E2E (Chromium, off)`,
+  `E2E (Firefox, polyfill)` and `E2E (WebKit, polyfill)`. `off` is built once, on Chromium: the
+  off build registers no tools, and it was measured green on Firefox locally (106 passed, 11
+  skipped, 0 failed; 2026-09-24, macOS), so Firefox and WebKit run `polyfill` only. That is a
+  measurement, not a proof that the engine cannot change the `off` path.
+  `npm run test:e2e` runs all three engines locally, in `polyfill` mode.
+- A failing WebKit test also reports `style-src-elem inline` from the CSP guard: that is
+  Playwright's failure screenshot injecting a `<style>` (measured 2026-09-24 on macOS WebKit: it
+  disappears with `screenshot: "off"`; confirm on the first Linux run); read the _first_ error.
 - `overview.spec.ts` (T-10): US-04…08 against the default seed and the seed variants
   (`empty-pots`, `few-transactions`, `empty-budgets`, `no-recurring`, `empty-all`) SPEC-overview
   §7 names, US-32's keyboard walkthrough of the page's own four card links (picking up where
@@ -35,6 +42,11 @@ Playwright browser tests, one journey per story, on Chromium, Firefox and WebKit
   and axe on the default seed, `empty-all` and a phone width. `main img` (not a role query)
   counts transaction avatars specifically — the sidebar logo and the donut are both
   `<svg role="img">`, not `<img>`.
+- `axe-routes.spec.ts` (T-13) scans every route once per engine, the 404 page included, and fails
+  on a serious or critical axe violation; it first checks the status and the URL, so a listed
+  route that 404s or redirects fails instead of scanning another page. The route list is
+  `tests/fixtures/a11y-routes.ts`; `tests/unit/a11y-routes.test.ts` fails when a page under
+  `app/` is not on it, and when a listed route has no page.
 
 Run: `npm run test:e2e`.
 
@@ -45,6 +57,6 @@ Run: `npm run test:e2e`.
   `WEBMCP_MODE` is inlined when the app is built, so a spec cannot switch it: each file skips
   itself unless `RUN_MODE` matches and its first test asserts which build it is talking to, so
   a reused server built in the other mode fails with a named message instead of a timeout. CI
-  runs the whole Chromium suite once per mode. Locally the off leg is
-  `WEBMCP_MODE=off npx playwright test --project=chromium` — stop any running server first,
-  because Playwright reuses one and it would still be the polyfill build.
+  runs the whole Chromium suite once per mode, and Firefox and WebKit in `polyfill` mode.
+  Locally the off leg is `WEBMCP_MODE=off npx playwright test --project=chromium` — stop any
+  running server first, because Playwright reuses one and it would still be the polyfill build.

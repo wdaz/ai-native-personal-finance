@@ -7,9 +7,15 @@ on:
     # branch (owner decision 2026-09-22, T-02a plan gate).
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # A pull-request run is superseded by the next push to that PR. A push to `main` never
+  # cancels another: its group is its own commit, so each merge keeps its verdict (backlog
+  # T-13, PR #4 — a follow-up merge used to discard the previous commit's result).
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verify:
@@ -35,8 +41,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Unit tests
-        run: npm test
+      - name: Unit tests and the coverage gate (src/domain >= 90 % statements)
+        run: npm run test:coverage
+
+      - name: Traceability (NFR-T2, Release 1 stories)
+        run: npm run traceability
 
   api:
     name: API tests (Postgres)
@@ -94,16 +103,22 @@ jobs:
         run: npm run test:api
 
   e2e:
-    name: E2E (Chromium, ${{ matrix['webmcp-mode'] }})
+    name: E2E (${{ matrix.label }}, ${{ matrix['webmcp-mode'] }})
     runs-on: ubuntu-latest
     strategy:
-      # One leg failing must not hide the other's verdict.
+      # One leg failing must not hide another's verdict.
       fail-fast: false
       matrix:
-        # SPEC-webmcp-tools §7 / NFR-W2: the app is built once per mode — WEBMCP_MODE is inlined
-        # at build time (next.config.ts), so `off` cannot be a runtime switch. Playwright's
-        # webServer passes this environment to `npm run build`.
-        webmcp-mode: [polyfill, "off"]
+        # SPEC-webmcp-tools §7 / NFR-W2: the app is built once per leg — WEBMCP_MODE is inlined at
+        # build time (next.config.ts), so `off` cannot be a runtime switch. ADR-0003: E2E runs on
+        # Chromium, Firefox and WebKit. `off` is built once, on Chromium: it registers no tools,
+        # and it was measured green on Firefox locally (T-13 plan Q3-A).
+        # All four leg names are T-16's required checks; keep them.
+        include:
+          - { label: Chromium, browser: chromium, webmcp-mode: polyfill }
+          - { label: Chromium, browser: chromium, webmcp-mode: "off" }
+          - { label: Firefox, browser: firefox, webmcp-mode: polyfill }
+          - { label: WebKit, browser: webkit, webmcp-mode: polyfill }
     services:
       # The same database service as the API job (T-02).
       postgres:
@@ -144,21 +159,20 @@ jobs:
       - name: Install (generates the Prisma client)
         run: npm ci
 
-      # Chromium only until T-13 adds Firefox and WebKit to CI (backlog T-06).
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install ${{ matrix.label }}
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Migrate
         run: npx prisma migrate deploy
 
-      - name: E2E tests, Chromium, WEBMCP_MODE=${{ matrix['webmcp-mode'] }} (builds and starts the app with APP_ENV=test)
-        run: npx playwright test --project=chromium
+      - name: E2E tests, ${{ matrix.label }}, WEBMCP_MODE=${{ matrix['webmcp-mode'] }} (builds and starts the app with APP_ENV=test)
+        run: npx playwright test --project=${{ matrix.browser }}
 
       - name: Upload the Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-e2e-${{ matrix['webmcp-mode'] }}
+          name: playwright-report-e2e-${{ matrix.browser }}-${{ matrix['webmcp-mode'] }}
           path: playwright-report/
           retention-days: 7
 

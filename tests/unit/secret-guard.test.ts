@@ -250,6 +250,47 @@ describe("T-02a secret guard", () => {
       expect(scanHistory(conflictLeakRepo()).status).toBe(1);
     });
 
+    it("finds a secret typed into a commit message, and never prints it (T-13)", () => {
+      const repo = newRepo();
+      commitFile(repo, "a.txt", "a\n", `note\n\n${leakLine}`);
+      const result = scanHistory(repo);
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("postgres_connection_string");
+      expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
+    });
+
+    it("finds a secret typed into an annotated tag message (T-13)", () => {
+      const repo = newRepo();
+      commitFile(repo, "a.txt", "a\n", "one");
+      git(repo, "tag", "-a", "v1", "-m", `release\n\n${leakLine}`);
+      const result = scanHistory(repo);
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("postgres_connection_string");
+      expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
+    });
+
+    it("passes a message that quotes the .env.example default, as it passes the file", () => {
+      const repo = newRepo();
+      const exampleUrl = readFileSync(join(repoRoot, ".env.example"), "utf8")
+        .split("\n")
+        .find((line) => line.startsWith("DATABASE_URL="));
+      expect(exampleUrl).toBeDefined();
+      commitFile(repo, "a.txt", "a\n", `note\n\n${exampleUrl}`);
+      git(repo, "tag", "-a", "v1", "-m", `release\n\n${exampleUrl}`);
+      expect(scanHistory(repo).status).toBe(0);
+    });
+
+    it("passes messages that hold no secret, and still reports a file leak beside them", () => {
+      const clean = newRepo();
+      commitFile(clean, "a.txt", "a\n", "docs: a plain message");
+      const cleanResult = scanHistory(clean);
+      expect(cleanResult.status).toBe(0);
+      expect(cleanResult.stderr).toContain("secret-scan: commit and tag messages");
+      const leaky = newRepo();
+      commitFile(leaky, ".env", `${leakLine}\n`, "add");
+      expect(scanHistory(leaky).status).toBe(1);
+    });
+
     it("still finds it under a developer's log.diffMerges=dense-combined and color.ui=always", () => {
       const repo = conflictLeakRepo();
       git(repo, "config", "log.diffMerges", "dense-combined");

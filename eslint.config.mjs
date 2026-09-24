@@ -52,12 +52,9 @@ const config = [
       // The same resolver reaches its native binding through unrs-resolver, whose
       // postinstall is the repair path when the platform-specific optional dependency
       // is missing. package.json's `allowScripts` records that this postinstall was
-      // reviewed and approved. It is a policy record, not a gate: npm skips a script only
-      // when the policy denies it outright (`false`), so under the default
-      // `strict-allow-scripts=false` an unlisted script still runs and merely warns. The
-      // entry becomes load-bearing the moment `strict-allow-scripts` is turned on, where
-      // an unreviewed install script fails the install instead. Keep it for that reason,
-      // not because anything is blocked today.
+      // reviewed and approved. `.npmrc` sets `strict-allow-scripts=true` (T-13), so a
+      // script it does not name fails the install: the entry is load-bearing, and
+      // tests/unit/install-scripts.test.ts removes one on purpose to show it.
       "boundaries/include": ["app/**/*", "src/**/*", "tests/**/*", "scripts/**/*"],
       // `partialMatch: false` makes the pattern match the whole file path. The pattern
       // must end in `/**` and not `/**/*`: the latter requires a segment after `**`, so

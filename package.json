@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=26"
+    "node": ">=26",
+    "npm": ">=11.19"
   },
   "scripts": {
     "dev": "next dev",
@@ -23,10 +24,12 @@
     "test:e2e": "playwright test --project=chromium --project=firefox --project=webkit",
     "test:e2e:ui": "playwright test --ui",
     "secrets:scan": "scripts/secret-scan.sh history",
-    "test:all": "npm run secrets:scan && npm run lint && npm run format:check && npm run typecheck && npm test && npm run test:api && npm run test:e2e",
+    "test:all": "npm run secrets:scan && npm run lint && npm run format:check && npm run typecheck && npm run test:coverage && npm run traceability && npm run test:api && npm run test:e2e",
     "postinstall": "prisma generate",
     "db:reset": "prisma migrate deploy && prisma db seed",
-    "seed:figures": "tsx scripts/seed-figures.ts"
+    "db:drift": "sh scripts/schema-drift.sh",
+    "seed:figures": "tsx scripts/seed-figures.ts",
+    "traceability": "tsx scripts/traceability.ts"
   },
   "dependencies": {
     "@mcp-b/webmcp-polyfill": "^5.1.0",
@@ -61,18 +64,19 @@
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.70.0",
-    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^5.0.1"
   },
   "allowScripts": {
     "unrs-resolver@1.12.2": true,
     "prisma@7.10.0": true,
     "@prisma/engines@7.10.0": true,
-    "esbuild@0.28.2": true
+    "esbuild@0.28.2": true,
+    "fsevents@2.3.3": false
   },
   "//": [
     "overrides: prisma@7.10.0 pins deepmerge-ts 7.1.5 (GHSA-ggr8-5vv4-36mx) and mysql2 3.15.3 (GHSA-3f6p-5ww8-9rcr, GHSA-rgwj-5xj2-c3m3); forcing the fixed releases keeps npm audit at 0 behind the T-02a gate (owner decision 2026-09-22).",
-    "Drop both overrides when Prisma ships fixed versions (backlog T-13)."
+    "Re-measured 2026-09-24 (T-13): still needed — without them npm audit reports 4 high; prisma@7.10.0 (newest stable 7.x) pins deepmerge-ts 7.1.5 (via @prisma/config) and mysql2 3.15.3. Re-check: remove both overrides in a scratch copy, npm install --package-lock-only, npm audit --audit-level=high. Drop them when it is clean (owner: T-16).",
+    "allowScripts: fsevents@2.3.3 (macOS only; its install is node-gyp rebuild) is denied — its tarball ships the prebuilt fsevents.node, which loads (T-13, measured 2026-09-24). .npmrc sets strict-allow-scripts=true, so a dependency with an install script that is not listed fails the install."
   ],
   "overrides": {
     "deepmerge-ts": "8.0.2",

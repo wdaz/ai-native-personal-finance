@@ -13,17 +13,25 @@ imports it from here (`seedFigures()`) rather than typing it
 (`docs/04-process/build-workflow.md`: "Any seed-derived figure in code or tests comes from
 `scripts/seed-figures.ts`, never typed").
 
+`schema-drift.sh` (T-13, T-02 hand-off) runs `prisma migrate diff` between the migrated
+Postgres named by `DATABASE_URL` and `prisma/schema.prisma` (or the schema file given as its
+argument), so a schema edit without a migration, or a migration without a schema edit, fails.
+Exit 0 = no difference, 2 = drift (Prisma's own `--exit-code`), 1 = Prisma could not run. It
+needs a migrated database (`npm run db:reset` first); run it with `npm run db:drift`.
+`tests/api/schema-drift.spec.ts` runs it against the real schema and proves it reports drift
+in both directions, with a schema that has an extra model and one that lacks a migrated table.
+
 ## Secret guard (T-02a, NFR-S5)
 
 POSIX shell, no imports. `tests/unit/secret-guard.test.ts` proves each part fails on
 purpose.
 
-| File                   | Role                                                                                                                                                                                       |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `gitleaks.sh`          | Runs the pinned gitleaks release; downloads it on first use into `node_modules/.cache/gitleaks/<version>/<platform>/` and checks its SHA-256 once, at download; a cached binary is trusted |
-| `secret-scan.sh`       | The two scans with their flags: `history` (the changes in every commit, merges included, not commit or tag messages — CI and `npm run secrets:scan`) and `staged` (the pre-commit hook)    |
-| `git-hooks/pre-commit` | Blocks a commit whose staged changes contain a secret; `git commit --no-verify` skips it, CI does not                                                                                      |
-| `install-git-hooks.sh` | Sets `core.hooksPath` to `scripts/git-hooks`; run by `npm install` and `npm ci` through `prepare`                                                                                          |
+| File                   | Role                                                                                                                                                                                                                                                |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gitleaks.sh`          | Runs the pinned gitleaks release; downloads it on first use into `node_modules/.cache/gitleaks/<version>/<platform>/` and checks its SHA-256 once, at download; a cached binary is trusted                                                          |
+| `secret-scan.sh`       | The two scans with their flags: `history` (the changes in every commit, merges included, and every commit and annotated-tag message — CI and `npm run secrets:scan`) and `staged` (the pre-commit hook, which cannot see the message being written) |
+| `git-hooks/pre-commit` | Blocks a commit whose staged changes contain a secret; `git commit --no-verify` skips it, CI does not                                                                                                                                               |
+| `install-git-hooks.sh` | Sets `core.hooksPath` to `scripts/git-hooks`; run by `npm install` and `npm ci` through `prepare`                                                                                                                                                   |
 
 ### Known limitation: worktrees and an absolute `core.hooksPath`
 

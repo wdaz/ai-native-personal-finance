@@ -2500,3 +2500,243 @@ them too").
 - **Next:** the controller pushes `fix/origin-agent-cluster` and opens a draft PR; the owner
   reviews, accepts or amends ADR-0006 (5) and SPEC v1.0.5, and merges it. T-13 continues on
   `task/T-13-ci-hardening` in parallel; its Task 10 waits for this PR to be merged.
+
+## 2026-09-24 — Phase 5: T-13 CI hardening — execution
+
+- **Phase:** 5 (Build the slice), Release 1. The plan gate (`build-workflow.md` §2) was the planning
+  session's; this entry is the execution. The planning entry ("T-13 CI hardening — planning
+  session") and the plan file `docs/04-process/plans/2026-09-24-T-13.md` exist only on branch
+  `worktree-t-13-plan`, not on `main` and not on this branch, so this is a new entry and not the
+  planning entry completed. The plan's status line and the planning entry get their update
+  (executed; what differed) in a separate docs PR from the plan branch.
+- **Participants:** Owner / Agent (Claude Code) — a controller agent with one implementer subagent
+  per task (Sonnet 5), a review after each of Tasks 1–10 (Task 11 was covered by the
+  whole-branch review; Opus 5.5, `governance.md` v1.3); a scoped re-review followed Task 3's two
+  fix rounds and the fix round after each whole-branch review (PR-A, T-13); the other follow-up
+  commits are covered by the whole-branch review; the execution method, subagent-driven
+  development, is the owner's choice as relayed by the controller. This entry was written by the
+  Task 11 implementer (Sonnet 5) from the controller's ledger and the per-task reports.
+- **Trigger:** the owner's answers to the plan's Q1–Q8 and the go-ahead. Recorded in the
+  controller's ledger: Q4, Q5, Q7 and Q8 were answered "recommended" and the owner then said
+  "start" — those four were not individually confirmed (cost if wrong: rework of Tasks 6, 7 and 8
+  only).
+- **Prompt(s):** `prompts/2026-09-24-T-13.md`; the briefs and reports are in
+  `prompts/2026-09-24-T-13/`.
+- **Produced** (all on `task/T-13-ci-hardening`, rebased onto `origin/main` `99298f9` after PR-A —
+  PR #28, `fix/origin-agent-cluster` — merged; the commit ids below are the rebased ones, and 20
+  commits precede this task's own):
+  - Task 1, `21b9c97` — `ci.yml`: workflow `permissions: contents: read`; the `concurrency` group is
+    the PR ref for a pull request and the commit for a push, so a push to `main` never cancels
+    another run.
+  - Task 2, `7641d80`, `d627387` — `vitest.thresholds.json` (90 % of statements on `src/domain`),
+    `vitest.config.ts` reads it, `vite-tsconfig-paths` replaced by `resolve.tsconfigPaths`,
+    `coverage.include` narrowed to `{ts,tsx}`; `tests/unit/coverage-gate.test.ts` with a fixture
+    config (`tests/fixtures/coverage-gate/`) and a test that pins the real config's wiring;
+    `tests/fixtures/child-env.ts`; `npm run test:coverage` is now what `test:all` and CI run.
+  - Task 3, `9a80be6`, `c1087a7`, `32ee66c` — `scripts/traceability.ts` (`npm run traceability`)
+    and `docs/03-specs/release-1-stories.txt` (18 ids, generated from PRD §5); the scanner reads
+    test titles from the TypeScript syntax tree; ADR-0003's traceability sentence, clarification
+    2026-09-24, written as **Proposed, awaiting the owner's acceptance**; a `verify`-job step.
+  - Task 4, `9a55749`, `d464e47` — `scripts/schema-drift.sh` (`npm run db:drift`),
+    `tests/api/schema-drift.spec.ts` (three cases), README rows.
+  - Task 5, `fda549a`, `32d3a8e` — `.github/pull_request_template.md` (the 21 items of the
+    Definition of Done) and `tests/unit/pr-template.test.ts`.
+  - Task 6, `13b3928`, `04dc381` — `tests/e2e/axe-routes.spec.ts` scans all 8 routes (7 pages and
+    the 404) and `tests/fixtures/a11y-routes.ts` with a two-way guard: a page missing from the list,
+    and a listed route without a page, both fail.
+  - Task 7, `80af2e4`, `1f3099e` — `.npmrc` (`strict-allow-scripts=true`), `fsevents@2.3.3: false`
+    in `allowScripts`, `engines.npm` `>=11.19` in `package.json` and the lockfile, the README
+    sentence, `tests/unit/install-scripts.test.ts`, `tests/unit/child-env.test.ts`, the corrected
+    ESLint comment.
+  - Task 8, `03f3c8e`, `ebe0a15`, `9e19e33` — the history scan also reads commit and tag messages
+    (`scripts/secret-scan.sh`), three docs corrected, four new secret-guard tests (30 in the file).
+  - Task 9, `3a8341e` — the four focus-after-error tests submit with `Enter`; TD-4 **Closed**.
+  - Task 10, `ccc71d0`, `c8cf471` — the `e2e` job is a `matrix.include` of four legs, `E2E (Chromium,
+    polyfill)`, `E2E (Chromium, off)`, `E2E (Firefox, polyfill)`, `E2E (WebKit, polyfill)`;
+    `tests/e2e/README.md`.
+  - Task 11 (this entry; the commits that follow `c8cf471`) — backlog v1.22 and its hand-offs to
+    T-14, T-15 and T-16; tech debt v1.9; the `package.json` overrides note (owner: T-16); the README
+    (two command rows, two stale lines); `prompts/2026-09-24-T-13.md` and its folder; this entry.
+- **What was found during execution, and decided:**
+  - **The Prisma overrides stay** (plan F4, Q7). Re-measured in a scratch copy outside the
+    repository: with both `overrides` removed and `npm install --package-lock-only
+    --ignore-scripts`, `npm audit --audit-level=high` reports 4 high, and the lockfile then holds
+    `deepmerge-ts` 7.1.5 (under `@prisma/config`) and `mysql2` 3.15.3 (under `prisma`) — the
+    versions the advisories name. `prisma@7.10.0` is the newest stable 7.x; the `latest` dist-tag
+    is `8.0.0-rc.15`, a release candidate. The `"//"` note now says so and names T-16 as the owner
+    of the removal.
+  - **A commit-message hook is out of scope.** The pre-commit `staged` scan cannot see the message
+    being written; Task 8's history scan reads it after the fact, in CI and in `test:all`. A
+    `commit-msg` hook is the missing piece and is not built.
+  - **An npm older than 11.19 only warns** (Task 7's review; measured): `Unknown project config`,
+    exit 0, and the install-script policy is then not enforced. The plan's stop trigger ("stop if
+    `Unknown project config` errors") could never fire. The fix is `engines.npm` `>=11.19` (npm only
+    warns on an engine mismatch without `engine-strict`) and a README sentence; the runner's npm
+    is whatever ships with the latest Node 26.x (`.nvmrc` is `26`), so the first CI run is the
+    check, and T-14 carries the same check for Vercel.
+- **What the agent got right:** the plan's measurements held where they were runnable: 18 Release 1
+  stories all named in a test title, the axe scan finding no real violation on any of the 8
+  routes, the four TD-4 tests failing on Chromium when the focus calls are deleted and passing on
+  three engines when they are not, and `strict-allow-scripts` behaving on Linux as it did on macOS
+  — enforced with an `esbuild@0.28.2` entry removed (`ESTRICTALLOWSCRIPTS`), tolerant of the absent
+  `fsevents` — measured in a `node:26` container (node 26.10.0, npm 11.19.1) in a scratch
+  directory after a first pass skipped it on a controller instruction that was too broad (the
+  flag was also passed on the command line there; `.npmrc` alone on Linux will be proved only when
+  `install-scripts.test.ts` case 2 passes on the first CI run).
+  Every guard was made to fail on purpose before it was trusted, except the two cases under
+  "Not shown failing" below: mutation runs are quoted in
+  each report (the old regex scanner 18 failed, the skip logic off 16 failed, a fake route,
+  `/overview` listed as unauthenticated, an unticked template line, an empty database for the drift
+  spec, the three focus calls deleted).
+- **What the agent got wrong or missed — the plan's own text:** the pre-flight scan found ten
+  conflicts before any task ran (wrong counts and line references, the missing plan branch);
+  execution and the reviews found the rest. Recorded so the plan's author can see the pattern:
+  - **The traceability scanner** (Task 3, plan code): a text regex counted a test call inside a
+    comment, a string or template literal, a skipped group, and a method call such as
+    `/x/.test("US-02")`; the "comment" fixture held no call syntax, so it could not fail. Rewritten
+    on the TypeScript syntax tree with one failing fixture per class (53 tests; 18 failed against
+    the old scanner, 16 with the skip logic off). The re-review then found that the test file's own
+    title named `US-41`, and the real scan reads that file, so US-41 always counted as named;
+    reworded and pinned (`titleStoryIds` of the file itself must be empty). It also chose the script
+    kind by file extension, because a `.ts` generic arrow parsed as JSX.
+  - **The PR template's "all unticked" check** (Task 5, plan code) never failed on purpose: the
+    regex was in the test but no fixture showed it matching a ticked line; the set comparison let
+    a duplicated or reordered item pass. Both got fixtures.
+  - **The axe route guard** (Task 6, plan code) was one-way (discovered pages must be listed, not the
+    reverse) and the spec did not pin the page it scanned — a deleted-but-listed page, or a
+    redirect to `/login`, would scan the 404 or the login page under another name and stay green.
+    Two-way guard, status and URL asserted, page-file extensions widened to what Next serves.
+  - **Three tracked documents said the opposite of the shipped behaviour** (Task 8):
+    `README.md`, `scripts/README.md` and `tests/fixtures/secret-scan/README.md` all said
+    commit and tag messages are not scanned. Rewritten; the script's `|| status=1` had also
+    collapsed every non-zero exit to 1, and the tag test only checked an exit code.
+  - **The install policy's failure mode** (Task 7): see "found" above — the plan's stop trigger could
+    not fire on the case that matters.
+  - **Guards that could not tell what they compared** (Tasks 2 and 4): nothing pinned that the
+    real coverage gate is wired (a glob that matches no file reports "Unknown" and passes), and the
+    drift spec's second fixture also passed against an empty or unmigrated database; the reverse
+    direction (a migration with no schema edit) had no fixture. Each got the missing case, shown
+    failing on a throwaway database or a mutated config.
+  - **Wrong predictions, labelled "Prediction" or not:** PR-A's A1 said 16 passed where the file
+    has 10 tests per engine (20); Task 10 said 108 passed per engine, the real figure is 109
+    passed and 8 skipped (117 tests) after PR-A's added E2E test; Task 3 assumed 875 unit tests,
+    it was 878 after Task 2's follow-up (888 after its own 10); Task 8 said 304 commits, the
+    branch had 329.
+  - **Task 9's own evidence note** tied the mutation to the wrong line: `LoginForm.tsx:78` is the
+    network-failure branch only, and the 429 goes through the ternary at line 94. Reworded in
+    `tech-debt.md` (v1.9) by this task, with the line numbers checked against the file.
+  - **Task 10's own wording** (review minors, fixed in `c8cf471`): the `ci.yml` comment named only
+    the two Chromium legs as T-16's required checks (all four are); the `off` rationale claimed the
+    engine cannot change the off path (now the measured Firefox off run, 106 passed, 11 skipped,
+    macOS); the WebKit screenshot note did not say macOS.
+  - **Counts, for the process:** all ten task reviews found something, and nine led to a fix —
+    Tasks 2–8 and 10 each needed a follow-up commit, and Task 9's wording defect above was fixed
+    here; Task 1's only finding (a `persist-credentials` note on the `verify` checkout, the token
+    being read-only now) was deferred. Every Important finding of a first review round (Tasks 3, 5,
+    8, and PR-A's Task A1) was in code or text the plan dictated.
+  - **Task 5's accepted deviation:** the "stale" fixture in `pr-template.test.ts` is built from the
+    DoD, not from the template, so that only the mirror test goes red on a template mutation (the
+    plan's form made the fixture test fail too); the reviewer endorsed it.
+  - **The environment cost time:** implementers repeatedly found the session's working directory
+    flipped to another worktree after a Bash call, because other agents called `EnterWorktree`
+    (Task 2: after roughly every call; Task 3: `Write`, `Edit` and `git` refused, files written to
+    the job's temp directory and copied in; Task 6: `npm run format:check` failed on another
+    agent's uncommitted files in the shared worktree). No commit went to the wrong branch — each
+    implementer checked `git branch --show-current` and staged explicit paths — but a few
+    reads and one `npm test` ran in the wrong tree and were discarded.
+  - **Not shown failing:** Task 8's tag-message redaction assertion (the harness denied the
+    `--redact` removal as weakening a security control; the script was restored, and the same
+    assertion went red-then-green in the commit-message test) and a non-1 exit from gitleaks
+    propagating through `status=$?`.
+- **Verified, not reasoned:** on `ccc71d0` plus this task's edits (documents, the `package.json`
+  note, the README; `c8cf471`, which changed only `ci.yml` comments and `tests/e2e/README.md`,
+  was committed at 19:17 and may or may not have been in the tree the run started from), macOS,
+  Postgres 18 from `compose.yaml`, nothing else on port 3000 —
+  `npm run test:all` exited 0: secret scan "337 commits scanned … no leaks found" for the diffs
+  and "no leaks found" for the messages (both labelled in the output); lint, format check and
+  typecheck clean; unit + coverage 77 files, 958 tests passed, statements 99.5 % (401/403);
+  traceability "all 18 Release 1 stories are named in a test title"; API 100 passed; E2E on
+  Chromium, Firefox and WebKit 327 passed, 24 skipped, 0 failed (351 runs, 117 per engine; the 8
+  skips per engine are the off-mode spec a polyfill build does not run). `npm audit
+  --audit-level=high`: "found 0 vulnerabilities". `actionlint` (`rhysd/actionlint:latest` in
+  Docker, exit status written to a file): no output, `exit=0`. The overrides re-measurement above
+  is a run too (4 high without them). After the whole-branch review, `scripts/secret-scan.sh
+  history` was re-run three times: at head `94b7c3a`, by the whole-branch reviewer, 340 commits
+  scanned, no leaks in the diffs or the messages; at `94b7c3a` again by the fix wave, the same
+  result; and at `bb059dc` by the fix wave, 341 commits, no leaks in either. A run cannot name the
+  commit that contains this line, so heads after `bb059dc` are not recorded here; the last run
+  is in the report of Task 11.
+- **Not verified:** the CI verdict of every new leg and of the workflow edits — the branch is
+  pushed, no PR is open when this entry was written; Firefox and WebKit on Linux (all local runs
+  were macOS; WebKit's `Alt+Tab` path and TD-4's four tests are the Linux-sensitive ones); the
+  runner's npm version and its handling of `strict-allow-scripts` (proved on `node:26`, not on
+  the runner) and Vercel's (T-14); the `concurrency` behaviour and the read-only token on real
+  runs; that a native browser other than Playwright's engines runs the app; the ADR-0003
+  clarification's wording (Proposed, owner). Three risks the first CI run will be the first to
+  meet: (1) `E2E (Chromium, off)` has never run T-13's new specs — the 8 `axe-routes` tests, the
+  four Enter-submit tests and PR-A's failed-registration E2E test — even on macOS; only Firefox
+  off was measured (106 passed, 11 skipped, 0 failed), so a red Chromium-off leg is not
+  necessarily a Linux problem; (2) `tests/api/schema-drift.spec.ts` (`--from-config-datasource`)
+  will first run against the CI Postgres service container (`postgres:18.6-alpine`); it has been
+  measured only against the local compose database; (3) the message scan on the runner reads
+  `refs/remotes/origin/*` and tags — every remote branch (including `worktree-t-13-plan` and
+  `docs/T-06-plan-v0.3`) and the pull request's merge commit — where locally only local refs were
+  measured.
+- **First CI run (added after PR #29 was opened):** GitHub Actions run 36022443021 on head
+  `7c807bf` (event `pull_request`, conclusion success): all eight checks passed — `lint ·
+  typecheck · unit`, `API tests (Postgres)`, `E2E (Chromium, polyfill)`, `E2E (Chromium, off)`,
+  `E2E (Firefox, polyfill)`, `E2E (WebKit, polyfill)`, `npm audit`, `secret scan`. From the verify
+  job's log: the Install step printed no `Unknown project config` line (only an `eslint`
+  deprecation warning) and added 620 packages; the unit step passed 958 tests in 77 files, which
+  includes `install-scripts.test.ts` on the runner; `traceability: all 18 Release 1 stories are
+  named in a test title`. So the risks above resolved as follows: Firefox and WebKit pass on the
+  Linux runner (including WebKit's `Alt+Tab` path and TD-4's four tests), `E2E (Chromium, off)`
+  passed with T-13's new specs, and the drift spec and the message scan passed on the runner. Still
+  not shown by this run: the `concurrency` behaviour (needs a second push to the same PR and two
+  merges to `main`), a native browser other than Playwright's engines, and Vercel's npm (T-14).
+- **Owner changes and reasoning:** the answers to the plan's Q1–Q8, as the controller relayed them:
+  Q1 — PR-A stays a separate PR, merged first (the owner's rule since T-02: a defect outside a
+  task's scope gets its own small PR); Q2 — a failed WebMCP registration must be reported even
+  though `ready` stays (verbatim in the PR-A entry); Q3 — four E2E legs; Q4 — B, the axe gate scans
+  every route and fails when a page is missing; Q5 — yes, scan commit and tag messages; Q6 — yes,
+  the traceability script is scoped to a per-release list (ADR-0003 clarification proposed); Q7 —
+  keep the Prisma overrides, move the removal note to T-16 (the owner's rule that `npm audit`
+  stays at 0, with a commented override and a removal task in preference to accepting an advisory);
+  Q8 — deny `fsevents`. The owner asked for the worktree-bootstrap lesson to be recorded (planning
+  entry, this entry, the plan's Global Constraints and the `worktree-node-setup` memory): in a
+  fresh worktree, `npm ci --ignore-scripts` then `npx prisma generate`, and a symlinked
+  `node_modules` does not work. The controller made rulings on the owner's behalf where the plan
+  was silent; each has its cost if wrong in the controller's ledger (not copied to the repository).
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. **`npm run test:all` runs three engines** (F1, the T-12 DoD gap): T-12 merged with Firefox and
+     WebKit red because its PR listed a Chromium-only result and the DoD line "`test:all` green
+     locally" was ticked. Until CI proves Linux, the reviewer's checklist asks for all three
+     engines' results (handed to T-15 in backlog v1.22).
+  2. **A readiness flag that says "finished" hides failure** (F2), and **a line a tool injects is not
+     the app's** (F3: the WebKit `style-src-elem inline` entry comes from Playwright's failure
+     screenshot; `tests/e2e/README.md` now says so). Both were found only by running the engines
+     the CI did not run.
+  3. **A symlinked `node_modules` is not a worktree bootstrap.** The generated Prisma client is per
+     checkout and the polyfill does not resolve; the two-command bootstrap belongs in every plan's
+     first task and in any brief that runs tests in a worktree.
+  4. **Agents that call `EnterWorktree` move every other agent's working directory.** A brief for
+     parallel work should say: absolute paths only, `git branch --show-current` before each commit,
+     `git add` explicit paths, and never `ExitWorktree`; the controller should not run agents in
+     parallel on a shared checkout unless their file sets are disjoint (the Task 6 and Task 7
+     follow-ups shared one working tree).
+  5. **A plan's "Expected" must be labelled a prediction, and a count must be re-measured at the
+     commit it is used at.** Four wrong numbers above came from unlabelled or stale counts.
+  6. **"A rule has failed on purpose" (DoD v1.1) worked as the review criterion.** Every Important
+     finding was a guard that could not fail; asking the implementer to show it red found them.
+     The plan should ship the failing fixture for each guard as part of the guard's code, not as a
+     later step.
+  7. **Two reviews per risky task were worth it**, but the re-review of a fix found a new
+     defect in the fix (Task 3's US-41 title) — a fix to a scanner is itself scanned.
+- **Next:** the controller opened the draft PR #29 from `task/T-13-ci-hardening` (its description
+  quotes the Definition of Done checklist; GitHub applies the new template only from the default
+  branch, so the agent pasted it) and a small commit then filled the PR number into TD-4's closing
+  line in `tech-debt.md` (TD-5 shows the number gets forgotten otherwise); the owner reads the first
+  CI run against the T-16 hand-off list in `backlog.md` v1.22, accepts or amends the ADR-0003 clarification,
+  and merges; the plan branch's docs PR (status line, planning entry) appends to this file's end
+  too, so expect a trivial conflict there; T-14 next, with the npm 11.19 check.
