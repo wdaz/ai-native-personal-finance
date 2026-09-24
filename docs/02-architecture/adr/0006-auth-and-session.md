@@ -1,7 +1,9 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
-- Status: **Accepted** (amended 2026-09-24; amendment (5) proposed, not yet accepted) · Date: 2026-09-13
-- Amendment 2026-09-24 (5) — **Proposed by the agent, awaiting the owner's acceptance** (T-13
+- Status: **Accepted** (amended 2026-09-24) · Date: 2026-09-13
+- Amendment 2026-09-24 (5) — **Accepted by the owner, 2026-09-24** ("2. Bəli" — "2. Yes", the
+  answer to the pre-T-14 planning's open item "ADR-0006 amendment (5) and SPEC-webmcp-tools
+  v1.0.5 … accept?"; drafted by the agent during T-13, its code merged earlier in PR #28) (T-13
   plan finding F1): the response headers gain `Origin-Agent-Cluster: ?1`. Firefox and WebKit
   report `originAgentCluster === false` for a document served without it, and
   `@mcp-b/webmcp-polyfill@5.1.0` refuses to run there (`validateOriginAgentCluster` throws

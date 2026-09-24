@@ -3063,3 +3063,124 @@ them too").
 - **Next:** the owner reviews and merges `docs/pre-T-14-plan`. Then T-13a's plan gate
   (`/superpowers:writing-plans t-13a`), one task per session, each with its own plan, PR and
   entry. The release-strategy discussion is next session.
+
+## 2026-09-24 — Owner accepts ADR-0006 amendment (5) and SPEC-webmcp-tools v1.0.5
+
+- **Phase:** 5 (Build the slice), Release 1 — a document status change; no code.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5)
+- **Trigger:** the previous entry's first open item: ADR-0006 amendment (5) (`Origin-Agent-Cluster:
+  ?1`) and SPEC-webmcp-tools v1.0.5 (a rejected tool registration is reported) still read "proposed,
+  awaiting the owner", though PR #28 had merged their code. The owner answered "2. Bəli" (yes).
+- **Prompt(s):** none — the conversation itself.
+- **Produced:** branch `docs/accept-adr-0006-5`:
+  - `docs/02-architecture/adr/0006-auth-and-session.md` — the status line no longer calls amendment
+    (5) proposed; the amendment reads "Accepted by the owner, 2026-09-24", in the wording amendment
+    (4) uses.
+  - `docs/03-specs/webmcp-tools.md` — v1.0.5 reads approved by the owner, in the status line, the
+    changelog and its reference to amendment (5).
+  - this entry.
+- **What the agent got right:** only the live documents changed. The plan, prompt records and
+  earlier entries that describe the amendment as proposed are history and stay as written.
+- **What the agent got wrong or missed:** the acceptance was first committed on
+  `docs/pre-T-14-plan`, together with an edit to the previous entry (moving this item from "open"
+  to "decided"). The owner had merged PR #35 at the same moment. The push re-created the deleted
+  branch instead of reaching the pull request, and the edit would have rewritten a merged entry of
+  this append-only log. The acceptance commit was cherry-picked onto a fresh branch from `main`,
+  this entry replaces the edit, and the stray branch was deleted. Lesson: check a pull request's
+  state (`gh pr view`), not the local remote-tracking ref, right before pushing to its branch.
+- **Owner changes and reasoning:** "2. Bəli" — accepted as proposed.
+- **Disagreements:** none.
+- **Lessons for the process:** an acceptance that arrives after the code has merged is still worth
+  recording promptly. Until then, the specs and ADRs describe the running code as unapproved.
+- **Next:** the owner reviews and merges; T-13a's plan gate.
+
+## 2026-09-24 — TD-11: the build downloads Public Sans from Google Fonts
+
+- **Phase:** 5 (Build the slice), Release 1 — a tech-debt entry and a backlog change; no code.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5)
+- **Trigger:** PR #36 is docs-only, yet its `E2E (WebKit, polyfill)` leg failed at `next build`
+  after 1m15s. The cause was Turbopack's "Can't resolve
+  '@vercel/turbopack-next/internal/font/google/font'" for the six font URLs on
+  `fonts.gstatic.com`. PR #37's `E2E (Chromium, off)` failed the same way in the same minute. The
+  owner asked "Google font local install olmayıb?" (isn't the Google font installed locally?).
+  After the explanation and three options, the owner answered "a".
+- **Prompt(s):** none — the conversation itself.
+- **Produced:**
+  - `tech-debt.md` v1.11: TD-11, with the evidence from both runs.
+  - `backlog.md` v1.25: T-13c also fixes TD-11. Public Sans moves to `next/font/local` from
+    committed `.woff2` files, with the font's licence beside them. `design-tokens.md` §Typography
+    follows, and a check fails if `next/font/google` returns.
+  - this entry.
+- **What the agent got right:** it read the failed leg's log before calling the failure flaky.
+  The log showed the build, not a test, failing on a network download that nothing in the
+  repository declares.
+- **What the agent got wrong or missed:** nothing yet. The failed WebKit job was re-run.
+- **Owner changes and reasoning:** "a" — register the debt and fix it before T-14 with the other
+  small items. That also means Vercel's first build in T-14 has no Google dependency.
+- **Disagreements:** none.
+- **Lessons for the process:** `next/font/google` looks like a runtime convenience, but it is a
+  build-time network dependency. Any build-time fetch from a third party belongs in the list of
+  what CI depends on.
+- **Next:** the owner reviews and merges; T-13a's plan gate.
+
+## 2026-09-24 — CodeQL: an advanced workflow with the `security-and-quality` suite
+
+- **Phase:** 5 (Build the slice), Release 1 — repository security tooling, ahead of T-13d.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5); Copilot's PR review.
+- **Trigger:**
+  - The owner switched CodeQL from default setup to an advanced workflow. PR #34 added GitHub's
+    "CodeQL Advanced" template and removed it again. PR #37 added it once more, and default setup
+    now reads `not-configured`.
+  - The owner asked for PR #37's review comments to be handled ("PR-37 commentlər var. Onlara
+    bax").
+  - Asked why, they said "Səbəb daha advance yoxlamanın olmasını istəyirəm" (I want more
+    advanced checks). They then asked what the two options meant, and said "Bunları başa salmadan
+    heç bir dəyişiklik etmə" (make no change until they are explained).
+- **Prompt(s):** none — the conversation itself.
+- **Produced:**
+  - On PR #37 (`wdaz-patch-1`, the owner's branch):
+    - the checkout matches `ci.yml`: `actions/checkout@v5` with `persist-credentials: false`
+      (Copilot's finding);
+    - the template reformatted by Prettier, which had failed `lint · typecheck · unit`;
+    - `queries: security-and-quality`, with a comment that records the decision and the
+      measurement.
+  - Here: backlog v1.26, where T-16's "CodeQL default setup" is struck through with a pointer,
+    and this entry.
+- **What the agent explained before any change** (GitHub docs "CodeQL query suites" and the REST
+  API's default-setup reference, read 2026-09-24):
+  1. **Versioned configuration.** Default setup lives in repository settings, changed by a click
+     with no review and no history. The advanced workflow is a file, changed by pull request and
+     reviewed. Copilot caught the checkout issue only because the configuration was a file.
+  2. **Query suites.** The three suites nest: `default` (high precision), `security-extended`
+     (plus lower-precision security queries) and `security-and-quality` (plus maintainability and
+     reliability queries, advanced setup only). Default setup could also run `extended` (the
+     API's `query_suite` is `default` or `extended`).
+  3. **The template as merged would not have added any checks.** Its `queries:` line was
+     commented out, so it ran `default` — the same suite the old default setup ran
+     (`"query_suite": "default"`).
+- **Owner decisions:**
+  - Asked whether A (`security-extended`) and B (`security-and-quality`) could be combined: B
+    contains A, so B is the combination.
+  - "Əvvəl ölç, nəticəni göstər" (measure first, show the result). Measured on PR #37:
+    - rules: 201 for JavaScript/TypeScript (the default suite ran 87) and 27 for Actions (17);
+    - coverage: 245 files extracted (240 JavaScript/TypeScript files are tracked);
+    - results: 0, so nothing would block a merge.
+  - "Bəli, B-də qal" (yes, stay with B).
+- **Copilot's two findings on PR #37:**
+  - (1) The checkout convention — right, and fixed.
+  - (2) Traceability — right that the PR named no task. Its premise that the workflow "conflicts
+    with the enabled default setup, so upload will fail" was stale: default setup was already off,
+    and the `Analyze` jobs uploaded. This entry and backlog v1.26 are the traceability.
+- **What the agent got wrong or missed:** it first offered to record this inside PR #37. It moved
+  the record here, because both pull requests would have changed the backlog's version line and
+  the end of this log. The owner was told why.
+- **Disagreements:** none.
+- **Lessons for the process:** switching to "advanced" gives control, not coverage; the suite
+  line decides coverage. Measure a scanner's configuration by the rules it ran and the files it
+  read, not only by the count of findings — "0 results" means nothing without both.
+- **Open:**
+  - The `secret scan` job's comment in `ci.yml` still says code scanning is "unavailable while the
+    repository is private".
+  - Merge order: PR #37 first, so that `main` has CodeQL again for the ruleset's code-scanning
+    rule, then this PR.
+- **Next:** the owner merges PR #37, then this PR; T-13a's plan gate.

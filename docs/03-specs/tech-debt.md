@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -20,6 +20,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-8 | The keyboard login walkthrough's comment says "Shift+Tab back"; the test focuses the field directly | Open | T-13c |
 | TD-9 | The `minmax(0, 1fr)` rule for card grids is a comment, not a check | Open | T-13c |
 | TD-10 | Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database | Open | T-13c (moved from T-14's T-02 hand-off) |
+| TD-11 | Every `next build` downloads Public Sans from Google Fonts, so a network hiccup fails the build | Open | T-13c (v1.11) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -260,3 +261,34 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   Candidates: refuse `APP_ENV=test` when the platform says it is a deployment (Vercel sets
   `VERCEL` and `VERCEL_ENV`), and refuse `db:reset`/`test:api` when the `DATABASE_URL` host is not
   local — each with a test that fails first.
+
+## TD-11 — Every `next build` downloads Public Sans from Google Fonts
+
+- **Found:** 2026-09-24, PR #36's CI (a docs-only change): `E2E (WebKit, polyfill)` failed at
+  `next build` after 1m15s. Turbopack reported "Module not found: Can't resolve
+  '@vercel/turbopack-next/internal/font/google/font'" for the six `src: url(…)` entries of the
+  font CSS, whose URLs point at `https://fonts.gstatic.com`. The other three E2E legs and the API
+  job built the same commit. In the same minute (18:15–18:16 UTC), PR #37's `E2E (Chromium, off)`
+  failed at its build with the same error, so this was an outage window, not one flaky runner.
+- **Owner decision:** 2026-09-24 — "a": an entry, fixed in T-13c. The owner first asked whether
+  the font was not installed locally ("Google font local install olmayıb?"). It is not.
+- **What:** `app/layout.tsx:2` imports `Public_Sans` from `next/font/google`, as
+  `design-tokens.md` §Typography says ("`next/font/google`, weights 400 and 700"). No font file is
+  in the repository. `next/font/google` serves the font from the app itself at runtime, so
+  browsers never contact Google and the CSP stays `'self'`. It downloads the files **at build
+  time**, though, so every build needs Google Fonts to be reachable.
+- **Risk:** a red check unrelated to the change whenever Google Fonts is slow or unreachable. That
+  is five builds per CI push (the API job and four E2E legs), plus Vercel's build from T-14 on,
+  where a failed build is a failed deploy.
+- **Guarded meanwhile by:** nothing — re-running the failed job.
+- **Fix:**
+  - Serve Public Sans with `next/font/local`, keeping `variable: "--font-public-sans"` and
+    `display: "swap"`, so `tokens.css` does not change.
+  - Commit the `.woff2` files for weights 400 and 700, latin subset, with their source and version
+    recorded.
+  - Put the font's licence beside the files and list it in T-16's third-party notices. Upstream
+    names it SIL OFL 1.1; T-13c's plan confirms this from the source, with the date.
+  - Change `design-tokens.md` §Typography's `next/font/google` to the local loader (owner
+    decision "a").
+  - Add a check that fails if `next/font/google` comes back, e.g. a unit test on `app/layout.tsx`'s
+    imports, with a violation fixture.
