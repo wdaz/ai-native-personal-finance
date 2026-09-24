@@ -3122,3 +3122,65 @@ them too").
   build-time network dependency. Any build-time fetch from a third party belongs in the list of
   what CI depends on.
 - **Next:** the owner reviews and merges; T-13a's plan gate.
+
+## 2026-09-24 — CodeQL: an advanced workflow with the `security-and-quality` suite
+
+- **Phase:** 5 (Build the slice), Release 1 — repository security tooling, ahead of T-13d.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5); Copilot's PR review.
+- **Trigger:**
+  - The owner switched CodeQL from default setup to an advanced workflow. PR #34 added GitHub's
+    "CodeQL Advanced" template and removed it again. PR #37 added it once more, and default setup
+    now reads `not-configured`.
+  - The owner asked for PR #37's review comments to be handled ("PR-37 commentlər var. Onlara
+    bax").
+  - Asked why, they said "Səbəb daha advance yoxlamanın olmasını istəyirəm" (I want more
+    advanced checks). They then asked what the two options meant, and said "Bunları başa salmadan
+    heç bir dəyişiklik etmə" (make no change until they are explained).
+- **Prompt(s):** none — the conversation itself.
+- **Produced:**
+  - On PR #37 (`wdaz-patch-1`, the owner's branch):
+    - the checkout matches `ci.yml`: `actions/checkout@v5` with `persist-credentials: false`
+      (Copilot's finding);
+    - the template reformatted by Prettier, which had failed `lint · typecheck · unit`;
+    - `queries: security-and-quality`, with a comment that records the decision and the
+      measurement.
+  - Here: backlog v1.26, where T-16's "CodeQL default setup" is struck through with a pointer,
+    and this entry.
+- **What the agent explained before any change** (GitHub docs "CodeQL query suites" and the REST
+  API's default-setup reference, read 2026-09-24):
+  1. **Versioned configuration.** Default setup lives in repository settings, changed by a click
+     with no review and no history. The advanced workflow is a file, changed by pull request and
+     reviewed. Copilot caught the checkout issue only because the configuration was a file.
+  2. **Query suites.** The three suites nest: `default` (high precision), `security-extended`
+     (plus lower-precision security queries) and `security-and-quality` (plus maintainability and
+     reliability queries, advanced setup only). Default setup could also run `extended` (the
+     API's `query_suite` is `default` or `extended`).
+  3. **The template as merged would not have added any checks.** Its `queries:` line was
+     commented out, so it ran `default` — the same suite the old default setup ran
+     (`"query_suite": "default"`).
+- **Owner decisions:**
+  - Asked whether A (`security-extended`) and B (`security-and-quality`) could be combined: B
+    contains A, so B is the combination.
+  - "Əvvəl ölç, nəticəni göstər" (measure first, show the result). Measured on PR #37:
+    - rules: 201 for JavaScript/TypeScript (the default suite ran 87) and 27 for Actions (17);
+    - coverage: 245 files extracted (240 JavaScript/TypeScript files are tracked);
+    - results: 0, so nothing would block a merge.
+  - "Bəli, B-də qal" (yes, stay with B).
+- **Copilot's two findings on PR #37:**
+  - (1) The checkout convention — right, and fixed.
+  - (2) Traceability — right that the PR named no task. Its premise that the workflow "conflicts
+    with the enabled default setup, so upload will fail" was stale: default setup was already off,
+    and the `Analyze` jobs uploaded. This entry and backlog v1.26 are the traceability.
+- **What the agent got wrong or missed:** it first offered to record this inside PR #37. It moved
+  the record here, because both pull requests would have changed the backlog's version line and
+  the end of this log. The owner was told why.
+- **Disagreements:** none.
+- **Lessons for the process:** switching to "advanced" gives control, not coverage; the suite
+  line decides coverage. Measure a scanner's configuration by the rules it ran and the files it
+  read, not only by the count of findings — "0 results" means nothing without both.
+- **Open:**
+  - The `secret scan` job's comment in `ci.yml` still says code scanning is "unavailable while the
+    repository is private".
+  - Merge order: PR #37 first, so that `main` has CodeQL again for the ruleset's code-scanning
+    rule, then this PR.
+- **Next:** the owner merges PR #37, then this PR; T-13a's plan gate.
