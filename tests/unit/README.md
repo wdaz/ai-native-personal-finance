@@ -11,7 +11,8 @@ Default environment is `node`; a file that needs a DOM starts with
   hover and focus styles are E2E's (`toHaveCSS`) — jsdom applies no CSS.
 
 - `server/` — pure `src/server` logic and the env accessors; code that needs Postgres is tested
-  in `tests/api` instead (`checkThreshold`, `latestReset`), with its decision logic split out
-  here (`evaluateThreshold`, `isAuthorized`, `parseAdminResetBody`).
+  in `tests/api` instead (`checkThreshold`, `latestReset`, `getOverview`), with its decision
+  logic split out here (`evaluateThreshold`, `isAuthorized`, `parseAdminResetBody`,
+  `CATEGORY_LABEL`/`THEME_LABEL`, `toOverviewDto`).
 
 Run: `npm test`.

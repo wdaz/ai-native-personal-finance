@@ -1674,3 +1674,75 @@ them too").
   - Handing the `WEBMCP_MODE` typo to T-11, when it breaks the banner today.
 - **Lesson:** answer the cost a reviewer names, not a nearby one.
 
+
+## 2026-09-24 — Phase 5: T-09 Overview server + API
+
+- **Phase:** 5 (Build the slice), Release 1.
+- **Participants:** Owner / Agent (Claude Code, on Claude Code's web/cloud environment).
+- **Trigger:** the owner's message, verbatim: "Start planing T-09" (the prior turn's summary
+  carries "T-08 başlayanda lazım olacaq?", the last question of T-08, already answered and
+  merged as PR #20).
+- **Prompt(s):** `prompts/2026-09-24-T-09.md`.
+- **Produced:** `docs/04-process/plans/2026-09-24-T-09.md`; `src/server/overview.ts`
+  (`CATEGORY_LABEL`/`THEME_LABEL`, `categoryLabel`/`themeLabel`, the pure `toOverviewDto`,
+  `getOverview(db, clock)`); `app/api/overview/route.ts`; `tests/unit/server/overview.test.ts`
+  (8 tests); `tests/api/overview.spec.ts` (9 tests, one per seed variant plus 401, `no-store`,
+  the "never seeded" 500); a comment fix in `tests/api/middleware.spec.ts`; the READMEs
+  (`app/api`, `src/server`, `tests/unit`, `tests/api`) this entry.
+- **What the agent got right:** the session branch had to be restarted from `origin/main`
+  before planning, because GitHub deletes a merged PR's branch — caught by checking
+  `git fetch origin main` before writing anything. The plan needed no owner questions:
+  SPEC-overview §6 and the T-02/T-03/T-04 hand-offs already resolved every mapping decision
+  (which layer converts `BigInt`, which layer maps enum spellings, that `budgetSpent`'s
+  categories must agree) — governance.md leaves the rest to the agent.
+- **What the agent got wrong or missed:** the advisor caught five defects in the plan's first
+  draft before any code was written (full list in the plan's "Pre-execution review" section):
+  1. Task 2's steps were written out of TDD order — the route created before the "see it fail"
+     step that should have preceded it.
+  2. `CATEGORY_LABEL`/`THEME_LABEL` were first designed as two hand-typed reverse tables,
+     tested only with set comparisons — a swapped entry (`Green`↔`Navy`) would have passed
+     every planned test, including the API test, which would have computed its own expected
+     value through the same table. Fixed by building both maps from `src/shared/enums.ts`
+     and validating each entry against the *live* generated Prisma enum at import time, so
+     there is no second table left to swap.
+  3. The `empty-all` seed variant was missing from the planned API test.
+  4. Two claims in the draft were wrong: that a reset "would not affect an existing session
+     cookie" (it does — `resetToSeed` bumps `ResetLog`, invalidating the session's
+     `resetEpoch`), and a worked mutation number (mapping only budgets' categories drops
+     `spent` to `$165.00`, not `$0.00`, since `Entertainment`/`Bills` have no space to mismatch
+     on). Verified exactly at execution (below).
+  5. The DoD checklist needed an explicit note that this task has no E2E/axe/screenshots line
+     (T-10's UI carries those), so the PR does not read as skipping them.
+
+  The corrected design also replaced `scripts/seed-figures.ts` (whose `import … with { type:
+  "json" }` and `import.meta.main` are not proven to load under Playwright's test runner —
+  no existing `tests/api` spec does) with an independent oracle built from `seedRows()` and
+  `applyVariant()` directly, computed for all six variants against the domain's own
+  `overviewSummary` — stronger than the original per-variant shape spot-checks.
+- **Mutations run and reverted, each caught by the test that should catch it:**
+  - `categoryLabel()` removed from the transactions side only: `budgets.spent` dropped from
+    `$338.00` to exactly `$165.00` (`Dining Out` and `Personal Care` lost their spelling match;
+    `Entertainment`/`Bills` still matched by accident) — matching the advisor's corrected
+    prediction exactly, caught by 4 of the 6 seed-variant API tests.
+  - `toOverviewDto`'s transaction mapping spread `...transaction` instead of naming each
+    field: the leaked `seq`/`category`/`recurring` failed the pure unit test immediately, no
+    database needed.
+  - The route's `Cache-Control: no-store` header removed: the exact-header API test failed
+    (`undefined`, not even a framework default).
+- **Environment (differs from CI; noted for the PR):** Node 26.10.0 and local Postgres 16
+  from the T-08 session were already in place and reused; no Docker daemon. This task added no
+  E2E test, so the Chromium/Firefox/WebKit gap T-08 recorded does not apply here — `npm test`
+  (694), `npm run test:api` (91), lint, format, typecheck and the full-history secret scan all
+  ran and passed.
+- **Owner changes and reasoning:** none yet — awaiting review.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A hand-typed reverse-lookup table is a table a swap can pass through unnoticed by every
+     test that also builds its expected value from the same table. Building the table from an
+     already-verified source list and validating it against the thing it must agree with (here,
+     the generated Prisma enum) removes the table, and the risk, entirely.
+  2. An "independent oracle" test is only independent if it does not import the module whose
+     wiring is in question for the values it is checking, and does not rely on an unproven
+     import path just because it looks convenient.
+- **Next:** T-10 (Overview UI) fills `app/(app)/overview/page.tsx`'s body from `getOverview`,
+  per backlog v1.20.

@@ -13,3 +13,5 @@ locally). Each test resets it; it holds demo data only.
 - `threshold.spec.ts` — `checkThreshold` against real rows (§2.4; failed logins never count)
 - `meta.spec.ts` — `GET /api/meta` (SPEC-app-shell §3, §5)
 - `admin-reset.spec.ts` — `/api/admin/reset` GET/POST, each `ResetLog` reason, 400/401 (§2.2–2.3)
+- `overview.spec.ts` — `GET /api/overview` against all six seed variants, 401, `no-store`,
+  the "never seeded" 500 (SPEC-overview §6)
