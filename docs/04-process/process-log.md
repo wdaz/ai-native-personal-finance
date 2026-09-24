@@ -2488,7 +2488,7 @@ them too").
      WebKit result before a task is called done. T-12 was merged with it red and the defect
      shipped for one task.
   2. A readiness flag that means "the code finished" rather than "it worked" hides failures: the
-     adapter written in T-11 wrote `ready` over a total failure, and it showed once T-12
+     adapter written in T-11 wrote `ready` over a total failure, and it mattered once T-12
      registered the first tools. A state that a test or an agent waits on should say whether the
      thing works, or be accompanied by a channel that does.
   3. A plan recorded a failure count as the file's test count ("the eight tests") and derived its

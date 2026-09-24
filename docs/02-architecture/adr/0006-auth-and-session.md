@@ -14,7 +14,7 @@
   passing silently as `ready`. Alternatives not chosen: (a) skip the WebMCP specs on Firefox and
   WebKit — it makes the suite green and hides the defect (ADR-0003 names all three engines);
   (b) a new ADR that supersedes this one — an amendment matches this ADR's own history
-  (four amendments already) and the change is one response header.
+  (five earlier amendments already) and the change is one response header.
 - Amendment 2026-09-24 (4) — **Accepted by the owner, 2026-09-24** ("Hamısını accept et" —
   "accept all"; drafted by the agent, accepted after it was explained that a PR is not an
   acceptance). Owner decision 2026-09-24: TD-6 option (b) — under `next dev`
