@@ -15,7 +15,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-3 | `/_global-error` is prerendered, without the CSP nonce | Open | whichever task first gives the app an error UI of its own |
 | TD-4 | Two "submit is focused after an error" E2E assertions prove nothing on Chromium | Open | T-13 (WebKit joins CI), or any task that touches those tests |
 | TD-5 | Zod's `jitless` setting rides on importing `src/shared/schemas.ts` | Open | T-11/T-12, the first task that parses with Zod on the client outside the auth forms |
-| TD-6 | `next dev` fills the console with CSP violations (the policy has no dev variant) | **Fix in review** — option (b); closes when ADR-0006 amendment (4) is accepted and the PR merges | `td-6-dev-csp` (small follow-up) |
+| TD-6 | `next dev` fills the console with CSP violations (the policy has no dev variant) | **Fix in review** — option (b); closes when ADR-0006 amendment (4) is accepted and the PR merges | `fix/td-6-dev-csp` (small follow-up) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -145,7 +145,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 - **Owner decision (b):** 2026-09-24 — chose option (b) ("b"). TD-2 read first: the file stays
   `middleware.ts`, so the rename, when it comes, moves `buildCsp`'s one call site and nothing
   else; the policy lives in `src/server/csp.ts`.
-- **Fix in review:** 2026-09-24, branch `worktree-td-6-dev-csp` — `buildCsp` (`src/server/csp.ts`)
+- **Fix in review:** 2026-09-24, branch `fix/td-6-dev-csp` — `buildCsp` (`src/server/csp.ts`)
   relaxes the policy only for `NODE_ENV === "development"`; ADR-0006 amendment (4) is **Proposed**
   (the owner accepts it); `tests/unit/server/csp.test.ts` pins both variants and
   `tests/api/middleware.spec.ts` pins the production policy on a production build's response.

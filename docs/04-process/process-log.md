@@ -2074,7 +2074,10 @@ them too").
   the owner picked an option, because any policy change is an ADR-0006 amendment. It checked the
   result on real servers: `next dev` sends the relaxed policy, `next build && next start` sends
   the unchanged production one.
-- **What the agent got wrong or missed:** it `cd`-ed out of the worktree into the main checkout
+- **What the agent got wrong or missed:** the first API run failed 4 tests because it had not
+  set `CRON_SECRET` (the failure text names it) — an environment slip, not a code defect; it
+  first verified only the header, not the console the owner complained about, until the
+  advisor pointed that out; it `cd`-ed out of the worktree into the main checkout
   mid-session, which the harness refused until it re-entered the worktree; and it first
   symlinked `node_modules` from the main checkout, which Turbopack rejects ("points out of the
   filesystem root") — a real `npm ci` was needed for the `next dev` check.
@@ -2086,7 +2089,12 @@ them too").
   relaxation cannot leak; the unit test alone would pass even if `middleware.ts` passed the
   wrong `NODE_ENV`.
 - **Verified:** `npm test` 770 passed (758 before + the 12 new), `typecheck`, `lint` and
-  `format:check` clean, and the two header checks above on real `next dev` / `next start`
-  servers. **Not run:** the API and E2E suites (they need the compose Postgres) — the new API
-  test asserts what the production header check showed, but has not itself been executed.
+  `format:check` clean; `npm run test:api` 92 passed (91 before + the new pin test) against a
+  production build and a throwaway Postgres on port 5433 (not the owner's `postgres-data`
+  volume); `next dev` and `next build && next start` each answered with the expected header;
+  and `/login` and `/signup` under `next dev` in headless Chromium, reloaded, logged no CSP
+  violation, no `eval` error and a connected HMR (the only warning is an unused-preload notice).
+  **Not run:** the E2E suites (Chromium/Firefox/WebKit) — they run the production build, whose
+  policy is unchanged and pinned; and no server-side render error was provoked under `next dev`,
+  so React's `eval` path for error stacks is covered by the policy but was not exercised.
 - **Next:** the owner accepts or amends ADR-0006 (4); then the PR merges and TD-6 is marked Closed.
