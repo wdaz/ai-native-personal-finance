@@ -21,4 +21,5 @@ locally). Each test resets it; it holds demo data only.
   and the route bundles through `globalThis`.
 - `schema-drift.spec.ts` (T-13) — `prisma/schema.prisma` and the migrations agree
   (`scripts/schema-drift.sh`, `npm run db:drift`); needs a migrated database (`npm run db:reset`
-  first), and a schema with an extra model must be reported as drift (exit 2).
+  first), and a schema with an extra model, and one with the `LoginAttempt` model removed, must
+  each be reported as drift (exit 2, naming the model).

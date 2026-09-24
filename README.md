@@ -100,7 +100,7 @@ commit either way.
 | `npm run traceability`        | Every Release 1 story id (`docs/03-specs/release-1-stories.txt`) is named in a test title (NFR-T2)               |
 | `npm run test:api`            | Playwright request-context tests — `tests/api`, one worker, against the app with `APP_ENV=test` and the database |
 | `npm run db:reset`            | `prisma migrate deploy`, then the seed (`prisma/seed.ts`)                                                        |
-| `npm run db:drift`            | `prisma migrate diff`, migrated database vs `prisma/schema.prisma`; exit 2 on drift, also run by `test:api`
+| `npm run db:drift`            | `prisma migrate diff`, migrated database vs `prisma/schema.prisma`; exit 2 on drift, also run by `test:api`      |
 | `npm run seed:figures`        | SPEC-overview §4.3 printed from `prisma/data.json` (`scripts/seed-figures.ts`) — checked by `npm test`           |
 | `npm run test:e2e`            | Playwright on Chromium, Firefox and WebKit — `tests/e2e`, one worker, each test from a reset; CI runs all three |
 | `npm run build` / `npm start` | Production build and server                                                                                      |

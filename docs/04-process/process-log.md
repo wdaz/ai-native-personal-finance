@@ -2510,8 +2510,9 @@ them too").
   planning entry completed. The plan's status line and the planning entry get their update
   (executed; what differed) in a separate docs PR from the plan branch.
 - **Participants:** Owner / Agent (Claude Code) — a controller agent with one implementer subagent
-  per task (Sonnet 5), a review after each task and a scoped re-review after a fix that was more than
-  a wording change (Opus 5.5, `governance.md` v1.3); the execution method, subagent-driven
+  per task (Sonnet 5), a review after each task (Opus 5.5, `governance.md` v1.3); a scoped
+  re-review followed only Task 3's two fix rounds, and the other follow-up commits are covered by
+  the whole-branch review; the execution method, subagent-driven
   development, is the owner's choice as relayed by the controller. This entry was written by the
   Task 11 implementer (Sonnet 5) from the controller's ledger and the per-task reports.
 - **Trigger:** the owner's answers to the plan's Q1–Q8 and the go-ahead. Recorded in the
@@ -2521,7 +2522,7 @@ them too").
 - **Prompt(s):** `prompts/2026-09-24-T-13.md`; the briefs and reports are in
   `prompts/2026-09-24-T-13/`.
 - **Produced** (all on `task/T-13-ci-hardening`, rebased onto `origin/main` `99298f9` after PR-A —
-  PR #28, `fix/origin-agent-cluster` — merged; the commit ids below are the rebased ones, and 19
+  PR #28, `fix/origin-agent-cluster` — merged; the commit ids below are the rebased ones, and 20
   commits precede this task's own):
   - Task 1, `21b9c97` — `ci.yml`: workflow `permissions: contents: read`; the `concurrency` group is
     the PR ref for a pull request and the commit for a push, so a push to `main` never cancels
@@ -2549,10 +2550,10 @@ them too").
   - Task 8, `03f3c8e`, `ebe0a15`, `9e19e33` — the history scan also reads commit and tag messages
     (`scripts/secret-scan.sh`), three docs corrected, four new secret-guard tests (30 in the file).
   - Task 9, `3a8341e` — the four focus-after-error tests submit with `Enter`; TD-4 **Closed**.
-  - Task 10, `ccc71d0` — the `e2e` job is a `matrix.include` of four legs, `E2E (Chromium,
+  - Task 10, `ccc71d0`, `c8cf471` — the `e2e` job is a `matrix.include` of four legs, `E2E (Chromium,
     polyfill)`, `E2E (Chromium, off)`, `E2E (Firefox, polyfill)`, `E2E (WebKit, polyfill)`;
     `tests/e2e/README.md`.
-  - Task 11 (this entry; the commits that follow `ccc71d0`) — backlog v1.22 and its hand-offs to
+  - Task 11 (this entry; the commits that follow `c8cf471`) — backlog v1.22 and its hand-offs to
     T-14, T-15 and T-16; tech debt v1.9; the `package.json` overrides note (owner: T-16); the README
     (two command rows, two stale lines); `prompts/2026-09-24-T-13.md` and its folder; this entry.
 - **What was found during execution, and decided:**
@@ -2578,8 +2579,11 @@ them too").
   three engines when they are not, and `strict-allow-scripts` behaving on Linux as it did on macOS
   — enforced with an `esbuild@0.28.2` entry removed (`ESTRICTALLOWSCRIPTS`), tolerant of the absent
   `fsevents` — measured in a `node:26` container (node 26.10.0, npm 11.19.1) in a scratch
-  directory after a first pass skipped it on a controller instruction that was too broad.
-  Every guard was made to fail on purpose before it was trusted: mutation runs are quoted in
+  directory after a first pass skipped it on a controller instruction that was too broad (the
+  flag was also passed on the command line there; `.npmrc` alone on Linux is proved only by
+  `install-scripts.test.ts` case 2 on the first CI run).
+  Every guard was made to fail on purpose before it was trusted, except the two cases under
+  "Not shown failing" below: mutation runs are quoted in
   each report (the old regex scanner 18 failed, the skip logic off 16 failed, a fake route,
   `/overview` listed as unauthenticated, an unticked template line, an empty database for the drift
   spec, the three focus calls deleted).
@@ -2614,17 +2618,24 @@ them too").
     failing on a throwaway database or a mutated config.
   - **Wrong predictions, labelled "Prediction" or not:** PR-A's A1 said 16 passed where the file
     has 10 tests per engine (20); Task 10 said 108 passed per engine, the real figure is 109
-    passed and 8 skipped (117 tests) after PR-A's added E2E test; Task 3 assumed an 875-test
-    baseline (888 after its own 10); Task 8 said 304 commits, the branch had 329.
+    passed and 8 skipped (117 tests) after PR-A's added E2E test; Task 3 assumed 875 unit tests,
+    it was 878 after Task 2's follow-up (888 after its own 10); Task 8 said 304 commits, the
+    branch had 329.
   - **Task 9's own evidence note** tied the mutation to the wrong line: `LoginForm.tsx:78` is the
     network-failure branch only, and the 429 goes through the ternary at line 94. Reworded in
     `tech-debt.md` (v1.9) by this task, with the line numbers checked against the file.
-  - **Counts, for the process:** of the nine tasks whose review was finished when this entry was
-    written, eight produced something to fix — Tasks 2–8 each needed a follow-up commit, and Task
-    9's wording defect above was fixed here; Task 1's review was clean (a `persist-credentials`
-    note on the `verify` checkout was deferred, the token being read-only now). Task 10's review
-    was still running. Every Important finding of a first review round (Tasks 3, 5, 8, and PR-A's
-    Task A1) was in code or text the plan dictated.
+  - **Task 10's own wording** (review minors, fixed in `c8cf471`): the `ci.yml` comment named only
+    the two Chromium legs as T-16's required checks (all four are); the `off` rationale claimed the
+    engine cannot change the off path (now the measured Firefox off run, 106 passed, 11 skipped,
+    macOS); the WebKit screenshot note did not say macOS.
+  - **Counts, for the process:** all ten task reviews found something, and nine led to a fix —
+    Tasks 2–8 and 10 each needed a follow-up commit, and Task 9's wording defect above was fixed
+    here; Task 1's only finding (a `persist-credentials` note on the `verify` checkout, the token
+    being read-only now) was deferred. Every Important finding of a first review round (Tasks 3, 5,
+    8, and PR-A's Task A1) was in code or text the plan dictated.
+  - **Task 5's accepted deviation:** the "stale" fixture in `pr-template.test.ts` is built from the
+    DoD, not from the template, so that only the mirror test goes red on a template mutation (the
+    plan's form made the fixture test fail too); the reviewer endorsed it.
   - **The environment cost time:** implementers repeatedly found the session's working directory
     flipped to another worktree after a Bash call, because other agents called `EnterWorktree`
     (Task 2: after roughly every call; Task 3: `Write`, `Edit` and `git` refused, files written to
@@ -2637,7 +2648,8 @@ them too").
     assertion went red-then-green in the commit-message test) and a non-1 exit from gitleaks
     propagating through `status=$?`.
 - **Verified, not reasoned:** on `ccc71d0` plus this task's edits (documents, the `package.json`
-  note, the README), macOS, Postgres 18 from `compose.yaml`, nothing else on port 3000 —
+  note, the README; `c8cf471`, which changed only `ci.yml` comments and `tests/e2e/README.md`,
+  was committed at 19:17 and may or may not have been in the tree the run started from), macOS, Postgres 18 from `compose.yaml`, nothing else on port 3000 —
   `npm run test:all` exited 0: secret scan "337 commits scanned … no leaks found" for the diffs
   and "no leaks found" for the messages (both labelled in the output); lint, format check and
   typecheck clean; unit + coverage 77 files, 958 tests passed, statements 99.5 % (401/403);
@@ -2646,14 +2658,25 @@ them too").
   skips per engine are the off-mode spec a polyfill build does not run). `npm audit
   --audit-level=high`: "found 0 vulnerabilities". `actionlint` (`rhysd/actionlint:latest` in
   Docker, exit status written to a file): no output, `exit=0`. The overrides re-measurement above
-  is a run too (4 high without them).
+  is a run too (4 high without them). After the final review, `scripts/secret-scan.sh history`
+  was re-run at head `94b7c3a` by the whole-branch reviewer: 340 commits scanned, no leaks in
+  the diffs or the messages; the fix wave's re-run at the same head gave the same result.
 - **Not verified:** the CI verdict of every new leg and of the workflow edits — the branch is
   pushed, no PR is open when this entry was written; Firefox and WebKit on Linux (all local runs
   were macOS; WebKit's `Alt+Tab` path and TD-4's four tests are the Linux-sensitive ones); the
   runner's npm version and its handling of `strict-allow-scripts` (proved on `node:26`, not on
   the runner) and Vercel's (T-14); the `concurrency` behaviour and the read-only token on real
-  runs; that a native browser other than Playwright's engines runs the app; Task 10's review
-  verdict; the ADR-0003 clarification's wording (Proposed, owner).
+  runs; that a native browser other than Playwright's engines runs the app; the ADR-0003
+  clarification's wording (Proposed, owner). Three risks the first CI run will be the first to
+  meet: (1) `E2E (Chromium, off)` has never run T-13's new specs — the 8 `axe-routes` tests, the
+  four Enter-submit tests and PR-A's failed-registration E2E test — even on macOS; only Firefox
+  off was measured (106 passed, 11 skipped, 0 failed), so a red Chromium-off leg is not
+  necessarily a Linux problem; (2) `tests/api/schema-drift.spec.ts` (`--from-config-datasource`)
+  will first run against the CI Postgres service container (`postgres:18.6-alpine`); it has been
+  measured only against the local compose database; (3) the message scan on the runner reads
+  `refs/remotes/origin/*` and tags — every remote branch (including `worktree-t-13-plan` and
+  `docs/T-06-plan-v0.3`) and the pull request's merge commit — where locally only local refs were
+  measured.
 - **Owner changes and reasoning:** the answers to the plan's Q1–Q8, as the controller relayed them:
   Q1 — PR-A stays a separate PR, merged first (the owner's rule since T-02: a defect outside a
   task's scope gets its own small PR); Q2 — a failed WebMCP registration must be reported even
