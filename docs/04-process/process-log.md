@@ -2067,7 +2067,8 @@ them too").
 - **Prompt(s):** none recorded as a file — the two messages above are the whole brief.
 - **Produced:** `src/server/csp.ts` (`buildCsp`); `middleware.ts` calls it; `tests/unit/server/csp.test.ts`
   (12 tests); one API test in `tests/api/middleware.spec.ts`; ADR-0006 amendment 2026-09-24 (4),
-  **Proposed**; `docs/03-specs/tech-debt.md` v1.5 (TD-6 "Fix in review"); a README note under
+  (Proposed when drafted; accepted by the owner later the same day, see below);
+  `docs/03-specs/tech-debt.md` v1.5 (TD-6 "Fix in review"); a README note under
   "Run locally" (the development policy is relaxed, the shipped one is checked by the
   production-build suites); this entry.
 - **What the agent got right:** the question was vague, so it found the cause before proposing
@@ -2083,8 +2084,14 @@ them too").
   mid-session, which the harness refused until it re-entered the worktree; and it first
   symlinked `node_modules` from the main checkout, which Turbopack rejects ("points out of the
   filesystem root") — a real `npm ci` was needed for the `next dev` check.
-- **Owner changes and reasoning:** none yet — the ADR amendment is **Proposed**; accepting it
-  is the owner's.
+- **Owner changes and reasoning:** the owner accepted ADR-0006 amendment (4) at 12:25 +04
+  with "Hamısını accept et" ("accept all"), after asking whether opening the PR already counted
+  as acceptance ("PR yaranması bunun təsdiqi sayılmır?") — it does not: `governance.md` gives
+  the owner alone "accepts ADRs" and "merges code", and forbids the agent to mark anything
+  Accepted. The agent recorded the acceptance only on that explicit statement. "All" was read as
+  the one pending amendment (the four earlier ones were already owner decisions); the agent
+  asked no further question and kept the amendment inside ADR-0006, not a new ADR — see the
+  next bullet.
 - **Disagreements:** none.
 - **Lessons for the process:** a dev-only relaxation of a security policy needs a test on the
   *production* side, not just on the new branch — the API test pins the shipped policy so the
@@ -2099,6 +2106,12 @@ them too").
   **Not run:** the E2E suites (Chromium/Firefox/WebKit) — they run the production build, whose
   policy is unchanged and pinned; and no server-side render error was provoked under `next dev`,
   so React's `eval` path for error stacks is covered by the policy but was not exercised.
+- **Open question for the owner (not answered):** `governance.md` line 40 says "Never modify an
+  Approved/Accepted document — propose a new version or a superseding ADR". ADR-0006 was
+  already Accepted, and the agent added amendment (4) to it, as the four earlier amendments
+  (owner decisions) had been. The agent offered a separate ADR (0008) instead; the owner's
+  "accept all" did not choose it, so the amendment stays in ADR-0006 unless the owner says
+  otherwise.
 - **Owner check:** the owner asked for the app to be run locally ("local run et. yoxlayım") and
   checks it themselves under `npm run dev`; their result is not recorded here.
-- **Next:** the owner accepts or amends ADR-0006 (4); then the PR merges and TD-6 is marked Closed.
+- **Next:** the owner merges PR #23; TD-6 is then marked Closed.

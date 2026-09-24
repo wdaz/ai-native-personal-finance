@@ -1,8 +1,9 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
-- Status: **Accepted** (amended 2026-09-23) · Date: 2026-09-13
-- Amendment 2026-09-24 (4) — **Proposed, not yet accepted (the owner accepts an ADR change;
-  the agent only drafts it).** Owner decision 2026-09-24: TD-6 option (b) — under `next dev`
+- Status: **Accepted** (amended 2026-09-24) · Date: 2026-09-13
+- Amendment 2026-09-24 (4) — **Accepted by the owner, 2026-09-24** ("Hamısını accept et" —
+  "accept all"; drafted by the agent, accepted after it was explained that a PR is not an
+  acceptance). Owner decision 2026-09-24: TD-6 option (b) — under `next dev`
   the CSP is relaxed, so the development console stops filling with violations that come from
   Next's own tooling and a real violation from this repository's code is not lost in them.
   **In development only** (`process.env.NODE_ENV === "development"`, exact match), `script-src`
