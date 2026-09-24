@@ -42,7 +42,8 @@ test("US-38 AC2: the build under test is the polyfill build (guard — a reused 
     .toBe(true);
   await expect
     .poll(() => page.evaluate(() => window.__pf?.webmcp?.mode() ?? null), {
-      message: "expected a WEBMCP_MODE=polyfill build — is an off build being reused?",
+      message:
+        "expected a WEBMCP_MODE=polyfill build — is an off build being reused? (or was every registration rejected — see data-webmcp-error)",
     })
     .toBe("polyfill");
   await expectToolsReady(page);
