@@ -7,9 +7,15 @@ on:
     # branch (owner decision 2026-09-22, T-02a plan gate).
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # A pull-request run is superseded by the next push to that PR. A push to `main` never
+  # cancels another: its group is its own commit, so each merge keeps its verdict (backlog
+  # T-13, PR #4 — a follow-up merge used to discard the previous commit's result).
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verify:
