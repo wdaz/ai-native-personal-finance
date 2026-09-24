@@ -32,3 +32,11 @@ Default environment is `node`; a file that needs a DOM starts with
   convention above.
 
 Run: `npm test`.
+
+T-12: `webmcp/` gains `tool-result.test.ts` (the status → code mapping; `toolError` omits `issues`
+and `retryAfter` when absent), `overview-tools.test.ts` (both tools' `execute` against a stubbed
+`fetch`: success shape, each error code, never rejects), `registry.test.ts` (iterates
+`PAGE_TOOLS` for the NFR-W3 annotations — the rule `getTools()` cannot show, plan F3),
+`OverviewTools.test.tsx` and two cases in `defineTool.test.ts` (validation `issues`).
+`shared/api-client.test.ts` covers `apiGet`'s outcomes and `server/request-log.test.ts` the ring
+buffer (cap, exact-match, stdout outside test); `test-support.test.ts` gains the `GET log` cases.
