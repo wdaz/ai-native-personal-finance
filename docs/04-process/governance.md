@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision)
 
 ## Roles
 
@@ -59,6 +59,12 @@ Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run 
   labelled *prediction* and is verified at execution before it is relied on.
 - **Rules about how tests run live in the tool's config** (Playwright/Vitest
   config), never only in an npm script. (T-02 final review.)
+- **Code review subagents use Opus 5.5.** Any subagent an agent dispatches to
+  review a diff — an adversarial pass, a `/code-review`-style check — is
+  launched with that model explicitly, not left to a tool default (owner
+  decision, 2026-09-24). This does not reach the CI "Claude Code Review"
+  GitHub App: no workflow file in this repository configures its model, since
+  it is installed at the organisation level.
 
 ## Process log
 

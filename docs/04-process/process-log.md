@@ -1815,3 +1815,35 @@ them too").
 - **Lesson:** a correction's own writeup needs the same discipline the thing it is correcting
   was held to. "I read the old code and reasoned it would pass" is not "I ran it and it passed"
   — say which one happened.
+
+## 2026-09-24 — Process: governance.md v1.3, code review model
+
+- **Phase:** 5 (Build the slice) — a process/governance change, not a task.
+- **Participants:** Owner / Agent (Claude Code), in conversation while PR #21 (T-09) was open
+  for review.
+- **Trigger:** the owner, verbatim: "Növbəti sesiyalar üçün yadda saxla code review üçün model
+  Opus 5.5 olmalıdır" ("Remember for future sessions: the model for code review must be Opus
+  5.5"). The agent explained it has no cross-session memory file it can rely on being read by a
+  future, freshly-provisioned session, and that a durable, project-scoped record is
+  `governance.md` — the owner agreed: "governance əlavə edək" ("let's add it to governance").
+- **Produced:** `docs/04-process/governance.md` v1.3 — a new Agent constraint: any subagent an
+  agent dispatches to review a diff uses the Opus 5.5 model explicitly, with a note that this
+  cannot reach the CI "Claude Code Review" GitHub App, since no workflow file in this
+  repository configures that App's model (it is installed at the organisation level, outside
+  this repo's own config).
+- **What the agent got right:** distinguishing three different things the owner's request could
+  have meant — a personal, cross-project memory (not something the agent can write from here); a
+  one-session behaviour change (applied immediately: the review subagent already dispatched for
+  PR #21 before this request did not specify a model, but every one after does); and a
+  project-scoped, durable rule (what actually went into `governance.md`) — and asking which one,
+  rather than silently picking one.
+- **What the agent got wrong or missed:** nothing identified.
+- **Owner changes and reasoning:** the owner chose the `governance.md` route over a personal
+  memory feature, since it binds every future agent working on this repository, not just this
+  account.
+- **Disagreements:** none.
+- **Lessons for the process:** a stated preference is not automatically a governance rule — it
+  became one only once the owner confirmed that scope. The same sentence could instead have
+  meant a one-off instruction for this session alone.
+- **Next:** continue driving PR #21 to green and through review, per the usual PR-babysitting
+  loop; no task currently depends on this governance change.
