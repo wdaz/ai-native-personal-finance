@@ -2385,10 +2385,10 @@ them too").
 
 ## 2026-09-24 — Phase 5: PR-A, Origin-Agent-Cluster for Firefox and WebKit (T-13 plan findings F1–F3)
 
-- **Phase:** 5 — Build (a defect fix found while planning T-13, delivered as its own PR before T-13's Task 1, per the owner's rule that a defect outside a task's scope gets its own small PR)
-- **Participants:** Owner / Agent (Claude Code, Sonnet 5 — a controller and one implementer per task, each task reviewed by a separate reviewer)
-- **Trigger:** measuring the baseline for T-13 (Firefox and WebKit in CI) showed that the two engines fail every WebMCP test of `tests/e2e/webmcp.spec.ts`; T-13 cannot make them a required check without fixing the cause or hiding it.
-- **Prompt(s):** none saved; the task text is the PR-A section of the T-13 plan (`docs/04-process/plans/2026-09-24-T-13.md`).
+- **Phase:** 5 — Build. A defect fix found while planning T-13, delivered as its own PR (the owner's rule: a defect outside a task's scope gets its own small PR, merged before the task that needs it). T-13 runs in parallel with it; only T-13's Task 10 (Firefox and WebKit in CI) needs PR-A merged. Tasks 1 and 2 of T-13 were already done on `task/T-13-ci-hardening` (`b716787`, `5819364`) when this entry was written.
+- **Participants:** Owner / Agent (Claude Code) — controller and implementers Sonnet 5; task and final whole-branch reviewers Opus 5.5 (governance v1.3). A3 (the documents) had no separate task review; the final whole-branch review covered it, and this entry was corrected in its fix round.
+- **Trigger:** measuring the baseline for T-13 (Firefox and WebKit in CI) showed the WebMCP specs that register tools failing on both engines — 8 of the 10 tests of `tests/e2e/webmcp.spec.ts` per engine, by the plan's measurement (below). T-13 cannot make the two engines a required check without fixing the cause or hiding it.
+- **Prompt(s):** none saved; the task text is the PR-A section of the T-13 plan, `docs/04-process/plans/2026-09-24-T-13.md` (on branch `worktree-t-13-plan` until its PR merges).
 - **Produced:**
   - `middleware.ts` — `Origin-Agent-Cluster: ?1` on every response it handles (commit `7a6905e`);
     `tests/api/middleware.spec.ts` — the test that pins it (same commit, strengthened in
@@ -2400,38 +2400,46 @@ them too").
     which forces `originAgentCluster = false` so the failure reproduces in every engine); test
     hardening in `38cd59c`.
   - `docs/02-architecture/adr/0006-auth-and-session.md` — amendment 2026-09-24 (5), **Proposed**,
-    and the `Headers:` bullet; `docs/03-specs/webmcp-tools.md` — v1.0.5 (§2.2 two bullets, §2.7's
-    `unavailable` row, changelog), **proposed, awaiting the owner's approval**; this entry.
+    with its alternatives, and the `Headers:` bullet; `docs/03-specs/webmcp-tools.md` — v1.0.5
+    (§2.2, §2.7's `unavailable` row, §6, §7, changelog), **proposed, awaiting the owner's
+    approval**; this entry (`3cf996f`; completed after the final review in `f01458c` and the
+    commit that follows it).
 - **What was found:**
   - **F1** — Firefox and WebKit report `originAgentCluster === false` for a document served
     without `Origin-Agent-Cluster: ?1`, and `@mcp-b/webmcp-polyfill@5.1.0`
     (`validateOriginAgentCluster`) then throws `SecurityError` from `registerTool`, `getTools` and
-    `executeTool`. No WebMCP tool worked on any page in either browser: US-38, US-39 and US-41
-    were broken for real users and NFR-W2 ("functions identically in native, polyfill and off
-    modes") was violated. Chromium's default is already true, which is why every earlier run —
-    all on Chromium — was green. **T-12 was merged with Firefox and WebKit red**; its own
-    process-log entry says they were not run.
+    `executeTool`. In Playwright's Firefox and WebKit no WebMCP tool worked on any page, so the
+    US-38, US-39 and US-41 tests failed there and NFR-W2 ("functions identically in native,
+    polyfill and off modes") did not hold; nothing was measured in a real user's browser.
+    Chromium's default is already true, which is why every earlier run — all on Chromium — was
+    green. **T-12 was merged with Firefox and WebKit red**; its own process-log entry says they
+    were not run.
   - **F2** — the adapter reported `data-webmcp="ready"` after every registration had failed, and
     dropped the reason (`Promise.allSettled`, no log). The only visible trace of F1 was an
-    indicator reading `polyfill · 0`. The owner's decision (T-13 plan Q2): "when registration
-    fails there must be feedback; even if `ready` is written, a proper warning must come out; a
-    connected model must understand that WebMCP is not reachable" — so `ready` stays and three
-    more channels say what it does not (indicator, `data-webmcp-error`, console).
+    indicator reading `polyfill · 0`. The owner's decision (T-13 plan Q2), verbatim: "Q2 -
+    uğursuz olduqda geri dönüş olmalıdır. Ready yazılsa belə düzgün xəbardarlıq mesaji
+    çıxarılmalıdır. Connect olmuş model anlamalıdır ki, webMcp əl çatan deyil" — in English: when
+    registration fails there must be feedback; even if `ready` is written, a proper warning must
+    come out; a connected model must understand that WebMCP is not reachable. So `ready` stays
+    and three more channels say what it does not (indicator, `data-webmcp-error`, console).
   - **F3** — the WebKit line `"/overview style-src-elem inline"` that the automatic CSP guard
     adds to a failing WebKit test comes from Playwright's failure screenshot (it injects a
-    `<style>`), not from the app. No such line appeared in any passing run here. T-13 documents
-    it in `tests/e2e/README.md`.
+    `<style>`), not from the app. No such line appeared in any passing run here. T-13's Task 10
+    will document it in `tests/e2e/README.md`.
 - **What the agent got right:** the root cause was proved by running, not inferred — a probe in
   three engines against one server, with and without the header. A2's E2E fixture forces
   `originAgentCluster = false` with an init script, so the failing case is reproducible on
   Chromium and does not depend on a server header.
 - **What the agent got wrong or missed:**
-  - The plan's numbers were wrong. It said 16 red runs (8 per engine) and 16 passed after the
-    fix; `webmcp.spec.ts` at `838e0f5` has 10 tests per engine, and with the header 20 passed
-    (10 per engine). It has 11 per engine after A2 (33 on three engines, all passed). The 16
-    failures (8 per engine) are the plan's earlier measurement on `838e0f5`; **they were not
-    re-measured in PR-A** — nobody ran the 20 tests without the header — and why 8 of 10 failed
-    is not explained here.
+  - The plan's pass prediction was wrong: it said 16 passed (8 per engine), while
+    `tests/e2e/webmcp.spec.ts` at `838e0f5` has 10 tests per engine and with the header 20
+    passed. The plan's F1 had called the 8 failures per engine "the eight tests" of the file.
+    The 16 failures are the plan's measurement on `838e0f5` and were **not re-measured in PR-A**
+    (nobody ran the tests without the header). The 8-of-10 split is consistent with the code —
+    reasoned, not re-run: the build guard (`webmcp.spec.ts:31`) reads only `mode()` and
+    `data-webmcp="ready"` (`expectToolsReady` in `tests/fixtures/webmcp.ts`), neither of which a
+    rejected registration changed before A2, and the login-page test (`:191`) registers nothing.
+    After A2 the file has 11 tests per engine (33 on three engines, all passed).
   - A1's first test could pass without a session: the `/overview` request was not preceded by an
     asserted login and followed redirects, so a 302 to `/login` (which also carries the header)
     would have satisfied it. After review it asserts the login returns 200 and requests
@@ -2443,16 +2451,28 @@ them too").
     in between; the E2E console assertion was a one-shot read instead of a poll. Two mutations
     (the warn loop moved above the `aborted` check; `clearFailure()` removed from the start of
     `register`) each turned exactly one new test red.
+  - The first draft of SPEC v1.0.5 did not say that `mode()` — and so `onStatus` and
+    `window.__pf.webmcp.mode()` — now reports `unavailable` while every registration was
+    rejected, which changes what the polyfill build guard (`webmcp.spec.ts`, the first test) can see. The
+    final review found it; §2.2, §6, §7 and the guard's failure message now say it.
   - Deferred, minor: `clearFailure()` in `register` does not notify status listeners, so between
     the start of a new `register()` and its end the indicator can keep saying `unavailable`. The
     window is short, and the app's effect cleanup calls `unregisterAll` (which does notify) first.
-- **Verified, not reasoned:** on the branch, `npm test` 881 passed (baseline 875, +4 in A2, +2 in
-  the hardening commit); `npm run typecheck`, `npm run lint` and `npm run format:check` clean;
-  `tests/e2e/webmcp.spec.ts` on Firefox and WebKit 20 passed with the header (A1, before A2's
-  test); the new E2E test on Chromium, Firefox and WebKit 3 passed with A2's change and failed on
-  Chromium at the indicator assertion without it.
+- **Verified, not reasoned:** `npm run test:all` (secret scan, lint, format check, typecheck,
+  unit, API, E2E on Chromium, Firefox and WebKit) exited 0 on `f01458c`, the last commit that
+  touches code or tests (the commit after it changes only this entry): secret scan "317 commits
+  scanned, no leaks found"; unit 881 passed in 71 files (baseline 875, +4 in A2, +2 in the
+  hardening commit); API 97 passed; E2E 303 passed, 24 skipped, 0 failed (327 runs; 8 skips per
+  engine, which matches the off-mode spec a polyfill build does not run, but the run's output
+  does not itemise them) — `webmcp.spec.ts` ran 11 tests on
+  each of the three engines, 33 in all, and the new "refuses every registration" test passed
+  on all three. Earlier in the branch: A1 20 passed on Firefox and WebKit with the header; the new
+  E2E test failed on Chromium at the indicator assertion without A2's change; the API test
+  failed with `Received: undefined` before the header and, once strengthened, with `Received: 401`
+  on a wrong password.
 - **Not verified:** the CI verdict — nothing has been pushed by this task; native Firefox and
-  Safari beyond Playwright's engines; the F1 baseline (above).
+  Safari beyond Playwright's engines (no real-browser check); the F1 baseline (above): the 16
+  failures without the header were not re-run.
 - **Owner changes and reasoning:** Q2, as quoted above. Awaiting: acceptance of ADR-0006
   amendment (5) and approval of SPEC-webmcp-tools v1.0.5 — both written as proposed, and only
   the owner marks them accepted.
@@ -2468,15 +2488,15 @@ them too").
      WebKit result before a task is called done. T-12 was merged with it red and the defect
      shipped for one task.
   2. A readiness flag that means "the code finished" rather than "it worked" hides failures: the
-     app wrote `ready` over a total failure for the whole of T-11 and T-12. A state that a test or
-     an agent waits on should say whether the thing works, or be accompanied by a channel that
-     does.
-  3. A number copied from an earlier measurement into a plan's "Expected" line drifted from the
-     code (8 per engine, actually 10) between planning and execution. The implementers caught it
-     by running; the plan should say which commit a count was measured on and how it was counted.
+     adapter written in T-11 wrote `ready` over a total failure, and it showed once T-12
+     registered the first tools. A state that a test or an agent waits on should say whether the
+     thing works, or be accompanied by a channel that does.
+  3. A plan recorded a failure count as the file's test count ("the eight tests") and derived its
+     pass prediction from it. A pass-count prediction should count the tests in the file at the
+     measured commit.
   4. A test of a response header on an authenticated page must assert that the session exists
      and must not follow redirects: a redirect also carries the header and satisfies the check
      vacuously.
 - **Next:** the controller pushes `fix/origin-agent-cluster` and opens a draft PR; the owner
-  reviews and accepts or amends ADR-0006 (5) and SPEC v1.0.5 and merges it; T-13's Task 1 starts
-  from the merged `main`.
+  reviews, accepts or amends ADR-0006 (5) and SPEC v1.0.5, and merges it. T-13 continues on
+  `task/T-13-ci-hardening` in parallel; its Task 10 waits for this PR to be merged.
