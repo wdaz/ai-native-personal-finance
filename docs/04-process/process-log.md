@@ -2501,6 +2501,106 @@ them too").
   reviews, accepts or amends ADR-0006 (5) and SPEC v1.0.5, and merges it. T-13 continues on
   `task/T-13-ci-hardening` in parallel; its Task 10 waits for this PR to be merged.
 
+## 2026-09-24 — Phase 5: T-13 CI hardening — planning session
+
+- **Phase:** 5 (Build the slice), Release 1 — plan gate (`build-workflow.md` §2).
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, superpowers `writing-plans`; an advisor
+  review of the approach before the plan was written)
+- **Trigger:** `/superpowers:writing-plans t-13` after T-12 merged (PR #27, `838e0f5`).
+- **Prompt(s):** none — the session was started by the slash command alone. The execution brief
+  is saved under `prompts/2026-09-24-T-13.md` when the plan is executed (plan Task 11) — done on
+  PR #29 (`prompts/2026-09-24-T-13.md`, with the briefs and reports in a folder of
+  the same name).
+- **Produced:** `docs/04-process/plans/2026-09-24-T-13.md` (11 tasks plus PR-A, 8 open questions,
+  13 findings); this entry. Nothing else in the tree changed: every code block in the plan was
+  written to the worktree, run and removed again (plan finding F13).
+- **What the agent got right:** measured before it proposed. Running Firefox and WebKit found that
+  `npm run test:all` is red today — T-12's eight WebMCP E2E tests fail on both engines (16
+  failures; 184 pass) — and a three-engine probe traced it to the polyfill's
+  `validateOriginAgentCluster()` (Firefox and WebKit report `originAgentCluster === false` unless
+  the response sends `Origin-Agent-Cluster: ?1`); the header makes both tools register in all
+  three engines. Also measured: the Prisma overrides cannot be dropped (4 high advisories return,
+  no stable Prisma fixes them); `strict-allow-scripts=true` breaks `npm ci` on macOS through
+  `fsevents` (deny it) and passes on Linux; a drift check needs no shadow database; the
+  commit-message scan works; `actionlint` runs from Docker.
+- **What the agent got wrong or missed:**
+  - The first draft's code had six defects that only running it showed (plan F13): a
+    `ProcessEnv` typing error, a Vite config-import warning and a `tsc` rejection of the
+    alternative, the traceability test scanning its own fixture strings, `npm_config_*` variables
+    overriding a staged `.npmrc`, `npm ci --dry-run` running the root project's scripts, and the
+    DoD item count (21, not 22).
+  - It first tried to give a worktree its dependencies by symlinking `node_modules` (below).
+  - The Firefox/WebKit failure was not on its list of expectations: it planned "add the engines to
+    CI" before running them.
+- **Environment (a lesson, owner asked for it to be recorded, 2026-09-24):** a fresh git worktree
+  has no `node_modules` and no generated Prisma client, and **symlinking the main checkout's
+  `node_modules` into it does not work** — Vitest fails with `Cannot find module
+  './generated/prisma/client'` (the client is generated into `src/server/generated/prisma`,
+  git-ignored, per checkout) and `Failed to resolve import "@mcp-b/webmcp-polyfill"`. This
+  happened at the start of this session and, per the owner, on every worktree session. The
+  working set-up, from the worktree root: `npm ci --ignore-scripts` (plain `npm ci` runs
+  `prepare`, which writes git configuration shared across worktrees — `governance.md`'s
+  implementer rule), then `npx prisma generate`. After it, `npm test` (875 tests) and
+  `npm run test:coverage` pass. API and E2E additionally need Postgres (`docker compose up -d
+  --wait`) and a git-ignored `.env.local` (the main checkout has none; this session wrote one from
+  the CI values in `ci.yml`, `\$`-escaping the bcrypt hash as dotenv requires).
+- **Owner changes and reasoning:** at the plan gate — Q2 answered first (the other answers are
+  listed after this paragraph): a failed
+  WebMCP registration must be reported even though `data-webmcp` stays `ready`, and a connected
+  model must be able to tell WebMCP is unreachable — the plan's Task A2 was rewritten to an
+  indicator state, a `data-webmcp-error` attribute and a `console.warn`, with a SPEC amendment,
+  and its code run in the worktree (85 unit tests; the E2E fails on the old adapter and passes on
+  all three engines with the change). The owner asked what Q2 meant before answering: it was
+  worded around a console warning only, without saying who reads a console — a plan-gate question
+  should say who is affected (lesson from T-02a repeated). Mid-session the owner asked
+  for the worktree-bootstrap lesson to be recorded in the process log (the owner said "progress log") and in the owner's notes;
+  it is here, in the plan's Global Constraints, and in the Claude memory `worktree-node-setup`.
+  (Read "owner's notes" as that memory; if `build-workflow.md`'s rules of thumb was meant, it is an
+  Approved document and needs the owner's go-ahead.)
+- **Owner answers to Q1–Q8, completed after execution (2026-09-24):** Q1 yes — PR-A is a separate
+  PR (merged as #28); Q2 decided as recorded above; Q3 option A, four legs (Chromium × polyfill and
+  off, Firefox × polyfill, WebKit × polyfill); Q6 yes, the dated ADR-0003 clarification; execution
+  method subagent-driven with Opus 5.5 reviewers. **Q4 = B** (route list and 404 scan), **Q5 = yes**
+  (message scan), **Q7** keep the Prisma overrides with the removal note to T-16 and **Q8** deny
+  `fsevents` were taken as the recommended answers after the owner's message about "the four
+  questions" and then "start"; the owner did not confirm them one by one, so they are **open for
+  confirmation**, as the PR #29 description says. The cost if any is wrong is rework of Tasks 6, 7
+  and 8 only.
+- **Disagreements:** one open point, not a disagreement with the owner — whether the trial
+  files above breach the plan gate (lesson 4). The plan's header says so too.
+- **Owner decisions still open after execution:** (1) whether writing and running the trial files
+  before the plan-gate answer breaches `build-workflow.md` §2 (lesson 4 proposes the wording "scratch
+  verification in the planning worktree, nothing kept"); (2) whether the worktree-bootstrap rule
+  (lesson 1) belongs in `build-workflow.md`'s rules of thumb, an Approved document that only the
+  owner changes; (3) confirmation of Q4, Q5, Q7 and Q8 above.
+- **Lessons for the process:**
+  1. Worktree bootstrap is a fixed two-command step; the plan's first task (and any brief that
+     runs tests in a worktree) states it. Whether it belongs in `build-workflow.md`'s rules of
+     thumb is the owner's call.
+  2. T-12 merged with `npm run test:all` red on two of its three engines: its process-log entry
+     said Firefox and WebKit were not run, and the DoD line "`npm run test:all` green locally"
+     was ticked anyway. A PR that ran only Chromium did not meet the DoD; reviewers should ask for
+     all three engines' results until CI runs them (T-13 Task 10).
+  3. A test file that contains fake test calls is itself scanned by the traceability check — build
+     fixtures from parts.
+  4. *Proposal, owner decides:* run the plan's code before the gate. Doing so here corrected
+     six defects the first draft carried (plan F13), and applied T-12's lesson 4 (format what you
+     paste). It also conflicts with `build-workflow.md` §2 ("no write tool runs before" the
+     owner's reply): the session wrote, ran and removed about twenty trial files and temporarily
+     edited five tracked files in its own worktree. If the owner wants that allowed, §2 should say
+     "scratch verification in the planning worktree, nothing kept"; if not, the plan's code stays
+     unrun until execution.
+- **Next (written at the plan gate):** the owner answers Q1–Q8. Then PR-A (`fix/origin-agent-cluster`)
+  is opened from `origin/main`, merged by the owner, and `task/T-13-ci-hardening` executes Tasks 1–11.
+- **Outcome (2026-09-24, after execution):** the plan was executed the same day. PR-A is PR #28, merged
+  (`99298f9` on `main`); T-13 is PR #29 (`task/T-13-ci-hardening`, Tasks 1–11, rebased onto
+  `99298f9`), merged as `2e79edb`. PR-A and T-13 ran in parallel except Task 10, as planned. The
+  execution entry, "2026-09-24 — Phase 5: T-13 CI hardening — execution", is the next entry in this
+  file. What differed from this plan is listed in the plan's section "Execution — what differed from
+  this plan (2026-09-24)". Next: the owner merges this documentation PR and answers the open
+  decisions above; the first CI run of PR #29 (all eight checks passed, including the Firefox and
+  WebKit legs on Linux) is recorded in the execution entry.
+
 ## 2026-09-24 — Phase 5: T-13 CI hardening — execution
 
 - **Phase:** 5 (Build the slice), Release 1. The plan gate (`build-workflow.md` §2) was the planning
