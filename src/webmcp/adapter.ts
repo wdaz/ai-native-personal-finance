@@ -23,10 +23,23 @@ let resolvedMode: AdapterMode | null = configuredMode === "off" ? "unavailable" 
 let registeredNames: string[] = [];
 let generation: AbortController | null = null;
 let detection: Promise<ModelContext | null> | null = null;
+let registrationFailed = false;
 const listeners = new Set<StatusListener>();
 
+/** `SecurityError` for `new DOMException("", "SecurityError")`, `Error: duplicate name` for an Error. */
+function describeReason(reason: unknown): string {
+  return reason instanceof Error
+    ? [reason.name, reason.message].filter(Boolean).join(": ")
+    : String(reason);
+}
+
+function clearFailure() {
+  registrationFailed = false;
+  delete document.documentElement.dataset.webmcpError;
+}
+
 function status(): AdapterStatus {
-  return { mode: resolvedMode, count: registeredNames.length };
+  return { mode: registrationFailed ? "unavailable" : resolvedMode, count: registeredNames.length };
 }
 
 function notify() {
@@ -77,7 +90,7 @@ export function getModelContext(): Promise<ModelContext | null> {
 }
 
 export function mode(): AdapterMode | null {
-  return resolvedMode;
+  return registrationFailed ? "unavailable" : resolvedMode;
 }
 
 /** The current generation's registered tool names — also backs the `window.__pf` test hook. */
@@ -107,6 +120,7 @@ export async function register(tools: ToolDefinition[]): Promise<void> {
   generation?.abort();
   const controller = new AbortController();
   generation = controller;
+  clearFailure();
 
   const context = await getModelContext();
   if (context === null || controller.signal.aborted) return;
@@ -118,11 +132,25 @@ export async function register(tools: ToolDefinition[]): Promise<void> {
   const outcomes = await Promise.allSettled(
     tools.map((tool) => context.registerTool(tool, { signal: controller.signal })),
   );
-  if (controller.signal.aborted) return;
+  if (controller.signal.aborted) return; // a superseded generation: its rejections are on purpose, stay silent
 
+  const rejected = outcomes.flatMap((outcome, index) =>
+    outcome.status === "rejected"
+      ? [{ name: tools[index]?.name ?? "?", reason: outcome.reason as unknown }]
+      : [],
+  );
+  for (const { name, reason } of rejected) {
+    console.warn(`[webmcp] could not register tool "${name}"`, reason);
+  }
   registeredNames = tools
     .filter((_, index) => outcomes[index]?.status === "fulfilled")
     .map((tool) => tool.name);
+  if (rejected.length > 0) {
+    document.documentElement.dataset.webmcpError = rejected
+      .map(({ name, reason }) => `${name}: ${describeReason(reason)}`)
+      .join("; ");
+  }
+  registrationFailed = tools.length > 0 && registeredNames.length === 0;
   document.documentElement.dataset.webmcp = "ready";
   dispatchToolchange(context);
   notify();
@@ -134,6 +162,7 @@ export function unregisterAll(): void {
   generation = null;
   registeredNames = [];
   delete document.documentElement.dataset.webmcp;
+  clearFailure();
   notify();
 }
 

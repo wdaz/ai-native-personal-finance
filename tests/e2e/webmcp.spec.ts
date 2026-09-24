@@ -42,7 +42,8 @@ test("US-38 AC2: the build under test is the polyfill build (guard — a reused 
     .toBe(true);
   await expect
     .poll(() => page.evaluate(() => window.__pf?.webmcp?.mode() ?? null), {
-      message: "expected a WEBMCP_MODE=polyfill build — is an off build being reused?",
+      message:
+        "expected a WEBMCP_MODE=polyfill build — is an off build being reused? (or was every registration rejected — see data-webmcp-error)",
     })
     .toBe("polyfill");
   await expectToolsReady(page);
@@ -196,4 +197,28 @@ test("US-38 AC1: nothing is registered before login — the login page installs 
   await expect(page.getByRole("heading", { name: "Login", level: 1 })).toBeVisible();
   expect(await page.evaluate(() => "modelContext" in document)).toBe(false);
   await expect(page.locator("html")).not.toHaveAttribute("data-webmcp", "ready");
+});
+
+test("US-38 US-41: when the runtime refuses every registration the page says so — indicator 'unavailable', data-webmcp-error, a console warning", async ({
+  page,
+}) => {
+  const warnings: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "warning") warnings.push(message.text());
+  });
+  // The polyfill refuses to work in a document that is not origin-keyed (its
+  // validateOriginAgentCluster) — what Firefox and WebKit did before ADR-0006 (5). Forcing it
+  // here makes the failure reproducible on every engine, whatever the server sends.
+  await page.addInitScript(() => {
+    Object.defineProperty(globalThis, "originAgentCluster", { value: false, configurable: true });
+  });
+  await page.goto("/overview");
+  await expectToolsReady(page); // "ready" is still written — the other channels are what say more
+
+  await expect(page.getByRole("status", { name: COPY.agentToolsUnavailable })).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-webmcp-error",
+    /get_balance: SecurityError/,
+  );
+  await expect.poll(() => warnings.join("\n")).toContain('could not register tool "get_balance"');
 });
