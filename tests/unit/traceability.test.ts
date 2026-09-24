@@ -103,6 +103,25 @@ describe("titleStoryIds (NFR-T2: the id is in the test title)", () => {
     expect(titleStoryIds(source).has("US-02")).toBe(true);
   });
 
+  it("reads a .ts file's generic arrow, which a TSX parse takes for JSX, and the test after it", () => {
+    const source = `const make = <T>(value: T) => value;\n${call("test", T)}`;
+    expect(titleStoryIds(source, "generic.test.ts").has("US-02")).toBe(true);
+    expect(
+      checkTraceability({
+        release: ID,
+        defined: ID,
+        sources: [{ path: "generic.test.ts", source }],
+      }).missing,
+    ).toEqual([]);
+  });
+
+  it("holds no story id in a test title of its own (this file is scanned like any suite)", () => {
+    // An id here would count as "named" for the real check and mask a story that no suite names.
+    expect(
+      titleStoryIds(readFileSync(import.meta.filename, "utf8"), import.meta.filename).size,
+    ).toBe(0);
+  });
+
   it("does not let a substitution join two digits into an id", () => {
     expect([...titleStoryIds("test(`US-0${n}1`, () => {});")]).toEqual([]);
   });
@@ -218,7 +237,11 @@ describe("testSources and run — against a throwaway repository", () => {
       "e2e/helper.ts": call("test", "US-03 a helper"),
       "fixtures/odd.test.ts": call("test", "US-04 a fixture"),
     });
-    expect(testSources(root).sort()).toEqual([call("test", "US-01 a"), call("test", "US-02 b")]);
+    expect(
+      testSources(root)
+        .map(({ source }) => source)
+        .sort(),
+    ).toEqual([call("test", "US-01 a"), call("test", "US-02 b")]);
   });
 
   it("does not count a story named only in a helper file", () => {
@@ -232,7 +255,7 @@ describe("testSources and run — against a throwaway repository", () => {
     });
   });
 
-  it("exits non-zero and says the list differs from PRD §5 when the list lacks US-41", () => {
+  it("exits non-zero and says the list differs from PRD §5 when the list lacks the last story", () => {
     const root = repository(RELEASE_1.slice(0, -1), { "unit/all.test.ts": titles(RELEASE_1) });
     const result = run(root);
     expect(result.code).toBe(1);

@@ -8,7 +8,8 @@ import ts from "typescript";
  * named in the title of at least one test; a title naming a story `user-stories.md` does not
  * define fails too. "Title" means the first argument of a `test`/`it`/`describe`/`test.describe`
  * call that actually runs, read from the syntax tree — so a comment, a string, a skipped test or
- * group, a `.test(` on a regular expression or Zod's `.describe(` never counts.
+ * group, a `.test(` on a regular expression or Zod's `.describe(` never counts. The title of an
+ * `it.each([…])("…")` is not read either (the callee is a call): name the story in a plain title.
  */
 const STORY = /US-\d\d/g;
 /** The bare identifiers a test call is rooted at; `xit`/`xtest`/`xdescribe` are the skipped forms. */
@@ -98,13 +99,17 @@ function isSkipped(chain: string[], call: ts.CallExpression): boolean {
   );
 }
 
-export function titleStoryIds(source: string): Set<string> {
+/** A file's text, with its path when the script kind matters: `.ts` is not `.tsx` (`<T>(x) => x`). */
+export type SourceFile = string | { path: string; source: string };
+
+/** `path` picks the script kind (`.ts` → TS, anything else → TSX); without one a source is read as TSX. */
+export function titleStoryIds(source: string, path = "source.tsx"): Set<string> {
   const file = ts.createSourceFile(
-    "source.tsx",
+    path,
     source,
     ts.ScriptTarget.Latest,
     true,
-    ts.ScriptKind.TSX,
+    path.endsWith(".ts") ? ts.ScriptKind.TS : ts.ScriptKind.TSX,
   );
   const ids = new Set<string>();
   const visit = (node: ts.Node, skipped: boolean): void => {
@@ -128,10 +133,14 @@ export function titleStoryIds(source: string): Set<string> {
 export function checkTraceability(input: {
   release: string[];
   defined: string[];
-  sources: string[];
+  sources: SourceFile[];
 }): { missing: string[]; unknown: string[] } {
   const named = new Set<string>();
-  for (const source of input.sources) for (const id of titleStoryIds(source)) named.add(id);
+  for (const file of input.sources) {
+    const ids =
+      typeof file === "string" ? titleStoryIds(file) : titleStoryIds(file.source, file.path);
+    for (const id of ids) named.add(id);
+  }
   return {
     missing: input.release.filter((id) => !named.has(id)),
     unknown: [...named].filter((id) => !input.defined.includes(id)).sort(),
@@ -142,12 +151,14 @@ export function checkTraceability(input: {
  * Every `*.test.ts(x)` / `*.spec.ts(x)` under `tests/` — what Vitest and Playwright run — with
  * `fixtures/` excluded (they hold deliberately odd sources). A helper file's calls never count.
  */
-export function testSources(root: string): string[] {
-  const walk = (dir: string): string[] =>
+export function testSources(root: string): { path: string; source: string }[] {
+  const walk = (dir: string): { path: string; source: string }[] =>
     readdirSync(dir).flatMap((name) => {
       const path = join(dir, name);
       if (statSync(path).isDirectory()) return name === "fixtures" ? [] : walk(path);
-      return /\.(test|spec)\.tsx?$/.test(name) ? [readFileSync(path, "utf8")] : [];
+      return /\.(test|spec)\.tsx?$/.test(name)
+        ? [{ path, source: readFileSync(path, "utf8") }]
+        : [];
     });
   return walk(join(root, "tests"));
 }
