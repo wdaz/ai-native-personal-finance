@@ -2986,3 +2986,80 @@ them too").
   and those settings as still to do. Reconciling them is T-16's.
 - **Next:** the owner reviews and merges; the alerts close when the fix reaches `main`'s next
   CodeQL analysis; T-14.
+
+## 2026-09-24 — Phase 5: four tasks before T-14 — the tech debt and a security review
+
+- **Phase:** 5 (Build the slice), Release 1 — backlog planning between T-13 and T-14; no code.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5), with one read-only Explore subagent
+  (Sonnet) that swept the process log, the backlog, the ADRs and the source for debt that had no
+  `tech-debt.md` entry.
+- **Trigger:** after PR #33, the owner wrote that making the repository public was their own
+  choice — "Public özüm etdim. Versele deploydan qabaq Github tərəfdən yoxlama aparılmasını
+  istədim. Bundan sonra daxili local yoxlama aparacam." (I made it public myself; I wanted
+  GitHub's checks before the Vercel deploy; local checks come next) — that the release strategy
+  is changing ("release strategiyasını dəyişirəm", for the next session), and asked for the next
+  steps: "T14 keçməzdən öncə Tech deptləri düzəltmək. Onlarda Tasklar kimi prosess-log-da öz
+  əksini tapmalıdır. Bundan əlavə security yoxlama aparılmalıdır." (fix the tech debt before T-14,
+  each reflected in the process log as a task; and a security check).
+- **Prompt(s):** none — the conversation itself.
+- **Produced:** branch `docs/pre-T-14-plan`:
+  - `docs/03-specs/backlog.md` v1.24 — rows T-13a (TD-2), T-13b (TD-3), T-13c (TD-7–TD-10) and
+    T-13d (security review) between T-13 and T-14; T-14 depends on T-13d, and its T-02 guard
+    hand-off moves to T-13c (struck through, as T-16's done item is); the order in the Notes.
+  - `docs/03-specs/tech-debt.md` v1.10 — TD-2 and TD-3 assigned; four new entries, each with the
+    file and line it names checked against the code on `main` (`875cf3a`): TD-7 (`register()`
+    clears the failure but pushes no status until its tools settle, `src/webmcp/adapter.ts:123`,
+    `:156`), TD-8 (the walkthrough comment against `password.focus()`,
+    `tests/e2e/auth-accessibility.spec.ts:14`, `:39`), TD-9 (the `minmax(0, 1fr)` rule, guarded
+    today only by `app-shell.spec.ts:98`'s page-level scroll check) and TD-10 (the test-support
+    routes and `db:reset`/`test:api` have no guard on where they run).
+  - this entry.
+- **What the agent found before proposing:**
+  - Open entries: only TD-2 and TD-3. The sweep found eleven more candidates; four were
+    code-level debt with no task (TD-7–TD-10 above). The Release 2 items (traceability per
+    release, `checkThreshold`'s cost, the polyfill's `consequentialHint` and `AbortSignal`), the
+    Prisma `overrides` and the `commit-msg` hook stay where T-15 and T-16 already hold them.
+  - The repository state, read from GitHub's API:
+    - It has been public since 2026-09-20 21:00 UTC. The archive `-old` is private.
+    - Secret scanning, push protection, Dependabot security updates, private vulnerability
+      reporting and CodeQL are on.
+    - The one ruleset requires a pull request and blocks force-push, deletion and a high CodeQL
+      alert. It requires no status check and no approval.
+    - There is no `CODEOWNERS` and no `SECURITY.md`.
+  - `npm run secrets:scan`: 366 commits and every commit and tag message, no leaks. No
+    `.gitleaksignore` was ever committed, and no inline `gitleaks:allow` exists outside the text of
+    a review record. A run with `--ignore-gitleaks-allow` was refused by this session's harness
+    (it would not run `gitleaks git` directly), so that run is written into T-13d.
+  - The repository already has the tool for T-13d: the `owasp-security-review` skill (2026-09-23
+    entry, "Agent tooling"). Its default of writing the report outside the repository is the same
+    rule the owner then chose for exploitable findings.
+- **Owner decisions** (structured questions, one option each; recommended options marked so):
+  1. Order: the debt first, the security review last, before T-14 (recommended).
+  2. Unregistered debt: all four become entries and are fixed in T-13c — the WebMCP indicator,
+     the test comment, the card-grid check (the agent advised against this one, as low-value)
+     and the `APP_ENV` guard.
+  3. Disclosure: an exploitable finding stays in a private GitHub security advisory draft until
+     its fix is merged, then goes into the report and this log (recommended).
+  4. NFR-S5: "Heç biri, hamısı lokal" — no secret was real before the flip; every one is created
+     in T-14. So the rotation NFR-S5 asks before going public had nothing to rotate. T-13d
+     records that with the scan as evidence.
+- **What the agent got wrong or missed:** on seeing the public flip, it told the owner to rotate
+  every T-16 secret "now", before asking whether any of them had ever been real. The scan and the
+  owner's answer show that none had been. The question should have come before the advice.
+- **Owner changes and reasoning:** the order of Release 1's end changed. The 2026-09-20 entry kept
+  the repository private "until T-16". The owner made it public earlier, so that GitHub's
+  scanning runs before the first deploy. With no real secret in existence, that ordering is safe.
+  T-16's own text is left as it is, because the release strategy is being revised next session.
+- **Disagreements:** TD-9 — the agent rated a CSS check low-value next to an E2E check that
+  already covers every listed page; the owner wants it. It is recorded as the owner's decision.
+- **Open for the owner, not changed here:**
+  - ADR-0006 amendment (5) and SPEC-webmcp-tools v1.0.5 still read "proposed, awaiting the owner",
+    though their code (`Origin-Agent-Cluster`, PR #28) is merged.
+  - The TD-6 question: does an amendment inside an Accepted ADR meet `governance.md`?
+  - The `ci.yml` comment that code scanning is "unavailable while the repository is private".
+- **Lessons for the process:** a public repository turns every open security finding into a
+  disclosure the moment it is committed. The disclosure rule therefore belongs in the task row
+  before the review runs, not in the review's report afterwards.
+- **Next:** the owner reviews and merges `docs/pre-T-14-plan`. Then T-13a's plan gate
+  (`/superpowers:writing-plans t-13a`), one task per session, each with its own plan, PR and
+  entry. The release-strategy discussion is next session.
