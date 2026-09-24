@@ -29,6 +29,7 @@
     "seed:figures": "tsx scripts/seed-figures.ts"
   },
   "dependencies": {
+    "@mcp-b/webmcp-polyfill": "^5.1.0",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
     "bcryptjs": "^3.0.3",

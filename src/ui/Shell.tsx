@@ -16,8 +16,9 @@ export const MAIN_CONTENT_ID = "main-content";
  * the desktop sidebar, the page in `<main>`, and the bottom bar below 1024 px — CSS decides
  * which bar shows, so the server renders one tree for every width. The reset banner (§2.6)
  * leads the page when there is meta to show — `null` is "meta unavailable" (§3) — and hands
- * focus to `<main>` once dismissed, since the focused button is gone. T-11 adds the WebMCP
- * provider around the shell. It also re-checks the session when the browser restores the page
+ * focus to `<main>` once dismissed, since the focused button is gone. `app/(app)/layout.tsx`
+ * wraps this component in `WebMcpProvider` (T-11) — `Shell` itself stays free of `src/webmcp`
+ * imports, per ADR-0002. It also re-checks the session when the browser restores the page
  * from its back/forward cache.
  */
 export function Shell({ children, meta }: { children: ReactNode; meta: MetaDto | null }) {
