@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { buildCsp } from "@/src/server/csp";
 import { getDb } from "@/src/server/db";
 import { LAST_RESET_AT_HEADER } from "@/src/server/meta";
+import { recordViaRequest } from "@/src/server/request-log";
 import { latestResetAt } from "@/src/server/reset";
 import {
   SESSION_COOKIE_NAME,
@@ -13,6 +14,7 @@ import {
   shouldReissue,
 } from "@/src/server/session";
 import { sanitizeNextPath } from "@/src/shared/next-path";
+import { VIA_HEADER } from "@/src/shared/via";
 
 // SPEC-auth §2.9: Node.js runtime, not the Edge default — the reset-epoch check needs the
 // same Prisma/pg client src/server/db.ts uses elsewhere (T-05 plan gate Q2). The matcher
@@ -68,6 +70,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const csp = buildCsp(nonce, process.env.NODE_ENV);
 
   const isApi = pathname.startsWith("/api/");
+  // SPEC-webmcp-tools §2.8: an API request a WebMCP tool made is recorded under this
+  // response's request id — before the auth branch below, so a 401 is on record too.
+  if (isApi) recordViaRequest(request.headers.get(VIA_HEADER), requestId, pathname);
   const isRoot = pathname === "/";
   const needsSession = isApi
     ? !PUBLIC_API.test(pathname) &&
