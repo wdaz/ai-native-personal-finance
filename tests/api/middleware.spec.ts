@@ -36,16 +36,18 @@ async function expectNotFoundUnderCsp(response: APIResponse): Promise<string> {
   expect(nonce, "the response's script-src carries a nonce").toBeTruthy();
   const html = await response.text();
 
-  const inlineScripts = [...html.matchAll(/<script\b[^>]*>/g)]
+  // Case-insensitive, as the browser is: an unnonced `<SCRIPT>` still runs, and a `<SCRIPT
+  // SRC=…>` is still external (CodeQL js/bad-tag-filter, alert #1).
+  const inlineScripts = [...html.matchAll(/<script\b[^>]*>/gi)]
     .map(([tag]) => tag)
-    .filter((tag) => !/\bsrc=/.test(tag));
+    .filter((tag) => !/\bsrc=/i.test(tag));
   // Next inlines its RSC payload on every App Router page; none at all would mean this test
   // matched nothing rather than that every tag passed.
   expect(inlineScripts.length).toBeGreaterThan(0);
   // Soft, so one run reports every kind of breakage rather than only the first.
   expect.soft(inlineScripts.filter((tag) => !tag.includes(`nonce="${nonce}"`))).toEqual([]);
 
-  const styles = [...html.matchAll(/<style\b[^>]*>/g)].map(([tag]) => tag);
+  const styles = [...html.matchAll(/<style\b[^>]*>/gi)].map(([tag]) => tag);
   expect.soft(styles.filter((tag) => !tag.includes(`nonce="${nonce}"`))).toEqual([]);
 
   // Any whitespace, not just a space, may precede an attribute (PR #15 review).
