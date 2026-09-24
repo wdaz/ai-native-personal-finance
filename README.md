@@ -55,6 +55,9 @@ npm run dev                     # develop on http://localhost:3000
 npm run test:all                # secret scan, lint, format, typecheck, unit, API and E2E
 ```
 
+`.npmrc` sets `strict-allow-scripts=true`; if `npm ci` stops with `ESTRICTALLOWSCRIPTS`, review
+the named package's script and run `npm install-scripts approve <package>` (or `deny`).
+
 `npm run db:reset` applies pending migrations and replaces all data with the seed
 (`prisma/data.json`, dates moved two years on), recording a reset of reason `manual`
 (SPEC-reset-and-test-support §2.5). The API and E2E tests reset the same database; it holds
