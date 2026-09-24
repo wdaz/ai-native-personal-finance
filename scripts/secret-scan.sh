@@ -45,9 +45,12 @@ case "${1:-}" in
     # `dense-combined` there hide a conflict resolution from the parser. Not
     # `--first-parent`: it skips a secret added and removed inside a merged branch, which
     # was still pushed.
+    # Each scan's own exit status is kept (1 is a finding, anything else is the tool failing,
+    # which gitleaks.sh explains on stderr); the first failure wins and both always run.
     status=0
+    echo "secret-scan: commit diffs" >&2
     "$here/gitleaks.sh" git --config "$config" --log-opts="--all --diff-merges=separate" \
-      --redact --no-banner --verbose . || status=1
+      --redact --no-banner --verbose . || status=$?
     # T-13: commit and annotated-tag messages are text the scan above never reads, and a
     # connection string pasted into one is as public as one in a file (T-02a's documented
     # limitation; the pass measured clean on this repository and failing on a leaky message,
@@ -56,8 +59,9 @@ case "${1:-}" in
     trap 'rm -f "$messages"' EXIT
     git log --all --format='%B' >"$messages"
     git for-each-ref refs/tags --format='%(contents)' >>"$messages"
+    echo "secret-scan: commit and tag messages" >&2
     "$here/gitleaks.sh" stdin --config "$config" --redact --no-banner --verbose \
-      <"$messages" || status=1
+      <"$messages" || { rc=$?; [ "$status" -ne 0 ] || status=$rc; }
     exit "$status"
     ;;
   staged)
