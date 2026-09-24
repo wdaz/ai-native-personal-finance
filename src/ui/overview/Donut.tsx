@@ -38,10 +38,13 @@ export function Donut({
         aria-label={label}
       >
         <circle className={styles.ring} cx={CENTRE} cy={CENTRE} r={DONUT_RADIUS} />
-        {segments.map((segment) => (
+        {segments.map((segment, index) => (
+          // Keyed by array index, not `segment.theme`: two budgets could in principle share a
+          // theme (nothing here enforces US-15 AC1's "used themes disabled" rule), and a theme
+          // string is not a stable per-segment identity the way the array's own order is.
           <circle
-            key={`inner-${segment.theme}`}
-            className={styles.segment}
+            key={`inner-${index}`}
+            className={styles.innerSegment}
             cx={CENTRE}
             cy={CENTRE}
             r={INNER_RADIUS}
@@ -54,10 +57,10 @@ export function Donut({
             strokeDashoffset={segment.strokeDashoffset * INNER_SCALE}
           />
         ))}
-        {segments.map((segment) => (
+        {segments.map((segment, index) => (
           <circle
-            key={`outer-${segment.theme}`}
-            className={styles.segment}
+            key={`outer-${index}`}
+            className={styles.outerSegment}
             cx={CENTRE}
             cy={CENTRE}
             r={DONUT_RADIUS}

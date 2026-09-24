@@ -1972,3 +1972,78 @@ them too").
      while missing it in the letter (importing the actual function). Re-reading the row's exact
      wording against the diff, not just its topic, caught this before the PR.
 - **Next:** T-11 (WebMCP adapter), per `docs/03-specs/backlog.md`.
+
+### Addendum — 2026-09-24, an adversarial review of the T-10 diff
+
+- **Input:** the owner, verbatim: "Ayrı bir subagent ilə yoxlat zəhmət olmasa" ("Please check
+  it with a separate subagent") — in response to the process log above naming the missing
+  review pass as a gap. A read-only `Explore` subagent, launched with the model governance.md
+  v1.3 requires (Opus 5.5), reviewed the diff since PR #21 (`a7b938a..HEAD`, 4 commits, 42
+  files) against `AGENTS.md`, `governance.md`, the T-10 backlog row, SPEC-overview,
+  `definition-of-done.md`, `build-workflow.md`, the plan and this log's own claims — treating
+  the log as something to verify, not trust. It ran `npm run typecheck`/`lint`/`format:check`/
+  `npm test` for real in this same checkout (node_modules and `.env.local` already present) and
+  quoted the actual output; it could not run `test:api`/`test:e2e` because Postgres was not
+  running when it checked and it declined to start a service itself (a correct call under its
+  own read-only constraint — governance.md's "if a review needs to execute something, it does
+  so in a throwaway clone" assumes state the reviewer may change, not state it finds already
+  down), so those two claims from the log above were left unverified rather than refuted.
+- **Findings, most severe first, all fixed:**
+  1. **The donut's inner ring rendered 24 px wide, not 8 px.** `Donut.tsx` gave both the inner
+     and outer `<circle>` elements the same `styles.segment` class; `Donut.module.css`'s
+     `.segment { stroke-width: 24px }` always outranks an SVG presentation attribute, so the
+     inner circles' own `strokeWidth={8}` prop was silently ignored — a real, visible rendering
+     bug SPEC-overview §4.4 specifies exactly (8 px inner ring) and no test caught, since
+     `Donut.test.tsx` only counted `<circle>` elements. The reviewer verified this by rendering
+     the real component and CSS in Chromium and reading the computed `stroke-width` (24px).
+     Fixed by splitting `.segment` into `.innerSegment` (8px)/`.outerSegment` (24px); a new unit
+     test asserts the two circle groups carry different classes, and was confirmed to fail
+     against the original bug by reverting the fix and re-running it before restoring it (the
+     same mutation-testing discipline this task's own plan used for `donutSegments`).
+  2. **`ThemeBar`'s "violation fixture" could not fail.** The first version only asserted that
+     a `[data-theme="X"]` selector string existed in the CSS, the same class of gap T-09's D2
+     explicitly rejected for `CATEGORY_LABEL`/`THEME_LABEL` — a swapped rule (Navy painted red)
+     would have passed every check. Fixed: the test now extracts each rule's actual
+     `var(--color-*)` value and compares it to the theme's own expected token, with a genuine
+     swap fixture proven to fail before the fix and pass after.
+  3. **`Donut`'s React `key` was the theme name**, which two budgets could in principle share
+     (nothing in this task enforces US-15 AC1's "used themes disabled" rule — that is a
+     Release 2 write-path concern). Changed to the array index, a stable identity regardless.
+  4. **E2E gaps against the plan's own Task 8 and SPEC-overview §7:** US-34's hover/focus test
+     only checked the first of the four card links; the axe test never covered the *populated*
+     page at 375 px (only the default seed at 1440 and `empty-all` at both widths); and §7's
+     literal "skip link → nav → four card links → footer" has no DOM path at ≥1024 px (the
+     sidebar's footer sits *before* `<main>` there) — it only holds where "footer" means the
+     bottom nav bar, which `Shell` renders *after* `<main>`, i.e. at <1024 px. All four fixed:
+     the hover/focus test now loops over all four links; axe now runs the default seed at both
+     widths too; a new phone-width test extends `app-shell-keyboard.spec.ts`'s own established
+     walkthrough pattern (skip link → dismiss → header "Log out" → …) with this page's four
+     card links inserted before the bottom nav, proving the literal chain the spec names.
+  5. **Two smaller fixes:** `PotsCard`'s tile text had no wrap fallback for a total wider than
+     the seed ever produces (defensive, not a live R1 bug — flagged as low severity by the
+     reviewer since no write path in R1 can produce one); `design-tokens.md`'s new note
+     overclaimed `jar-fill` as "the first of the 27 to actually be implemented" when
+     `eye`/`eye-slash` (T-06) already were — reworded to drop the false claim.
+- **Checked and confirmed solid, per the reviewer:** the donut's segment math itself
+  (`donutSegments`'s denominator, cumulative offsets, the 12-o'clock clockwise rotation, the
+  `color-mix` opacity) is correct; ADR-0002 import boundaries hold; no `style=` prop anywhere
+  in the new files; all 15 `ThemeBar` rules exist; every seed-derived E2E figure genuinely comes
+  from `seedFigures()`, not a hand-typed literal; empty states match §2.7 and use `COPY`; the
+  request id is really forwarded and logged; `npm run build` produces `ƒ /overview` (dynamic,
+  not prerendered against the database); the stale-Turbopack-cache story from the log above is
+  plausible and not a cover for something else.
+- **Re-verified after the fixes** (this session, real output): `npm run typecheck`/`lint`/
+  `format:check` clean; `npm test` 758 passed (60 files); `npm run test:api` 91 passed;
+  `npm run test:e2e -- --project=chromium` 90 passed (all of `tests/e2e`, including the new
+  phone-walkthrough test) against a clean (`rm -rf .next`) build; a close-up screenshot of the
+  donut confirms the inner ring is now visibly thin against the outer one.
+- **Owner changes and reasoning:** none yet — the owner asked for the review; the fixes above
+  are the agent's own response to it, per governance's normal implementation-detail latitude.
+- **Disagreements:** none.
+- **Lessons for the process:** a CSS class shared between two elements that need different
+  values for the *same* property is exactly the kind of thing a component test that only counts
+  elements cannot catch — the lesson from this task's own `ThemeBar` mistake (a table that
+  looks checked but isn't) generalises past hand-typed data tables to shared CSS classes too. A
+  "violation fixture" is only proof once it has actually been run against the *unfixed* code and
+  seen to fail — this review supplied that for finding 1 where the implementing session's own
+  test had not.

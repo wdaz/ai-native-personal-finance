@@ -16,9 +16,22 @@
   stroke-width: 24px;
 }
 
-.segment {
+/*
+ * Adversarial review finding 1: a stylesheet rule always outranks an SVG presentation
+ * attribute, so a single `.segment` class here silently overrode the inner ring's own
+ * `strokeWidth={8}` JSX prop with this file's 24px, painting a 16 px band instead of an 8 px
+ * one (the outer ring's 24px covering the top 16px of what should have been an 8px inner
+ * ring). Two classes, matching the two actual stroke widths §4.4 names.
+ */
+.outerSegment {
   fill: none;
   stroke-width: 24px;
+  stroke-linecap: butt;
+}
+
+.innerSegment {
+  fill: none;
+  stroke-width: 8px;
   stroke-linecap: butt;
 }
 

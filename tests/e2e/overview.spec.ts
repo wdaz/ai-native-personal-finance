@@ -146,7 +146,8 @@ test("US-07 AC2: empty-budgets variant shows the empty state and 'Add a budget' 
   await seedVariant(request, "empty-budgets");
   await loginViaApi(page);
   await page.goto("/overview");
-  await expect(page.getByRole("img", { name: "Spent $0.00 of $0.00 limit" })).toBeVisible();
+  const emptyLabel = `Spent ${formatMoney(0)} of ${formatMoney(0)} limit`;
+  await expect(page.getByRole("img", { name: emptyLabel })).toBeVisible();
   await expect(page.getByText(COPY.budgetsEmpty)).toBeVisible();
   const addBudget = page.getByRole("link", { name: COPY.addBudget });
   await expect(addBudget).toHaveAttribute("href", "/budgets");
@@ -208,37 +209,85 @@ test("US-32 AC1 AC3 keyboard walkthrough: the four card links, each reachable an
   await expect(page).toHaveURL(`${baseURL}/recurring-bills`);
 });
 
+/**
+ * US-32 AC1 AC3, SPEC-overview §7's literal "skip link → nav → four card links → footer":
+ * at ≥1024 px the sidebar's footer (Log out, Minimize Menu) sits *before* `<main>` in the
+ * DOM, so "→ footer" only reads as page-content-then-footer at a width where the footer is
+ * the bottom nav bar instead (`Shell` renders it after `<main>`, adversarial review finding
+ * 4). This is the full chain `app-shell-keyboard.spec.ts`'s own phone walkthrough
+ * establishes for a placeholder page, with this page's four card links inserted between the
+ * header's "Log out" and the bottom bar, since Overview is no longer a placeholder.
+ */
+test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the four card links, the bottom bar", async ({
+  page,
+  baseURL,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/overview");
+
+  await tabTo(page, page.getByRole("link", { name: COPY.skipToContent }));
+  await tabTo(page, page.getByRole("button", { name: COPY.dismissNotice }));
+  await tabTo(page, page.getByRole("main").getByRole("button", { name: "Log out" }));
+
+  const links = page.locator("main").getByRole("link", { name: /See Details ›|View All ›/ });
+  await expect(links).toHaveCount(4);
+  for (let index = 0; index < CARD_LINKS.length; index += 1) {
+    await tabTo(page, links.nth(index));
+  }
+
+  const bottomNav = page.getByRole("navigation", { name: "Main" });
+  await tabTo(page, bottomNav.getByRole("link", { name: "Overview", exact: true }));
+
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(`${baseURL}/overview`);
+});
+
 test.describe("US-34 hover and focus states (design-tokens.md 'Component states': tertiary)", () => {
-  test("the four card links go grey-500 to grey-900 on hover and focus", async ({ page }) => {
+  test("all four card links go grey-500 to grey-900 on hover and focus", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/overview");
 
     const links = page.locator("main").getByRole("link", { name: /See Details ›|View All ›/ });
     await expect(links).toHaveCount(4);
-    const link = links.first();
-    await expect(link).toHaveCSS("color", GREY_500);
-    await link.hover();
-    await expect(link).toHaveCSS("color", GREY_900);
-
-    await link.focus();
-    await expect(link).toHaveCSS("color", GREY_900);
+    for (let index = 0; index < CARD_LINKS.length; index += 1) {
+      const link = links.nth(index);
+      await expect(link).toHaveCSS("color", GREY_500);
+      await link.hover();
+      await expect(link).toHaveCSS("color", GREY_900);
+      await link.focus();
+      await expect(link).toHaveCSS("color", GREY_900);
+      // Move the mouse elsewhere so the next link's hover assertion starts from grey-500.
+      await page.mouse.move(0, 0);
+    }
   });
 });
 
-test("NFR-A1 axe: no serious or critical violation on /overview — default seed and empty-all", async ({
+test("NFR-A1 axe: no serious or critical violation on /overview — default seed and empty-all, 1440 and 375 px", async ({
   page,
   request,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/overview");
   await expect(page.getByText("Current Balance")).toBeVisible();
-  await expect.poll(() => seriousA11yViolations(page), { message: "default seed" }).toEqual([]);
+  await expect
+    .poll(() => seriousA11yViolations(page), { message: "default seed desktop" })
+    .toEqual([]);
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/overview");
+  await expect(page.getByText("Current Balance")).toBeVisible();
+  await expect
+    .poll(() => seriousA11yViolations(page), { message: "default seed phone" })
+    .toEqual([]);
 
   await seedVariant(request, "empty-all");
   await loginViaApi(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/overview");
   await expect(page.getByText(COPY.potsEmpty)).toBeVisible();
-  await expect.poll(() => seriousA11yViolations(page), { message: "empty-all" }).toEqual([]);
+  await expect
+    .poll(() => seriousA11yViolations(page), { message: "empty-all desktop" })
+    .toEqual([]);
 
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/overview");

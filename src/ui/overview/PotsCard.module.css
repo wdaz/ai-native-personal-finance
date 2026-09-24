@@ -39,8 +39,12 @@
   text-align: center;
 }
 
+/* Adversarial review finding 5: `.tile`'s `min-inline-size: 0` (needed so it can shrink
+   below its own text at 320 px, matching `.grid`) means a wider figure than the seed ever
+   produces would otherwise overflow the tile's padding instead of wrapping. */
 .tileValue {
   margin: 0;
+  overflow-wrap: break-word;
 }
 
 .tileLabel {
