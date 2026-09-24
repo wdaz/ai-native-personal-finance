@@ -1,6 +1,17 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
-- Status: **Accepted** (amended 2026-09-24) · Date: 2026-09-13
+- Status: **Accepted** (amended 2026-09-24; amendment (5) proposed, not yet accepted) · Date: 2026-09-13
+- Amendment 2026-09-24 (5) — **Proposed by the agent, awaiting the owner's acceptance** (T-13
+  plan finding F1): the response headers gain `Origin-Agent-Cluster: ?1`. Firefox and WebKit
+  report `originAgentCluster === false` for a document served without it, and
+  `@mcp-b/webmcp-polyfill@5.1.0` refuses to run there (`validateOriginAgentCluster` throws
+  `SecurityError` from `registerTool`, `getTools` and `executeTool`), so US-38, US-39 and US-41
+  fail in both browsers; Chromium's default is already true. Consequence: the document's origin
+  gets its own agent cluster and can no longer share a process with same-site documents through
+  `document.domain` — nothing in this app does. Set by `middleware.ts` on every response it sees
+  and pinned by `tests/api/middleware.spec.ts`. Related, in SPEC-webmcp-tools v1.0.5: a failed
+  tool registration is reported (indicator, `data-webmcp-error`, `console.warn`) instead of
+  passing silently as `ready`.
 - Amendment 2026-09-24 (4) — **Accepted by the owner, 2026-09-24** ("Hamısını accept et" —
   "accept all"; drafted by the agent, accepted after it was explained that a PR is not an
   acceptance). Owner decision 2026-09-24: TD-6 option (b) — under `next dev`
@@ -88,7 +99,7 @@ Exactly one demo account; the sign-up screen is UI-complete but creates nothing;
   'nonce-<value>'`, one nonce per request via `middleware.ts` and the `x-nonce` request
   header — 2026-09-23 (2) amendment; no third-party), `frame-ancestors 'none'`,
   `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` left default so
-  `tools` stays `self` (S6).
+  `tools` stays `self` (S6), `Origin-Agent-Cluster: ?1` (2026-09-24 (5) amendment, proposed).
 
 ## Alternatives considered
 **A. This — chosen.**
