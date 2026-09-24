@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -15,7 +15,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-3 | `/_global-error` is prerendered, without the CSP nonce | Open | whichever task first gives the app an error UI of its own |
 | TD-4 | Two "submit is focused after an error" E2E assertions prove nothing on Chromium | Open | T-13 (WebKit joins CI), or any task that touches those tests |
 | TD-5 | Zod's `jitless` setting rides on importing `src/shared/schemas.ts` | **Closed** | T-11 |
-| TD-6 | `next dev` fills the console with CSP violations (the policy has no dev variant) | **Fix in review** — option (b); ADR-0006 amendment (4) accepted 2026-09-24; closes when the PR merges | `fix/td-6-dev-csp` (small follow-up) |
+| TD-6 | `next dev` fills the console with CSP violations (the policy has no dev variant) | **Closed** | `fix/td-6-dev-csp` (PR #23) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -156,5 +156,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   (owner, 2026-09-24); `tests/unit/server/csp.test.ts` pins both variants and
   `tests/api/middleware.spec.ts` pins the production policy on a production build's response.
   Checked by hand: `next dev` answers `script-src … 'unsafe-eval'; style-src 'self'
-  'unsafe-inline'`, `next build && next start` answers the unchanged production policy. Marked
-  **Closed** here, with the PR, once the owner merges it.
+  'unsafe-inline'`, `next build && next start` answers the unchanged production policy.
+- **Closed:** 2026-09-24, PR #23 (`fix/td-6-dev-csp`, merge `dc2dba3`) — the owner accepted ADR-0006
+  amendment (4) and merged; `npm run dev` now sends the relaxed policy, the production policy is
+  pinned by unit and API tests. Still open, as recorded in the process log: whether an amendment
+  inside an Accepted ADR meets `governance.md` line 40 (a superseding ADR is the alternative).
