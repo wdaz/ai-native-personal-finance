@@ -1,5 +1,7 @@
 import type { z } from "zod";
+import { toErrorIssues, type ErrorIssue } from "@/src/shared/schemas";
 import { toolInputJsonSchema } from "@/src/shared/tool-schema";
+import { toolError } from "./tool-result";
 import type { ToolAnnotations, ToolDefinition, ToolResult } from "./types";
 
 /** SPEC-webmcp-tools §2.4: the WebMCP draft's tool-name charset. */
@@ -26,8 +28,17 @@ export interface DefineToolOptions<TInput> {
   execute(args: ToolExecuteArgs<TInput>): Promise<ToolResult>;
 }
 
-function toolError(code: string, message: string): ToolResult {
-  return { isError: true, code, message, content: [{ type: "text", text: message }] };
+/**
+ * `toErrorIssues` throws on a Zod code the shared contract has no name for (e.g.
+ * `unrecognized_keys`, from a strict schema). That must not turn a tool call into a rejection
+ * (NFR-W6), so the issues are then left out and the readable `message` still goes out.
+ */
+function issuesOf(error: z.ZodError): ErrorIssue[] | undefined {
+  try {
+    return toErrorIssues(error);
+  } catch {
+    return undefined;
+  }
 }
 
 /** Never throws (ADR-0004) — every issue, however unusual, becomes one readable line. */
@@ -72,7 +83,11 @@ export function defineTool<TInput>(options: DefineToolOptions<TInput>): ToolDefi
     annotations,
     async execute(rawInput: unknown): Promise<ToolResult> {
       const parsed = input.safeParse(rawInput);
-      if (!parsed.success) return toolError("validation", validationMessage(parsed.error));
+      if (!parsed.success) {
+        return toolError("validation", validationMessage(parsed.error), {
+          issues: issuesOf(parsed.error),
+        });
+      }
       try {
         return await execute({ input: parsed.data, signal: undefined });
       } catch (error) {

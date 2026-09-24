@@ -15,3 +15,7 @@ locally). Each test resets it; it holds demo data only.
 - `admin-reset.spec.ts` — `/api/admin/reset` GET/POST, each `ResetLog` reason, 400/401 (§2.2–2.3)
 - `overview.spec.ts` — `GET /api/overview` against all six seed variants, 401, `no-store`,
   the "never seeded" 500 (SPEC-overview §6)
+- `via-log.spec.ts` (T-12) — an `X-Via: webmcp` request is on record at `GET /api/test/log`
+  under its `X-Request-Id`, also when it answers 401; 404 for an unknown, empty or missing id
+  (SPEC-webmcp-tools §2.8). A green run also proves the buffer is shared between the middleware
+  and the route bundles through `globalThis`.

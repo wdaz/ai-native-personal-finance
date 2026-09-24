@@ -37,3 +37,14 @@ Playwright browser tests, one journey per story, on Chromium, Firefox and WebKit
   `<svg role="img">`, not `<img>`.
 
 Run: `npm run test:e2e`.
+
+- `webmcp.spec.ts` and `webmcp-off.spec.ts` (T-12): the two Release 1 tools in a real browser.
+  The helper `tests/fixtures/webmcp.ts` (`listTools`, `callTool`, `expectToolsReady`, `RUN_MODE`)
+  calls a tool the way the installed polyfill allows: find it in `getTools()`, pass
+  `executeTool(tool, JSON.stringify(input))`, parse the returned JSON string (plan F2).
+  `WEBMCP_MODE` is inlined when the app is built, so a spec cannot switch it: each file skips
+  itself unless `RUN_MODE` matches and its first test asserts which build it is talking to, so
+  a reused server built in the other mode fails with a named message instead of a timeout. CI
+  runs the whole Chromium suite once per mode. Locally the off leg is
+  `WEBMCP_MODE=off npx playwright test --project=chromium` — stop any running server first,
+  because Playwright reuses one and it would still be the polyfill build.

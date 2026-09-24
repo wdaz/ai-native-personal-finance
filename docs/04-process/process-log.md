@@ -2284,3 +2284,101 @@ them too").
   command and *what to do when it does not apply cleanly*; the last part is the one that
   matters.
 - **Next:** the owner reviews and merges the PR.
+
+## 2026-09-24 — Phase 5: T-12 Release 1 WebMCP tools
+
+- **Phase:** 5 (Build the slice), Release 1.
+- **Participants:** Owner / Agent (Claude Code, local session in a worktree; execution by a
+  controller agent with one implementer subagent per task and a review after each).
+- **Trigger:** the owner's message, verbatim: "start the t-12" (through
+  `/superpowers:writing-plans`). Followed at the plan gate by "start
+  /superpowers:subagent-driven-development" — Q1 (SPEC v1.0.4) yes, Q2 option A, Q3 option A, and
+  execution by subagent-driven development.
+- **Prompt(s):** `prompts/2026-09-24-T-12.md`.
+- **Produced:** `docs/04-process/plans/2026-09-24-T-12.md` (v0.2, then executed);
+  `src/shared/via.ts`, `src/shared/api-client.ts`; `src/server/request-log.ts`, the `GET log`
+  route in `src/server/test-support.ts`, the recording call in `middleware.ts`;
+  `src/webmcp/tool-result.ts`, `tools/overview.ts`, `tools/registry.ts`, `tools/OverviewTools.tsx`,
+  `types.ts` (`issues`, `retryAfter`) and `defineTool.ts` (validation `issues`);
+  `app/(app)/overview/layout.tsx`; `tests/fixtures/webmcp.ts`, `tests/e2e/webmcp.spec.ts`,
+  `tests/e2e/webmcp-off.spec.ts`, `tests/api/via-log.spec.ts`, and the new unit files
+  (`request-log`, `api-client`, `tool-result`, `overview-tools`, `registry`, `OverviewTools`, plus
+  cases in `test-support` and `defineTool`); `.github/workflows/ci.yml` (the E2E job as a
+  `webmcp-mode` matrix); `docs/04-process/runbooks/webmcp-native-check.md` (Draft);
+  SPEC-webmcp-tools v1.0.4; SPEC-reset-and-test-support v1.5; backlog v1.21 (hand-offs to T-13,
+  T-14, T-15, T-16); the READMEs of `src/webmcp`, `src/shared`, `src/server`, `app/(app)`,
+  `tests/unit`, `tests/api`, `tests/e2e`; this entry; the stale `.env.example` comment
+  ("/api/test/log arrives in T-12") was updated in the Task 6 fix round. Commits: Tasks 1–5 are `08a819d`,
+  `7cb3e96`, `5ca91f7`, `8ac031e`, `02d5ecf` (on top of the plan's own last commit, `a84c5ae`),
+  followed by the documentation commit and its fix round.
+- **What the agent got right:** as at T-11, the plan checked the runtime the tests would call, not
+  the spec text: it read the installed `@mcp-b/webmcp-polyfill@5.1.0` source and found seven things
+  (F1–F7) before any code existed — a Server Component cannot hand `execute` functions to a Client
+  Component (F1); the polyfill's `executeTool(tool, json)` takes a registered-tool object and a
+  JSON string and returns a JSON string, so SPEC §7's `executeTool("get_balance", {})` does not
+  exist outside the deprecated `navigator` shim (F2); `getTools()` shows only two annotation hints
+  (F3); `toErrorIssues` throws on an unrecognised Zod key (F4); `X-Request-Id` is already on every
+  response, so only the log is new (F5); the middleware and the route handlers are separate
+  bundles (F6); `WEBMCP_MODE` is baked in at build time (F7). Two of these
+  were proved by running, not reasoned: Task 3's real `next build` plus the existing
+  `overview.spec.ts` (14/14) showed the F1 wrapper seam sound, and Task 1's API test — the
+  request recorded by the middleware read back by a route handler — showed the `globalThis` buffer
+  really is shared (F6). An advisor review of the plan, before the gate, caught three defects that
+  would have surfaced only in execution (the mode guards would time out before naming the
+  mismatch; the deliberate-failure step needed a by-hand `APP_ENV=test` server; the spec
+  amendment missed §2.3 and §2.5) — plan v0.2. The mode guards were then made to fail on purpose,
+  in both directions, and each named its cause ("expected a WEBMCP_MODE=off build — is a
+  polyfill build being reused?" and its mirror image), rather than being trusted because they
+  passed.
+- **What the agent got wrong or missed:**
+  - The plan said the API suite had 91 tests; the real baseline was 92 (96 after this task's 4).
+    Noted by Task 1's implementer, which ran the suite; informational, no test was affected.
+  - The plan's Task 4 code did not compile under the repository's `noUncheckedIndexedAccess`:
+    `response.headers()["x-request-id"]` is `string | undefined`, and `next build` type-checks
+    the test folder. The implementer added one `!`; no assertion changed. Found only by the real
+    build, not by reading the plan.
+  - The plan's Task 5 Step 3 said to push and read `gh pr checks`. The controller ruled that out
+    (a push is a shared-branch side effect the implementer does not own), so the CI verdict for
+    the new matrix does not exist yet.
+  - The plan's code was not Prettier-clean: Tasks 1–4 each ended with `prettier --write` re-wrapping
+    the pasted test code (whitespace only, assertions unchanged).
+  - This task's brief called the SPEC-reset-and-test-support changelog entry "v1.2"; v1.2 was
+    already T-05's, so the entry is v1.5.
+  - Not observed: the plan says a wrong-mode build makes the file's other tests fail with
+    unlabelled timeouts too; the deliberate-failure runs used `--max-failures=1`, so only the
+    guard's own named failure was seen.
+- **Verified, not reasoned:** on the branch after Task 6's edits — `npm run typecheck`, `npm run
+  lint`, `npm run format:check` clean; unit 875 (baseline 808 + 67 new); API 96 (92 + 4 new);
+  Chromium E2E 100 passed / 8 skipped in the polyfill build and 98 passed / 10 skipped in the off
+  build (the skips are the other mode's spec); `npm audit --audit-level=high` 0 vulnerabilities.
+  Firefox and WebKit were not run (CI runs Chromium until T-13).
+- **Not verified:** the CI verdict — nothing has been pushed, and `actionlint` is not installed,
+  so the workflow change is not validated locally; the first CI run must show both
+  `E2E (Chromium, polyfill)` and `E2E (Chromium, off)` green. The headed native runbook has not
+  been executed by a person; its status is Draft, the extension's UI labels are deliberately not
+  recorded, and NFR-B2 stays open until the owner has run it and filled in its record table.
+- **Environment:** Postgres from `compose.yaml` under Docker and a git-ignored `.env.local`,
+  set up by the controller; baseline before this task 808 unit tests.
+- **Owner changes and reasoning:** none yet — awaiting review.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A test that depends on a build-time flag must assert the build it is talking to, and that
+     assertion is only proved by making it fail on purpose: with a reused server (Playwright's
+     `reuseExistingServer`) a spec for the wrong build otherwise passes vacuously or times out
+     without a cause.
+  2. `next build` type-checks the test folder. A plan that pastes test code should say so, or the
+     first local build of a task is where a type error in it appears.
+  3. A plan that contains a step with a side effect on a shared resource (push, PR) should mark it
+     as the controller's, so a subagent executing the plan does not have to be overruled.
+  4. Code pasted into a plan should be Prettier-formatted, or the plan should say each task ends
+     with a format pass; four of five tasks ended with the same whitespace-only rewrite.
+  5. The final whole-branch review found that `PAGE_TOOLS` (the registry `registry.test.ts`
+     checks against NFR-W3) was not wired into the wrapper: `OverviewTools.tsx` imported
+     `overviewTools` directly, so a tool added only to the registry would not have been
+     registered. Fixed in the final review-fix commit (the wrapper now renders
+     `PAGE_TOOLS.overview`). A test that iterates a registry proves nothing about what the page
+     registers unless the page reads the same registry.
+- **Next:** the controller pushes the branch and opens a draft PR and reads both CI legs; the
+  owner runs `docs/04-process/runbooks/webmcp-native-check.md` in a headed Chrome and fills in its
+  record table; T-13 (CI hardening: Firefox and WebKit join the `webmcp-mode` matrix or a second
+  job) per backlog v1.21.

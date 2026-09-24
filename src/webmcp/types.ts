@@ -4,6 +4,7 @@
  * hand-written rather than depending on `@mcp-b/webmcp-types` (ADR-0004 alternative C) — only
  * the members `adapter.ts` actually calls.
  */
+import type { ErrorIssue } from "@/src/shared/schemas";
 
 export interface ToolAnnotations {
   readOnlyHint?: boolean;
@@ -29,6 +30,10 @@ export interface ToolResult {
   isError?: boolean;
   code?: string;
   message?: string;
+  /** A `validation` error's machine-readable issues (SPEC-webmcp-tools §2.6, plan Q2). */
+  issues?: ErrorIssue[];
+  /** Seconds — a `rate_limited` error's `Retry-After` (SPEC-auth §4). */
+  retryAfter?: number;
 }
 
 /**

@@ -22,3 +22,13 @@ T-09: `overview.ts` — `CATEGORY_LABEL`/`THEME_LABEL` (Prisma's client spelling
 to data-model.md's own, `Dining Out`; built from `src/shared/enums.ts` and checked against
 the generated Prisma enum, not hand-typed), the pure `toOverviewDto` and `getOverview(db,
 clock)` it composes from `src/domain/overview`'s `overviewSummary` (SPEC-overview §6).
+
+T-12: `request-log.ts` — `recordViaRequest` (called by `middleware.ts` for every `/api` request,
+before the session check, so a 401 is on record; only the exact value `webmcp` is kept) and
+`findViaRequest` (read by `GET /api/test/log` in `test-support.ts`). In `APP_ENV=test` the entries
+live in a `Map` of 200 held on `globalThis`, because `middleware.ts` and the route handlers are
+separate bundles and a module-level buffer would not be shared between them (the same reason
+`db.ts` holds the Prisma client there); outside test one JSON line goes to stdout and nothing is
+kept. The log round-trip is proven under `next start` (one process); under `next dev` middleware
+may run in a different worker where `globalThis` is not shared, so a local dev check of the marker
+can 404 for a reason unrelated to the code.

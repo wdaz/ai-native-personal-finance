@@ -9,7 +9,7 @@ project reaches it — that is deliberate, not an omission.
 | 2 Requirements | `01-requirements/` | `prd.md`, `user-stories.md`, `non-functional-requirements.md` | `prd.md`, `user-story.md` |
 | 3 Architecture | `02-architecture/` | `adr/NNNN-*.md`, `system-overview.md`, `data-model.md`, `design-tokens.md` | `adr.md` |
 | 4 Specs & plan | `03-specs/` | `<feature>.md` one per feature, `definition-of-done.md`, `backlog.md` | `feature-spec.md` |
-| all | `04-process/` | `roadmap.md`, `governance.md`, `process-log.md`, `prompts/` | `process-log-entry.md` |
+| all | `04-process/` | `roadmap.md`, `governance.md`, `process-log.md`, `prompts/`, `plans/` (per-task implementation plans), `runbooks/` (headed or manual procedures, e.g. the native WebMCP check) | `process-log-entry.md` |
 
 ## Conventions
 

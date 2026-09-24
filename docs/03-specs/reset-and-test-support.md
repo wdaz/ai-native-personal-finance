@@ -1,7 +1,7 @@
 # SPEC-reset-and-test-support — Admin reset, scheduled reset, test-support routes
 
-Status: **Approved** (v1.4 — 2026-09-23: the daily cron and the interval check, PR #20 review finding 2, owner decision; v1.3 — 2026-09-23: T-08 plan gate, Q1 (a) — Vercel's cron calls with a bodyless `GET`, so `/api/admin/reset` answers `GET` as the scheduled reset; v1.2 — 2026-09-23: T-05's whole-branch review — §2.6's resetEpoch check drops "cached per instance for 30 s"; v1.1 — 2026-09-22: owner decisions at the T-02 plan gate; v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20 (added after review S-04/S-05/S-25)
-Changelog: v1.4 (2026-09-23, owner decision on PR #20's review, finding 2: "Bu pr-da düzəlt.
+Status: **Approved** (v1.5 — 2026-09-24: §2.7's `GET /api/test/log` note resolved — the route and the via-marker landed in T-12, T-12 plan gate; v1.4 — 2026-09-23: the daily cron and the interval check, PR #20 review finding 2, owner decision; v1.3 — 2026-09-23: T-08 plan gate, Q1 (a) — Vercel's cron calls with a bodyless `GET`, so `/api/admin/reset` answers `GET` as the scheduled reset; v1.2 — 2026-09-23: T-05's whole-branch review — §2.6's resetEpoch check drops "cached per instance for 30 s"; v1.1 — 2026-09-22: owner decisions at the T-02 plan gate; v1.0, owner approval 2026-09-20) · Author(s): Agent · Date: 2026-09-20 (added after review S-04/S-05/S-25)
+Changelog: v1.5 (2026-09-24, T-12 plan gate) — §2.7's note that `GET /api/test/log` "lands in T-12" is resolved: the route and the marker that writes its entries landed in T-12 (`middleware.ts` records `X-Via: webmcp` requests before the session check; a missing or empty `requestId` answers 404 like an unknown one, SPEC-webmcp-tools §2.8). v1.4 (2026-09-23, owner decision on PR #20's review, finding 2: "Bu pr-da düzəlt.
 Tövsiyyə ilə davam et") — §2.3's `0 3 */10 * *` fired on days 1, 11, 21 and 31, not every 10
 days. The cron now runs daily at `0 3 * * *`. `GET /api/admin/reset` resets only once
 `RESET_INTERVAL_DAYS` have passed since the latest `ResetLog.at`, less one hour of slack for
@@ -43,7 +43,7 @@ One idempotent seed/reset routine used by deployment, the scheduled job, the thr
   - `POST /api/test/reset` → `resetToSeed(db, "test")` → 200 `{ at }`.
   - `POST /api/test/seed { variant }` → reset, then apply a variant: `seed` (none), `empty-pots` (delete pots, balance unchanged), `empty-budgets`, `few-transactions` (keep the latest 3), `no-recurring` (set `recurring=false` on all), `empty-all` (no pots, budgets or transactions; balance unchanged). 200 `{ at, variant }`; 400 unknown or missing variant.
   - `GET /api/test/log?requestId=` → 200 `{ requestId, via, route }` or 404.
-  - Note: `GET /api/test/log` lands in T-12, with the via-marker logging that writes its entries (backlog v1.6).
+  - The route and the marker that writes its entries landed in T-12 (v1.5): `middleware.ts` records `X-Via: webmcp` requests, a missing or empty `requestId` answers 404 like an unknown one.
   - Test routes require no session and are excluded from rate limiting.
 
 ## 3. States

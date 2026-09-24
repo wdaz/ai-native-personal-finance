@@ -90,4 +90,25 @@ describe("defineTool's execute wrapper (SPEC §2.5, plan D3 — never throws)", 
     expect(result.isError).toBe(true);
     expect(result.code).toBe("server_error");
   });
+
+  it("adds machine-readable issues to a validation error (plan Q2)", async () => {
+    const result = await echo.execute({ value: 123 });
+    expect(result.issues).toEqual([{ path: ["value"], code: "required" }]);
+    expect(result.message).toContain("value");
+  });
+
+  it("does not reject when a strict schema meets an unknown key — toErrorIssues cannot map unrecognized_keys, issues is omitted, the message stays (plan F4)", async () => {
+    const strict = defineTool({
+      name: "strict_tool",
+      description: "Takes nothing, strictly.",
+      input: z.strictObject({}),
+      annotations: { readOnlyHint: true },
+      execute: async () => ({ content: [] }),
+    });
+    const result = await strict.execute({ stray: 1 });
+    expect(result.isError).toBe(true);
+    expect(result.code).toBe("validation");
+    expect(result.message).toBeTruthy();
+    expect("issues" in result).toBe(false);
+  });
 });

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as route from "@/app/api/test/[...path]/route";
+import { recordViaRequest } from "@/src/server/request-log";
 import { handleTestSupport, testSupportRoutes } from "@/src/server/test-support";
 
 /**
@@ -23,11 +24,39 @@ describe("test-support routes (SPEC-reset-and-test-support §2.7)", () => {
     },
   );
 
-  it("has reset and seed when APP_ENV=test (the control for the case above)", () => {
+  it("has reset, seed and log when APP_ENV=test (the control for the case above)", () => {
     expect(testSupportRoutes({ APP_ENV: "test" }).map((r) => `${r.method} ${r.path}`)).toEqual([
       "POST reset",
       "POST seed",
+      "GET log",
     ]);
+  });
+
+  describe("GET /api/test/log (SPEC-reset-and-test-support §2.7)", () => {
+    const get = (query: string) =>
+      handleTestSupport("GET", ["log"], new Request(`http://localhost/api/test/log${query}`), {
+        APP_ENV: "test",
+      });
+
+    it("answers 200 with the recorded entry", async () => {
+      recordViaRequest("webmcp", "abc-123", "/api/overview", { APP_ENV: "test" });
+      const response = await get("?requestId=abc-123");
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({
+        requestId: "abc-123",
+        via: "webmcp",
+        route: "/api/overview",
+      });
+    });
+
+    it.each(["?requestId=never-seen", "?requestId=", "", "?other=1"])(
+      "answers 404 for %j — unknown, empty or missing id (plan D7)",
+      async (query) => {
+        const response = await get(query);
+        expect(response.status).toBe(404);
+        expect(await response.json()).toEqual({ error: "not_found", message: "Not found" });
+      },
+    );
   });
 
   it.each([
