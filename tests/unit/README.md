@@ -7,8 +7,15 @@ Default environment is `node`; a file that needs a DOM starts with
 
 - `ui/` — component tests (ADR-0003's Component layer, from T-07): Testing Library on jsdom
   (`// @vitest-environment jsdom` per file, `afterEach(cleanup)`), `next/navigation` and
-  `next/link` mocked. Class assertions match Vitest's CSS-module names (`_active_<hash>`);
-  hover and focus styles are E2E's (`toHaveCSS`) — jsdom applies no CSS.
+  `next/link` mocked. `@testing-library/jest-dom` is not installed — assert with `.toBeTruthy()`/
+  `.toBeNull()`/`.getAttribute()`, not `.toBeInTheDocument()`/`.toHaveAttribute()`. Class
+  assertions match Vitest's CSS-module names (`_active_<hash>`); hover and focus styles are
+  E2E's (`toHaveCSS`) — jsdom applies no CSS. `ui/overview/donut-geometry.test.ts` is the one
+  exception with no jsdom pragma: `donutSegments` is a pure function, nothing to render.
+
+- `ui/overview/` (T-10): `StatCard`, `PotsCard`, `TransactionsCard`, `BudgetsCard`, `Donut`,
+  `BillsCard`, `OverviewError`, `ThemeBar`, `theme-color.ts`, `donut-geometry.ts` — one file
+  per module, matching `src/ui/overview/`.
 
 - `server/` — pure `src/server` logic and the env accessors; code that needs Postgres is tested
   in `tests/api` instead (`checkThreshold`, `latestReset`, `getOverview`), with its decision

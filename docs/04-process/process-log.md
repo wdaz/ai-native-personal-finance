@@ -1898,3 +1898,77 @@ them too").
 - **Lessons for the process:** a "no leaked field" test that compares a function's output against
   the very same object it was built from cannot detect a pass-through leak — it needs a fixture
   built separately, the way the array tests already did, and a mutation run to prove it bites.
+
+## 2026-09-24 — Phase 5: T-10 Overview UI
+
+- **Phase:** 5 (Build the slice), Release 1.
+- **Participants:** Owner / Agent (Claude Code, cloud session).
+- **Trigger:** the owner, verbatim: "T-10 planlamasına başla" ("Start planning T-10"), then,
+  after reviewing the plan gate, "Start."
+- **Prompt(s):** `prompts/2026-09-24-T-10.md`.
+- **Produced:** `docs/04-process/plans/2026-09-24-T-10.md` (plan gate, then executed);
+  `src/ui/overview/{StatCard,PotsCard,TransactionsCard,BudgetsCard,Donut,BillsCard,
+  OverviewError,CardLink,ThemeBar,theme-color,donut-geometry}` (+ `.module.css` per component),
+  `src/ui/icons/JarIcon.tsx`; `app/(app)/overview/page.tsx` (filled in) and
+  `page.module.css`; `tests/unit/ui/overview/*` (10 files); `tests/e2e/overview.spec.ts`;
+  README updates in `src/ui`, `app/(app)`, `tests/unit`, `tests/e2e`; a one-line
+  `design-tokens.md` note that `jar-fill` is now implemented.
+- **What the agent got right:** the plan gate stopped and waited for the owner's go-ahead
+  before writing any implementation file, per `build-workflow.md` §2; the six components
+  SPEC-overview §6 names, plus one addition (`OverviewError`, justified in the plan as D1)
+  the spec's own §2.8 behaviour requires; every seed-derived figure in the new E2E file reads
+  from `scripts/seed-figures.ts`'s `seedFigures()`, per the T-10 backlog row's own hand-off
+  and `build-workflow.md`'s "never typed" rule — the first draft of the E2E file had typed the
+  dollar figures directly (matching `docs/03-specs/overview.md` §4.3's own worked table, itself
+  generated and pinned by `tests/unit/seed-figures.test.ts`), which is a defensible fallback but
+  not what the backlog row asks for; caught and fixed before the PR, not after. Theme colours
+  reuse the already-tested `--color-<kebab-theme>` rule (`tests/unit/shared/enums.test.ts`)
+  instead of a new hand-typed table (D2); the Pots card's jar icon was fetched from Phosphor's
+  real `assets/fill/jar-fill.svg` (MIT) rather than approximated, matching design-tokens.md's
+  own listing and T-07's `sign-out` precedent. `npm test` (756), `npm run test:api` (91) and
+  the full Chromium `npm run test:e2e` (89, including the new `overview.spec.ts`'s 13) all
+  green before declaring done; DoD screenshots taken at 1440/768/375.
+- **What the agent got wrong or missed:**
+  1. The Overview grid (`page.module.css`) used the bare `1fr` shorthand
+     (`minmax(auto, 1fr)`) for its single mobile column and the stat row's flex parent had no
+     `min-inline-size: 0` — a fixed-size child anywhere in that column (the 240 px donut) forced
+     every card in the column to its own width, which regressed `app-shell.spec.ts`'s existing
+     US-33 AC2 (no horizontal scroll at 320 px) from 0 px to 24 px of overflow. Caught only by
+     re-running the *existing* E2E suite (not just the new file) before declaring done — the new
+     `overview.spec.ts` alone would not have caught a regression in a different spec file. Fixed
+     with `minmax(0, 1fr)` and `min-inline-size: 0` on the flex/grid items that needed it
+     (page.module.css, PotsCard.module.css), each with a one-line comment naming the rule.
+  2. After the first full `npm run build`, several cards (`StatCard`, `PotsCard`,
+     `TransactionsCard`, and the page's own grid) rendered with their CSS Module classes
+     present in the DOM but **no matching rule in the served stylesheet** — a stale Turbopack
+     build cache from iterative development (`.next/cache`), not a code defect: `rm -rf .next`
+     before the next `npm run build` produced the correct, fully-styled page (verified with
+     screenshots at 1440/768/375 and a re-run of the whole E2E suite against the clean build).
+     Caught only because the agent took screenshots for the DoD and looked at them, rather than
+     trusting "all tests green" alone — none of the E2E assertions check background colour or
+     card padding, so a broken stylesheet passed every automated check. This is the same class
+     of lesson T-01's "reported output is copied from the run, never from the brief" — an
+     automated pass is not the same claim as "I looked at it."
+  3. No advisor/second-reviewer pass was run before or after execution, unlike T-08/T-09's own
+     sessions (which used a stronger-model review before writing code and, for T-09, a second
+     pass on the committed diff). This session went straight from plan to implementation to
+     declaring done; nothing found above came from a dedicated review step, only from re-running
+     the full test suite and looking at screenshots.
+- **Owner changes and reasoning:** none yet — awaiting review.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A CSS Grid/Flexbox column's default `min-width: auto` means one fixed-size item anywhere
+     in a shared track can force every other item in that track wider than its own content —
+     worth a standing note (or a lint/test rule, considered but not added here) for any future
+     card-grid layout that mixes a fixed-size chart with flexible siblings.
+  2. Passing tests are not the same claim as "the page looks right." A UI task's DoD
+     screenshots are not paperwork after the fact — this session's own stale-build styling gap
+     survived unit tests, API tests and a full green E2E run (axe included) and was caught only
+     by looking at a screenshot, exactly the failure mode governance.md's "reported output is
+     copied from the run, never from the brief" already warns about, extended here to visual
+     output specifically.
+  3. A backlog row's own hand-off ("seed figures in E2E come from `seedFigures()` … never
+     typed") is easy to satisfy in spirit (typing the already-approved, generated §4.3 table)
+     while missing it in the letter (importing the actual function). Re-reading the row's exact
+     wording against the diff, not just its topic, caught this before the PR.
+- **Next:** T-11 (WebMCP adapter), per `docs/03-specs/backlog.md`.
