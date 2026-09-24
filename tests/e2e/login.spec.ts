@@ -112,7 +112,7 @@ test("US-01 a rate-limited login shows 'Too many attempts. Try again in N minute
   const answer = page.waitForResponse(
     (response) => new URL(response.url()).pathname === "/api/auth/login",
   );
-  await loginButton(page).click();
+  await passwordField(page).press("Enter");
   const response = await answer;
   expect(response.status()).toBe(429);
   const { retryAfter } = (await response.json()) as { retryAfter: number };
@@ -129,7 +129,7 @@ test("US-01 a network failure shows 'Something went wrong. Try again' and re-ena
   await page.route("**/api/auth/login", (route) => route.abort("failed"));
   await page.goto("/login");
   await fillLogin(page, demo.email, demo.password);
-  await loginButton(page).click();
+  await passwordField(page).press("Enter");
 
   await expect(page.getByText(COPY.loginFailed)).toHaveAttribute("role", "alert");
   await expect(emailField(page)).toBeEnabled();

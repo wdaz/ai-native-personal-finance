@@ -116,7 +116,7 @@ test("US-02 a server error shows 'Something went wrong. Try again' (plan Q1 (c))
   );
   await page.goto("/signup");
   await fillSignup(page, "Alex", "alex@example.com", "long-enough-password");
-  await createButton(page).click();
+  await passwordField(page).press("Enter");
 
   await expect(page.getByText(COPY.signupFailed)).toHaveAttribute("role", "alert");
   await expect(createButton(page)).toBeFocused();
@@ -128,7 +128,7 @@ test("US-02 a request that gets no answer says the server can't be reached (plan
   await page.route("**/api/auth/signup", (route) => route.abort("failed"));
   await page.goto("/signup");
   await fillSignup(page, "Alex", "alex@example.com", "long-enough-password");
-  await createButton(page).click();
+  await passwordField(page).press("Enter");
 
   await expect(page.getByText(COPY.signupUnreachable)).toHaveAttribute("role", "alert");
   await expect(page.getByText(COPY.signupFailed)).toHaveCount(0);
