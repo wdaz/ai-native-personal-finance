@@ -62,6 +62,7 @@ async function polyfillReady(): Promise<{
 beforeEach(() => {
   delete document.modelContext;
   delete document.documentElement.dataset.webmcp;
+  delete document.documentElement.dataset.webmcpError;
 });
 
 afterEach(() => {
@@ -215,6 +216,76 @@ describe("register/unregisterAll (SPEC §2.2, plan Q1 — AbortController per ge
     expect(context.registerTool).toHaveBeenCalledTimes(2);
     expect(adapter.registeredTools()).toEqual(["ok"]);
     expect(document.documentElement.dataset.webmcp).toBe("ready");
+  });
+});
+
+describe("a rejected registration is reported, not swallowed (T-13 plan Q2)", () => {
+  const securityError = () => new DOMException("", "SecurityError");
+
+  it("every tool rejected: warns per tool, stays ready, names the failure on <html>, reports unavailable", async () => {
+    const adapter = await freshAdapter({ NEXT_PUBLIC_WEBMCP_MODE: "polyfill" });
+    const { context } = await polyfillReady();
+    context.registerTool.mockImplementation(async () => {
+      throw securityError();
+    });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const statuses: Array<{ mode: string | null; count: number }> = [];
+    adapter.onStatus((status) => statuses.push(status));
+
+    await adapter.register([fakeTool("a"), fakeTool("b")]);
+
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(warn.mock.calls[0]?.[0]).toContain('"a"');
+    expect(warn.mock.calls[0]?.[1]).toBeInstanceOf(DOMException);
+    expect(document.documentElement.dataset.webmcp).toBe("ready");
+    expect(document.documentElement.dataset.webmcpError).toBe("a: SecurityError; b: SecurityError");
+    expect(adapter.mode()).toBe("unavailable");
+    expect(statuses[statuses.length - 1]).toEqual({ mode: "unavailable", count: 0 });
+    warn.mockRestore();
+  });
+
+  it("only some rejected: the mode and the count stay honest, the error names only the broken tool", async () => {
+    const adapter = await freshAdapter({ NEXT_PUBLIC_WEBMCP_MODE: "polyfill" });
+    const { context } = await polyfillReady();
+    context.registerTool.mockImplementationOnce(async () => {
+      throw new Error("duplicate name");
+    });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    await adapter.register([fakeTool("broken"), fakeTool("ok")]);
+
+    expect(adapter.mode()).toBe("polyfill");
+    expect(adapter.registeredTools()).toEqual(["ok"]);
+    expect(document.documentElement.dataset.webmcpError).toBe("broken: Error: duplicate name");
+    warn.mockRestore();
+  });
+
+  it("clears the error and the unavailable state on unregisterAll, and a healthy register sets neither", async () => {
+    const adapter = await freshAdapter({ NEXT_PUBLIC_WEBMCP_MODE: "polyfill" });
+    const { context } = await polyfillReady();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    context.registerTool.mockImplementationOnce(async () => {
+      throw securityError();
+    });
+    await adapter.register([fakeTool("a")]);
+    expect(adapter.mode()).toBe("unavailable");
+
+    adapter.unregisterAll();
+    expect(adapter.mode()).toBe("polyfill");
+    expect(document.documentElement.dataset.webmcpError).toBeUndefined();
+
+    await adapter.register([fakeTool("a")]); // the mock's default resolves
+    expect(document.documentElement.dataset.webmcpError).toBeUndefined();
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+
+  it("a page without tools is not a failure", async () => {
+    const adapter = await freshAdapter({ NEXT_PUBLIC_WEBMCP_MODE: "polyfill" });
+    await polyfillReady();
+    await adapter.register([]);
+    expect(adapter.mode()).toBe("polyfill");
+    expect(document.documentElement.dataset.webmcpError).toBeUndefined();
   });
 });
 
