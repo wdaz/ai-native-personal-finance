@@ -2307,16 +2307,18 @@ them too").
   `webmcp-mode` matrix); `docs/04-process/runbooks/webmcp-native-check.md` (Draft);
   SPEC-webmcp-tools v1.0.4; SPEC-reset-and-test-support v1.5; backlog v1.21 (hand-offs to T-13,
   T-14, T-15, T-16); the READMEs of `src/webmcp`, `src/shared`, `src/server`, `app/(app)`,
-  `tests/unit`, `tests/api`, `tests/e2e`; this entry. Commits `08a819d`, `7cb3e96`, `5ca91f7`,
-  `8ac031e`, `02d5ecf` and this documentation commit.
+  `tests/unit`, `tests/api`, `tests/e2e`; this entry. Commits: Tasks 1–5 are `08a819d`,
+  `7cb3e96`, `5ca91f7`, `8ac031e`, `02d5ecf` (on top of the plan's own last commit, `a84c5ae`),
+  followed by the documentation commit and its fix round.
 - **What the agent got right:** as at T-11, the plan checked the runtime the tests would call, not
   the spec text: it read the installed `@mcp-b/webmcp-polyfill@5.1.0` source and found seven things
   (F1–F7) before any code existed — a Server Component cannot hand `execute` functions to a Client
   Component (F1); the polyfill's `executeTool(tool, json)` takes a registered-tool object and a
   JSON string and returns a JSON string, so SPEC §7's `executeTool("get_balance", {})` does not
   exist outside the deprecated `navigator` shim (F2); `getTools()` shows only two annotation hints
-  (F3); `toErrorIssues` throws on an unrecognised Zod key (F4); the middleware and the route
-  handlers are separate bundles (F6); `WEBMCP_MODE` is baked in at build time (F7). Two of these
+  (F3); `toErrorIssues` throws on an unrecognised Zod key (F4); `X-Request-Id` is already on every
+  response, so only the log is new (F5); the middleware and the route handlers are separate
+  bundles (F6); `WEBMCP_MODE` is baked in at build time (F7). Two of these
   were proved by running, not reasoned: Task 3's real `next build` plus the existing
   `overview.spec.ts` (14/14) showed the F1 wrapper seam sound, and Task 1's API test — the
   request recorded by the middleware read back by a route handler — showed the `globalThis` buffer
