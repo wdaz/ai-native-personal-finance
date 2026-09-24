@@ -12,7 +12,7 @@ Default environment is `node`; a file that needs a DOM starts with
 
 - `server/` — pure `src/server` logic and the env accessors; code that needs Postgres is tested
   in `tests/api` instead (`checkThreshold`, `latestReset`, `getOverview`), with its decision
-  logic split out here (`evaluateThreshold`, `isAuthorized`, `parseAdminResetBody`,
-  `CATEGORY_LABEL`/`THEME_LABEL`, `toOverviewDto`).
+  logic split out here (`evaluateThreshold`, `isAuthorized`, `parseAdminResetBody`, `labelMap`
+  and the `CATEGORY_LABEL`/`THEME_LABEL` maps it builds, `toOverviewDto`).
 
 Run: `npm test`.

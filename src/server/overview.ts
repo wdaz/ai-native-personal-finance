@@ -77,13 +77,18 @@ type BudgetRow = OverviewRow & { category: Category; maximum: number; theme: The
 /**
  * SPEC-overview §6: `OverviewDtoSchema` is strict. Pure (T-09 plan D7 — T-08's D2 precedent):
  * every field is named explicitly, so `seq`/`category`/`recurring` on the caller's rows never
- * reach the DTO no matter what extra fields `overviewSummary`'s generic result happens to carry.
+ * reach the DTO no matter what extra fields `overviewSummary`'s generic result happens to carry
+ * — `balance` and `bills` included, not just the arrays (code review, PR #21).
  */
 export function toOverviewDto<T extends TransactionRow, B extends BudgetRow, P extends PotRow>(
   summary: OverviewSummary<T, B, P>,
 ): OverviewDto {
   return {
-    balance: summary.balance,
+    balance: {
+      current: summary.balance.current,
+      income: summary.balance.income,
+      expenses: summary.balance.expenses,
+    },
     pots: {
       total: summary.pots.total,
       items: summary.pots.items.map((pot) => ({
@@ -111,7 +116,11 @@ export function toOverviewDto<T extends TransactionRow, B extends BudgetRow, P e
         theme: budget.theme,
       })),
     },
-    bills: summary.bills,
+    bills: {
+      paid: summary.bills.paid,
+      upcoming: summary.bills.upcoming,
+      dueSoon: summary.bills.dueSoon,
+    },
   };
 }
 

@@ -1847,3 +1847,54 @@ them too").
   meant a one-off instruction for this session alone.
 - **Next:** continue driving PR #21 to green and through review, per the usual PR-babysitting
   loop; no task currently depends on this governance change.
+
+### Addendum — 2026-09-24, an adversarial review of PR #21 (T-09)
+
+- **Input:** the owner asked for a separate subagent to run a `/code-review`-style pass on
+  PR #21 (a read-only `Explore` subagent, dispatched before the governance v1.3 change above, so
+  it ran on whichever model that agent type defaults to — flagged by the reviewer itself, not
+  re-run, since nothing it found was severe). It read `.github/skills/code-review/SKILL.md`,
+  governance.md, SPEC-overview, the backlog row, the DoD and the full T-09 plan (including its
+  three advisor passes) before touching the diff, and ran the same commands this session already
+  had (`npm test`, `typecheck`, `lint`, `format:check`) to confirm the plan's and this log's own
+  claims rather than trust them.
+- **Process note, not a PR defect:** the subagent's own output redirection mistake left two
+  empty-content files at the filesystem root (`/tmp_out1`, `/tmp_out2`, both just the clean
+  output of the two commands it ran) — outside the repository, `git status` unaffected. The
+  agent's own attempt to delete them was refused by a safety check (a bare `rm` naming a
+  root-level path); this session's own attempt was refused the same way. They need a human to
+  remove, or will disappear with the container.
+- **Findings (none severe):**
+  1. SPEC-overview §7's "matches `OverviewDtoSchema` and 4.3" was satisfied only through a
+     two-hop inference (this PR's independent oracle, and separately `tests/unit/seed-figures.test.ts`
+     tying `scripts/seed-figures.ts` to §4.3), never a single test pinning a §4.3 number against
+     the live route directly — and could not be, without either hand-typing a seed-derived
+     figure (forbidden, build-workflow.md) or importing `scripts/seed-figures.ts` into the API
+     test (the exact import-safety risk this PR's design already avoids). Resolved by making the
+     trade-off an explicit comment in `tests/api/overview.spec.ts` rather than leaving it silent.
+  2. `toOverviewDto`'s docblock claimed every field was named explicitly for `balance`/`bills`
+     too, when both were passed through by reference (`balance: summary.balance`) — harmless
+     today only because `BalanceInput`/`BillsSummary` are already closed types with no path that
+     could attach an extra field, but the unit test meant to prove it compared the result against
+     the very same object, so it could not have caught a real leak the way the array tests do.
+     Fixed: both are now destructured field by field, matching the rest of the function, and the
+     unit test now hands in extra fields (`seeded`, `extra`) and asserts they are dropped —
+     verified by mutation (reverting to the pass-through failed the new test immediately).
+  3. Three doc-only inaccuracies: the plan's File Structure table still described the unit test's
+     old, since-corrected scope; `tests/unit/README.md`'s parenthetical listed `CATEGORY_LABEL`/
+     `THEME_LABEL` but not `labelMap`, the function that actually builds and tests them; and the
+     plan/route said the route "answers the 500 envelope on any throw," when a `labelMap`
+     construction failure (an actual enum drift) throws at module import, outside the route's
+     `try`, and would fail the build or cold start instead. All three corrected at their source.
+- **Checked and confirmed solid, per the reviewer:** `labelMap`'s bijection check (including the
+  `Object.hasOwn`-vs-`in` `"constructor"` trap), the `BigInt`→`Number` conversion (complete for
+  every money field the DTO reads; correctly does not read `Pot.target`), `toOverviewDto`'s array
+  mapping against `OverviewDtoSchema` field for field, the generic constraints' soundness at the
+  real call site, the 401/`no-store` claims against `middleware.ts`, ADR-0002/ADR-0005 compliance,
+  the `api` project's `workers: 1` ruling out a test race on the "no Balance row" test, and the
+  process-log's own test counts (checked against the actual test files, not assumed).
+- **Owner changes and reasoning:** none yet — the owner asked for the review; the fixes above are
+  the agent's own response to it, per governance's normal implementation-detail latitude.
+- **Lessons for the process:** a "no leaked field" test that compares a function's output against
+  the very same object it was built from cannot detect a pass-through leak — it needs a fixture
+  built separately, the way the array tests already did, and a mutation run to prove it bites.

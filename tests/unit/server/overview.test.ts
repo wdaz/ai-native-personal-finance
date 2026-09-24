@@ -78,7 +78,12 @@ describe("labelMap (both directions — DoD v1.1 violation fixtures)", () => {
 describe("toOverviewDto (SPEC-overview §6: strict — no seq, no category/recurring on transactions)", () => {
   const clock = fixedClock(BUSINESS_TODAY);
   const summary = {
-    balance: { current: 100_037, income: 50_000, expenses: 20_000 },
+    balance: {
+      current: 100_037,
+      income: 50_000,
+      expenses: 20_000,
+      seeded: true, // extra field a real row might carry — must not leak either
+    },
     pots: {
       total: 300,
       items: [{ id: "pot-1", seq: 1, name: "Savings", total: 300, theme: "Green" as const }],
@@ -109,7 +114,7 @@ describe("toOverviewDto (SPEC-overview §6: strict — no seq, no category/recur
         },
       ],
     },
-    bills: { paid: 0, upcoming: 500, dueSoon: 0 },
+    bills: { paid: 0, upcoming: 500, dueSoon: 0, extra: "not part of BillsSummary" },
   };
 
   it("keeps id/name/avatar/amount/date on a transaction — drops category, recurring, seq", () => {
@@ -137,12 +142,22 @@ describe("toOverviewDto (SPEC-overview §6: strict — no seq, no category/recur
     ]);
   });
 
-  it("passes balance, pots.total, budgets.spent/limit and bills through unchanged", () => {
+  it("keeps current/income/expenses on balance — drops seeded (code review, PR #21)", () => {
+    expect(toOverviewDto(summary).balance).toEqual({
+      current: 100_037,
+      income: 50_000,
+      expenses: 20_000,
+    });
+  });
+
+  it("keeps paid/upcoming/dueSoon on bills — drops extra (code review, PR #21)", () => {
+    expect(toOverviewDto(summary).bills).toEqual({ paid: 0, upcoming: 500, dueSoon: 0 });
+  });
+
+  it("passes pots.total and budgets.spent/limit through unchanged", () => {
     const dto = toOverviewDto(summary);
-    expect(dto.balance).toEqual(summary.balance);
     expect(dto.pots.total).toBe(300);
     expect(dto.budgets.spent).toBe(500);
     expect(dto.budgets.limit).toBe(1000);
-    expect(dto.bills).toEqual(summary.bills);
   });
 });
