@@ -81,8 +81,9 @@ test("/api/test/* is reachable with no session (test env only)", async ({ reques
 test("an unauthenticated request to a protected API answers 401 unauthenticated", async ({
   request,
 }) => {
-  // /api/overview has no route handler yet (T-09) — the middleware intercepts before Next.js
-  // resolves the route, so this still asserts the API-side of the protected matrix.
+  // /api/overview has its own route handler since T-09 (tests/api/overview.spec.ts), but the
+  // middleware still answers first — it intercepts before Next.js resolves the route, so this
+  // asserts the API-side of the protected matrix regardless of what the route itself does.
   const response = await request.get("/api/overview");
   expect(response.status()).toBe(401);
 });

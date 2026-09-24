@@ -17,3 +17,8 @@ empty `ResetLog`); `threshold.ts` (`evaluateThreshold`, `checkThreshold` — wir
 until Release 2's writes); `admin-reset.ts` (the admin reset: constant-time secret check,
 body parsing, the log line); `env.ts` gains the reset interval, thresholds, the two reset
 secrets and the configured WebMCP mode.
+
+T-09: `overview.ts` — `CATEGORY_LABEL`/`THEME_LABEL` (Prisma's client spelling, `DiningOut`,
+to data-model.md's own, `Dining Out`; built from `src/shared/enums.ts` and checked against
+the generated Prisma enum, not hand-typed), the pure `toOverviewDto` and `getOverview(db,
+clock)` it composes from `src/domain/overview`'s `overviewSummary` (SPEC-overview §6).

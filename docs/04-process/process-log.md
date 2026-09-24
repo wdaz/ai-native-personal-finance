@@ -1674,3 +1674,227 @@ them too").
   - Handing the `WEBMCP_MODE` typo to T-11, when it breaks the banner today.
 - **Lesson:** answer the cost a reviewer names, not a nearby one.
 
+
+## 2026-09-24 — Phase 5: T-09 Overview server + API
+
+- **Phase:** 5 (Build the slice), Release 1.
+- **Participants:** Owner / Agent (Claude Code, on Claude Code's web/cloud environment).
+- **Trigger:** the owner's message, verbatim: "T-09 planlamağa başla" ("Start planning T-09").
+  This followed T-08's completion: PR #20 had merged, and the owner's last question about it
+  (whether `CRON_SECRET` would be needed at T-14) had already been answered.
+- **Prompt(s):** `prompts/2026-09-24-T-09.md`.
+- **Produced:** `docs/04-process/plans/2026-09-24-T-09.md`; `src/server/overview.ts`
+  (`labelMap`, `CATEGORY_LABEL`/`THEME_LABEL`, `categoryLabel`/`themeLabel`, the pure
+  `toOverviewDto`, `getOverview(db, clock)`); `app/api/overview/route.ts`;
+  `tests/unit/server/overview.test.ts` (13 tests); `tests/api/overview.spec.ts` (9 tests, one
+  per seed variant plus 401, `no-store`, the "never seeded" 500); a comment fix in
+  `tests/api/middleware.spec.ts`; the READMEs (`app/api`, `src/server`, `tests/unit`,
+  `tests/api`), this entry.
+- **What the agent got right:** the session branch had to be restarted from `origin/main`
+  before planning, because GitHub deletes a merged PR's branch — caught by checking
+  `git fetch origin main` before writing anything. The plan needed no owner questions:
+  SPEC-overview §6 and the T-02/T-03/T-04 hand-offs already resolved every mapping decision
+  (which layer converts `BigInt`, which layer maps enum spellings, that `budgetSpent`'s
+  categories must agree) — governance.md leaves the rest to the agent.
+- **What the agent got wrong or missed:** the advisor caught five defects in the plan's first
+  draft before any code was written (full list in the plan's "Pre-execution review" section):
+  1. Task 2's steps were written out of TDD order — the route created before the "see it fail"
+     step that should have preceded it.
+  2. `CATEGORY_LABEL`/`THEME_LABEL` were first designed as two hand-typed reverse tables,
+     tested only with set comparisons — a swapped entry (`Green`↔`Navy`) would have passed
+     every planned test, including the API test, which would have computed its own expected
+     value through the same table. Fixed by building both maps from `src/shared/enums.ts`
+     and validating each entry against the *live* generated Prisma enum at import time, so
+     there is no second table left to swap.
+  3. The `empty-all` seed variant was missing from the planned API test.
+  4. Two claims in the draft were wrong: that a reset "would not affect an existing session
+     cookie" (it does — `resetToSeed` bumps `ResetLog`, invalidating the session's
+     `resetEpoch`), and a worked mutation number (mapping only budgets' categories drops
+     `spent` to `$165.00`, not `$0.00`, since `Entertainment`/`Bills` have no space to mismatch
+     on). Verified exactly at execution (below).
+  5. The DoD checklist needed an explicit note that this task has no E2E/axe/screenshots line
+     (T-10's UI carries those), so the PR does not read as skipping them.
+
+  The corrected design also replaced `scripts/seed-figures.ts` (whose `import … with { type:
+  "json" }` and `import.meta.main` are not proven to load under Playwright's test runner —
+  no existing `tests/api` spec does) with an independent oracle built from `seedRows()` and
+  `applyVariant()` directly, computed for all six variants against the domain's own
+  `overviewSummary` — stronger than the original per-variant shape spot-checks.
+
+  6. A second advisor pass, after Tasks 1–2 were committed, found the map-construction guard
+     itself was only one-directional: it walked `CATEGORIES`/`THEMES` and checked each label
+     against the generated Prisma enum, but never checked the *reverse* — a Prisma member with
+     no matching label would have let the map build (as many entries as the label list has) and
+     only thrown "Unmapped category" at request time, the exact risk the doc comment claimed
+     was closed at import time. Verified both ways with the same real command: the committed
+     one-directional file, restored from its own commit with `"Dining Out"` removed from
+     `CATEGORIES`, built `CATEGORY_LABEL` at size 9 with no throw; the fixed file, same
+     mutation, threw `"9 labels but 10 Prisma keys"` at import. `overview.ts`'s two maps are
+     now built by one exported, directly-testable function, `labelMap(labels, prismaEnum)`,
+     that also checks the two sides are the same size and that no two labels collide on one
+     Prisma key — three checks that together make the map a true bijection, not just complete
+     on one side. This exact bidirectional check was already in the *plan's own prose* at v0.1
+     ("or the reverse … throws at import time") — the plan's Task 1 code block just did not
+     implement what its own paragraph one line above it claimed; the first advisor pass had
+     even suggested the reverse check by name ("checked so that each key of the Prisma `Theme`
+     object maps to exactly one entry") and it was not carried into the code. Also caught: the
+     plan's own execution — `toOverviewDto`'s `BudgetRow` generic constraint included `spent`,
+     which is not part of the input `overviewSummary` takes (it computes `spent`); the type
+     error surfaced immediately at `npm run typecheck` and the constraint was narrowed to
+     match `OverviewSummary`'s own `B & { spent: number }` typing of its output items.
+- **Mutations run and reverted, each caught by the test that should catch it:**
+  - `categoryLabel()` removed from the transactions side only: `budgets.spent` dropped from
+    `$338.00` to exactly `$165.00` (`Dining Out` and `Personal Care` lost their spelling match;
+    `Entertainment`/`Bills` still matched by accident) — matching the advisor's corrected
+    prediction exactly, caught by 4 of the 6 seed-variant API tests.
+  - `toOverviewDto`'s transaction mapping spread `...transaction` instead of naming each
+    field: the leaked `seq`/`category`/`recurring` failed the pure unit test immediately, no
+    database needed.
+  - The route's `Cache-Control: no-store` header removed: the exact-header API test failed
+    (`undefined`, not even a framework default).
+  - `"Dining Out"` removed from `src/shared/enums.ts`'s `CATEGORIES` (simulating a Prisma
+    category no label covers): `CATEGORY_LABEL`'s construction threw `"9 labels but 10 Prisma
+    keys"` the moment any module importing `overview.ts` loaded — the one-directional version
+    (finding 6) would have let this through silently.
+
+  Not run as a live mutation: a missing `BigInt`→`Number` conversion. `PotInput.total` and
+  the rest are typed `number`; passing a raw `bigint` fails `tsc`/`next build` before any test
+  runs, which is a stronger guarantee than a runtime 500 — the plan's Review Focus 2 predicted
+  the weaker, runtime version and was not itself exercised.
+- **Environment (differs from CI; noted for the PR):** Node 26.10.0 and the local Postgres 16
+  process (`pg_ctl`, not a container — there is no Docker daemon in this environment) from the
+  T-08 session were already running and were reused as is. This task adds no E2E test of its
+  own, but the existing suite was run anyway, through T-08's session-local Playwright config
+  (Chromium r1194 only, matching what this environment has): 76/76 passed, confirming nothing
+  regressed. `npm test` (699), `npm run test:api` (91), lint, format, typecheck, `npm audit`
+  (0) and the full-history secret scan all ran and passed.
+- **Owner changes and reasoning:** none yet — awaiting review.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A hand-typed reverse-lookup table is a table a swap can pass through unnoticed by every
+     test that also builds its expected value from the same table. Building the table from an
+     already-verified source list and validating it against the thing it must agree with (here,
+     the generated Prisma enum) removes the table, and the risk, entirely.
+  2. An "independent oracle" test is only independent if it does not import the module whose
+     wiring is in question for the values it is checking, and does not rely on an unproven
+     import path just because it looks convenient.
+  3. "Checked against the live enum" is not the same claim as "checked in both directions" —
+     a completeness check that only walks one side's own list can never notice what the other
+     side has and it does not. This was not a blind spot of the first review: the plan's own
+     v0.1 prose already claimed the reverse check, and the first advisor pass had asked for it
+     by name — it simply was not carried from the sentence into the code block two lines
+     below it. The lesson is to trace each claim a doc comment or a plan's prose makes to the
+     specific line of code that would actually enforce it, not to trust that writing the claim
+     down means it was implemented. A second advisor pass, run against the committed code
+     instead of the plan, is what caught the gap here; the first pass reviewed the
+     plan's design, not the executed code's actual guard.
+- **Next:** T-10 (Overview UI) fills `app/(app)/overview/page.tsx`'s body from `getOverview`,
+  per backlog v1.20.
+
+### Addendum — 2026-09-24, a third advisor pass on the pushed fix
+
+- **Input:** the fix for the one-directional guard (`0743ca7`) had already been pushed when the
+  agent called the advisor once more before reporting done.
+- **Found:** the fix's own commit message, and this entry's item 6 above, claimed a run that
+  had not happened — "built `CATEGORY_LABEL` without complaint under the one-directional
+  version" was reasoned from reading the restored old file, not from actually running it.
+  Governance's "reported output is copied from the run, never from the brief" applies to a
+  process-log entry's own claims as much as to a plan's.
+- **Fixed:** both directions were run for real, against the same mutation
+  (`"Dining Out"` removed from `CATEGORIES`): the one-directional file (`git show
+  40585b3:src/server/overview.ts`, restored to disk) printed `CATEGORY_LABEL.size = 9` with no
+  throw; the fixed file, same mutation, threw `"9 labels but 10 Prisma keys — the two enums
+  have drifted"`. Both files were restored afterward (`git diff --stat` empty). This entry's
+  item 6 and the plan's "Execution corrections" now quote that output instead of the reasoned
+  claim.
+- **Also found:** `tests/unit/server/overview.test.ts` had two assertions comparing
+  `CATEGORY_LABEL`/`THEME_LABEL` against a regex-parsed reading of data-model.md — exactly what
+  `tests/unit/shared/enums.test.ts` already checks, with its own violation fixture (DoD v1.1).
+  Removed, with a one-line comment pointing to that file, so the redundancy does not read as
+  covering DoD v1.1 for a check it never actually pinned with a fixture here.
+- **Lesson:** a correction's own writeup needs the same discipline the thing it is correcting
+  was held to. "I read the old code and reasoned it would pass" is not "I ran it and it passed"
+  — say which one happened.
+
+## 2026-09-24 — Process: governance.md v1.3, code review model
+
+- **Phase:** 5 (Build the slice) — a process/governance change, not a task.
+- **Participants:** Owner / Agent (Claude Code), in conversation while PR #21 (T-09) was open
+  for review.
+- **Trigger:** the owner, verbatim: "Növbəti sesiyalar üçün yadda saxla code review üçün model
+  Opus 5.5 olmalıdır" ("Remember for future sessions: the model for code review must be Opus
+  5.5"). The agent explained it has no cross-session memory file it can rely on being read by a
+  future, freshly-provisioned session, and that a durable, project-scoped record is
+  `governance.md` — the owner agreed: "governance əlavə edək" ("let's add it to governance").
+- **Produced:** `docs/04-process/governance.md` v1.3 — a new Agent constraint: any subagent an
+  agent dispatches to review a diff uses the Opus 5.5 model explicitly, with a note that this
+  cannot reach the CI "Claude Code Review" GitHub App, since no workflow file in this
+  repository configures that App's model (it is installed at the organisation level, outside
+  this repo's own config).
+- **What the agent got right:** distinguishing three different things the owner's request could
+  have meant — a personal, cross-project memory (not something the agent can write from here); a
+  one-session behaviour change (applied immediately: the review subagent already dispatched for
+  PR #21 before this request did not specify a model, but every one after does); and a
+  project-scoped, durable rule (what actually went into `governance.md`) — and asking which one,
+  rather than silently picking one.
+- **What the agent got wrong or missed:** nothing identified.
+- **Owner changes and reasoning:** the owner chose the `governance.md` route over a personal
+  memory feature, since it binds every future agent working on this repository, not just this
+  account.
+- **Disagreements:** none.
+- **Lessons for the process:** a stated preference is not automatically a governance rule — it
+  became one only once the owner confirmed that scope. The same sentence could instead have
+  meant a one-off instruction for this session alone.
+- **Next:** continue driving PR #21 to green and through review, per the usual PR-babysitting
+  loop; no task currently depends on this governance change.
+
+### Addendum — 2026-09-24, an adversarial review of PR #21 (T-09)
+
+- **Input:** the owner asked for a separate subagent to run a `/code-review`-style pass on
+  PR #21 (a read-only `Explore` subagent, dispatched before the governance v1.3 change above, so
+  it ran on whichever model that agent type defaults to — flagged by the reviewer itself, not
+  re-run, since nothing it found was severe). It read `.github/skills/code-review/SKILL.md`,
+  governance.md, SPEC-overview, the backlog row, the DoD and the full T-09 plan (including its
+  three advisor passes) before touching the diff, and ran the same commands this session already
+  had (`npm test`, `typecheck`, `lint`, `format:check`) to confirm the plan's and this log's own
+  claims rather than trust them.
+- **Process note, not a PR defect:** the subagent's own output redirection mistake left two
+  empty-content files at the filesystem root (`/tmp_out1`, `/tmp_out2`, both just the clean
+  output of the two commands it ran) — outside the repository, `git status` unaffected. The
+  agent's own attempt to delete them was refused by a safety check (a bare `rm` naming a
+  root-level path); this session's own attempt was refused the same way. They need a human to
+  remove, or will disappear with the container.
+- **Findings (none severe):**
+  1. SPEC-overview §7's "matches `OverviewDtoSchema` and 4.3" was satisfied only through a
+     two-hop inference (this PR's independent oracle, and separately `tests/unit/seed-figures.test.ts`
+     tying `scripts/seed-figures.ts` to §4.3), never a single test pinning a §4.3 number against
+     the live route directly — and could not be, without either hand-typing a seed-derived
+     figure (forbidden, build-workflow.md) or importing `scripts/seed-figures.ts` into the API
+     test (the exact import-safety risk this PR's design already avoids). Resolved by making the
+     trade-off an explicit comment in `tests/api/overview.spec.ts` rather than leaving it silent.
+  2. `toOverviewDto`'s docblock claimed every field was named explicitly for `balance`/`bills`
+     too, when both were passed through by reference (`balance: summary.balance`) — harmless
+     today only because `BalanceInput`/`BillsSummary` are already closed types with no path that
+     could attach an extra field, but the unit test meant to prove it compared the result against
+     the very same object, so it could not have caught a real leak the way the array tests do.
+     Fixed: both are now destructured field by field, matching the rest of the function, and the
+     unit test now hands in extra fields (`seeded`, `extra`) and asserts they are dropped —
+     verified by mutation (reverting to the pass-through failed the new test immediately).
+  3. Three doc-only inaccuracies: the plan's File Structure table still described the unit test's
+     old, since-corrected scope; `tests/unit/README.md`'s parenthetical listed `CATEGORY_LABEL`/
+     `THEME_LABEL` but not `labelMap`, the function that actually builds and tests them; and the
+     plan/route said the route "answers the 500 envelope on any throw," when a `labelMap`
+     construction failure (an actual enum drift) throws at module import, outside the route's
+     `try`, and would fail the build or cold start instead. All three corrected at their source.
+- **Checked and confirmed solid, per the reviewer:** `labelMap`'s bijection check (including the
+  `Object.hasOwn`-vs-`in` `"constructor"` trap), the `BigInt`→`Number` conversion (complete for
+  every money field the DTO reads; correctly does not read `Pot.target`), `toOverviewDto`'s array
+  mapping against `OverviewDtoSchema` field for field, the generic constraints' soundness at the
+  real call site, the 401/`no-store` claims against `middleware.ts`, ADR-0002/ADR-0005 compliance,
+  the `api` project's `workers: 1` ruling out a test race on the "no Balance row" test, and the
+  process-log's own test counts (checked against the actual test files, not assumed).
+- **Owner changes and reasoning:** none yet — the owner asked for the review; the fixes above are
+  the agent's own response to it, per governance's normal implementation-detail latitude.
+- **Lessons for the process:** a "no leaked field" test that compares a function's output against
+  the very same object it was built from cannot detect a pass-through leak — it needs a fixture
+  built separately, the way the array tests already did, and a mutation run to prove it bites.
