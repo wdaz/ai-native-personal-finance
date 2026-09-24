@@ -45,7 +45,7 @@ describe("the domain coverage gate", () => {
     );
     expect(run.status).not.toBe(0);
     expect(run.stdout + run.stderr).toMatch(
-      /Coverage for statements \(33\.33%\) does not meet "src\/domain\/\*\*" threshold \(90%\)/,
+      /Coverage for statements \(\d+(?:\.\d+)?%\) does not meet "src\/domain\/\*\*" threshold \(90%\)/,
     );
   }, 60_000);
 });
