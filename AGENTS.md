@@ -18,6 +18,13 @@ its content.
 
 ## 2. Working agreements
 
+- **Start every session from the current `main`.** Before reading anything else or making
+  any change, run `git fetch origin` and bring `main` up to date (`git pull --ff-only origin
+  main` on `main`); start a new working branch from `origin/main`, never from a stale local
+  copy or from an earlier session's branch — GitHub deletes a merged PR's branch, and work
+  built on an old base is rebased by hand later. If the pull is not a fast-forward, or the
+  working tree has uncommitted changes, stop and tell the owner instead of merging, resetting
+  or stashing. Then read the documents in §1: they may have changed since the last session.
 - **Language.** Code, comments, documents and commits are in English.
   Conversation with the owner may be in Azerbaijani.
 - **Phase discipline.** Do not produce artefacts of a later phase. In

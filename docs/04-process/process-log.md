@@ -2115,3 +2115,30 @@ them too").
 - **Owner check:** the owner asked for the app to be run locally ("local run et. yoxlayım") and
   checks it themselves under `npm run dev`; their result is not recorded here.
 - **Next:** the owner merges PR #23; TD-6 is then marked Closed.
+
+## 2026-09-24 — Process: AGENTS.md rule — start every session from the current main
+
+- **Phase:** 5 (Build the slice), process change.
+- **Participants:** Owner / Agent (Claude Code, local session in a worktree).
+- **Trigger:** the owner's message, verbatim: "AGENT.md belə bir qayda əlavə olunmasını istəyirəm.
+  When start new sesision git pull main branch. Buna bənzər" ("I want a rule like this added to
+  AGENTS.md: when starting a new session, git pull the main branch. Something like that").
+- **Prompt(s):** none recorded as a file — the message above is the whole brief.
+- **Produced:** one bullet at the top of AGENTS.md §2, "Start every session from the current
+  `main`"; this entry.
+- **What the agent got right:** it did not write a bare `git pull main`. Pulling into a branch
+  that has work on it, or with a dirty tree, is what turns a habit into a bad merge, so the rule
+  says `fetch`, a fast-forward-only pull on `main`, a new branch from `origin/main`, and "stop
+  and tell the owner" when the pull is not a fast-forward or the tree is dirty. The reason is
+  written into the rule: the T-09 entry above records a session branch that had to be restarted
+  because GitHub deletes a merged PR's branch.
+- **What the agent got wrong or missed:** this very session had just made the mistake the rule
+  prevents — the TD-6 docs branch sat next to an unmerged PR, and the new branch had to be cut
+  from `origin/main` by hand.
+- **Owner changes and reasoning:** the rule is the owner's request; wording is the agent's, for
+  the owner to accept or edit in the PR.
+- **Disagreements:** none.
+- **Lessons for the process:** a rule that says "pull" is ambiguous about *which* base, *which*
+  command and *what to do when it does not apply cleanly*; the last part is the one that
+  matters.
+- **Next:** the owner reviews and merges the PR.
