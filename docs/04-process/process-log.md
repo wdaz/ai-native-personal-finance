@@ -2057,3 +2057,36 @@ them too").
   scopes each link by its own card's heading instead of its position — every card wraps its
   heading and link as DOM siblings, so this is no less precise, just name- instead of
   order-based. Re-verified: `npm test` 758, `test:api` 91, `test:e2e` (chromium) 90.
+
+## 2026-09-24 — Phase 5: TD-6 development variant of the CSP
+
+- **Phase:** 5 (Build the slice), Release 1 — tech debt, not a numbered task.
+- **Participants:** Owner / Agent (Claude Code, local session in a worktree).
+- **Trigger:** the owner asked, verbatim: "niyə local run eval problemi verir" ("why does the
+  local run give an eval problem"), then answered the agent's two options with "b".
+- **Prompt(s):** none recorded as a file — the two messages above are the whole brief.
+- **Produced:** `src/server/csp.ts` (`buildCsp`); `middleware.ts` calls it; `tests/unit/server/csp.test.ts`
+  (12 tests); one API test in `tests/api/middleware.spec.ts`; ADR-0006 amendment 2026-09-24 (4),
+  **Proposed**; `docs/03-specs/tech-debt.md` v1.5 (TD-6 "Fix in review"); this entry.
+- **What the agent got right:** the question was vague, so it found the cause before proposing
+  anything — the CSP has no `'unsafe-eval'`, and `next dev` needs it — and found that TD-6
+  already recorded it, with the owner's own console paste. It did not change the policy until
+  the owner picked an option, because any policy change is an ADR-0006 amendment. It checked the
+  result on real servers: `next dev` sends the relaxed policy, `next build && next start` sends
+  the unchanged production one.
+- **What the agent got wrong or missed:** it `cd`-ed out of the worktree into the main checkout
+  mid-session, which the harness refused until it re-entered the worktree; and it first
+  symlinked `node_modules` from the main checkout, which Turbopack rejects ("points out of the
+  filesystem root") — a real `npm ci` was needed for the `next dev` check.
+- **Owner changes and reasoning:** none yet — the ADR amendment is **Proposed**; accepting it
+  is the owner's.
+- **Disagreements:** none.
+- **Lessons for the process:** a dev-only relaxation of a security policy needs a test on the
+  *production* side, not just on the new branch — the API test pins the shipped policy so the
+  relaxation cannot leak; the unit test alone would pass even if `middleware.ts` passed the
+  wrong `NODE_ENV`.
+- **Verified:** `npm test` 770 passed (758 before + the 12 new), `typecheck`, `lint` and
+  `format:check` clean, and the two header checks above on real `next dev` / `next start`
+  servers. **Not run:** the API and E2E suites (they need the compose Postgres) — the new API
+  test asserts what the production header check showed, but has not itself been executed.
+- **Next:** the owner accepts or amends ADR-0006 (4); then the PR merges and TD-6 is marked Closed.
