@@ -26,12 +26,14 @@ Playwright browser tests, one journey per story, on Chromium, Firefox and WebKit
   its dismissal for the tab, 320 px) to `app-shell.spec.ts`, and the banner's tab stop and
   focus hand-off to `app-shell-keyboard.spec.ts`.
 - CI runs four legs of this suite (T-06, T-13): `E2E (Chromium, polyfill)`, `E2E (Chromium, off)`,
-  `E2E (Firefox, polyfill)` and `E2E (WebKit, polyfill)`. `off` is built once, on Chromium: it
-  differs from `polyfill` only in the WebMCP client code, which the engine does not change.
+  `E2E (Firefox, polyfill)` and `E2E (WebKit, polyfill)`. `off` is built once, on Chromium: the
+  off build registers no tools, and it was measured green on Firefox locally (106 passed, 11
+  skipped, 0 failed; 2026-09-24, macOS), so Firefox and WebKit run `polyfill` only. That is a
+  measurement, not a proof that the engine cannot change the `off` path.
   `npm run test:e2e` runs all three engines locally, in `polyfill` mode.
 - A failing WebKit test also reports `style-src-elem inline` from the CSP guard: that is
-  Playwright's failure screenshot injecting a `<style>` (measured 2026-09-24: it disappears with
-  `screenshot: "off"`); read the _first_ error.
+  Playwright's failure screenshot injecting a `<style>` (measured 2026-09-24 on macOS WebKit: it
+  disappears with `screenshot: "off"`; confirm on the first Linux run); read the _first_ error.
 - `overview.spec.ts` (T-10): US-04…08 against the default seed and the seed variants
   (`empty-pots`, `few-transactions`, `empty-budgets`, `no-recurring`, `empty-all`) SPEC-overview
   §7 names, US-32's keyboard walkthrough of the page's own four card links (picking up where

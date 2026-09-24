@@ -111,9 +111,9 @@ jobs:
       matrix:
         # SPEC-webmcp-tools §7 / NFR-W2: the app is built once per leg — WEBMCP_MODE is inlined at
         # build time (next.config.ts), so `off` cannot be a runtime switch. ADR-0003: E2E runs on
-        # Chromium, Firefox and WebKit. `off` is built once, on Chromium: it differs from `polyfill`
-        # only in the WebMCP client code, which the engine does not change (T-13 plan Q3-A).
-        # The two Chromium names are T-16's required checks; keep them.
+        # Chromium, Firefox and WebKit. `off` is built once, on Chromium: it registers no tools,
+        # and it was measured green on Firefox locally (T-13 plan Q3-A).
+        # All four leg names are T-16's required checks; keep them.
         include:
           - { label: Chromium, browser: chromium, webmcp-mode: polyfill }
           - { label: Chromium, browser: chromium, webmcp-mode: "off" }
