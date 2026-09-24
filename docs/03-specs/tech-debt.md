@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -11,11 +11,15 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | Id | Title | Status | Picked up by |
 |----|-------|--------|--------------|
 | TD-1 | The CSP nonce reaches Next through an undocumented header copy | **Closed** | T-07 |
-| TD-2 | `middleware.ts` uses a deprecated file convention (`proxy`) | Open | a small follow-up task, before Next removes the old convention |
-| TD-3 | `/_global-error` is prerendered, without the CSP nonce | Open | whichever task first gives the app an error UI of its own |
+| TD-2 | `middleware.ts` uses a deprecated file convention (`proxy`) | Open | T-13a (v1.10) |
+| TD-3 | `/_global-error` is prerendered, without the CSP nonce | Open | T-13b (v1.10) |
 | TD-4 | Two "submit is focused after an error" E2E assertions prove nothing on Chromium | **Closed** | T-13 |
 | TD-5 | Zod's `jitless` setting rides on importing `src/shared/schemas.ts` | **Closed** | T-11 |
 | TD-6 | `next dev` fills the console with CSP violations (the policy has no dev variant) | **Closed** | `fix/td-6-dev-csp` (PR #23) |
+| TD-7 | The WebMCP status indicator can keep saying `unavailable` while a new registration runs | Open | T-13c |
+| TD-8 | The keyboard login walkthrough's comment says "Shift+Tab back"; the test focuses the field directly | Open | T-13c |
+| TD-9 | The `minmax(0, 1fr)` rule for card grids is a comment, not a check | Open | T-13c |
+| TD-10 | Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database | Open | T-13c (moved from T-14's T-02 hand-off) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -52,7 +56,9 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   middleware-to-proxy`). Recorded then only in the process log (T-05 entry, "Next"); moved here
   when this file was created, so it has a home.
 - **Owner decision:** none yet beyond T-05's "worth a follow-up task" — listed here so it is not
-  lost.
+  lost. 2026-09-24: fixed before T-14, as backlog task T-13a ("T14 keçməzdən öncə Tech deptləri
+  düzəltmək. Onlarda Tasklar kimi prosess-log-da öz əksini tapmalıdır." — fix the tech debt
+  before T-14, each reflected in the process log as a task).
 - **Risk:** a Next major that removes the old convention breaks the route matrix, the session
   check, the reset-epoch check and the CSP at once.
 - **Guarded meanwhile by:** the API suite (`tests/api/middleware.spec.ts`, `auth.spec.ts`) and the
@@ -67,7 +73,9 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   nonce, so under ADR-0006's CSP it would render unstyled and without client JavaScript. A
   `global-error.tsx` has to be a client component and cannot call `connection()`, and
   `connection()` in the root layout did not change it.
-- **Owner decision:** none yet — listed here so it is not lost.
+- **Owner decision:** none yet — listed here so it is not lost. 2026-09-24: fixed before T-14, as
+  backlog task T-13b (same message as TD-2). The fix is still to be found, so T-13b may end with
+  a measured reason why Next 16.3.5 allows none, for the owner to decide on, instead of a fix.
 - **Risk:** low — the page renders only when the root layout itself throws; the user sees an
   unstyled error instead of a styled one.
 - **Guarded meanwhile by:** nothing automatic; it is not reachable by a normal request.
@@ -170,3 +178,85 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   amendment (4) and merged; `npm run dev` now sends the relaxed policy, the production policy is
   pinned by unit and API tests. Still open, as recorded in the process log: whether an amendment
   inside an Accepted ADR meets `governance.md` line 40 (a superseding ADR is the alternative).
+
+## TD-7 — The WebMCP status indicator can keep saying `unavailable` while a new registration runs
+
+- **Found:** 2026-09-24, PR-A's final review (process log, "PR-A, Origin-Agent-Cluster for Firefox
+  and WebKit"), deferred as minor: "`clearFailure()` in `register` does not notify status
+  listeners".
+- **Owner decision:** 2026-09-24 — an entry, fixed before T-14 in T-13c (owner's answer to the
+  pre-T-14 planning questions).
+- **What:** `register()` (`src/webmcp/adapter.ts:123`) calls `clearFailure()`, which resets
+  `registrationFailed`, but calls `notify()` only at its end (`:156`), after the polyfill has
+  loaded and every `registerTool` has settled. `mode()` reads the flag directly and is right at
+  once; the listener `WebMcpProvider` registers through `onStatus`
+  (`src/webmcp/WebMcpProvider.tsx:20`), which feeds the indicator, keeps the last pushed status,
+  `unavailable`, until then.
+- **Risk:** low — the indicator shows `unavailable` for the length of one registration after a
+  page whose every registration was rejected. The app's effect cleanup calls `unregisterAll()`
+  first, which does notify, so the window opens only when `register()` runs twice without it.
+- **Guarded meanwhile by:** nothing that checks the pushed status between the two points;
+  `tests/unit/webmcp/adapter.test.ts` checks it after `register()` resolves.
+- **Fix:** notify once the failure is cleared (or push the status that `mode()` already reports),
+  with a unit test that reads the listener's value while `registerTool` is still pending — red
+  on today's code.
+
+## TD-8 — The keyboard login walkthrough's comment says "Shift+Tab back"
+
+- **Found:** 2026-09-23, T-06's whole-branch review, finding M2 (process log, "Build (T-06): Auth
+  UI"), deferred: "the login walkthrough's comment says 'Shift+Tab back', but the test focuses the
+  field programmatically".
+- **Owner decision:** 2026-09-24 — an entry, fixed before T-14 in T-13c.
+- **What:** the doc comment of `tests/e2e/auth-accessibility.spec.ts`'s "keyboard-only login"
+  (`:11-16`) describes "Shift+Tab back to the fields, type the demo credentials, Enter submits".
+  The test types the credentials on the way forward and then calls `password.focus()` (`:39`)
+  before Enter — no Shift+Tab is pressed.
+- **Risk:** a reader believes reverse tab order is covered on `/login`; it is not.
+- **Guarded meanwhile by:** nothing; the test itself passes either way.
+- **Fix:** make the comment say what the test does, or make the test do what the comment says
+  (Shift+Tab from "Sign Up" back to the password field). Which one is a test-design choice for
+  T-13c's plan; the second one adds a reverse-order check SPEC-auth §6 does not ask for.
+
+## TD-9 — The `minmax(0, 1fr)` rule for card grids is a comment, not a check
+
+- **Found:** 2026-09-24, T-10's process-log entry, lesson 1: a grid or flex track's default
+  `min-width: auto` lets one fixed-size item (Budgets' donut) force every card in its column wider
+  than the page at 320 px; "worth a standing note (or a lint/test rule, considered but not added
+  here)".
+- **Owner decision:** 2026-09-24 — an entry, fixed before T-14 in T-13c.
+- **What:** `app/(app)/overview/page.module.css` (`:1-9`, the comment) and
+  `src/ui/overview/PotsCard.module.css:57` use `minmax(0, 1fr)` instead of `1fr`, and
+  `min-inline-size: 0` on flex items of `Shell`'s `<main>`. Nothing fails if a new grid writes
+  `1fr`.
+- **Risk:** a Release 2 page with a new card grid overflows at 320 px (US-33 AC2). The E2E check
+  below finds it only once the page is in its list and only as a page-level scroll; a card that
+  clips its overflowing content inside itself passes.
+- **Guarded meanwhile by:** `tests/e2e/app-shell.spec.ts:98` — US-33 AC2, no page in its `PAGES`
+  list scrolls sideways at 320, 375, 768, 1024 or 1440 px.
+- **Fix:** a check that fails on a bare `fr` track in `grid-template-columns` of any
+  `*.module.css` — a unit test over the CSS files, or a lint rule if the project adopts a CSS
+  linter. Which one is decided at T-13c's plan gate; the check needs a violation fixture
+  (DoD v1.1).
+
+## TD-10 — Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database
+
+- **Found:** 2026-09-22, T-02 — written as a hand-off into T-14's row ("startup guard so
+  `APP_ENV=test` can never run in production; … guard `test:api`/`db:reset` against a non-local
+  `DATABASE_URL`").
+- **Owner decision:** 2026-09-24 — an entry, fixed before T-14 in T-13c rather than in T-14, so
+  the security review (T-13d) reads the guard and not its absence.
+- **What:** `/api/test/reset`, `/api/test/seed` and `/api/test/log` exist when `APP_ENV` is exactly
+  `test` (`src/server/env.ts:16`, `src/server/test-support.ts:50-52`) and need no session.
+  `npm run db:reset` (`prisma migrate deploy && prisma db seed`) and `npm run test:api` use whatever
+  `DATABASE_URL` the shell or `.env*` gives them.
+- **Risk:** `APP_ENV=test` set on the production project by mistake makes the unauthenticated
+  reset and seed routes live on the public demo; a shell holding the production `DATABASE_URL`
+  resets production data from a laptop. Neither has happened: no production environment exists
+  before T-14.
+- **Guarded meanwhile by:** `isTestEnv`'s exact match (`Test`, `test ` and an unset variable are
+  not test) and its unit tests; nothing about where the process runs.
+- **Fix:** designed at T-13c's plan gate. The guard cannot key on `NODE_ENV`: CI and every local
+  API/E2E run start a production build with `APP_ENV=test` (`playwright.config.ts:68-74`, ADR-0003).
+  Candidates: refuse `APP_ENV=test` when the platform says it is a deployment (Vercel sets
+  `VERCEL` and `VERCEL_ENV`), and refuse `db:reset`/`test:api` when the `DATABASE_URL` host is not
+  local — each with a test that fails first.
