@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BUSINESS_TODAY, fixedClock } from "@/src/domain/clock";
 import {
@@ -12,29 +10,21 @@ import {
 } from "@/src/server/overview";
 import { CategorySchema, ThemeSchema } from "@/src/shared/schemas";
 
-const repoRoot = join(import.meta.dirname, "..", "..", "..");
-const read = (path: string) => readFileSync(join(repoRoot, path), "utf8");
-const documentedList = (name: "Category" | "Theme") =>
-  (
-    new RegExp(`\`${name}\` = ([^.]+)\\.`).exec(read("docs/02-architecture/data-model.md"))?.[1] ??
-    ""
-  )
-    .split(",")
-    .map((label) => label.trim());
-
+/**
+ * CATEGORY_LABEL/THEME_LABEL are built directly from src/shared/enums.ts's CATEGORIES/THEMES,
+ * which tests/unit/shared/enums.test.ts already holds to data-model.md, with its own
+ * violation fixture (DoD v1.1) — not repeated here, since that would just re-check what that
+ * file already checks. What is new here is that the *map's own construction* agrees with the
+ * schemas (CategorySchema/ThemeSchema, src/shared/schemas.ts) built from the same arrays, and
+ * (below) that labelMap itself would fail closed if it ever did not.
+ */
 describe("CATEGORY_LABEL / THEME_LABEL (SPEC-overview §6, T-04 hand-off)", () => {
-  it("CATEGORY_LABEL covers exactly CategorySchema's 10 options and data-model.md's own list", () => {
-    const documented = documentedList("Category");
-    expect(documented).toHaveLength(10);
+  it("CATEGORY_LABEL's values are exactly CategorySchema's 10 options", () => {
     expect([...CATEGORY_LABEL.values()].sort()).toEqual([...CategorySchema.options].sort());
-    expect([...CATEGORY_LABEL.values()].sort()).toEqual([...documented].sort());
   });
 
-  it("THEME_LABEL covers exactly ThemeSchema's 15 options and data-model.md's own list", () => {
-    const documented = documentedList("Theme");
-    expect(documented).toHaveLength(15);
+  it("THEME_LABEL's values are exactly ThemeSchema's 15 options", () => {
     expect([...THEME_LABEL.values()].sort()).toEqual([...ThemeSchema.options].sort());
-    expect([...THEME_LABEL.values()].sort()).toEqual([...documented].sort());
   });
 
   it("keys are the label with its spaces removed — the two multi-word themes included", () => {

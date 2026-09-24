@@ -1724,17 +1724,24 @@ them too").
   6. A second advisor pass, after Tasks 1–2 were committed, found the map-construction guard
      itself was only one-directional: it walked `CATEGORIES`/`THEMES` and checked each label
      against the generated Prisma enum, but never checked the *reverse* — a Prisma member with
-     no matching label would have built successfully (10 entries, matching `CATEGORIES`'
-     own length) and only thrown "Unmapped category" at request time, the exact risk the
-     doc comment claimed was closed at import time. `overview.ts`'s two maps are now built by
-     one exported, directly-testable function, `labelMap(labels, prismaEnum)`, that also
-     checks the two sides are the same size and that no two labels collide on one Prisma key —
-     three checks that together make the map a true bijection, not just complete on one side.
-     Also caught: the plan's own execution — `toOverviewDto`'s `BudgetRow` generic constraint
-     included `spent`, which is not part of the input `overviewSummary` takes (it computes
-     `spent`); the type error surfaced immediately at `npm run typecheck` and the constraint
-     was narrowed to match `OverviewSummary`'s own `B & { spent: number }` typing of its output
-     items.
+     no matching label would have let the map build (as many entries as the label list has) and
+     only thrown "Unmapped category" at request time, the exact risk the doc comment claimed
+     was closed at import time. Verified both ways with the same real command: the committed
+     one-directional file, restored from its own commit with `"Dining Out"` removed from
+     `CATEGORIES`, built `CATEGORY_LABEL` at size 9 with no throw; the fixed file, same
+     mutation, threw `"9 labels but 10 Prisma keys"` at import. `overview.ts`'s two maps are
+     now built by one exported, directly-testable function, `labelMap(labels, prismaEnum)`,
+     that also checks the two sides are the same size and that no two labels collide on one
+     Prisma key — three checks that together make the map a true bijection, not just complete
+     on one side. This exact bidirectional check was already in the *plan's own prose* at v0.1
+     ("or the reverse … throws at import time") — the plan's Task 1 code block just did not
+     implement what its own paragraph one line above it claimed; the first advisor pass had
+     even suggested the reverse check by name ("checked so that each key of the Prisma `Theme`
+     object maps to exactly one entry") and it was not carried into the code. Also caught: the
+     plan's own execution — `toOverviewDto`'s `BudgetRow` generic constraint included `spent`,
+     which is not part of the input `overviewSummary` takes (it computes `spent`); the type
+     error surfaced immediately at `npm run typecheck` and the constraint was narrowed to
+     match `OverviewSummary`'s own `B & { spent: number }` typing of its output items.
 - **Mutations run and reverted, each caught by the test that should catch it:**
   - `categoryLabel()` removed from the transactions side only: `budgets.spent` dropped from
     `$338.00` to exactly `$165.00` (`Dining Out` and `Personal Care` lost their spelling match;
@@ -1773,8 +1780,38 @@ them too").
      import path just because it looks convenient.
   3. "Checked against the live enum" is not the same claim as "checked in both directions" —
      a completeness check that only walks one side's own list can never notice what the other
-     side has and it does not. A second advisor pass, after the code was committed and not
-     just after the plan was written, is what caught this one; the first pass reviewed the
+     side has and it does not. This was not a blind spot of the first review: the plan's own
+     v0.1 prose already claimed the reverse check, and the first advisor pass had asked for it
+     by name — it simply was not carried from the sentence into the code block two lines
+     below it. The lesson is to trace each claim a doc comment or a plan's prose makes to the
+     specific line of code that would actually enforce it, not to trust that writing the claim
+     down means it was implemented. A second advisor pass, run against the committed code
+     instead of the plan, is what caught the gap here; the first pass reviewed the
      plan's design, not the executed code's actual guard.
 - **Next:** T-10 (Overview UI) fills `app/(app)/overview/page.tsx`'s body from `getOverview`,
   per backlog v1.20.
+
+### Addendum — 2026-09-24, a third advisor pass on the pushed fix
+
+- **Input:** the fix for the one-directional guard (`0743ca7`) had already been pushed when the
+  agent called the advisor once more before reporting done.
+- **Found:** the fix's own commit message, and this entry's item 6 above, claimed a run that
+  had not happened — "built `CATEGORY_LABEL` without complaint under the one-directional
+  version" was reasoned from reading the restored old file, not from actually running it.
+  Governance's "reported output is copied from the run, never from the brief" applies to a
+  process-log entry's own claims as much as to a plan's.
+- **Fixed:** both directions were run for real, against the same mutation
+  (`"Dining Out"` removed from `CATEGORIES`): the one-directional file (`git show
+  40585b3:src/server/overview.ts`, restored to disk) printed `CATEGORY_LABEL.size = 9` with no
+  throw; the fixed file, same mutation, threw `"9 labels but 10 Prisma keys — the two enums
+  have drifted"`. Both files were restored afterward (`git diff --stat` empty). This entry's
+  item 6 and the plan's "Execution corrections" now quote that output instead of the reasoned
+  claim.
+- **Also found:** `tests/unit/server/overview.test.ts` had two assertions comparing
+  `CATEGORY_LABEL`/`THEME_LABEL` against a regex-parsed reading of data-model.md — exactly what
+  `tests/unit/shared/enums.test.ts` already checks, with its own violation fixture (DoD v1.1).
+  Removed, with a one-line comment pointing to that file, so the redundancy does not read as
+  covering DoD v1.1 for a check it never actually pinned with a fixture here.
+- **Lesson:** a correction's own writeup needs the same discipline the thing it is correcting
+  was held to. "I read the old code and reasoned it would pass" is not "I ran it and it passed"
+  — say which one happened.
