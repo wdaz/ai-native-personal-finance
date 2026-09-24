@@ -43,7 +43,9 @@ gate is met and recorded in the process log.
 
 ## Run locally
 
-Requires Node 26 (see `.nvmrc`) and Docker: Postgres runs in a container (`compose.yaml`).
+Requires Node 26 (see `.nvmrc`), npm 11.19+ and Docker: Postgres runs in a container
+(`compose.yaml`). `allowScripts` and `strict-allow-scripts` need npm 11.19; an older npm only
+warns `Unknown project config` and does not enforce the install-script policy below.
 
 ```bash
 npm ci                          # install; also generates the Prisma client

@@ -32,11 +32,27 @@ function stage(options: { npmrc?: boolean; mutate?: (pkg: PackageJson) => void }
   return dir;
 }
 
-/** `npm ci --dry-run` resolves the lockfile and checks the install-script policy, and installs nothing. */
-const dryRunCi = (cwd: string) =>
-  spawnSync("npm", ["ci", "--dry-run"], { cwd, encoding: "utf8", env: childEnv() });
+/**
+ * `npm ci --dry-run` resolves the lockfile and checks the install-script policy, and installs
+ * nothing. The user and global config point at an empty file, so a contributor's `~/.npmrc`
+ * cannot decide the outcome (`childEnv()` covers the `npm_config_*` variables).
+ */
+function dryRunCi(cwd: string) {
+  // Two files: npm refuses to load one path as both the user and the global config.
+  const userConfig = join(cwd, "empty-user.npmrc");
+  const globalConfig = join(cwd, "empty-global.npmrc");
+  writeFileSync(userConfig, "");
+  writeFileSync(globalConfig, "");
+  const args = ["ci", "--dry-run", "--userconfig", userConfig, "--globalconfig", globalConfig];
+  return spawnSync("npm", args, { cwd, encoding: "utf8", env: childEnv() });
+}
 
 const withoutEsbuild = (pkg: PackageJson) => {
+  // A bump changes the key; deleting a key that is not there would leave the fixture passing.
+  expect(
+    pkg.allowScripts,
+    "allowScripts no longer names esbuild@0.28.2: update this fixture to the installed version",
+  ).toHaveProperty(["esbuild@0.28.2"]);
   delete pkg.allowScripts["esbuild@0.28.2"];
 };
 

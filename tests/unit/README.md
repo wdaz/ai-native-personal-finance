@@ -45,9 +45,17 @@ T-13: `coverage-gate.test.ts` checks the ≥ 90 % statements gate on `src/domain
 `vitest.thresholds.json` names the domain glob at 90; the real `vitest.config.ts` imports it and
 its `coverage.include` selects a domain file (a glob that selects nothing would pass silently);
 and a nested Vitest on `tests/fixtures/coverage-gate/` must fail with the threshold named.
-`childEnv()` strips `VITEST*`, `npm_config_*` and `NODE_V8_COVERAGE` for child processes. The real
+`childEnv()` strips `VITEST*`, `npm_config_*` (any case) and `NODE_V8_COVERAGE` for child processes. The real
 gate runs only under `npm run test:coverage` (CI, `npm run test:all`); `npm test` runs these
 checks of it, not the gate itself.
+
+T-13: `install-scripts.test.ts` proves the install-script policy (`.npmrc`'s `strict-allow-scripts=true`
+plus package.json's `allowScripts`) by running `npm ci --dry-run` in a staged copy of the lockfile and
+package.json (nothing is installed; the staged package.json drops the project's own `postinstall` and
+`prepare`, and an empty user and global npmrc keeps the outcome off the contributor's machine): the
+repository's own files install, removing an `allowScripts` entry fails with `ESTRICTALLOWSCRIPTS`, and
+the same package.json passes without `.npmrc`. `child-env.test.ts` covers `childEnv()`, including
+`NPM_CONFIG_*` in upper case.
 
 T-13: `traceability.test.ts` checks the NFR-T2 scan (`scripts/traceability.ts`): every Release 1 story
 id is in the title of a `test`/`it`/`describe`/`test.describe` call in some `*.test.ts(x)` or
