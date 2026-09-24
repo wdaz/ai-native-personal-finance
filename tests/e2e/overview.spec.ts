@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import { seedFigures } from "@/scripts/seed-figures";
 import { FEW_TRANSACTIONS } from "@/src/server/variants";
 import { COPY } from "@/src/shared/copy";
@@ -15,8 +16,27 @@ import {
 const GREY_500 = "rgb(105, 104, 104)";
 const GREY_900 = "rgb(32, 31, 36)";
 
-/** The four card links, in the tab order they sit in the page (SPEC-overview §6 grid). */
-const CARD_LINKS = ["See Details ›", "View All ›", "See Details ›", "See Details ›"] as const;
+/**
+ * The four card links, by their own card's heading rather than position (ADR-0003/
+ * `tests/e2e/README.md`: no `.first()` — extended here to `.nth()`/`.last()` too, since
+ * nothing else in this suite uses a positional locator either). Each card renders its heading
+ * and its link as siblings under one wrapper (`.header` in every `src/ui/overview/*Card.tsx`),
+ * so the heading's own parent scopes the link unambiguously, in the order they sit on the page
+ * (SPEC-overview §6 grid).
+ */
+const CARD_LINKS = [
+  { heading: "Pots", label: "See Details ›" },
+  { heading: "Transactions", label: "View All ›" },
+  { heading: "Budgets", label: "See Details ›" },
+  { heading: "Recurring Bills", label: "See Details ›" },
+] as const;
+
+function cardLink(page: Page, heading: string, label: string) {
+  return page
+    .getByRole("heading", { name: heading, exact: true })
+    .locator("..")
+    .getByRole("link", { name: label });
+}
 
 /**
  * build-workflow.md: "Any seed-derived figure in code or tests comes from
@@ -63,7 +83,7 @@ test("US-05 AC1 AC3: Pots card total and first four pots; 'See Details' navigate
   await expect(page.getByText(formatMoney(firstPot.total))).toBeVisible();
   await expect(page.getByText(lastPot.name)).toBeVisible();
 
-  await page.locator("main").getByRole("link", { name: "See Details ›" }).first().click();
+  await cardLink(page, "Pots", "See Details ›").click();
   await expect(page).toHaveURL(`${baseURL}/pots`);
 });
 
@@ -96,7 +116,7 @@ test("US-06 AC1 AC2: Transactions card shows five rows (SPEC-overview §4.3); 'V
   await expect(page.getByText(formatSignedMoney(second.amount))).toBeVisible();
   await expect(page.getByRole("img", { name: FIGURES.transactions.at(-1)!.name })).toBeVisible();
 
-  await page.getByRole("link", { name: "View All ›" }).click();
+  await cardLink(page, "Transactions", "View All ›").click();
   await expect(page).toHaveURL(`${baseURL}/transactions`);
 });
 
@@ -109,9 +129,7 @@ test("US-06 AC3: few-transactions variant shows fewer than five rows", async ({
   await page.goto("/overview");
   // `main img` — the transaction avatars specifically: the sidebar logo and the donut are
   // both <svg role="img">, not <img>, so a role-based query would over-count them.
-  const avatars = page.locator("main img");
-  await expect(avatars.first()).toBeVisible();
-  await expect(avatars).toHaveCount(FEW_TRANSACTIONS);
+  await expect(page.locator("main img")).toHaveCount(FEW_TRANSACTIONS);
 });
 
 test("US-06 AC3: empty-all variant shows 'No transactions yet'", async ({ page, request }) => {
@@ -135,7 +153,7 @@ test("US-07 AC1 AC3: Budgets card donut + legend (SPEC-overview §4.3); 'See Det
   await expect(page.getByText(secondBudget.category, { exact: true })).toBeVisible();
   await expect(page.getByText(formatMoney(secondBudget.maximum))).toBeVisible();
 
-  await page.locator("main").getByRole("link", { name: "See Details ›" }).nth(1).click();
+  await cardLink(page, "Budgets", "See Details ›").click();
   await expect(page).toHaveURL(`${baseURL}/budgets`);
 });
 
@@ -165,7 +183,7 @@ test("US-08 AC1 AC2: Recurring Bills card figures (SPEC-overview §4.3); 'See De
   await expect(page.getByText("Due Soon")).toBeVisible();
   await expect(page.getByText(formatMoney(FIGURES.bills.dueSoon))).toBeVisible();
 
-  await page.locator("main").getByRole("link", { name: "See Details ›" }).last().click();
+  await cardLink(page, "Recurring Bills", "See Details ›").click();
   await expect(page).toHaveURL(`${baseURL}/recurring-bills`);
 });
 
@@ -198,13 +216,11 @@ test("US-32 AC1 AC3 keyboard walkthrough: the four card links, each reachable an
 
   await page.getByRole("button", { name: COPY.dismissNotice }).focus();
 
-  const links = page.locator("main").getByRole("link", { name: /See Details ›|View All ›/ });
-  await expect(links).toHaveCount(4);
-  for (let index = 0; index < CARD_LINKS.length; index += 1) {
-    await tabTo(page, links.nth(index));
+  for (const { heading, label } of CARD_LINKS) {
+    await tabTo(page, cardLink(page, heading, label));
   }
 
-  await links.nth(3).focus();
+  await cardLink(page, "Recurring Bills", "See Details ›").focus();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(`${baseURL}/recurring-bills`);
 });
@@ -229,10 +245,8 @@ test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the four car
   await tabTo(page, page.getByRole("button", { name: COPY.dismissNotice }));
   await tabTo(page, page.getByRole("main").getByRole("button", { name: "Log out" }));
 
-  const links = page.locator("main").getByRole("link", { name: /See Details ›|View All ›/ });
-  await expect(links).toHaveCount(4);
-  for (let index = 0; index < CARD_LINKS.length; index += 1) {
-    await tabTo(page, links.nth(index));
+  for (const { heading, label } of CARD_LINKS) {
+    await tabTo(page, cardLink(page, heading, label));
   }
 
   const bottomNav = page.getByRole("navigation", { name: "Main" });
@@ -247,10 +261,8 @@ test.describe("US-34 hover and focus states (design-tokens.md 'Component states'
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/overview");
 
-    const links = page.locator("main").getByRole("link", { name: /See Details ›|View All ›/ });
-    await expect(links).toHaveCount(4);
-    for (let index = 0; index < CARD_LINKS.length; index += 1) {
-      const link = links.nth(index);
+    for (const { heading, label } of CARD_LINKS) {
+      const link = cardLink(page, heading, label);
       await expect(link).toHaveCSS("color", GREY_500);
       await link.hover();
       await expect(link).toHaveCSS("color", GREY_900);
