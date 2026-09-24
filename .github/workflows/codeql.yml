@@ -80,8 +80,11 @@ jobs:
           # Prefix the list here with "+" to use these queries and those in the config file.
 
           # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-          # MEASUREMENT (owner request 2026-09-24): security-and-quality, which contains
-          # security-extended, run on this PR to count what it finds before the suite is chosen.
+          # security-and-quality = security-extended (the default suite plus lower-precision
+          # security queries) plus maintainability and reliability queries — the widest built-in
+          # suite, and only available in advanced setup. Owner decision 2026-09-24 ("more
+          # advanced checks"): measured first on PR #37 — 201 JavaScript/TypeScript rules
+          # (the default suite ran 87) and 27 Actions rules (17), 245 files, 0 results.
           queries: security-and-quality
 
       # If the analyze step fails for one of the languages you are analyzing with
