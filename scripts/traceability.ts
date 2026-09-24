@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
@@ -150,13 +150,15 @@ export function checkTraceability(input: {
 /**
  * Every `*.test.ts(x)` / `*.spec.ts(x)` under `tests/` — what Vitest and Playwright run — with
  * `fixtures/` excluded (they hold deliberately odd sources). A helper file's calls never count.
+ * The entry type comes with the listing (`withFileTypes`): a separate `stat` before the read would
+ * let the path change in between (CodeQL `js/file-system-race`).
  */
 export function testSources(root: string): { path: string; source: string }[] {
   const walk = (dir: string): { path: string; source: string }[] =>
-    readdirSync(dir).flatMap((name) => {
-      const path = join(dir, name);
-      if (statSync(path).isDirectory()) return name === "fixtures" ? [] : walk(path);
-      return /\.(test|spec)\.tsx?$/.test(name)
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) return entry.name === "fixtures" ? [] : walk(path);
+      return /\.(test|spec)\.tsx?$/.test(entry.name)
         ? [{ path, source: readFileSync(path, "utf8") }]
         : [];
     });
