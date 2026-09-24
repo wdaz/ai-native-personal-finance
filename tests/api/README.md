@@ -19,3 +19,6 @@ locally). Each test resets it; it holds demo data only.
   under its `X-Request-Id`, also when it answers 401; 404 for an unknown, empty or missing id
   (SPEC-webmcp-tools §2.8). A green run also proves the buffer is shared between the middleware
   and the route bundles through `globalThis`.
+- `schema-drift.spec.ts` (T-13) — `prisma/schema.prisma` and the migrations agree
+  (`scripts/schema-drift.sh`, `npm run db:drift`); needs a migrated database (`npm run db:reset`
+  first), and a schema with an extra model must be reported as drift (exit 2).
