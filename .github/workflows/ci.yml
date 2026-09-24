@@ -94,7 +94,7 @@ jobs:
         run: npm run test:api
 
   e2e:
-    name: E2E (Chromium, ${{ matrix.webmcp-mode }})
+    name: E2E (Chromium, ${{ matrix['webmcp-mode'] }})
     runs-on: ubuntu-latest
     strategy:
       # One leg failing must not hide the other's verdict.
@@ -130,7 +130,7 @@ jobs:
       RESET_SECRET: "ci-only-reset-secret-not-a-real-secret"
       CRON_SECRET: "ci-only-cron-secret-not-a-real-secret"
       # The matrix leg's mode; the mode-specific specs skip themselves in the other one.
-      WEBMCP_MODE: ${{ matrix.webmcp-mode }}
+      WEBMCP_MODE: ${{ matrix['webmcp-mode'] }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -151,14 +151,14 @@ jobs:
       - name: Migrate
         run: npx prisma migrate deploy
 
-      - name: E2E tests, Chromium, WEBMCP_MODE=${{ matrix.webmcp-mode }} (builds and starts the app with APP_ENV=test)
+      - name: E2E tests, Chromium, WEBMCP_MODE=${{ matrix['webmcp-mode'] }} (builds and starts the app with APP_ENV=test)
         run: npx playwright test --project=chromium
 
       - name: Upload the Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-e2e-${{ matrix.webmcp-mode }}
+          name: playwright-report-e2e-${{ matrix['webmcp-mode'] }}
           path: playwright-report/
           retention-days: 7
 
