@@ -3093,3 +3093,32 @@ them too").
 - **Lessons for the process:** an acceptance that arrives after the code has merged is still worth
   recording promptly. Until then, the specs and ADRs describe the running code as unapproved.
 - **Next:** the owner reviews and merges; T-13a's plan gate.
+
+## 2026-09-24 — TD-11: the build downloads Public Sans from Google Fonts
+
+- **Phase:** 5 (Build the slice), Release 1 — a tech-debt entry and a backlog change; no code.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5)
+- **Trigger:** PR #36 is docs-only, yet its `E2E (WebKit, polyfill)` leg failed at `next build`
+  after 1m15s. The cause was Turbopack's "Can't resolve
+  '@vercel/turbopack-next/internal/font/google/font'" for the six font URLs on
+  `fonts.gstatic.com`. PR #37's `E2E (Chromium, off)` failed the same way in the same minute. The
+  owner asked "Google font local install olmayıb?" (isn't the Google font installed locally?).
+  After the explanation and three options, the owner answered "a".
+- **Prompt(s):** none — the conversation itself.
+- **Produced:**
+  - `tech-debt.md` v1.11: TD-11, with the evidence from both runs.
+  - `backlog.md` v1.25: T-13c also fixes TD-11. Public Sans moves to `next/font/local` from
+    committed `.woff2` files, with the font's licence beside them. `design-tokens.md` §Typography
+    follows, and a check fails if `next/font/google` returns.
+  - this entry.
+- **What the agent got right:** it read the failed leg's log before calling the failure flaky.
+  The log showed the build, not a test, failing on a network download that nothing in the
+  repository declares.
+- **What the agent got wrong or missed:** nothing yet. The failed WebKit job was re-run.
+- **Owner changes and reasoning:** "a" — register the debt and fix it before T-14 with the other
+  small items. That also means Vercel's first build in T-14 has no Google dependency.
+- **Disagreements:** none.
+- **Lessons for the process:** `next/font/google` looks like a runtime convenience, but it is a
+  build-time network dependency. Any build-time fetch from a third party belongs in the list of
+  what CI depends on.
+- **Next:** the owner reviews and merges; T-13a's plan gate.
