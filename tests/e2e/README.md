@@ -27,5 +27,13 @@ Playwright browser tests, one journey per story, on Chromium, Firefox and WebKit
   focus hand-off to `app-shell-keyboard.spec.ts`.
 - CI runs Chromium (T-06); Firefox and WebKit join in T-13. `npm run test:e2e` runs all three
   locally.
+- `overview.spec.ts` (T-10): US-04…08 against the default seed and the seed variants
+  (`empty-pots`, `few-transactions`, `empty-budgets`, `no-recurring`, `empty-all`) SPEC-overview
+  §7 names, US-32's keyboard walkthrough of the page's own four card links (picking up where
+  `app-shell-keyboard.spec.ts`'s own walkthrough leaves off, at the reset banner's dismiss
+  button, rather than re-proving the shell's earlier stops), US-34 hover/focus on those links,
+  and axe on the default seed, `empty-all` and a phone width. `main img` (not a role query)
+  counts transaction avatars specifically — the sidebar logo and the donut are both
+  `<svg role="img">`, not `<img>`.
 
 Run: `npm run test:e2e`.

@@ -1,0 +1,10 @@
+/* SPEC-overview §2.8: a single card replacing the grid on a data-load failure. */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-200);
+  padding: var(--spacing-300);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}

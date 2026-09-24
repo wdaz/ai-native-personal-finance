@@ -25,3 +25,13 @@ T-08: `ResetBanner` (SPEC-app-shell §2.6 — `banner-state.ts` keeps
 `sidebar-state.ts` now shares; dismissing it moves focus to `<main>`), rendered by `Shell` from
 the `meta` the `(app)` layout reads; `icons/CloseCircleIcon` — the Claude Design prototype's
 modal close control, drawn inline there, not one of the Figma icons (T-08 plan Q2 (d)).
+
+T-10: `overview/` — the six components SPEC-overview §6 names (`StatCard`, `PotsCard`,
+`TransactionsCard`, `BudgetsCard`, `Donut`, `BillsCard`), plus `OverviewError` (client — the
+§2.8 retry card), `CardLink` (the "See Details ›"/"View All ›" links every card shares),
+`ThemeBar` (a pot/budget's 4 px theme-colour bar — a `data-theme` attribute selector per theme,
+never inline `style`, ADR-0006), `theme-color.ts` (`themeVar`, reused by `Donut`'s SVG `stroke`
+attribute — a plain SVG presentation attribute, not the `style` prop, so the CSP does not apply)
+and `donut-geometry.ts` (pure `donutSegments`, unit-tested without rendering). `icons/` gains
+`JarIcon` (Phosphor `jar-fill`, MIT — design-tokens.md already named it, unlike `sign-out`'s
+project addition). Avatars are bare `<img>` (still no `next/image`, per T-06's rule above).

@@ -1898,3 +1898,162 @@ them too").
 - **Lessons for the process:** a "no leaked field" test that compares a function's output against
   the very same object it was built from cannot detect a pass-through leak — it needs a fixture
   built separately, the way the array tests already did, and a mutation run to prove it bites.
+
+## 2026-09-24 — Phase 5: T-10 Overview UI
+
+- **Phase:** 5 (Build the slice), Release 1.
+- **Participants:** Owner / Agent (Claude Code, cloud session).
+- **Trigger:** the owner, verbatim: "T-10 planlamasına başla" ("Start planning T-10"), then,
+  after reviewing the plan gate, "Start."
+- **Prompt(s):** `prompts/2026-09-24-T-10.md`.
+- **Produced:** `docs/04-process/plans/2026-09-24-T-10.md` (plan gate, then executed);
+  `src/ui/overview/{StatCard,PotsCard,TransactionsCard,BudgetsCard,Donut,BillsCard,
+  OverviewError,CardLink,ThemeBar,theme-color,donut-geometry}` (+ `.module.css` per component),
+  `src/ui/icons/JarIcon.tsx`; `app/(app)/overview/page.tsx` (filled in) and
+  `page.module.css`; `tests/unit/ui/overview/*` (10 files); `tests/e2e/overview.spec.ts`;
+  README updates in `src/ui`, `app/(app)`, `tests/unit`, `tests/e2e`; a one-line
+  `design-tokens.md` note that `jar-fill` is now implemented.
+- **What the agent got right:** the plan gate stopped and waited for the owner's go-ahead
+  before writing any implementation file, per `build-workflow.md` §2; the six components
+  SPEC-overview §6 names, plus one addition (`OverviewError`, justified in the plan as D1)
+  the spec's own §2.8 behaviour requires; every seed-derived figure in the new E2E file reads
+  from `scripts/seed-figures.ts`'s `seedFigures()`, per the T-10 backlog row's own hand-off
+  and `build-workflow.md`'s "never typed" rule — the first draft of the E2E file had typed the
+  dollar figures directly (matching `docs/03-specs/overview.md` §4.3's own worked table, itself
+  generated and pinned by `tests/unit/seed-figures.test.ts`), which is a defensible fallback but
+  not what the backlog row asks for; caught and fixed before the PR, not after. Theme colours
+  reuse the already-tested `--color-<kebab-theme>` rule (`tests/unit/shared/enums.test.ts`)
+  instead of a new hand-typed table (D2); the Pots card's jar icon was fetched from Phosphor's
+  real `assets/fill/jar-fill.svg` (MIT) rather than approximated, matching design-tokens.md's
+  own listing and T-07's `sign-out` precedent. `npm test` (756), `npm run test:api` (91) and
+  the full Chromium `npm run test:e2e` (89, including the new `overview.spec.ts`'s 13) all
+  green before declaring done; DoD screenshots taken at 1440/768/375.
+- **What the agent got wrong or missed:**
+  1. The Overview grid (`page.module.css`) used the bare `1fr` shorthand
+     (`minmax(auto, 1fr)`) for its single mobile column and the stat row's flex parent had no
+     `min-inline-size: 0` — a fixed-size child anywhere in that column (the 240 px donut) forced
+     every card in the column to its own width, which regressed `app-shell.spec.ts`'s existing
+     US-33 AC2 (no horizontal scroll at 320 px) from 0 px to 24 px of overflow. Caught only by
+     re-running the *existing* E2E suite (not just the new file) before declaring done — the new
+     `overview.spec.ts` alone would not have caught a regression in a different spec file. Fixed
+     with `minmax(0, 1fr)` and `min-inline-size: 0` on the flex/grid items that needed it
+     (page.module.css, PotsCard.module.css), each with a one-line comment naming the rule.
+  2. After the first full `npm run build`, several cards (`StatCard`, `PotsCard`,
+     `TransactionsCard`, and the page's own grid) rendered with their CSS Module classes
+     present in the DOM but **no matching rule in the served stylesheet** — a stale Turbopack
+     build cache from iterative development (`.next/cache`), not a code defect: `rm -rf .next`
+     before the next `npm run build` produced the correct, fully-styled page (verified with
+     screenshots at 1440/768/375 and a re-run of the whole E2E suite against the clean build).
+     Caught only because the agent took screenshots for the DoD and looked at them, rather than
+     trusting "all tests green" alone — none of the E2E assertions check background colour or
+     card padding, so a broken stylesheet passed every automated check. This is the same class
+     of lesson T-01's "reported output is copied from the run, never from the brief" — an
+     automated pass is not the same claim as "I looked at it."
+  3. No advisor/second-reviewer pass was run before or after execution, unlike T-08/T-09's own
+     sessions (which used a stronger-model review before writing code and, for T-09, a second
+     pass on the committed diff). This session went straight from plan to implementation to
+     declaring done; nothing found above came from a dedicated review step, only from re-running
+     the full test suite and looking at screenshots.
+- **Owner changes and reasoning:** none yet — awaiting review.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A CSS Grid/Flexbox column's default `min-width: auto` means one fixed-size item anywhere
+     in a shared track can force every other item in that track wider than its own content —
+     worth a standing note (or a lint/test rule, considered but not added here) for any future
+     card-grid layout that mixes a fixed-size chart with flexible siblings.
+  2. Passing tests are not the same claim as "the page looks right." A UI task's DoD
+     screenshots are not paperwork after the fact — this session's own stale-build styling gap
+     survived unit tests, API tests and a full green E2E run (axe included) and was caught only
+     by looking at a screenshot, exactly the failure mode governance.md's "reported output is
+     copied from the run, never from the brief" already warns about, extended here to visual
+     output specifically.
+  3. A backlog row's own hand-off ("seed figures in E2E come from `seedFigures()` … never
+     typed") is easy to satisfy in spirit (typing the already-approved, generated §4.3 table)
+     while missing it in the letter (importing the actual function). Re-reading the row's exact
+     wording against the diff, not just its topic, caught this before the PR.
+- **Next:** T-11 (WebMCP adapter), per `docs/03-specs/backlog.md`.
+
+### Addendum — 2026-09-24, an adversarial review of the T-10 diff
+
+- **Input:** the owner, verbatim: "Ayrı bir subagent ilə yoxlat zəhmət olmasa" ("Please check
+  it with a separate subagent") — in response to the process log above naming the missing
+  review pass as a gap. A read-only `Explore` subagent, launched with the model governance.md
+  v1.3 requires (Opus 5.5), reviewed the diff since PR #21 (`a7b938a..HEAD`, 4 commits, 42
+  files) against `AGENTS.md`, `governance.md`, the T-10 backlog row, SPEC-overview,
+  `definition-of-done.md`, `build-workflow.md`, the plan and this log's own claims — treating
+  the log as something to verify, not trust. It ran `npm run typecheck`/`lint`/`format:check`/
+  `npm test` for real in this same checkout (node_modules and `.env.local` already present) and
+  quoted the actual output; it could not run `test:api`/`test:e2e` because Postgres was not
+  running when it checked and it declined to start a service itself (a correct call under its
+  own read-only constraint — governance.md's "if a review needs to execute something, it does
+  so in a throwaway clone" assumes state the reviewer may change, not state it finds already
+  down), so those two claims from the log above were left unverified rather than refuted.
+- **Findings, most severe first, all fixed:**
+  1. **The donut's inner ring rendered 24 px wide, not 8 px.** `Donut.tsx` gave both the inner
+     and outer `<circle>` elements the same `styles.segment` class; `Donut.module.css`'s
+     `.segment { stroke-width: 24px }` always outranks an SVG presentation attribute, so the
+     inner circles' own `strokeWidth={8}` prop was silently ignored — a real, visible rendering
+     bug SPEC-overview §4.4 specifies exactly (8 px inner ring) and no test caught, since
+     `Donut.test.tsx` only counted `<circle>` elements. The reviewer verified this by rendering
+     the real component and CSS in Chromium and reading the computed `stroke-width` (24px).
+     Fixed by splitting `.segment` into `.innerSegment` (8px)/`.outerSegment` (24px); a new unit
+     test asserts the two circle groups carry different classes, and was confirmed to fail
+     against the original bug by reverting the fix and re-running it before restoring it (the
+     same mutation-testing discipline this task's own plan used for `donutSegments`).
+  2. **`ThemeBar`'s "violation fixture" could not fail.** The first version only asserted that
+     a `[data-theme="X"]` selector string existed in the CSS, the same class of gap T-09's D2
+     explicitly rejected for `CATEGORY_LABEL`/`THEME_LABEL` — a swapped rule (Navy painted red)
+     would have passed every check. Fixed: the test now extracts each rule's actual
+     `var(--color-*)` value and compares it to the theme's own expected token, with a genuine
+     swap fixture proven to fail before the fix and pass after.
+  3. **`Donut`'s React `key` was the theme name**, which two budgets could in principle share
+     (nothing in this task enforces US-15 AC1's "used themes disabled" rule — that is a
+     Release 2 write-path concern). Changed to the array index, a stable identity regardless.
+  4. **E2E gaps against the plan's own Task 8 and SPEC-overview §7:** US-34's hover/focus test
+     only checked the first of the four card links; the axe test never covered the *populated*
+     page at 375 px (only the default seed at 1440 and `empty-all` at both widths); and §7's
+     literal "skip link → nav → four card links → footer" has no DOM path at ≥1024 px (the
+     sidebar's footer sits *before* `<main>` there) — it only holds where "footer" means the
+     bottom nav bar, which `Shell` renders *after* `<main>`, i.e. at <1024 px. All four fixed:
+     the hover/focus test now loops over all four links; axe now runs the default seed at both
+     widths too; a new phone-width test extends `app-shell-keyboard.spec.ts`'s own established
+     walkthrough pattern (skip link → dismiss → header "Log out" → …) with this page's four
+     card links inserted before the bottom nav, proving the literal chain the spec names.
+  5. **Two smaller fixes:** `PotsCard`'s tile text had no wrap fallback for a total wider than
+     the seed ever produces (defensive, not a live R1 bug — flagged as low severity by the
+     reviewer since no write path in R1 can produce one); `design-tokens.md`'s new note
+     overclaimed `jar-fill` as "the first of the 27 to actually be implemented" when
+     `eye`/`eye-slash` (T-06) already were — reworded to drop the false claim.
+- **Checked and confirmed solid, per the reviewer:** the donut's segment math itself
+  (`donutSegments`'s denominator, cumulative offsets, the 12-o'clock clockwise rotation, the
+  `color-mix` opacity) is correct; ADR-0002 import boundaries hold; no `style=` prop anywhere
+  in the new files; all 15 `ThemeBar` rules exist; every seed-derived E2E figure genuinely comes
+  from `seedFigures()`, not a hand-typed literal; empty states match §2.7 and use `COPY`; the
+  request id is really forwarded and logged; `npm run build` produces `ƒ /overview` (dynamic,
+  not prerendered against the database); the stale-Turbopack-cache story from the log above is
+  plausible and not a cover for something else.
+- **Re-verified after the fixes** (this session, real output): `npm run typecheck`/`lint`/
+  `format:check` clean; `npm test` 758 passed (60 files); `npm run test:api` 91 passed;
+  `npm run test:e2e -- --project=chromium` 90 passed (all of `tests/e2e`, including the new
+  phone-walkthrough test) against a clean (`rm -rf .next`) build; a close-up screenshot of the
+  donut confirms the inner ring is now visibly thin against the outer one.
+- **Owner changes and reasoning:** none yet — the owner asked for the review; the fixes above
+  are the agent's own response to it, per governance's normal implementation-detail latitude.
+- **Disagreements:** none.
+- **Lessons for the process:** a CSS class shared between two elements that need different
+  values for the *same* property is exactly the kind of thing a component test that only counts
+  elements cannot catch — the lesson from this task's own `ThemeBar` mistake (a table that
+  looks checked but isn't) generalises past hand-typed data tables to shared CSS classes too. A
+  "violation fixture" is only proof once it has actually been run against the *unfixed* code and
+  seen to fail — this review supplied that for finding 1 where the implementing session's own
+  test had not.
+- **A fifth, self-caught defect, found preparing the PR description (not by the reviewer):**
+  `tests/e2e/overview.spec.ts` used `.first()`/`.nth()`/`.last()` in six places to pick one of
+  the four "See Details ›"/"View All ›" links — a rule `tests/e2e/README.md` and
+  `definition-of-done.md` both name explicitly ("no `.first()`"), and no other file in
+  `tests/e2e` uses any of the three. Caught while re-reading the DoD checklist line by line to
+  write the PR body, not by the earlier review (which read the file for what it asserted, not
+  for this specific convention). Fixed with a `cardLink(page, heading, label)` helper that
+  scopes each link by its own card's heading instead of its position — every card wraps its
+  heading and link as DOM siblings, so this is no less precise, just name- instead of
+  order-based. Re-verified: `npm test` 758, `test:api` 91, `test:e2e` (chromium) 90.

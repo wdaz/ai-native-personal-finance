@@ -1,0 +1,11 @@
+/* design-tokens.md "Component states": tertiary — text + caret, grey-500 → grey-900 (US-34). */
+.link {
+  color: var(--color-grey-500);
+  text-decoration: none;
+  transition: color var(--duration-hover) ease;
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--color-grey-900);
+}

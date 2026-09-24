@@ -1,0 +1,59 @@
+/*
+ * A 4 px bar in a budget/pot's theme colour (SPEC-overview §2.3, §2.5). No inline `style`
+ * (src/ui/README.md — the CSP's style-src blocks the `style` attribute, ADR-0006), so each of
+ * the 15 themes gets its own attribute-selector rule against the same colour tokens
+ * design-tokens.md names, rather than a per-element inline colour.
+ */
+.bar {
+  display: inline-block;
+  inline-size: 4px;
+  block-size: var(--spacing-200);
+  border-radius: var(--radius-100);
+  flex-shrink: 0;
+}
+
+.bar[data-theme="Green"] {
+  background: var(--color-green);
+}
+.bar[data-theme="Yellow"] {
+  background: var(--color-yellow);
+}
+.bar[data-theme="Cyan"] {
+  background: var(--color-cyan);
+}
+.bar[data-theme="Navy"] {
+  background: var(--color-navy);
+}
+.bar[data-theme="Red"] {
+  background: var(--color-red);
+}
+.bar[data-theme="Purple"] {
+  background: var(--color-purple);
+}
+.bar[data-theme="Turquoise"] {
+  background: var(--color-turquoise);
+}
+.bar[data-theme="Brown"] {
+  background: var(--color-brown);
+}
+.bar[data-theme="Magenta"] {
+  background: var(--color-magenta);
+}
+.bar[data-theme="Blue"] {
+  background: var(--color-blue);
+}
+.bar[data-theme="Navy Grey"] {
+  background: var(--color-navy-grey);
+}
+.bar[data-theme="Army Green"] {
+  background: var(--color-army-green);
+}
+.bar[data-theme="Gold"] {
+  background: var(--color-gold);
+}
+.bar[data-theme="Orange"] {
+  background: var(--color-orange);
+}
+.bar[data-theme="Pink"] {
+  background: var(--color-pink);
+}

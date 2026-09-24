@@ -1,0 +1,51 @@
+/* SPEC-overview §2.6: three beige-100 rows, 4 px left border in the row's accent colour. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  padding: var(--spacing-300);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-150);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-150) var(--spacing-200);
+  border-radius: var(--radius-100);
+  border-inline-start: 4px solid transparent;
+  background: var(--color-beige-100);
+}
+
+.paid {
+  border-inline-start-color: var(--color-green);
+}
+
+.upcoming {
+  border-inline-start-color: var(--color-yellow);
+}
+
+.dueSoon {
+  border-inline-start-color: var(--color-cyan);
+}
+
+.amount {
+  margin: 0;
+}

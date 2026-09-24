@@ -1,0 +1,20 @@
+/* SPEC-overview §2.2; T-10 plan D8: --spacing-300 padding, --radius-150 (design-tokens.md
+   Radii table names it "cards" directly). */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-150);
+  padding: var(--spacing-300);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+  color: var(--color-grey-900);
+}
+
+.dark {
+  background: var(--color-grey-900);
+  color: var(--color-white);
+}
+
+.value {
+  margin: 0;
+}
