@@ -25,8 +25,13 @@ Playwright browser tests, one journey per story, on Chromium, Firefox and WebKit
   re-check through a synthetic `pageshow`). T-08 adds US-37 AC2 (the reset banner's date,
   its dismissal for the tab, 320 px) to `app-shell.spec.ts`, and the banner's tab stop and
   focus hand-off to `app-shell-keyboard.spec.ts`.
-- CI runs Chromium (T-06); Firefox and WebKit join in T-13. `npm run test:e2e` runs all three
-  locally.
+- CI runs four legs of this suite (T-06, T-13): `E2E (Chromium, polyfill)`, `E2E (Chromium, off)`,
+  `E2E (Firefox, polyfill)` and `E2E (WebKit, polyfill)`. `off` is built once, on Chromium: it
+  differs from `polyfill` only in the WebMCP client code, which the engine does not change.
+  `npm run test:e2e` runs all three engines locally, in `polyfill` mode.
+- A failing WebKit test also reports `style-src-elem inline` from the CSP guard: that is
+  Playwright's failure screenshot injecting a `<style>` (measured 2026-09-24: it disappears with
+  `screenshot: "off"`); read the _first_ error.
 - `overview.spec.ts` (T-10): US-04…08 against the default seed and the seed variants
   (`empty-pots`, `few-transactions`, `empty-budgets`, `no-recurring`, `empty-all`) SPEC-overview
   §7 names, US-32's keyboard walkthrough of the page's own four card links (picking up where
@@ -50,6 +55,6 @@ Run: `npm run test:e2e`.
   `WEBMCP_MODE` is inlined when the app is built, so a spec cannot switch it: each file skips
   itself unless `RUN_MODE` matches and its first test asserts which build it is talking to, so
   a reused server built in the other mode fails with a named message instead of a timeout. CI
-  runs the whole Chromium suite once per mode. Locally the off leg is
-  `WEBMCP_MODE=off npx playwright test --project=chromium` — stop any running server first,
-  because Playwright reuses one and it would still be the polyfill build.
+  runs the whole Chromium suite once per mode, and Firefox and WebKit in `polyfill` mode.
+  Locally the off leg is `WEBMCP_MODE=off npx playwright test --project=chromium` — stop any
+  running server first, because Playwright reuses one and it would still be the polyfill build.
