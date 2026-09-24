@@ -35,10 +35,11 @@ Playwright browser tests, one journey per story, on Chromium, Firefox and WebKit
   and axe on the default seed, `empty-all` and a phone width. `main img` (not a role query)
   counts transaction avatars specifically — the sidebar logo and the donut are both
   `<svg role="img">`, not `<img>`.
-
 - `axe-routes.spec.ts` (T-13) scans every route once per engine, the 404 page included, and fails
-  on a serious or critical axe violation. The route list is `tests/fixtures/a11y-routes.ts`;
-  `tests/unit/a11y-routes.test.ts` fails when a page under `app/` is not on it.
+  on a serious or critical axe violation; it first checks the status and the URL, so a listed
+  route that 404s or redirects fails instead of scanning another page. The route list is
+  `tests/fixtures/a11y-routes.ts`; `tests/unit/a11y-routes.test.ts` fails when a page under
+  `app/` is not on it, and when a listed route has no page.
 
 Run: `npm run test:e2e`.
 

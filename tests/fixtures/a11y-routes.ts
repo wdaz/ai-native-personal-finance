@@ -24,7 +24,10 @@ export const A11Y_ROUTES: readonly A11yRoute[] = [
   { path: "/recurring-bills", authenticated: true },
 ];
 
-/** The URL paths of every `page.tsx` under `appDir` (route groups `(x)` removed), plus the 404 page's. */
+/** Next's default page extensions; next.config.ts sets no `pageExtensions`. */
+const PAGE_FILE = /^page\.(tsx|ts|jsx|js)$/;
+
+/** The URL paths of every page file under `appDir` (route groups `(x)` removed), plus the 404 page's. */
 export function discoveredRoutes(appDir: string): string[] {
   const pages: string[] = [];
   const walk = (dir: string) => {
@@ -32,7 +35,7 @@ export function discoveredRoutes(appDir: string): string[] {
       const path = join(dir, name);
       if (statSync(path).isDirectory()) {
         walk(path);
-      } else if (name === "page.tsx") {
+      } else if (PAGE_FILE.test(name)) {
         const segments = relative(appDir, dir)
           .split(sep)
           .filter((segment) => segment !== "" && !/^\(.*\)$/.test(segment));
@@ -45,9 +48,18 @@ export function discoveredRoutes(appDir: string): string[] {
   return pages;
 }
 
+/** The pages `discovered` has that `listed` lacks: a page that would ship unscanned. */
 export function routesMissingFrom(
   discovered: string[],
   listed: readonly { path: string }[],
 ): string[] {
   return discovered.filter((route) => !listed.some((entry) => entry.path === route));
+}
+
+/** The entries of `listed` no discovered page backs: a stale line, which would scan a 404 page. */
+export function listedWithoutPage(
+  discovered: string[],
+  listed: readonly { path: string }[],
+): string[] {
+  return listed.map((entry) => entry.path).filter((path) => !discovered.includes(path));
 }
