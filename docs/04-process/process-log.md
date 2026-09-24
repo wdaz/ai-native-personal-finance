@@ -2307,7 +2307,8 @@ them too").
   `webmcp-mode` matrix); `docs/04-process/runbooks/webmcp-native-check.md` (Draft);
   SPEC-webmcp-tools v1.0.4; SPEC-reset-and-test-support v1.5; backlog v1.21 (hand-offs to T-13,
   T-14, T-15, T-16); the READMEs of `src/webmcp`, `src/shared`, `src/server`, `app/(app)`,
-  `tests/unit`, `tests/api`, `tests/e2e`; this entry. Commits: Tasks 1–5 are `08a819d`,
+  `tests/unit`, `tests/api`, `tests/e2e`; this entry; the stale `.env.example` comment
+  ("/api/test/log arrives in T-12") was updated in the Task 6 fix round. Commits: Tasks 1–5 are `08a819d`,
   `7cb3e96`, `5ca91f7`, `8ac031e`, `02d5ecf` (on top of the plan's own last commit, `a84c5ae`),
   followed by the documentation commit and its fix round.
 - **What the agent got right:** as at T-11, the plan checked the runtime the tests would call, not
@@ -2371,6 +2372,12 @@ them too").
      as the controller's, so a subagent executing the plan does not have to be overruled.
   4. Code pasted into a plan should be Prettier-formatted, or the plan should say each task ends
      with a format pass; four of five tasks ended with the same whitespace-only rewrite.
+  5. The final whole-branch review found that `PAGE_TOOLS` (the registry `registry.test.ts`
+     checks against NFR-W3) was not wired into the wrapper: `OverviewTools.tsx` imported
+     `overviewTools` directly, so a tool added only to the registry would not have been
+     registered. Fixed in the final review-fix commit (the wrapper now renders
+     `PAGE_TOOLS.overview`). A test that iterates a registry proves nothing about what the page
+     registers unless the page reads the same registry.
 - **Next:** the controller pushes the branch and opens a draft PR and reads both CI legs; the
   owner runs `docs/04-process/runbooks/webmcp-native-check.md` in a headed Chrome and fills in its
   record table; T-13 (CI hardening: Firefox and WebKit join the `webmcp-mode` matrix or a second

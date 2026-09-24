@@ -138,7 +138,8 @@ test("US-38 SPEC-webmcp-tools §2.8: the tool's own API request carries X-Via: w
   await page.goto("/overview");
   await expectToolsReady(page);
   const overviewResponse = page.waitForResponse(
-    (r) => new URL(r.url()).pathname === "/api/overview",
+    (r) =>
+      new URL(r.url()).pathname === "/api/overview" && r.request().headers()["x-via"] === "webmcp",
   );
 
   await callTool(page, "get_balance");

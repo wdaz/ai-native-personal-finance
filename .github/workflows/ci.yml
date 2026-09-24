@@ -103,7 +103,7 @@ jobs:
         # SPEC-webmcp-tools §7 / NFR-W2: the app is built once per mode — WEBMCP_MODE is inlined
         # at build time (next.config.ts), so `off` cannot be a runtime switch. Playwright's
         # webServer passes this environment to `npm run build`.
-        webmcp-mode: [polyfill, off]
+        webmcp-mode: [polyfill, "off"]
     services:
       # The same database service as the API job (T-02).
       postgres:
