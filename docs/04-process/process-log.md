@@ -2500,3 +2500,66 @@ them too").
 - **Next:** the controller pushes `fix/origin-agent-cluster` and opens a draft PR; the owner
   reviews, accepts or amends ADR-0006 (5) and SPEC v1.0.5, and merges it. T-13 continues on
   `task/T-13-ci-hardening` in parallel; its Task 10 waits for this PR to be merged.
+
+## 2026-09-24 — Phase 5: T-13 CI hardening — planning session
+
+- **Phase:** 5 (Build the slice), Release 1 — plan gate (`build-workflow.md` §2).
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, superpowers `writing-plans`; an advisor
+  review of the approach before the plan was written)
+- **Trigger:** `/superpowers:writing-plans t-13` after T-12 merged (PR #27, `838e0f5`).
+- **Prompt(s):** none — the session was started by the slash command alone. The execution brief
+  is saved under `prompts/2026-09-24-T-13.md` when the plan is executed (plan Task 11).
+- **Produced:** `docs/04-process/plans/2026-09-24-T-13.md` (11 tasks plus PR-A, 8 open questions,
+  13 findings); this entry. Nothing else in the tree changed: every code block in the plan was
+  written to the worktree, run and removed again (plan finding F13).
+- **What the agent got right:** measured before it proposed. Running Firefox and WebKit found that
+  `npm run test:all` is red today — T-12's eight WebMCP E2E tests fail on both engines (16
+  failures; 184 pass) — and a three-engine probe traced it to the polyfill's
+  `validateOriginAgentCluster()` (Firefox and WebKit report `originAgentCluster === false` unless
+  the response sends `Origin-Agent-Cluster: ?1`); the header makes both tools register in all
+  three engines. Also measured: the Prisma overrides cannot be dropped (4 high advisories return,
+  no stable Prisma fixes them); `strict-allow-scripts=true` breaks `npm ci` on macOS through
+  `fsevents` (deny it) and passes on Linux; a drift check needs no shadow database; the
+  commit-message scan works; `actionlint` runs from Docker.
+- **What the agent got wrong or missed:**
+  - The first draft's code had six defects that only running it showed (plan F13): a
+    `ProcessEnv` typing error, a Vite config-import warning and a `tsc` rejection of the
+    alternative, the traceability test scanning its own fixture strings, `npm_config_*` variables
+    overriding a staged `.npmrc`, `npm ci --dry-run` running the root project's scripts, and the
+    DoD item count (21, not 22).
+  - It first tried to give a worktree its dependencies by symlinking `node_modules` (below).
+  - The Firefox/WebKit failure was not on its list of expectations: it planned "add the engines to
+    CI" before running them.
+- **Environment (a lesson, owner asked for it to be recorded, 2026-09-24):** a fresh git worktree
+  has no `node_modules` and no generated Prisma client, and **symlinking the main checkout's
+  `node_modules` into it does not work** — Vitest fails with `Cannot find module
+  './generated/prisma/client'` (the client is generated into `src/server/generated/prisma`,
+  git-ignored, per checkout) and `Failed to resolve import "@mcp-b/webmcp-polyfill"`. This
+  happened at the start of this session and, per the owner, on every worktree session. The
+  working set-up, from the worktree root: `npm ci --ignore-scripts` (plain `npm ci` runs
+  `prepare`, which writes git configuration shared across worktrees — `governance.md`'s
+  implementer rule), then `npx prisma generate`. After it, `npm test` (875 tests) and
+  `npm run test:coverage` pass. API and E2E additionally need Postgres (`docker compose up -d
+  --wait`) and a git-ignored `.env.local` (the main checkout has none; this session wrote one from
+  the CI values in `ci.yml`, `\$`-escaping the bcrypt hash as dotenv requires).
+- **Owner changes and reasoning:** at the plan gate — pending (Q1–Q8). Mid-session the owner asked
+  for the worktree-bootstrap lesson to be recorded in the progress log and in the owner's notes;
+  it is here, in the plan's Global Constraints, and in the Claude memory `worktree-node-setup`.
+  (Read "owner's notes" as that memory; if `build-workflow.md`'s rules of thumb was meant, it is an
+  Approved document and needs the owner's go-ahead.)
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. Worktree bootstrap is a fixed two-command step; the plan's first task (and any brief that
+     runs tests in a worktree) states it. Whether it belongs in `build-workflow.md`'s rules of
+     thumb is the owner's call.
+  2. T-12 merged with `npm run test:all` red on two of its three engines: its process-log entry
+     said Firefox and WebKit were not run, and the DoD line "`npm run test:all` green locally"
+     was ticked anyway. A PR that ran only Chromium did not meet the DoD; reviewers should ask for
+     all three engines' results until CI runs them (T-13 Task 10).
+  3. A test file that contains fake test calls is itself scanned by the traceability check — build
+     fixtures from parts.
+  4. Run the plan's code before the gate: doing so here corrected six defects the first draft
+     carried (plan F13), and T-12's lesson 4 (format what you paste) was applied by running
+     Prettier on the files.
+- **Next:** the owner answers Q1–Q8. Then PR-A (`fix/origin-agent-cluster`) is opened from
+  `origin/main`, merged by the owner, and `task/T-13-ci-hardening` executes Tasks 1–11.
