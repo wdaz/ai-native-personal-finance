@@ -250,6 +250,31 @@ describe("T-02a secret guard", () => {
       expect(scanHistory(conflictLeakRepo()).status).toBe(1);
     });
 
+    it("finds a secret typed into a commit message, and never prints it (T-13)", () => {
+      const repo = newRepo();
+      commitFile(repo, "a.txt", "a\n", `note\n\n${leakLine}`);
+      const result = scanHistory(repo);
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("postgres_connection_string");
+      expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
+    });
+
+    it("finds a secret typed into an annotated tag message (T-13)", () => {
+      const repo = newRepo();
+      commitFile(repo, "a.txt", "a\n", "one");
+      git(repo, "tag", "-a", "v1", "-m", `release\n\n${leakLine}`);
+      expect(scanHistory(repo).status).toBe(1);
+    });
+
+    it("passes messages that hold no secret, and still reports a file leak beside them", () => {
+      const clean = newRepo();
+      commitFile(clean, "a.txt", "a\n", "docs: a plain message");
+      expect(scanHistory(clean).status).toBe(0);
+      const leaky = newRepo();
+      commitFile(leaky, ".env", `${leakLine}\n`, "add");
+      expect(scanHistory(leaky).status).toBe(1);
+    });
+
     it("still finds it under a developer's log.diffMerges=dense-combined and color.ui=always", () => {
       const repo = conflictLeakRepo();
       git(repo, "config", "log.diffMerges", "dense-combined");

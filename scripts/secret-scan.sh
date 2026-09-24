@@ -1,7 +1,8 @@
 #!/bin/sh
 # The two secret scans of T-02a (NFR-S5), with the flags in one place.
 #
-#   secret-scan.sh history   every commit of the repository in the current directory:
+#   secret-scan.sh history   every commit of the repository in the current directory, and
+#                            every commit and tag message:
 #                            the CI `secret scan` job and `npm run secrets:scan`
 #   secret-scan.sh staged    the staged changes only: the pre-commit hook
 #
@@ -44,8 +45,20 @@ case "${1:-}" in
     # `dense-combined` there hide a conflict resolution from the parser. Not
     # `--first-parent`: it skips a secret added and removed inside a merged branch, which
     # was still pushed.
-    exec "$here/gitleaks.sh" git --config "$config" --log-opts="--all --diff-merges=separate" \
-      --redact --no-banner --verbose .
+    status=0
+    "$here/gitleaks.sh" git --config "$config" --log-opts="--all --diff-merges=separate" \
+      --redact --no-banner --verbose . || status=1
+    # T-13: commit and annotated-tag messages are text the scan above never reads, and a
+    # connection string pasted into one is as public as one in a file (T-02a's documented
+    # limitation; the pass measured clean on this repository and failing on a leaky message,
+    # 2026-09-24). Both scans always run, so one finding never hides the other.
+    messages="$(mktemp)"
+    trap 'rm -f "$messages"' EXIT
+    git log --all --format='%B' >"$messages"
+    git for-each-ref refs/tags --format='%(contents)' >>"$messages"
+    "$here/gitleaks.sh" stdin --config "$config" --redact --no-banner --verbose \
+      <"$messages" || status=1
+    exit "$status"
     ;;
   staged)
     # `--log-level warn` keeps a clean commit silent; a finding is still printed (--verbose).
