@@ -20,3 +20,8 @@ Claude Code reads `CLAUDE.md` → `AGENTS.md` automatically when started in the 
 - Do not run `next dev` for E2E; use `next build && next start` (ADR-0003).
 - Keep `WEBMCP_MODE=polyfill` locally; native checks are headed and manual.
 - Reviews re-run the one or two commands a report leans on; a report is evidence, not proof (T-01 lesson).
+- A Provider around a context created in a `"use client"` module must be a real component
+  rendered entirely inside that module; a Server Component must never read a property —
+  `.Provider` included — directly off a context object imported from one. jsdom unit tests
+  cannot catch the resulting crash, since they never cross the real RSC boundary — only a
+  `next dev`/`next build` run in an actual browser does (T-11 lesson).
