@@ -1,0 +1,63 @@
+/*
+ * T-10 plan D6/D7: the stat-card row above the two-column card grid SPEC-overview §6 places.
+ * `minmax(0, 1fr)`, not the bare `1fr` shorthand for `minmax(auto, 1fr)`: a track's "auto"
+ * minimum follows its widest item's own min-content (US-33 AC2's own 320 px case caught this
+ * — the fixed-size donut inside Budgets otherwise forced every card in the column to its
+ * width, wider than the page). `min-inline-size: 0` on `.stats`/`.grid` themselves for the
+ * same reason one level up: they are flex items of `Shell`'s `<main>` column, whose default
+ * `min-width: auto` has the identical effect.
+ */
+.stats {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--spacing-300);
+  min-inline-size: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--spacing-300);
+  min-inline-size: 0;
+}
+
+.pots,
+.transactions,
+.budgets,
+.bills {
+  grid-column: 1;
+  min-inline-size: 0;
+}
+
+@media (min-width: 768px) {
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: repeat(3, auto);
+  }
+
+  .pots {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .transactions {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+  }
+
+  .budgets {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .bills {
+    grid-column: 2;
+    grid-row: 3;
+  }
+}

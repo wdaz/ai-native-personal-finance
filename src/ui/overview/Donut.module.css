@@ -1,0 +1,43 @@
+/* SPEC-overview §4.4: SVG 240 px, ring 24 px, clockwise from 12 o'clock. */
+.wrapper {
+  position: relative;
+  inline-size: 240px;
+  block-size: 240px;
+  flex-shrink: 0;
+}
+
+.svg {
+  transform: rotate(-90deg);
+}
+
+.ring {
+  fill: none;
+  stroke: var(--color-grey-100);
+  stroke-width: 24px;
+}
+
+.segment {
+  fill: none;
+  stroke-width: 24px;
+  stroke-linecap: butt;
+}
+
+.centre {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-50);
+  text-align: center;
+}
+
+.spent {
+  margin: 0;
+}
+
+.limit {
+  margin: 0;
+  color: var(--color-grey-500);
+}

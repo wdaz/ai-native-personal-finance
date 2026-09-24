@@ -1,0 +1,63 @@
+/* SPEC-overview §2.5: the donut + a legend of the first four budgets. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  padding: var(--spacing-300);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+}
+
+.body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-300);
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+  flex: 1;
+  min-inline-size: 160px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-150);
+}
+
+.category {
+  margin: 0;
+  color: var(--color-grey-500);
+}
+
+.maximum {
+  margin-inline-start: auto;
+}
+
+.empty {
+  flex: 1;
+  min-inline-size: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-150);
+  color: var(--color-grey-500);
+}
