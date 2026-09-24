@@ -16,3 +16,12 @@ user-stories copy appendix and of data-model.md's enum lists that are wrong on p
 
 T-07: `csp.ts` — `scriptNonce` and `inlineTags` for the API tests that check a page renders
 per request; `e2e.ts` gains `tabTo`.
+
+T-13: `child-env.ts` — `childEnv()`, the environment for a child process a unit test starts
+(drops `VITEST*`, `npm_config_*` in any case and `NODE_V8_COVERAGE`); the coverage-gate test uses it, and so
+will the later CI-guard tests that spawn a process. `coverage-gate/` — a Vitest config and a
+mostly-untested "domain" file, wrong on purpose: `tests/unit/coverage-gate.test.ts` runs it and
+expects the 90 % statements gate to fail. `a11y-routes.ts` — `A11Y_ROUTES`, the routes the axe
+gate scans, with `discoveredRoutes`, `routesMissingFrom` and `listedWithoutPage` (`04dc381`)
+so a unit test can fail both ways: a page missing from the list, and a listed route that has
+no page.

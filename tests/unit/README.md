@@ -40,3 +40,28 @@ and `retryAfter` when absent), `overview-tools.test.ts` (both tools' `execute` a
 `OverviewTools.test.tsx` and two cases in `defineTool.test.ts` (validation `issues`).
 `shared/api-client.test.ts` covers `apiGet`'s outcomes and `server/request-log.test.ts` the ring
 buffer (cap, exact-match, stdout outside test); `test-support.test.ts` gains the `GET log` cases.
+
+T-13: `coverage-gate.test.ts` checks the ≥ 90 % statements gate on `src/domain` (NFR-T1) three ways —
+`vitest.thresholds.json` names the domain glob at 90; the real `vitest.config.ts` imports it and
+its `coverage.include` selects a domain file (a glob that selects nothing would pass silently);
+and a nested Vitest on `tests/fixtures/coverage-gate/` must fail with the threshold named.
+`childEnv()` strips `VITEST*`, `npm_config_*` (any case) and `NODE_V8_COVERAGE` for child processes. The real
+gate runs only under `npm run test:coverage` (CI, `npm run test:all`); `npm test` runs these
+checks of it, not the gate itself.
+
+T-13: `install-scripts.test.ts` proves the install-script policy (`.npmrc`'s `strict-allow-scripts=true`
+plus package.json's `allowScripts`) by running `npm ci --dry-run` in a staged copy of the lockfile and
+package.json (nothing is installed; the staged package.json drops the project's own `postinstall` and
+`prepare`, and an empty user and global npmrc keeps the outcome off the contributor's machine): the
+repository's own files install, removing an `allowScripts` entry fails with `ESTRICTALLOWSCRIPTS`, and
+the same package.json passes without `.npmrc`. `child-env.test.ts` covers `childEnv()`, including
+`NPM_CONFIG_*` in upper case.
+
+T-13: `traceability.test.ts` checks the NFR-T2 scan (`scripts/traceability.ts`): every Release 1 story
+id is in the title of a `test`/`it`/`describe`/`test.describe` call in some `*.test.ts(x)` or
+`*.spec.ts(x)` under `tests/` (`fixtures/` and helper files excluded). The scan reads the syntax
+tree, so a story id in a comment, a string, a skipped test or group, a regular expression's `.test()`
+or Zod's `.describe()` does not count; each of those has a fixture (built as a string by `call()`)
+that must be reported, next to one positive control per accepted form. A conditional
+`test.skip(cond, …)` is out of scope. `run(root)` is the whole CLI, so the exit code and messages
+are tested against a throwaway repository.
