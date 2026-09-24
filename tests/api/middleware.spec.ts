@@ -202,10 +202,13 @@ test("ADR-0006 (5): every response asks for its own agent cluster, so Firefox an
     const response = await request.get(path);
     expect(response.headers()["origin-agent-cluster"], path).toBe("?1");
   }
-  await request.post("/api/auth/login", {
+  const login = await request.post("/api/auth/login", {
     data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
   });
-  const overview = await request.get("/overview");
+  // Without a session /overview redirects to /login?next= (a 200 with the header, once followed)
+  // and this would test the wrong page — login must have worked, and no redirect is followed.
+  expect(login.status()).toBe(200);
+  const overview = await request.get("/overview", { maxRedirects: 0 });
   expect(overview.status()).toBe(200);
   expect(overview.headers()["origin-agent-cluster"], "/overview").toBe("?1");
 });
