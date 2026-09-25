@@ -116,8 +116,8 @@ the session. Every variable names the ADR or spec that defines it.
 
 ### Demo credentials
 
-`DEMO_PASSWORD_HASH` is a bcrypt hash — generate one for whatever password you want the local
-demo account to use:
+`DEMO_PASSWORD_HASH` is a bcrypt hash — generate one for whatever *throwaway* password you want
+the local demo account to use (see the last paragraph):
 
 ```bash
 node -e "require('bcryptjs').hash('your-password', 10).then(console.log)"
@@ -134,8 +134,10 @@ settings (e.g. Vercel) — must be the **raw, unescaped** hash: `@next/env` retu
 `process.env` untouched when there is no `.env` file to parse, so an escaped `\$` would stay
 literally in the string there and break every login instead of fixing anything.
 
-Put the plain password in `DEMO_PASSWORD_DISPLAY` (shown on the login page), and
-`SESSION_SECRET` to any string ≥ 32 characters.
+Put the plain password in `DEMO_PASSWORD_DISPLAY`, and `SESSION_SECRET` to any string ≥ 32
+characters. Use a throwaway password, never one you use anywhere else: the login page prints
+`DEMO_PASSWORD_DISPLAY` to every visitor, and the demo credentials are public by design
+(NFR-S1, ADR-0006). The same goes for the value a deployed environment's settings hold.
 
 ## Inputs that already exist
 
