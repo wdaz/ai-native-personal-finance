@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.12 — 2026-09-25: TD-7–TD-11 fixed in T-13c, in review on `task/T-13c-tech-debt`; v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.12 — 2026-09-25: TD-7–TD-11 fixed in T-13c, in review on `task/T-13c-tech-debt`; TD-10's `db:reset` refusal also comes before `prisma migrate deploy`, the owner's choice B; v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -291,8 +291,10 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   `next.config.ts` refuses `APP_ENV=test` on Vercel (`VERCEL`, `VERCEL_ENV`) and with a
   `DATABASE_URL` that is not `localhost`, `127.0.0.1` or `[::1]` (or carries `host`/`hostaddr`);
   `isTestEnv` refuses the same at runtime; `prisma/seed.ts` and `playwright.config.ts` refuse a
-  non-local `DATABASE_URL` after their `.env.local` load. `prisma migrate deploy` is not guarded.
-  Not keyed on `NODE_ENV`. The `VERCEL` line depends on Vercel's project setting 'Enable access to
+  non-local `DATABASE_URL` after their `.env.local` load, and `prisma.config.ts` refuses it for
+  `npm run db:reset` before `prisma migrate deploy`, that script's first step, applies any
+  migration (the owner's choice B, below). A direct `npx prisma migrate deploy` is not guarded,
+  by design: T-14 runs it against Neon, and CI against its own database. Not keyed on `NODE_ENV`. The `VERCEL` line depends on Vercel's project setting 'Enable access to
   System Environment Variables'; the database line does not. The guard fails closed: it also
   refuses a scheme other than `postgres:`/`postgresql:`, a value with whitespace and a value with
   a malformed percent escape. The first version parsed the raw string with `new URL`; the Opus
@@ -308,6 +310,25 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   comment name the whole rule. Known and not fixed: the seed and Playwright guards have no standing cut-out
   fixture (only `next.config.ts` has one), and the seed's control test asserts a non-zero exit
   and no `Refusing` line, not that a connection was tried.
+- **Owner's choice B, `db:reset` before `migrate deploy`:** 2026-09-25, after PR #39 was opened.
+  The seed refused another machine's database, but `prisma migrate deploy`, the first step of
+  `db:reset` (`prisma migrate deploy && prisma db seed`), had already applied every pending
+  migration of the checkout to whatever `DATABASE_URL` named — an unmerged feature-branch
+  migration could reach Neon before the seed refused. The whole-branch review raised it (its
+  Minor 2); the owner chose among A leave it, B check in `prisma.config.ts`, C a separate guard
+  script and D drop `migrate deploy` from `db:reset`, and answered "B". `prisma.config.ts` now
+  calls `localDatabaseRefusal` after its `.env.local` load when `npm_lifecycle_event` is
+  `db:reset`, prints the refusal and exits 1 (a thrown error would be wrapped by Prisma in
+  "Failed to load config file <absolute path> as a TypeScript/JavaScript module"). It is keyed
+  on the npm script's name, not on the Prisma command, because T-14 runs
+  `npx prisma migrate deploy` on the deployed database directly and CI runs it too. The seed's
+  own check stays as the second line, and is the only one for `npx prisma db seed`. Three
+  child-process tests in `tests/unit/database-guard.test.ts`: `npm run db:reset` against
+  another machine's URL is refused and Prisma never names its host, so no migration ran; the
+  same command against `localhost:1` is not refused and reaches the connection; a direct
+  `npx prisma migrate deploy` against the other machine's URL is not refused either. Not
+  guarded, still: a direct `prisma migrate deploy`, by design, and the stock reset commands
+  (T-13d, item 3).
 
 ## TD-11 — Every `next build` downloads Public Sans from Google Fonts
 

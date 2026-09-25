@@ -3337,12 +3337,18 @@ them too").
   entry above, and the passages of this entry that refer to it (the Phase field, deviation 5, an
   open item and Next), were written afterwards by the controller (Sonnet 5), at the owner's
   request, in the commit `docs(process): add T-13c's planning-session entry`; an Opus 5.5
-  subagent checked them and its findings are applied.
+  subagent checked them and its findings are applied. After the pull request was opened, the
+  owner answered the entry's open question about `db:reset` with "B"; one more implementer
+  subagent (Sonnet 5) carried it out as Task 7, in two commits (see "Produced"). Its review by an
+  Opus 5.5 subagent is pending as this is written; the controller will correct this line.
 - **Trigger:** the owner's answers to the plan's Q1–Q7 on 2026-09-25 — "Q1 - a, Q2 - tövsiyə olan,
   q3 - tövsiyyə olan, q4 - linter, q5 - tövsiyyə olan, q6 - tövsiyyə olan, q7 - t-13 a/b plana
   daxildir ki, tövsiyyə edirsən?" (Q1 (a); Q2, Q3, Q5 and Q6 as recommended; Q4 a linter; Q7 a
   question back: are T-13a/b in the plan, do you recommend it?) — and then the go-ahead, "start,
-  subagent-driven".
+  subagent-driven". A second trigger came after the pull request (#39) was opened and the
+  whole-branch review had run: the owner was asked whether `db:reset` should be guarded before
+  `prisma migrate deploy` runs (the entry's first open item, options A to D) and answered "B",
+  on 2026-09-25.
 - **Prompt(s):** `prompts/2026-09-24-T-13c.md`; the briefs and reports are in
   `prompts/2026-09-24-T-13c/`.
 - **Produced** (all on `task/T-13c-tech-debt`, cut from `origin/main` `910ad2d` on 2026-09-25; the
@@ -3377,14 +3383,16 @@ them too").
     when it holds whitespace, a malformed `%` escape or a `host=`/`hostaddr=` query, or is not a
     `postgres://` or `postgresql://` URL. `localDatabaseRefusal`'s message also says "this step
     resets or seeds that database", where it said "this command" (under `npm run db:reset` the
-    seed step is refused after `prisma migrate deploy` has run); `testEnvRefusal`'s second
+    seed step was refused after `prisma migrate deploy` had run — at the time; the owner's B,
+    below, moved the refusal before it); `testEnvRefusal`'s second
     message says instead that the URL "would expose the unauthenticated /api/test/* reset and
     seed routes", and had no such wording to change. The prefixes the tests match are unchanged,
     the messages are still static strings without a URL, password or host, and the docblock says
     two hex digits and that refusing any whitespace is stricter than pg's re-encode, on purpose. The
     second commit, subject `docs: fold in T-13c's final-review minors — hand-offs, wording,
     comments` (its id is not in this entry): `prisma/README.md` says the seed refuses a
-    non-local `DATABASE_URL` and that `prisma migrate deploy` is not guarded;
+    non-local `DATABASE_URL` and that `prisma migrate deploy` is not guarded (at the time;
+    changed by the owner's B, see the follow-up below);
     `stylelint.config.mjs`'s header lists the accepted units and the `var()` indirection it does
     not read (comment only); `tests/unit/README.md` says the config test loads the file in the
     development-server phase only; this entry (a re-wrapped line, three corrected claims, the
@@ -3397,20 +3405,41 @@ them too").
     what `prisma migrate reset` does (an empty database, no seed) and which of the three Prisma
     commands ask for confirmation, and v1.27's changelog names all three and the reworded T-14
     sentence; and this entry's wording is fixed in the places the re-review named.
+  - The follow-up on `db:reset` (Task 7, the owner's B of 2026-09-25, after PR #39 was opened),
+    two commits, cut from `0f0931d`. The first, subject `feat(env): refuse db:reset against
+    another machine's database before it applies migrations (TD-10)`: `prisma.config.ts` calls
+    `localDatabaseRefusal` after its `.env.local` load when `npm_lifecycle_event` is `db:reset`,
+    prints the refusal and exits 1; three child-process tests in `tests/unit/database-guard.test.ts`
+    (another machine's URL is refused before Prisma names the host; a local URL is not refused;
+    a direct `npx prisma migrate deploy` is not refused); the sentences that said `db:reset`'s
+    first step is not guarded, in `prisma/seed.ts`, `prisma/README.md`, `README.md` (the
+    paragraph and the scripts row), `.env.example`, `tests/unit/README.md` and the docblock of
+    `localDatabaseRefusal` in `src/shared/env.ts`. The second, subject `docs: record the owner's B
+    on db:reset — tech-debt, backlog, SPEC-reset v1.6, process log, prompts`: TD-10 in
+    `tech-debt.md`, v1.27's changelog and the T-14 and T-13d rows of `backlog.md`,
+    SPEC-reset-and-test-support v1.6 (§2.5 and the Status and Changelog text; the version stays
+    v1.6, since this pull request is unmerged), this entry, and `task-7-brief.md` and
+    `task-7-report.md` in the prompts folder. Its review by an Opus 5.5 subagent is pending as
+    this is written.
 - **Numbers (the plan's F7, measured on this branch):** unit tests 77 files, 958 tests at the
   start; 960 after Task 1; 963 in 78 files after Task 3; 1029 in 80 files after Task 4's first
   commit and 1037 after its fix round; 1043 in 81 files after Task 5. The plan said 1 035 after all
   six changes. The difference, +8, is Task 4's fix round: four rows added to the URL table, each
   used by two tests. This task adds no API or E2E test, so their counts should equal a run on
-  `main`'s; "Verified" compares them with the counts this log records for T-13.
+  `main`'s; "Verified" compares them with the counts this log records for T-13. The follow-up on
+  `db:reset` adds three tests to `database-guard.test.ts` and no file: 1046 tests in 81 files,
+  on `731a8f4`, the follow-up's first commit. `npm run test:api` on that commit, with only
+  uncommitted edits under `docs/` on top: 100 passed, as before. The E2E suite was not run again:
+  the follow-up changes no application code.
 - **What was found during execution, and decided:**
   - **TD-10's guard read a URL differently from the driver** (Task 4's review; item 1 of "What
     the agent got wrong"). The controller ruled that the finding is fixed even though it changes
     the plan's Step 3 code: the plan's own contract (Review Focus 1, the docblock's "fails
     closed") requires it. Cost if wrong: two extra conditions in a guard. The reviewer's minor
     findings (the Vercel message said `VERCEL` when only `VERCEL_ENV` had triggered it;
-    `.env.example` said `db:reset` refuses, while only its seed step does) were text fixes in
-    files the round touched anyway, and went into the same round.
+    `.env.example` said `db:reset` refuses, while only its seed step did — at the time; the
+    owner's B, below, later made `db:reset` refuse before it applies any migration) were text
+    fixes in files the round touched anyway, and went into the same round.
   - **`next start` prints `Ready` before it loads the config** (Task 4, measured): with
     `APP_ENV=test` and another machine's URL it announces the port, then exits 1 with the
     refusal, and nothing is listening afterwards. `isTestEnv` is the second line of defence for
@@ -3420,8 +3449,17 @@ them too").
     read 2026-09-24; not measured on a deployment). The database line does not depend on it, so
     it stays the line that always holds. T-14 carries the check (backlog v1.27).
   - **The first seed of Neon is `POST /api/admin/reset`,** not `npm run db:reset` (Q2): the guard
-    refuses `db:reset`'s seed step for a non-local URL, so SPEC-reset-and-test-support v1.6 says
-    so, and T-14's row carries the hand-off.
+    refuses `db:reset` for a non-local URL (at the time its seed step only; before `prisma migrate
+    deploy` applies any migration since the owner's B, below), so SPEC-reset-and-test-support v1.6
+    says so, and T-14's row carries the hand-off.
+  - **`db:reset`'s first step is refused in `prisma.config.ts`, by exiting, not by throwing** (the
+    follow-up, the owner's B). Measured 2026-09-25 with Prisma 7.10.0: a thrown error is printed as
+    `Failed to load config file <absolute path> as a TypeScript/JavaScript module. Error: Error:
+    Refusing to run: …`, which reads like a broken config and carries a home-directory path.
+    `console.error` and `process.exit(1)` print the refusal alone, exit 1, and Prisma prints
+    nothing else — no `Datasource` line, no host. Prisma's config loader imports
+    `./src/shared/env` without trouble, as `playwright.config.ts` does. The check is keyed on
+    `npm_lifecycle_event`, so `npx prisma migrate deploy`, which T-14 and CI run, is not refused.
 - **What the agent got right:**
   - Most of what the plan measured held when it was re-run; five counts did not (item 2 of "What
     the agent got wrong"). Stylelint 17.15.0 added 75 packages, `npm audit` reported 0 and the
@@ -3561,6 +3599,30 @@ them too").
   and no API or E2E spec quoting the old message text, only the two unit regexes on its prefixes
   (`next-config.test.ts`, `database-guard.test.ts`), so the API and E2E suites were not re-run:
   the wave changed message text and comments, no logic.
+
+  The follow-up on `db:reset` (Task 7), on the same machine, each command run separately:
+  - On `0f0931d` plus the uncommitted new tests, `npx vitest run
+    tests/unit/database-guard.test.ts` before `prisma.config.ts` changed: 7 tests, 1 failed and 6
+    passed. The one failure is the new refusal test: Prisma printed `Datasource "db" … at
+    "db.example.invalid:5432"` and `P1001: Can't reach database server`, with no refusal. The six
+    that passed are the four existing tests and the two new controls. With the guard added, 7
+    passed. With `"db:reset"` in the guard changed to `"db:resett"`, the same test failed again
+    (1 failed, 6 passed); the guard was restored. `npm test -- tests/unit/database-guard.test.ts`
+    (an npm lifecycle event of `test` in the parent process): 7 passed.
+  - `npm run db:reset` with `DATABASE_URL` set in the environment to a `.invalid` host: the
+    refusal alone, exit 1. The variant that throws, tried and dropped, printed Prisma's "Failed to
+    load config file" wrapper around it. `npx prisma migrate deploy --config prisma.config.ts`
+    with the same URL: not refused; Prisma tried to connect (`P1001`).
+  - `npm run db:reset` against the local database (the URL in `.env.local`): "No pending
+    migrations to apply", then `reset reason=manual rows=59 at=2026-09-25T06:41:58.343Z`.
+  - On the tree that became `731a8f4` (the follow-up's first commit): `npx tsc --noEmit`,
+    `npm run lint` and `npx prettier --check .`, clean (the first `tsc` run had reported TS2339
+    in the new test, fixed by typing the child's environment as `NodeJS.ProcessEnv`); the full
+    unit suite, 81 files, 1046 tests; `sh scripts/secret-scan.sh staged`, silent.
+  - `npm run test:api`: 100 passed (13.9 s), on `731a8f4` with edits under `docs/` only on top.
+  - `tests/unit/scaffold.test.ts` (114) and `npm run traceability` ("all 18 Release 1 stories"),
+    on `731a8f4` plus the docs edits; the process-log diff against `origin/main` shows added
+    lines only.
 - **Not verified:**
   - The CI verdict: the branch was not pushed and no pull request was open when this entry was
     written. Firefox and WebKit on Linux (the font check and the walkthrough ran on macOS only).
@@ -3588,6 +3650,14 @@ them too").
     re-review of the final fix wave ran and found its 12 findings addressed and six new minors,
     which the close-out commit handles; a re-review of the close-out commit was not run, the
     controller read its diff.
+  - The follow-up on `db:reset`: its CI verdict (its two commits were not pushed); the E2E suite,
+    `npm run test:coverage` and `npm run secrets:scan` over the history were not re-run after it;
+    its review by an Opus 5.5 subagent is pending as this is written, so no review result is
+    recorded here and the controller will correct this line. The guard was measured with
+    `DATABASE_URL` set in the environment, not with `.env.local` pointing at another host (the
+    code path is the same: `.env.local` is loaded first and a variable already set wins), and
+    with npm 11.19.0 on macOS only; that npm sets `npm_lifecycle_event` to `db:reset` for the
+    script was observed here, not looked up anywhere else.
 - **Owner changes and reasoning:** the answers to the plan's questions, as above: Q1 (a) — the
   comment says what the test does, and the failing-first line of the T-13c row is waived for TD-8,
   since a comment cannot be red; Q2 (a) — the first seed is `POST /api/admin/reset`, and
@@ -3596,7 +3666,12 @@ them too").
   and the UI mode are covered as well as `test:api`; Q4 — a linter for TD-9; Q5 (A) — fontsource
   static latin 400 and 700; Q6 — the ESLint restriction and the provenance test; Q7 — a question
   back, answered in the plan: T-13a and T-13b are separate tasks with their own plan gates, and
-  T-13d comes after T-13c is merged. Changes made in review: _(owner to fill after review)_
+  T-13d comes after T-13c is merged. After the pull request was opened and the whole-branch
+  review had run, the owner was asked about `db:reset` and `prisma migrate deploy` (the open item
+  below) and chose among A (leave it), B (check in `prisma.config.ts`), C (a separate guard
+  script) and D (drop `migrate deploy` from `db:reset`). The owner's words: "B", 2026-09-25. B
+  keeps T-14's direct `npx prisma migrate deploy` possible, since it keys on the npm script's
+  name. Changes made in review: _(owner to fill after review)_
 - **Disagreements:** Q4. The plan recommended a unit test — one helper of about 50 lines and a
   43-line test, no dependency — and named the cost of the alternative; the owner chose a linter.
   Recorded as the owner's decision (`AGENTS.md` §5). The plan then measured what the choice cost
@@ -3635,12 +3710,20 @@ them too").
       (Task 4's code, Task 5's README), as in T-13. The plan author should read its own
       code and prose as a reviewer would.
 - **Open for the owner, not decided here:**
-  - **Should `npm run db:reset` be guarded before `prisma migrate deploy` runs?** Today the seed
-    step refuses a non-local `DATABASE_URL`, but `db:reset` runs `prisma migrate deploy` first,
-    and that step is not guarded. The plan (F4e) rejected a pre-check script. The whole-branch
-    review's minor about `db:reset` running `prisma migrate deploy` before the seed refuses: a
-    migration from an unmerged feature branch would reach a non-local database first. T-14 runs `prisma migrate deploy` directly, so a
-    `db:reset`-only pre-check would not get in its way. The controller did not decide it.
+  - **Resolved — should `npm run db:reset` be guarded before `prisma migrate deploy` runs?** The
+    owner answered "B" on 2026-09-25, after the pull request was opened and after the
+    whole-branch review: refuse in `prisma.config.ts`, keyed on `npm_lifecycle_event` being
+    `db:reset`. Implemented in the two commits of the follow-up, `feat(env): refuse db:reset
+    against another machine's database before it applies migrations (TD-10)` and `docs: record
+    the owner's B on db:reset — tech-debt, backlog, SPEC-reset v1.6, process log, prompts` (see
+    "Produced"). A direct `npx prisma migrate deploy` stays unguarded, by design: T-14 runs it
+    against Neon, and CI runs it against its own database. The question as it stood before the
+    answer: the seed step refused a non-local `DATABASE_URL`, but `db:reset` ran `prisma migrate
+    deploy` first, and that step was not guarded. The plan (F4e) rejected a pre-check script. The
+    whole-branch review's minor about `db:reset` running `prisma migrate deploy` before the seed
+    refuses: a migration from an unmerged feature branch would reach a non-local database first.
+    T-14 runs `prisma migrate deploy` directly, so a `db:reset`-only pre-check would not get in
+    its way. The controller did not decide it; the owner did.
   - Whether the plan branch `docs/T-13c-plan` is merged; its planning entry is in this pull
     request (see "Phase").
   - Two things the whole-branch review declined to judge, noted here in one line each so a later
@@ -3657,4 +3740,5 @@ them too").
   reset a database are not guarded), and T-14's row carries the others (the first seed, the
   `VERCEL` setting, whether `vercel env pull` writes `.env.local`); T-13a and T-13b have their own
   plan gates. The plan branch has no pull request; whether to merge it is the owner's call, and
-  its planning entry is in this pull request (see the "Phase" field).
+  its planning entry is in this pull request (see the "Phase" field). The two commits of the
+  `db:reset` follow-up were not pushed by their implementer; the controller decides when.

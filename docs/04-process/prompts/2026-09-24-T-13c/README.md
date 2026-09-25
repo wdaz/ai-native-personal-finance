@@ -1,8 +1,8 @@
 # T-13c session record — briefs and reports
 
 The briefs the T-13c implementer subagents were dispatched with, and the reports they wrote back,
-copied from the agent's scratch directory on the task branch before the PR, per `build-workflow.md`
-§7. Nothing here is a specification: these are working notes, kept so the session is reproducible
+copied from the agent's scratch directory on the task branch before the PR (Task 7's, after the PR
+was opened), per `build-workflow.md` §7. Nothing here is a specification: these are working notes, kept so the session is reproducible
 and reviewable. The session's own prompt file is the sibling `../2026-09-24-T-13c.md`; the plan is
 `docs/04-process/plans/2026-09-24-T-13c.md` (on branch `docs/T-13c-plan` until the owner merges the
 plan branch; no PR opened yet).
@@ -24,6 +24,7 @@ staged` reported nothing on them, so no value was replaced and no allowlist was 
 | `task-4-brief.md`, `task-4-report.md` | TD-10: `APP_ENV=test` and database resets refuse to run outside this machine. The report includes fix round 1 (`c316e3b`): the guard reads a URL the way node-postgres does.                                                    |
 | `task-5-brief.md`, `task-5-report.md` | TD-11: Public Sans from committed files. The report includes fix round 1 (`5d015bf`): the README's account of the ESLint restriction's scope.                                                                                    |
 | `task-6-brief.md`, `task-6-report.md` | This records task: the three layer READMEs, `tech-debt.md` v1.12, `backlog.md` v1.27, SPEC-reset-and-test-support v1.6, the process-log entry, this folder, and the full verification run. |
+| `task-7-brief.md`, `task-7-report.md` | The follow-up, made after PR #39 was opened: the owner's choice "B" — `npm run db:reset` refuses another machine's database before `prisma migrate deploy` applies any migration (`prisma.config.ts`, three tests in `database-guard.test.ts`), and the records that said otherwise. Two commits. |
 
 Absences, all deliberate:
 
@@ -42,5 +43,8 @@ Absences, all deliberate:
 - **The screenshots of Task 5 (`screenshots/`, six PNG files) are not copied.** They are images of
   the login and Overview pages at 1440, 768 and 375 px, made for the pull request description.
 
-`task-6-report.md` was copied last, after everything else in this folder, and is the only report
-written after the run's other files were copied.
+`task-6-report.md` was copied last of the original run's files, after everything else that was then
+in this folder, and is the only report of that run written after the other files were copied. The
+follow-up's two files are later still: `task-7-brief.md` and `task-7-report.md` were copied after
+the pull request was opened, into the commit `docs: record the owner's B on db:reset — tech-debt,
+backlog, SPEC-reset v1.6, process log, prompts`, and `task-7-report.md` was copied last of all.
