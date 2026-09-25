@@ -32,6 +32,7 @@ that reported everything would pass no control.
 | Prisma outside `src/server`                | from `app` (`@prisma/client`, the `/edge` sub-path and the generated client in `src/server/generated/prisma`), `src/ui`, `src/shared` |
 | ADR-0005's clock rule                      | `new Date()`, `Date()` and `Date.now()`, in `src/domain` **and** `src/server`                                                         |
 | ADR-0003's test-id rule                    | a string as `data-testid` in `src/ui` and as `getByTestId`'s argument in `tests/e2e`                                                  |
+| TD-11's font rule                          | `next/font/google` imported in `app` (it shares the Prisma rule's block, so the Prisma cases above must keep passing)                 |
 
 | Must report nothing                                                   | Fixture                                                   |
 | --------------------------------------------------------------------- | --------------------------------------------------------- |
@@ -43,6 +44,7 @@ that reported everything would pass no control.
 | `webmcp` → `shared`                                                   | `webmcp-imports-shared-allowed`                           |
 | `new Date(<value>)` in `domain` — a fixed date, not the clock         | `domain-parses-date-allowed`                              |
 | a `data-testid` taken from `TEST_IDS`, in `src/ui` and in `tests/e2e` | `ui-shared-test-id-allowed`, `e2e-shared-test-id-allowed` |
+| `next/font/local` in `app` — how the app serves its font (TD-11)      | `app-imports-next-font-local-allowed`                     |
 
 The violation cases also assert `severity === 2`. ADR-0002 says "CI must fail on
 violations"; a rule demoted to a warning would still be reported, and `eslint` would still

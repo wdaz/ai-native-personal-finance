@@ -1,0 +1,305 @@
+# Task 6 report — the layer READMEs and the records (TD-7–TD-11), and the full verification run
+
+Status: DONE_WITH_CONCERNS (the concerns are disclosures about wording in the committed records, none blocks).
+
+Commits on `task/T-13c-tech-debt` (not pushed, no PR):
+
+- `fe1f910` `docs(readme): list T-13c's tests, fixtures and shared functions`
+- `c70681c` `docs(specs): record TD-7–TD-11 fixes — tech-debt v1.12, backlog v1.27, SPEC-reset v1.6, process log`
+- a third, small commit `docs(specs): add Task 6's report to the T-13c prompts folder` carries this file
+  (the report is copied last, after the records commit, as the brief allows).
+
+Rebase: not needed. `git fetch origin` showed `origin/main` still at `910ad2d` (the branch base), so
+nothing was rebased and nothing conflicted.
+
+## What I wrote, per file
+
+Step 1 (commit `fe1f910`, three files, +28 lines; `npx prettier --check` on the three: all formatted):
+
+- `tests/unit/README.md` — a T-13c paragraph: `css-grid.test.ts` (TD-9, `lint:css`, fixtures in
+  `fixtures/css-grid/`), `shared/env.test.ts` (URL tables of the three TD-10 functions, including the
+  values `new URL` and node-postgres read differently: scheme, whitespace, malformed percent escape),
+  `server/env.test.ts`, `test-support.test.ts`, `next-config.test.ts`, `database-guard.test.ts`,
+  `fonts.test.ts`, the TD-7 pair in `webmcp/adapter.test.ts`, and the placeholder-password rule. The
+  brief's paragraph, re-wrapped (its diff had one short line), plus the fail-closed clause.
+- `tests/fixtures/README.md` — the brief's paragraph: `css-grid/`, `fonts.ts` (`fontProblems`), the two
+  `boundaries/` fixtures. Re-wrapped only.
+- `src/shared/README.md` — the brief's paragraph plus the requested sentence that `isLocalDatabaseUrl`
+  fails closed (another scheme, whitespace or a malformed percent escape, which node-postgres would
+  re-encode, is refused, as is `host`/`hostaddr`).
+
+Steps 2–6 (commit `c70681c`, 17 files):
+
+- `docs/03-specs/tech-debt.md` v1.12 — Status line; TD-7–TD-11 table rows now **Fix in review** (TD-6's
+  wording); a **Fix in review** bullet under each entry with its commit ids. TD-10's states the fix round
+  (scheme, whitespace, malformed percent escape; the `http://localhost\@evil.example.com/db` plus trailing
+  space case; four rows; the re-reviewer's 1.4 M-URL fuzz, labelled the reviewer's run). TD-11's uses the
+  measured 46/6/6 and 49/41/28 pixel counts and the Firefox double listing. Known-and-not-fixed minors are
+  in each bullet.
+- `docs/03-specs/backlog.md` v1.27 — Status line, Changelog (the owner's answers Q1–Q7 in their words, the
+  four row edits), the four rows (T-13c: plan path and "in review"; T-13d item 4: `stylelint` (dev); T-14:
+  the first-seed/`VERCEL` hand-off; T-16: Public Sans notice), and the Notes' open-entries line.
+- `docs/03-specs/reset-and-test-support.md` v1.6 — Status line, Changelog, §2.5, §2.7's first line, in the
+  brief's wording. `git diff -U0` showed nothing else changed. The Changelog also says the guard is
+  stricter than the two sentences (fails closed).
+- `docs/04-process/process-log.md` — one entry appended, "2026-09-25 — Phase 5: T-13c tech debt
+  TD-7–TD-11 — execution", template fields. It holds: participants/reviewers as they were, the produced
+  commits, the measured numbers, what was decided, what the agent got right, six numbered deviations
+  (the Task 4 parsing gap and its fix round; five wrong plan numbers; the README scope sentence; the review
+  model against governance v1.3; the plan on `docs/T-13c-plan`; the go-ahead's shape), the deferred minors,
+  "Verified", "Not verified", the owner's answers, the Q4 disagreement, ten lessons, "Next".
+- `docs/04-process/prompts/2026-09-24-T-13c.md` and the folder `docs/04-process/prompts/2026-09-24-T-13c/`
+  (both named with the plan date, per the controller's clarification) — a README in T-13's style (table
+  of files; deliberate absences: no review files, no ledger, no dispatch messages, no `review-*.diff`, no
+  screenshots) and copies of `task-1-brief.md` … `task-6-brief.md` and `task-1-report.md` …
+  `task-5-report.md`, unredacted. This report is the last file, copied after the records commit.
+
+## Measured numbers (this session)
+
+- Unit: 81 files / 1043 tests, on `fe1f910` and again on HEAD `c70681c` (baseline 77 / 958; plan said 1 035;
+  the +8 is Task 4's fix round). Statements 99.53 % (426/428).
+- TD-11 pixels: login 46 / 6 / 6, overview 49 / 41 / 28 at 1440 / 768 / 375 px (from Task 5's report; not
+  re-measured here). Firefox: four font requests (two URLs twice); Chromium and WebKit two; `FOREIGN []`.
+- Task 4 Step 9 red: 2 failed | 2 passed (plan: 3 | 1). Task 5 Step 6 red: 4 (plan: 1). From the reports.
+
+## Full run, one step per command (macOS, Node 26.7.0, npm 11.19.0, on `fe1f910` + the then-uncommitted docs)
+
+| Step | Result |
+| --- | --- |
+| `npm run secrets:scan` | 399 commits scanned, no leaks (diffs); no leaks (commit and tag messages). Re-run after the records commit: 400 commits, no leaks |
+| `npm run lint` | exit 0 (ESLint `--max-warnings 0`, then `lint:css`), no output |
+| `npm run format:check` | "All matched files use Prettier code style!" (again on HEAD) |
+| `npm run typecheck` | exit 0, no output |
+| `npm run test:coverage` | 81 files, 1043 tests passed; statements 99.53 % (again on HEAD) |
+| `npm run traceability` | "all 18 Release 1 stories are named in a test title" (again on HEAD) |
+| `npm run test:api` | 100 passed (12.4 s) |
+| `npm run test:e2e` | 327 passed, 24 skipped, 0 failed (351 runs, three engines); one background call, exit 0, 2.3 min, so it was not split per project |
+| `npm audit --audit-level=high` | found 0 vulnerabilities |
+
+Everything was green; nothing failed and nothing was fixed. After the records commit, the unit suite,
+`format:check` and `traceability` were re-run on HEAD `c70681c` (all green), because the first run of
+those three preceded the process-log entry and the prompts folder. API and E2E were not re-run: the
+records commit changes only files under `docs/`.
+
+Comparison with `main`: I did not run `main`. The API and E2E counts equal the ones the T-13 execution
+entry in `docs/04-process/process-log.md` records (API 100; E2E 327 passed, 24 skipped, 351 runs), and
+the unit baseline before this task (77 / 958, the controller's run) equals T-13's. Three `test(api)`
+commits merged since T-13 (`0bbe186`, `193e7b2`, `0fc202d`); the API count is unchanged at 100.
+
+## Secret scan on the copies
+
+`sh scripts/secret-scan.sh staged` was silent (exit 0) on the copied briefs and reports and on the
+records, so no value was replaced with `${SECRET}` and no allowlist was touched. The folder README says so.
+
+## Not verified
+
+- CI (nothing pushed); Firefox and WebKit on Linux.
+- "Nothing else on ports 3000 and 3113" (written in the log's "Verified") is the controller's statement;
+  the only evidence is that `test:api` built and started its own server on 3000 without a clash.
+- The hook output of my two commits was not shown (only the commit summary lines); the staged scan was
+  run by hand before each.
+- The whole-branch review's verdict.
+
+## Concerns
+
+1. The log's "Verified" paragraph says the run was "on `fe1f910` plus the uncommitted record files of this
+   task". Part of those files did not exist yet when unit, lint, format and traceability first ran. The
+   three cheap ones were re-run on the final HEAD (green), but the paragraph was not edited a third time.
+2. The log's "Task 6, `fe1f910` and the commit that follows it" becomes two commits after this report is
+   committed (`c70681c` and the report commit).
+3. The brief said the owner fills "what the agent got wrong" and "owner changes". I followed the T-13
+   precedent and the controller's instruction to record the deviations honestly, so "What the agent got
+   wrong or missed" holds six agent-drafted items and the deferred minors, marked "(the owner adds their
+   own findings after review)". "Owner changes and reasoning" holds the owner's already-given answers,
+   with `_(owner to fill after review)_` for changes made in review. The controller may want to reconcile
+   this with the brief's wording.
+4. The entry heading follows T-13's form ("Phase 5: … — execution"), not the brief's "Build (T-13c): tech
+   debt TD-7–TD-11".
+5. The backlog's T-13c row now also says "decided at its plan gate: TD-8 is the comment, with no
+   failing-first test, and TD-9 is a Stylelint rule", which goes slightly beyond the brief's
+   "plan: …, in review", so that the row does not contradict its own plan ("one failing-first test each").
+6. `backlog.md`'s Changelog quotes the owner's Azerbaijani answers verbatim (as the plan does); no English
+   gloss was added there beyond the meanings in the same sentence.
+
+## Fix round 1 (Task 6's review: two Important findings and wording minors, all text in docs)
+
+Commit: a new commit on top of `56044c8`, subject `docs(process): correct T-13c's record — the planning
+entry, the verified claims, the wording` (its id is in the reply and in `git log`, not in this file). Not
+amended, not pushed. Two files edited: `docs/04-process/process-log.md` (this task's own entry only) and
+`docs/03-specs/tech-debt.md` (the TD-11 bullet). This report and its copy in the prompts folder are refreshed
+in the same commit.
+
+Checked before writing: `git diff --stat origin/main...origin/docs/T-13c-plan` shows one file, the plan
+(2430 insertions); the plan's header says it "is all the planning session keeps" and its status line reads
+"awaiting the go-ahead and the execution method".
+
+Important 1 — the planning entry. Rewritten in three places of the log entry:
+
+- "Phase": the planning session kept only the plan file on `docs/T-13c-plan` (the branch adds that one file,
+  no pull request, checked 2026-09-25); no planning entry exists on any branch; the owner's answers to Q1–Q7
+  are recorded in this entry, the plan's findings F1–F10 only in the plan file (I did not write that F1–F10
+  are recorded in the entry, as the review's suggested wording had it: this entry cites only a few of them);
+  the plan's status line still says "awaiting the go-ahead"; adding a planning entry or merging the branch is
+  the owner's call.
+- Deviation 5 ("The plan is not on the task branch") now also says the planning session left no entry, the
+  branch has no PR, and that T-13 had a planning entry on its plan branch where this task has none.
+- "Next": the claim that the plan branch's docs PR appends to the log and the backlog is gone; it keeps the
+  owner's review and merge, T-13d after the merge, T-14's v1.27 hand-offs, T-13a/b's own plan gates, and adds
+  that the plan branch has no PR and the rest is the owner's call.
+
+Important 2 — "Verified, not reasoned":
+
+- "Nothing else on ports 3000 and 3113" is removed from that paragraph and put in "Not verified" as the
+  controller's statement, with the one piece of evidence (the API run started its own server on port 3000).
+- The tree claim is replaced by the exact sequence: the first run of each step was on `fe1f910` plus the
+  then-uncommitted edits of `tech-debt.md`, `backlog.md` and the SPEC; the entry and the prompts folder did not
+  exist when the secrets scan, lint, format check, typecheck, unit tests, traceability and API tests ran; the
+  E2E run was started before the entry was written and `npm audit` ran after it. Re-run on `c70681c`: unit
+  (81 files, 1043 tests), `format:check`, `traceability`, and also `npm run secrets:scan` (400 commits, no
+  leaks). Not re-run: lint, typecheck, API and E2E, because only files under `docs/` changed after them and
+  none of those steps is expected to read one. (The review's message listed the secrets scan among the steps
+  not re-run; it was re-run, 400 commits, after `c70681c`, so the log says so.)
+- "Postgres from `compose.yaml`" is now "the local Postgres the controller set up" (I did not check which
+  Postgres it was).
+
+Wording minors, all in the log entry unless named:
+
+- Item 2 of "What the agent got wrong": the heading is now "Five numbers in the plan differed from what was
+  measured"; the F9 sentence is gone. Two causes are stated as known (Step 6: the fixture cases read the real
+  layout; the unit total: Task 4's fix round), and the other three (Step 9's red count, Firefox's second
+  listing, the Overview pixels) are stated as having no established cause.
+- "Every implementer that met a number that differed from the plan reported it and edited no expectation to
+  fit it"; the numbers of Tasks 1–3 matched.
+- "What the agent got right" first bullet: "Most of what the plan measured held when it was re-run; five
+  counts did not", followed by what held, and one added item (Task 4's 46 URL-table tests, red then green).
+- "The three hashes (two fonts and `OFL.txt`)".
+- "Produced", Task 6 bullet: names the four commits after `5d015bf` (`fe1f910`, `c70681c`, `56044c8`, and the
+  fix commit by subject).
+- `tech-debt.md` TD-11 bullet: the pixel counts are no longer called "anti-aliased" outright; it says only
+  the login 1440 px diff image was opened, so the description is read from that image and the small counts.
+
+Checks after the change:
+
+- `git diff origin/main -- docs/04-process/process-log.md`: 276 insertions, 0 deletions (append-only against
+  `main`; the edits in this round change only this task's own, still unmerged entry).
+- `npx vitest run tests/unit/scaffold.test.ts`: 114 passed. `npm run traceability`: "all 18 Release 1 stories
+  are named in a test title". `sh scripts/secret-scan.sh staged`: run before the commit, silent, exit 0.
+- Prettier was not run on the docs (they are Prettier-ignored).
+
+Not touched, as instructed, but the same "until its docs PR merges" wording remains in three other places,
+which imply a plan-branch PR that does not exist: `backlog.md`'s T-13c row ("(on branch `docs/T-13c-plan`
+until its docs PR merges)"), `docs/04-process/prompts/2026-09-24-T-13c.md` (line 13) and
+`docs/04-process/prompts/2026-09-24-T-13c/README.md` (line 7). The controller may want a follow-up.
+
+## Final fix wave (after the whole-branch review: ready to merge, no Critical/Important)
+
+Two new commits on top of `f117b2a`, neither amended, neither pushed. The first is `b041b16`
+`fix(env): say why a database URL is refused, and what the refusal covers (TD-10)`; the second has the
+subject `docs: fold in T-13c's final-review minors — hand-offs, wording, comments` (its id is in the reply
+and in `git log`, not in this file).
+
+### Commit 1 — `b041b16`, one file: `src/shared/env.ts`
+
+- `localDatabaseRefusal`'s message keeps the prefix `Refusing to run: DATABASE_URL does not name this
+  machine (localhost, 127.0.0.1 or [::1])` and continues "or is not a plain postgres:// or postgresql:// URL
+  (no whitespace, no host= or hostaddr= query, no malformed % escape), and this step resets or seeds that
+  database. Point DATABASE_URL at the local database from compose.yaml (README, Run locally) — TD-10".
+  "This command" became "this step" (under `npm run db:reset` the seed step is refused after `prisma migrate
+  deploy` has run). `testEnvRefusal`'s second message keeps its prefix (`Refusing to run: APP_ENV=test with a
+  DATABASE_URL that does not name this machine`) and adds the same clause. Both are still static strings: no
+  URL, password or host. The docblocks say so, and that `migrate deploy` is not covered.
+- The docblock of `isLocalDatabaseUrl`: "two hex digits" instead of "two-digit escape"; pg re-encodes on a
+  space or a malformed escape, the guard refuses any whitespace and a `%` that ends the value, which is
+  stricter, on purpose. `testEnvRefusal`'s docblock says "a `DATABASE_URL` that `localDatabaseRefusal` refuses
+  — another machine, or a value the guard cannot read as local".
+- Before editing, `grep -rn "does not name this machine\|resets or seeds"` (ts, tsx, md, example, mjs, json,
+  yml; `node_modules`, `.next`, `.superpowers`, `.git` excluded) found no test under `tests/api` or
+  `tests/e2e` and no other doc quoting the old text. It found only the two unit regexes on the prefixes
+  (`tests/unit/next-config.test.ts:135`, `tests/unit/database-guard.test.ts:32`), the docblocks in
+  `src/shared/env.ts`, the process-log line that quotes the phrase, and the copied Task 4 brief and report
+  (history, not edited). `tests/unit/shared/env.test.ts` matches only `^Refusing to run: DATABASE_URL`,
+  `Vercel deployment`, `Vercel` and `DATABASE_URL`.
+- Runs: `npx vitest run tests/unit/shared/env.test.ts tests/unit/server/env.test.ts
+  tests/unit/test-support.test.ts tests/unit/next-config.test.ts tests/unit/database-guard.test.ts` — "Test
+  Files 5 passed (5)", "Tests 139 passed (139)", tests unchanged. `npx vitest run` — "Test Files 81 passed
+  (81)", "Tests 1043 passed (1043)". `npx tsc --noEmit`, `npm run lint` and `npx prettier --check .` — clean.
+  `sh scripts/secret-scan.sh staged` — silent, exit 0.
+
+### Commit 2 — the docs commit
+
+- `prisma/README.md` — one sentence: the seed refuses a `DATABASE_URL` that does not name this machine
+  (TD-10, `src/shared/env.ts`); `db:reset` runs `prisma migrate deploy` first, and that step is not guarded.
+- `stylelint.config.mjs` — header comment only: the accepted minimums (`0` and px, rem, em, ch, vw, vh, vmin,
+  vmax, percent), that any other unit (cm, pt, svw, …) is reported with "write minmax(0, Nfr)" and fails
+  closed, and a `var()` indirection in the "not read" list. Checked on a scratch CSS file (deleted): `2cm`,
+  `12pt` and `5svw` minima reported; `minmax(120px, 1.5fr)` accepted; `var(--cols)` not read.
+  `npx vitest run tests/unit/css-grid.test.ts` — 3 passed; `npm run lint` clean.
+- `tests/unit/README.md` — the config test loads the file in the development-server phase only
+  (`PHASE_DEVELOPMENT_SERVER`, checked in `tests/unit/next-config.test.ts`); `next build` and `next start` were
+  exercised by hand (T-13c plan, Task 4 Step 11). `npx prettier --check` on it, `prisma/README.md`,
+  `tests/fixtures/README.md`, `src/shared/README.md` and `stylelint.config.mjs` — all formatted.
+- `docs/04-process/process-log.md` (this task's entry only; `git diff origin/main` on it: 333 insertions, 0
+  deletions): the 147-byte line re-wrapped; "and nobody checked" now "no check is recorded"; `format:check`
+  printed "All matched files use Prettier code style!", not "no output" (corrected); the Opus reviews and their
+  results, and the final wave with its commits, named in "Participants", "Produced", "Verified" and "Not
+  verified"; a new bullet "Open for the owner, not decided here" (the `db:reset`-before-`migrate deploy`
+  question with plan F4e and the review's Minor 2, the plan branch, and the two declined-to-judge items, one
+  line each); "Next" updated.
+- The loose "until its docs PR merges" wording became "until the owner merges the plan branch (no PR opened
+  yet)" in `backlog.md` (T-13c row), `prompts/2026-09-24-T-13c.md` and `prompts/2026-09-24-T-13c/README.md`.
+- `docs/03-specs/backlog.md` — T-13d item (3) gains the stock Prisma reset commands (`prisma migrate reset`,
+  `prisma db push --force-reset`, `migrate dev`'s reset prompt), labelled to-check and not measured, with what
+  was read (`prisma.config.ts` loads `.env.local`, nothing refuses); T-14 gains the `vercel env pull` check
+  (unmeasured), and its sentence on `db:reset` now says the seed step refuses, after `prisma migrate deploy`;
+  v1.27's changelog names both.
+- This report: the phrase "run before the commit (see the reply)" in Fix round 1 now reads "run before the
+  commit, silent, exit 0"; this section is appended; the copy in `docs/04-process/prompts/2026-09-24-T-13c/`
+  is refreshed and compared with `cmp`.
+
+### Not done / to know
+
+- The API and E2E suites were not re-run, as instructed: the wave changes message text and comments only, and
+  no API or E2E spec quotes the old text (grep above).
+- The Task 6 review and whole-branch review are described in the log only as far as the controller relayed
+  them (two Important defects and minors; ready to merge, a CI-shaped simulation, 37 Stylelint snippets); I
+  did not see the reviews.
+- The "Open for the owner" line on `BASE_URL` and the first-deploy window is my one-line paraphrase of the two
+  items the controller named; the review's own wording was not available to me.
+
+## Close-out (after the scoped Opus re-review of the final wave: 12 findings addressed, six new minors, all text)
+
+One new commit on top of `8aa2936`, not amended, not pushed, subject `docs: close out T-13c's records —
+stale sentences and the wave's review` (its id is in the reply and in `git log`). Docs only, plus one comment
+in `.env.example`. No re-review of this commit was run; the controller reads its diff.
+
+- `.env.example` (comment only, lines 6-8): now names the full rule — a host that is not localhost, 127.0.0.1
+  or [::1], or a URL that is not a plain postgres:// or postgresql:// URL (no whitespace, no host= or
+  hostaddr= query, no malformed % escape). `tests/unit/scaffold.test.ts` and `tests/unit/secret-guard.test.ts`
+  read this file; both were run.
+- `docs/03-specs/tech-debt.md`: TD-10 — the "known and not fixed" sentence about the message and
+  `.env.example` giving only the host is gone (the messages were fixed in `b041b16`, the comment here); the
+  still-true deferred minors stay (no standing cut-out fixture for the seed and Playwright guards; the seed
+  control test asserts a non-zero exit and no `Refusing` line, not that a connection was tried). TD-9 — the
+  sentence about the config header versus the regex is gone (the header was rewritten in `8aa2936`); the
+  lower-case property name minor stays.
+- `docs/03-specs/backlog.md`: T-13d item (3) now says `prisma migrate reset` resets and applies the
+  migrations but does not run `prisma/seed.ts` (Prisma 7 no longer seeds automatically; only `db seed` calls the
+  seed runner), so on a non-local URL it ends with an empty database; `migrate reset` and `migrate dev`'s reset
+  ask for confirmation, `db push --force-reset` does not; labelled as read from the installed CLI's source
+  (Prisma 7.10.0, `node_modules/prisma/build/cli.js`) by the whole-branch review's second pass, not run. I did
+  not read that file myself; the wording follows the controller's relay. v1.27's changelog now names `migrate
+  dev`'s reset prompt and says the T-14 sentence on `db:reset` was reworded (the seed step refuses, after the
+  unguarded `prisma migrate deploy`).
+- `docs/04-process/process-log.md` (this task's entry only; `git diff origin/main` on it: 347 insertions, 0
+  deletions): "The whole-branch review's Minor 2" is described by content; "Participants" credits the Task 6
+  re-review's further minors to the final wave and records the Opus 5.5 re-review of the wave (12 addressed, six
+  new minors) and that the close-out commit itself was not re-reviewed; the account of `b041b16` now says only
+  `localDatabaseRefusal`'s message says the step "resets or seeds" the database, while `testEnvRefusal`'s says
+  the URL "would expose … the reset and seed routes"; "Not verified" says the re-review ran; the deferred-minor
+  list keeps its historical text with the appended correction that `pg-connection-string` `index.js:20` also
+  re-encodes on a malformed `%` escape (I checked that line: the test is `/ |%[^a-f0-9]|%[a-f0-9][^a-f0-9]/i`);
+  a bullet for the close-out commit under "Produced"; "Next" no longer lists a re-review as pending.
+- Runs: `npx vitest run tests/unit/scaffold.test.ts tests/unit/secret-guard.test.ts
+  tests/unit/shared/env.test.ts` — "Test Files 3 passed (3)", "Tests 198 passed (198)". `npm run traceability`
+  — "all 18 Release 1 stories are named in a test title". `sh scripts/secret-scan.sh staged` — silent, exit 0,
+  run on the four edited files and again with the report copy staged. The report copy was compared with `cmp`.

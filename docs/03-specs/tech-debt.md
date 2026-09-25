@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.12 — 2026-09-25: TD-7–TD-11 fixed in T-13c, in review on `task/T-13c-tech-debt`; TD-10's `db:reset` refusal also comes before `prisma migrate deploy`, the owner's choice B; v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -16,11 +16,11 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-4 | Two "submit is focused after an error" E2E assertions prove nothing on Chromium | **Closed** | T-13 |
 | TD-5 | Zod's `jitless` setting rides on importing `src/shared/schemas.ts` | **Closed** | T-11 |
 | TD-6 | `next dev` fills the console with CSP violations (the policy has no dev variant) | **Closed** | `fix/td-6-dev-csp` (PR #23) |
-| TD-7 | The WebMCP status indicator can keep saying `unavailable` while a new registration runs | Open | T-13c |
-| TD-8 | The keyboard login walkthrough's comment says "Shift+Tab back"; the test focuses the field directly | Open | T-13c |
-| TD-9 | The `minmax(0, 1fr)` rule for card grids is a comment, not a check | Open | T-13c |
-| TD-10 | Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database | Open | T-13c (moved from T-14's T-02 hand-off) |
-| TD-11 | Every `next build` downloads Public Sans from Google Fonts, so a network hiccup fails the build | Open | T-13c (v1.11) |
+| TD-7 | The WebMCP status indicator can keep saying `unavailable` while a new registration runs | **Fix in review** — closes when the PR merges | T-13c |
+| TD-8 | The keyboard login walkthrough's comment says "Shift+Tab back"; the test focuses the field directly | **Fix in review** — closes when the PR merges | T-13c |
+| TD-9 | The `minmax(0, 1fr)` rule for card grids is a comment, not a check | **Fix in review** — closes when the PR merges | T-13c |
+| TD-10 | Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database | **Fix in review** — closes when the PR merges | T-13c (moved from T-14's T-02 hand-off) |
+| TD-11 | Every `next build` downloads Public Sans from Google Fonts, so a network hiccup fails the build | **Fix in review** — closes when the PR merges | T-13c (v1.11) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -201,6 +201,12 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 - **Fix:** notify once the failure is cleared (or push the status that `mode()` already reports),
   with a unit test that reads the listener's value while `registerTool` is still pending — red
   on today's code.
+- **Fix in review:** 2026-09-25, `task/T-13c-tech-debt` (`7b37e18`) — `register()`
+  (`src/webmcp/adapter.ts`) calls `notify()` right after `clearFailure()` when a failure was
+  cleared. `tests/unit/webmcp/adapter.test.ts` reads the listener's value while `registerTool` is
+  still pending — red on the old code (the last pushed status was `unavailable`, `mode()` said
+  `polyfill`), green now — and pins that a `register()` after no failure pushes nothing. Known and
+  not fixed: the first test checks the last pushed status, not that `notify()` fired exactly once.
 
 ## TD-8 — The keyboard login walkthrough's comment says "Shift+Tab back"
 
@@ -217,6 +223,11 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 - **Fix:** make the comment say what the test does, or make the test do what the comment says
   (Shift+Tab from "Sign Up" back to the password field). Which one is a test-design choice for
   T-13c's plan; the second one adds a reverse-order check SPEC-auth §6 does not ask for.
+- **Fix in review:** 2026-09-25, `task/T-13c-tech-debt` (`b9805e4`) — the doc comment of the
+  keyboard-only login test says what the test does — forward order, the field focused directly,
+  Enter — and that reverse order is not walked, because SPEC-auth §6 documents the forward order
+  only. No test changed; the owner waived the failing-first line for a comment (T-13c plan, Q1
+  (a)). The unchanged test passes on Chromium, Firefox and WebKit (3 passed).
 
 ## TD-9 — The `minmax(0, 1fr)` rule for card grids is a comment, not a check
 
@@ -238,6 +249,20 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   `*.module.css` — a unit test over the CSS files, or a lint rule if the project adopts a CSS
   linter. Which one is decided at T-13c's plan gate; the check needs a violation fixture
   (DoD v1.1).
+- **Fix in review:** 2026-09-25, `task/T-13c-tech-debt` (`bb6e2fe`) — `stylelint.config.mjs`
+  (Stylelint's `declaration-property-value-disallowed-list` on `grid-template-columns`) fails a
+  `fr` track that is not the maximum of a `minmax(<definite>, …)`; `npm run lint:css` runs it over
+  every `.css` under `app/` and `src/`, and `npm run lint` runs it after ESLint.
+  `tests/unit/css-grid.test.ts` runs the shipped config over a violation fixture and a control
+  (`tests/fixtures/css-grid/`) and over the real tree; changing `PotsCard.module.css` and
+  `page.module.css` to `1fr 1fr` turned `lint:css` and the real-tree test red, and removing the
+  regex's first lookbehind turned the control fixture red (its `1.5fr` and `11fr` tracks read as
+  bare).
+  Owner decision (Q4): a linter, not the unit test the plan recommended; it adds the dev
+  dependency `stylelint` 17.15.0 (75 packages, `npm audit` 0, the install-script test still
+  passes). Not read: rows, `grid-auto-columns`, the `grid` shorthands, a track list held in a
+  `var()`. Known and not fixed: the property name is matched in lower case only (Prettier
+  lowercases it in `format:check`).
 
 ## TD-10 — Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database
 
@@ -261,6 +286,60 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   Candidates: refuse `APP_ENV=test` when the platform says it is a deployment (Vercel sets
   `VERCEL` and `VERCEL_ENV`), and refuse `db:reset`/`test:api` when the `DATABASE_URL` host is not
   local — each with a test that fails first.
+- **Fix in review:** 2026-09-25, `task/T-13c-tech-debt` (`c1ef26d`, fix round `c316e3b`) —
+  `src/shared/env.ts` — `isLocalDatabaseUrl`, `localDatabaseRefusal`, `testEnvRefusal`.
+  `next.config.ts` refuses `APP_ENV=test` on Vercel (`VERCEL`, `VERCEL_ENV`) and with a
+  `DATABASE_URL` that is not `localhost`, `127.0.0.1` or `[::1]` (or carries `host`/`hostaddr`);
+  `isTestEnv` refuses the same at runtime; `prisma/seed.ts` and `playwright.config.ts` refuse a
+  non-local `DATABASE_URL` after their `.env.local` load, and `prisma.config.ts` refuses it for
+  `npm run db:reset` before `prisma migrate deploy`, that script's first step, applies any
+  migration (the owner's choice B, below). A direct `npx prisma migrate deploy` is not guarded,
+  by design: T-14 runs it against Neon, and CI against its own database. Not keyed on
+  `NODE_ENV`. The `VERCEL` line depends on Vercel's project setting 'Enable access to System
+  Environment Variables'; the database line does not. The guard fails closed: it also
+  refuses a scheme other than `postgres:`/`postgresql:`, a value with whitespace and a value with
+  a malformed percent escape. The first version parsed the raw string with `new URL`; the Opus
+  review of Task 4 found that node-postgres (`pg-connection-string`) re-encodes a value with a
+  space or a malformed `%` and parses the result against a base, so
+  `http://localhost\@evil.example.com/db` plus a trailing space was local to the guard and
+  `evil.example.com` to pg (a leading space gave the host `base`). The fix round added four rows
+  to the unit table: one isolates the scheme, one a leading space, one a malformed escape, and
+  the fourth is the bypass itself, which either of two conditions catches; removing a condition
+  turned its own rows red. The re-review's differential fuzz — 1.4 million random URLs against
+  `pg-connection-string` — found no URL the guard accepts that pg sends to a non-local host (the
+  reviewer's run, not repeated here). The refusal messages (`b041b16`) and `.env.example`'s
+  comment name the whole rule. Known and not fixed: the seed and Playwright guards have no
+  standing cut-out fixture (only `next.config.ts` has one), and the seed's control test asserts
+  a non-zero exit and no `Refusing` line, not that a connection was tried. The `prisma.config.ts`
+  guard of the owner's choice B has the same first gap (the `db:resett` mutation was a one-off
+  run, not a fixture) and a second: no test pins its position after the `.env.local` load. Every
+  test sets `DATABASE_URL` in the environment, which wins over the file, so moving the guard above
+  `loadEnvFile` would leave all seven tests of `database-guard.test.ts` green while a
+  `DATABASE_URL` held only in `.env.local` — the case `vercel env pull` would create — went
+  unrefused (read from the code, not run). Two more items from the Opus 5.5 review of the
+  follow-up are left as they are: the refusal message says "this step resets or seeds that
+  database" though it now also fires at `prisma migrate deploy` — acceptable, "this command"
+  would be exact; and the control test for `localhost:1` asserts `toContain("localhost")`, which
+  the refusal's own text also matches, where `localhost:1` would be sharper.
+- **Owner's choice B, `db:reset` before `migrate deploy`:** 2026-09-25, after PR #39 was opened.
+  The seed refused another machine's database, but `prisma migrate deploy`, the first step of
+  `db:reset` (`prisma migrate deploy && prisma db seed`), would already have applied every
+  pending migration of the checkout to whatever `DATABASE_URL` named — an unmerged
+  feature-branch migration could reach Neon before the seed refused. The whole-branch review
+  raised it (its Minor 2); the owner chose among A leave it, B check in `prisma.config.ts`, C a
+  separate guard script and D drop `migrate deploy` from `db:reset`, and answered "B".
+  `prisma.config.ts` now calls `localDatabaseRefusal` after its `.env.local` load when
+  `npm_lifecycle_event` is `db:reset`, prints the refusal and exits 1 (a thrown error would be
+  wrapped by Prisma in "Failed to load config file <absolute path> as a TypeScript/JavaScript
+  module"). It is keyed on the npm script's name, not on the Prisma command, because T-14 runs
+  `npx prisma migrate deploy` on the deployed database directly and CI runs it too. The seed's
+  own check stays as the second line, and is the only one for `npx prisma db seed`. Three
+  child-process tests in `tests/unit/database-guard.test.ts`: `npm run db:reset` against
+  another machine's URL is refused and Prisma never names its host, so no migration ran; the
+  same command against `localhost:1` is not refused and reaches the connection; a direct
+  `npx prisma migrate deploy` against the other machine's URL is not refused either. Not
+  guarded, still: a direct `prisma migrate deploy`, by design, and the stock reset commands
+  (T-13d, item 3).
 
 ## TD-11 — Every `next build` downloads Public Sans from Google Fonts
 
@@ -292,3 +371,21 @@ touches a file an entry names reads the entry first; the task that fixes an entr
     decision "a").
   - Add a check that fails if `next/font/google` comes back, e.g. a unit test on `app/layout.tsx`'s
     imports, with a violation fixture.
+- **Fix in review:** 2026-09-25, `task/T-13c-tech-debt` (`3c57648`, fix round `5d015bf`) —
+  `app/layout.tsx` uses `next/font/local` over `app/fonts/` (`@fontsource/public-sans` 5.3.0, latin
+  400 and 700, sha256 in `app/fonts/README.md`, `OFL.txt` beside them); `eslint.config.mjs`
+  restricts `next/font/google` in `app/` and in every `src/` layer except `server`, and
+  `tests/unit/fonts.test.ts` checks the files' hashes, use and licence. With outbound requests
+  sent to a dead proxy (`HTTPS_PROXY=http://127.0.0.1:9`), `next build` failed before with
+  "Failed to fetch Public Sans from Google Fonts" and passes now; the built CSS has no Google URL.
+  On Chromium, Firefox and WebKit the page loads two font files from its own origin and none from
+  another (Firefox lists each request twice). Screenshots of the login and Overview pages at 1440,
+  768 and 375 px, against the build that used Google Fonts, differ by 46 / 6 / 6 (login) and
+  49 / 41 / 28 (Overview) pixels, at identical image sizes; that is Chromium on macOS only, and
+  only the login 1440 px diff image was opened (a few glyph edges marked), so "anti-aliasing" is
+  read from that one image and from the small counts, not seen in the other five. The files are
+  not byte-identical to what `next/font/google` fetched (one variable
+  file there, two static weights here); `app/fonts/README.md` says so. Known and not fixed: nothing
+  checks the hash of `OFL.txt` (the test reads only its title), and the layout check matches by
+  substring, so a commented-out reference would satisfy it. T-16 lists the font in the third-party
+  notices (backlog v1.27).

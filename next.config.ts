@@ -1,5 +1,15 @@
 import type { NextConfig } from "next";
-import { WEBMCP_MODES } from "./src/shared/env";
+import { WEBMCP_MODES, testEnvRefusal } from "./src/shared/env";
+
+// TD-10: `APP_ENV=test` makes the unauthenticated /api/test/* reset and seed routes exist and
+// is inlined below as `NEXT_PUBLIC_APP_ENV`, so a build or a `next start` that would put it
+// where a real database could be behind it stops here — on a Vercel deployment, or with a
+// `DATABASE_URL` that names another machine. Not keyed on `NODE_ENV`: CI and every local
+// API/E2E run build with `APP_ENV=test` and `NODE_ENV=production` (ADR-0003).
+const testEnvProblem = testEnvRefusal(process.env);
+if (testEnvProblem !== null) {
+  throw new Error(testEnvProblem);
+}
 
 // `||`, not `??`: an empty WEBMCP_MODE is "polyfill" here too, as src/server/env.ts's
 // configuredWebmcpMode reads it for GET /api/meta. An unknown value (a typo, "Polyfill") fails

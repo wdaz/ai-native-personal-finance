@@ -63,7 +63,12 @@ the named package's script and run `npm install-scripts approve <package>` (or `
 `npm run db:reset` applies pending migrations and replaces all data with the seed
 (`prisma/data.json`, dates moved two years on), recording a reset of reason `manual`
 (SPEC-reset-and-test-support §2.5). The API and E2E tests reset the same database; it holds
-demo data only.
+demo data only. Both `db:reset` (before it applies any migration) and every Playwright run
+refuse a `DATABASE_URL` whose host is not `localhost`, `127.0.0.1` or `[::1]`, and `APP_ENV=test`
+is refused on Vercel and with such a URL (TD-10, `src/shared/env.ts`); a direct
+`npx prisma migrate deploy` is not guarded, since T-14 runs it against the deployed database. A
+deployed database is seeded through `POST /api/admin/reset` (SPEC-reset-and-test-support §2.2,
+§2.5), never through `db:reset`.
 
 `npm run dev` sends a **relaxed** Content-Security-Policy, so the console stays free of the
 `eval()` and inline-style errors Next's own development tooling would otherwise raise: under
@@ -91,7 +96,8 @@ commit either way.
 
 | Command                       | What it runs                                                                                                     |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `npm run lint`                | ESLint, including the ADR-0002 import boundaries                                                                 |
+| `npm run lint`                | ESLint, including the ADR-0002 import boundaries, then `lint:css`                                                |
+| `npm run lint:css`            | Stylelint over `app/` and `src/`: a bare `fr` column track fails (TD-9)                                          |
 | `npm run format:check`        | Prettier                                                                                                         |
 | `npm run typecheck`           | `tsc --noEmit`, strict                                                                                           |
 | `npm run secrets:scan`        | Gitleaks on all commit diffs and messages — first in `test:all`                                                  |
@@ -99,7 +105,7 @@ commit either way.
 | `npm run test:coverage`       | `npm test` with the coverage gate: at least 90 % of statements in `src/domain` (`vitest.thresholds.json`)        |
 | `npm run traceability`        | Every Release 1 story id (`docs/03-specs/release-1-stories.txt`) is named in a test title (NFR-T2)               |
 | `npm run test:api`            | Playwright request-context tests — `tests/api`, one worker, against the app with `APP_ENV=test` and the database |
-| `npm run db:reset`            | `prisma migrate deploy`, then the seed (`prisma/seed.ts`)                                                        |
+| `npm run db:reset`            | `prisma migrate deploy`, then the seed (`prisma/seed.ts`); refuses a non-local `DATABASE_URL` first (TD-10)      |
 | `npm run db:drift`            | `prisma migrate diff`, migrated database vs `prisma/schema.prisma`; exit 2 on drift, also run by `test:api`      |
 | `npm run seed:figures`        | SPEC-overview §4.3 printed from `prisma/data.json` (`scripts/seed-figures.ts`) — checked by `npm test`           |
 | `npm run test:e2e`            | Playwright on Chromium, Firefox and WebKit — `tests/e2e`, one worker, each test from a reset; CI runs all three |

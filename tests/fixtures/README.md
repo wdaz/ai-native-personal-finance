@@ -25,3 +25,9 @@ expects the 90 % statements gate to fail. `a11y-routes.ts` — `A11Y_ROUTES`, th
 gate scans, with `discoveredRoutes`, `routesMissingFrom` and `listedWithoutPage` (`04dc381`)
 so a unit test can fail both ways: a page missing from the list, and a listed route that has
 no page.
+
+T-13c: `css-grid/` — two `.css.fixture` files for TD-9's Stylelint rule, a violation and a control
+(the extension keeps them out of `npm run lint:css` and Prettier; `tests/unit/css-grid.test.ts`
+hands their text to the linter). `fonts.ts` — `fontProblems` (TD-11): the checks of `app/fonts/`
+that `tests/unit/fonts.test.ts` runs on the real directory and on broken copies. `boundaries/`
+gains the `next/font/google` violation and the `next/font/local` control.

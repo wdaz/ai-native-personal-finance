@@ -96,3 +96,64 @@ describe("next.config.ts and the server read WEBMCP_MODE the same way (T-08, PR 
     expect(await clientMode(unchecked, "Polyfill")).toBe("Polyfill");
   });
 });
+
+describe("next.config.ts refuses APP_ENV=test where a real database could be behind it (TD-10)", () => {
+  const source = readFileSync(join(repoRoot, "next.config.ts"), "utf8");
+  const local = "postgresql://postgres:postgres@localhost:5432/personal_finance";
+  const neon = "postgresql://user:password@ep-cool-name-123456.eu-central-1.aws.neon.tech/neondb";
+
+  /** Loads a config copy with exactly these four variables set (others left as they are). */
+  const loadWith = async (
+    configSource: string,
+    env: Partial<Record<"APP_ENV" | "VERCEL" | "VERCEL_ENV" | "DATABASE_URL", string>>,
+  ) => {
+    const names = ["APP_ENV", "VERCEL", "VERCEL_ENV", "DATABASE_URL"] as const;
+    const saved = names.map((name) => [name, process.env[name]] as const);
+    for (const name of names) {
+      const value = env[name];
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+    try {
+      return await loadConfig(PHASE_DEVELOPMENT_SERVER, configCopy(configSource), { silent: true });
+    } finally {
+      for (const [name, value] of saved) {
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+      }
+    }
+  };
+
+  it("does not build with APP_ENV=test on a Vercel deployment", async () => {
+    await expect(loadWith(source, { APP_ENV: "test", VERCEL: "1" })).rejects.toThrow(
+      /APP_ENV=test on a Vercel deployment/,
+    );
+  });
+
+  it("does not build with APP_ENV=test and another machine's DATABASE_URL", async () => {
+    await expect(loadWith(source, { APP_ENV: "test", DATABASE_URL: neon })).rejects.toThrow(
+      /APP_ENV=test with a DATABASE_URL that does not name this machine/,
+    );
+  });
+
+  it("builds with APP_ENV=test against the local database, and inlines it for the test hook", async () => {
+    const config = await loadWith(source, { APP_ENV: "test", DATABASE_URL: local });
+    expect(config.env?.NEXT_PUBLIC_APP_ENV).toBe("test");
+  });
+
+  it("builds a deployment that does not set APP_ENV=test (the control for the cases above)", async () => {
+    const config = await loadWith(source, {
+      VERCEL: "1",
+      VERCEL_ENV: "production",
+      DATABASE_URL: neon,
+    });
+    expect(config.env?.NEXT_PUBLIC_APP_ENV).toBe("development");
+  });
+
+  it("would let a deployment build with APP_ENV=test without the check (violation fixture, DoD v1.1)", async () => {
+    const unchecked = source.replace(/const testEnvProblem[\s\S]*?\n\}\n/, "");
+    expect(unchecked).not.toBe(source);
+    const config = await loadWith(unchecked, { APP_ENV: "test", VERCEL: "1", DATABASE_URL: neon });
+    expect(config.env?.NEXT_PUBLIC_APP_ENV).toBe("test");
+  });
+});

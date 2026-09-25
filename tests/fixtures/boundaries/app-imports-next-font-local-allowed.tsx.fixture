@@ -1,0 +1,6 @@
+// Linted as app/imports-next-font-local-allowed.tsx.
+// Control: `next/font/local` is how the app serves Public Sans (TD-11), so it must report
+// nothing — a rule that rejected every `next/font` import would satisfy the violation case.
+import localFont from "next/font/local";
+
+export const font = localFont({ src: "./fonts/public-sans-latin-400-normal.woff2" });

@@ -1,0 +1,35 @@
+/* Every grid-template-columns below breaks TD-9: a `fr` track without a definite minimum. */
+.single {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.repeated {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.mixed {
+  grid-template-columns: 1fr 2fr;
+}
+
+.autoMinimum {
+  grid-template-columns: minmax(auto, 1fr);
+}
+
+.contentMinimum {
+  grid-template-columns: minmax(min-content, 1fr) minmax(0, 1fr);
+}
+
+.variableMinimum {
+  grid-template-columns: minmax(var(--track-min), 1fr);
+}
+
+@media (min-width: 768px) {
+  .nested {
+    grid-template-columns: 200px .5FR !important;
+  }
+}
+
+.decimal {
+  grid-template-columns: 1.5fr 240px;
+}

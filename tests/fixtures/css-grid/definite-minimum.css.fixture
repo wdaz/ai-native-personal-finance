@@ -1,0 +1,42 @@
+/*
+ * Nothing below breaks TD-9. This comment talks about `1fr` and even writes
+ * grid-template-columns: 1fr; — a comment is not a declaration.
+ */
+.zero {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.repeated {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.length {
+  grid-template-columns: minmax(120px, 1.5fr) minmax(0, 1fr);
+}
+
+.fixedAndFlexible {
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+
+.autoFill {
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+}
+
+.percentage {
+  grid-template-columns: minmax(25%, 1fr);
+}
+
+/* Rows are not TD-9's business: an `auto` row minimum is about height. */
+.rows {
+  grid-template-rows: repeat(3, 1fr);
+}
+
+/* A custom property that merely ends in the same name is not the property. */
+.custom {
+  --grid-template-columns: 1fr;
+}
+
+/* A multi-digit or decimal maximum is still the maximum of a definite minmax. */
+.multiDigit {
+  grid-template-columns: minmax(0, 11fr) minmax(0, 1.5fr);
+}

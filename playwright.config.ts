@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
+import { localDatabaseRefusal } from "./src/shared/env";
 
 /**
  * ADR-0003 — E2E on Chromium, Firefox and WebKit against `next build && next start`,
@@ -15,6 +16,16 @@ import { defineConfig, devices } from "@playwright/test";
  * does not — so it is loaded here. A variable already in the environment (CI's) wins.
  */
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
+
+/**
+ * TD-10: every Playwright run resets the database — the API tests directly, the E2E tests
+ * through `/api/test/reset` on the server this config starts — so none runs against another
+ * machine's. The check is here, after the `.env.local` load, so it sees the `DATABASE_URL`
+ * the tests and the server will use; `test:api`, `test:e2e`, the UI mode and a bare
+ * `npx playwright test` all read this file.
+ */
+const databaseRefusal = localDatabaseRefusal(process.env);
+if (databaseRefusal !== null) throw new Error(databaseRefusal);
 
 const PORT = Number(process.env.PORT ?? 3000);
 const baseURL = process.env.BASE_URL ?? `http://127.0.0.1:${PORT}`;
