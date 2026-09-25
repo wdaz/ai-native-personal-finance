@@ -12,11 +12,14 @@ const LOCAL_DATABASE_HOSTS: readonly string[] = ["localhost", "127.0.0.1", "[::1
 /**
  * Is `url` a database URL whose host is this machine? Fails closed: the guard must read the URL
  * the way node-postgres (pg-connection-string) does, so a value is not local when
- * - it holds whitespace or a `%` that does not start a two-digit escape: pg then re-encodes the
- *   whole value with `encodeURI` and parses the result against the base `postgres://base`
- *   (measured 2026-09-25), so the string parsed here is not the one the driver parses —
- *   `http://localhost\@evil.example.com/db` plus a trailing space connects to `evil.example.com`
- *   while `new URL(...).hostname` says `localhost`, and a leading space gives the host `base`;
+ * - it holds whitespace, or a `%` that is not followed by two hex digits. pg re-encodes the whole
+ *   value with `encodeURI` when it holds a space or a malformed escape, and parses the result
+ *   against the base `postgres://base` (measured 2026-09-25), so the string parsed here would not
+ *   be the one the driver parses — `http://localhost\@evil.example.com/db` plus a trailing space
+ *   connects to `evil.example.com` while `new URL(...).hostname` says `localhost`, and a leading
+ *   space gives the host `base`. The guard refuses any whitespace, not only the space pg
+ *   re-encodes on, and a `%` that ends the value: stricter than pg, on purpose, since the
+ *   only cost of refusing more is a refused local URL;
  * - its scheme is not `postgres:` or `postgresql:`: both are non-special schemes, where a
  *   backslash never separates the host from the path, and a special one (`http:`) reads it as `/`;
  * - it does not parse, names no host (`postgresql:///db`), or carries a `host` or `hostaddr`
@@ -41,15 +44,20 @@ export function isLocalDatabaseUrl(url: string): boolean {
  * TD-10: why a run that resets or seeds the database named by `DATABASE_URL` must stop, or
  * `null` when it may go on. An unset `DATABASE_URL` is not refused here: there is nothing to
  * reset, and the first database call names the missing variable (`databaseUrl()`). The message
- * never contains the URL — it holds a password, and CI logs of a public repository are public.
+ * never contains the URL — it holds a password, and CI logs of a public repository are public —
+ * so it is a static string that names every reason `isLocalDatabaseUrl` has, not the one that
+ * applied: a URL that does name localhost is refused too when it holds whitespace or a malformed
+ * escape, or has another scheme. The seed step of `npm run db:reset` is refused after
+ * `prisma migrate deploy` has already run, which this guard does not cover.
  */
 export function localDatabaseRefusal(env: EnvVars): string | null {
   const url = env.DATABASE_URL;
   if (!url || isLocalDatabaseUrl(url)) return null;
   return (
-    "Refusing to run: DATABASE_URL does not name this machine (localhost, 127.0.0.1 or [::1]), " +
-    "and this command resets or seeds that database. Point DATABASE_URL at the local " +
-    "database from compose.yaml (README, Run locally) — TD-10"
+    "Refusing to run: DATABASE_URL does not name this machine (localhost, 127.0.0.1 or [::1]) " +
+    "or is not a plain postgres:// or postgresql:// URL (no whitespace, no host= or hostaddr= " +
+    "query, no malformed % escape), and this step resets or seeds that database. Point " +
+    "DATABASE_URL at the local database from compose.yaml (README, Run locally) — TD-10"
   );
 }
 
@@ -60,8 +68,8 @@ export function localDatabaseRefusal(env: EnvVars): string | null {
  * - on a Vercel deployment — `VERCEL` and `VERCEL_ENV` exist at build and at runtime, but only
  *   while the project's "system environment variables" setting is on (vercel.com/docs, read
  *   2026-09-24), so this line alone would not be enough;
- * - with a `DATABASE_URL` that names another machine (`localDatabaseRefusal`) — the line that
- *   does not depend on any platform.
+ * - with a `DATABASE_URL` that `localDatabaseRefusal` refuses — another machine, or a value the
+ *   guard cannot read as local — the line that does not depend on any platform.
  * Deliberately not keyed on `NODE_ENV`: CI and every local API/E2E run start a production
  * build with `APP_ENV=test` (ADR-0003).
  */
@@ -76,8 +84,9 @@ export function testEnvRefusal(env: EnvVars): string | null {
   if (localDatabaseRefusal(env) !== null) {
     return (
       "Refusing to run: APP_ENV=test with a DATABASE_URL that does not name this machine " +
-      "(localhost, 127.0.0.1 or [::1]) would expose the unauthenticated /api/test/* reset and " +
-      "seed routes on that database — TD-10"
+      "(localhost, 127.0.0.1 or [::1]) or is not a plain postgres:// or postgresql:// URL (no " +
+      "whitespace, no host= or hostaddr= query, no malformed % escape) would expose the " +
+      "unauthenticated /api/test/* reset and seed routes on that database — TD-10"
     );
   }
   return null;
