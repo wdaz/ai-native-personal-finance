@@ -3837,12 +3837,19 @@ them too").
 
 - **Phase:** 5 (Build the slice), Release 1, the same task as the entry above. Branch
   `task/T-13a-proxy`, cut from `origin/main` `c0112af` (the merge of PR #43), so the plan is on
-  `main`. Four commits: `6df4cda` (the two API tests), `2002327` (the rename), `18002d1` (every live
-  reference), and the commit that holds this entry, the specs' wording bumps, ADR-0006 amendment (6),
-  `tech-debt.md` v1.14 and `backlog.md` v1.30.
+  `main`. Five commits: `6df4cda` (the two API tests), `2002327` (the rename), `18002d1` (every live
+  reference), `46a7547` (this entry, the specs' wording bumps, ADR-0006 amendment (6), `tech-debt.md`
+  v1.14 and `backlog.md` v1.30), and one after the review, which fixes its Important findings and
+  records it.
 - **Participants:** Owner / Agent (Claude Code, Sonnet 5), executed inline through the superpowers
   `executing-plans` skill — the owner's choice at the plan gate (Q6). No per-task subagents. The
-  whole-branch review is a separate Opus 5.5 subagent (`governance.md` v1.3).
+  whole-branch review ran on Opus 5.5 as a separate subagent (`feature-dev:code-reviewer`, read, grep
+  and glob only, `governance.md` v1.1 and v1.3); its brief and its report are in
+  `prompts/2026-09-25-T-13a/`. It found no Critical finding, one Important one (a dated `backlog.md`
+  Notes snapshot overwritten) and four minors; its verdict: ready to merge with fixes. The agent
+  re-graded one minor — a sentence in this entry that contradicted itself, which stays wrong for good
+  once merged, since records are not rewritten — to Important, and fixed both in the last commit. The
+  other three minors are left for the owner.
 - **Trigger:** the owner's go-ahead after merging the plan: `/superpowers:executing-plans main brache
   keç plan artıq ordadır. İcraya başla` ("switch to main, the plan is already there; start the
   execution").
@@ -3853,8 +3860,10 @@ them too").
   SPEC-reset-and-test-support v1.6.1, SPEC-webmcp-tools v1.0.6, `system-overview.md` v1.0.1, ADR-0006
   amendment (6) *proposed*, `tech-debt.md` v1.14 (TD-2 in review, with the correction to its Fix line),
   `backlog.md` v1.30 with hand-offs to T-13b, T-13d and T-14, this entry and its prompt record
-  (Task 4).
-- **What the agent got right:** every number the plan measured came out the same in the run. Task 1's
+  (Task 4); after the review, the review's brief and report in `prompts/2026-09-25-T-13a/`, the
+  Notes snapshot restored and this entry corrected.
+- **What the agent got right:** every number the plan measured came out the same in the run, except the
+  two named in items (1) and (3) below. Task 1's
   tests pass on the old code (16 in the spec, 102 in the API suite) and each fails on purpose under its
   mutation — `Referrer-Policy` deleted, `X-Content-Type-Options` deleted, the matcher widened to
   `/(.*)`. `next build` printed the deprecation sentence once before Task 2 and 0 times after. The three
@@ -3865,20 +3874,28 @@ them too").
   (which rewrote `next-env.d.ts`; restored).
 - **What the agent got wrong or missed:** (1) The plan's Step 1 check expected seven files and its Step 7
   prediction nine, and both left out `proxy.ts` itself: the comment Task 2 writes names the old
-  convention on purpose, so the run listed eight and would list ten. Nothing was wrong in the tree;
+  convention on purpose, so the gate listed eight after Step 1 and ten after Step 2 (Step 7, measured).
+  Nothing was wrong in the tree;
   the plan's expectation was. Ledger ruling. (2) The plan's commit commands carry no trailers; the
   agent wrote each message to a file and used `git commit -F` so all four carry the session's
   `Co-Authored-By` and `Claude-Session` lines. (3) F6 says Task 3 changes "about 45 lines"; it is 50 —
   the number of lines `git grep` finds. (4) Task 4's exact substring replacements, the five version
   bumps and the backlog edits were made with small scripts that assert each substring occurs exactly
-  once, not with the Edit tool; the effect is the same and the scripts are not committed.
+  once, not with the Edit tool; the effect is the same and the scripts are not committed. (5) Task 4
+  Step 5 said to replace the Notes' "Open at v1.27" snapshot in `backlog.md`, against that file's own
+  rule that a dated Notes snapshot is not rewritten (its v1.22 and v1.28 entries say so); the agent
+  followed the plan's word, the review found it, and the snapshot is restored (finding I1). (6) Review
+  Focus 5's evidence, the response headers of `next dev`, was read during the run but not saved to a
+  file; the pull request text quotes them. The review's other minors — a test title that says "every
+  branch" for three of the function's four, a repeated phrase in the T-13b hand-off — are in its report.
 - **Owner changes and reasoning:** left for the owner (`build-workflow.md` §7).
 - **Disagreements:** none.
 - **Lessons for the process:** (1) A check's expected list has to be computed over the tree the task
   leaves behind: a comment that explains a rename must name the old word, so a "no more `middleware`"
   gate has to allow it. (2) A plan's commit steps should carry the trailers the project requires, or
-  the executor has to remember to add them.
-- **Next:** one Opus 5.5 review of the whole branch, then the push and the pull request, which the owner
-  merges. After the merge a docs commit closes TD-2 in `tech-debt.md`, says in `backlog.md` that T-13a
-  is merged and sets the plan's status to Done. ADR-0006 amendment (6) becomes *accepted* only when the
-  owner says so.
+  the executor has to remember to add them. (3) Every "replace" a plan gives for a document has to be
+  read against that document's own convention before it is run: a plan that says "replace" on a dated
+  snapshot contradicts the rule that records stay as written.
+- **Next:** the push and the pull request, which the owner merges (agents never merge). After the merge
+  a docs commit closes TD-2 in `tech-debt.md`, says in `backlog.md` that T-13a is merged and sets the
+  plan's status to Done. ADR-0006 amendment (6) becomes *accepted* only when the owner says so.

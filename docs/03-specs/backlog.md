@@ -12,8 +12,9 @@ Q3. Q4 yes: every live reference says "proxy", prose included. Q5 yes: the wordi
 specs and one diagram box); ADR-0006 amendment (6) stays *proposed* until the owner accepts it. Q6
 yes: one PR, four commits, executed inline, one Opus 5.5 review of the whole branch. The plan was
 merged as PR #43 and the go-ahead followed ("main brache keç plan artıq ordadır. İcraya başla").
-The Notes' open-debt line now says TD-2 is in review, and T-13b, T-13d and T-14 gain a hand-off
-each; the T-13a row itself is unchanged. v1.29 (2026-09-25, branch `docs/T-13c-plan-merged`) — the owner merged the T-13c plan
+The Notes gain an "Open at v1.30" snapshot (TD-2 in review, TD-3 open) beside the older ones,
+which stay as written, and T-13b, T-13d and T-14 gain a hand-off each; the T-13a row itself is
+unchanged. v1.29 (2026-09-25, branch `docs/T-13c-plan-merged`) — the owner merged the T-13c plan
 (branch `docs/T-13c-plan`, PR #41, status Done, v0.3) and the closure PR #40. The T-13c row and
 the two prompts records (`prompts/2026-09-24-T-13c.md` and its folder's README) no longer say that
 the plan awaits a merge or a PR; nothing else changes. v1.28 (2026-09-25, branch
@@ -156,5 +157,5 @@ Notes
 - T-02a precedes T-02; T-03 and T-04 run in parallel with T-02; T-06/T-07 after T-05; T-11 after T-07; T-16 is the last task of Release 1 and precedes any public announcement.
 - T-13a–T-13d run after T-13 and before T-14 (v1.24, owner decision 2026-09-24; T-13c gains TD-11 in v1.25): T-13b after T-13a, since both touch the CSP path; T-13c is independent of both; T-13d is last, so the security review reads the code T-14 deploys.
 - Deferred to Release 2 by owner decision: US-04 AC2, US-37 AC3.
-- **Tech debt** lives in [`tech-debt.md`](tech-debt.md) (v1.17, owner decision 2026-09-23): known shortcuts kept for now, each with an id (`TD-n`), its guard, its fix and the task expected to pick it up. Before a task changes a file an entry names, it reads the entry; the task that fixes one marks it Closed there. Open at v1.18: **TD-1** (the CSP nonce reaches Next through an undocumented header copy — `middleware.ts`; picked up by T-07, v1.19), **TD-2** (`middleware` → `proxy` file convention), **TD-3** (`/_global-error` prerendered without the nonce), **TD-4** (two "submit focused after an error" E2E assertions prove nothing on Chromium — T-13), **TD-5** (Zod's `jitless` rides on importing `schemas.ts` — T-11/T-12). Open at v1.24: **TD-2** (T-13a), **TD-3** (T-13b), **TD-7–TD-10** (T-13c). Open at v1.30: **TD-3** (T-13b); **TD-2** in review (T-13a).
+- **Tech debt** lives in [`tech-debt.md`](tech-debt.md) (v1.17, owner decision 2026-09-23): known shortcuts kept for now, each with an id (`TD-n`), its guard, its fix and the task expected to pick it up. Before a task changes a file an entry names, it reads the entry; the task that fixes one marks it Closed there. Open at v1.18: **TD-1** (the CSP nonce reaches Next through an undocumented header copy — `middleware.ts`; picked up by T-07, v1.19), **TD-2** (`middleware` → `proxy` file convention), **TD-3** (`/_global-error` prerendered without the nonce), **TD-4** (two "submit focused after an error" E2E assertions prove nothing on Chromium — T-13), **TD-5** (Zod's `jitless` rides on importing `schemas.ts` — T-11/T-12). Open at v1.24: **TD-2** (T-13a), **TD-3** (T-13b), **TD-7–TD-10** (T-13c). Open at v1.27: **TD-2** (T-13a), **TD-3** (T-13b); **TD-7–TD-11** in review (T-13c). Open at v1.30: **TD-3** (T-13b); **TD-2** in review (T-13a).
 - Every PR follows `definition-of-done.md`; the owner merges. `release-1-stories.txt` = US-01, 02, 03, 04, 05, 06, 07, 08, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41.
