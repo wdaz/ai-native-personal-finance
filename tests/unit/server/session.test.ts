@@ -77,4 +77,8 @@ describe("readCookie", () => {
     expect(readCookie(null, "pf_session")).toBeUndefined();
     expect(readCookie("a=1; b=2", "pf_session")).toBeUndefined();
   });
+
+  it("keeps the LAST of several same-named cookie pairs, matching Next's own request.cookies parser (TD-12) — a browser or proxy can send pf_session twice, and the proxy's page/API gate (request.cookies.get) already keeps the last; this function must agree with it or the two can authenticate differently for the same request", () => {
+    expect(readCookie("pf_session=first; pf_session=second", "pf_session")).toBe("second");
+  });
 });
