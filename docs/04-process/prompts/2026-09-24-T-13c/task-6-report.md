@@ -120,3 +120,73 @@ records, so no value was replaced with `${SECRET}` and no allowlist was touched.
    "plan: …, in review", so that the row does not contradict its own plan ("one failing-first test each").
 6. `backlog.md`'s Changelog quotes the owner's Azerbaijani answers verbatim (as the plan does); no English
    gloss was added there beyond the meanings in the same sentence.
+
+## Fix round 1 (Task 6's review: two Important findings and wording minors, all text in docs)
+
+Commit: a new commit on top of `56044c8`, subject `docs(process): correct T-13c's record — the planning
+entry, the verified claims, the wording` (its id is in the reply and in `git log`, not in this file). Not
+amended, not pushed. Two files edited: `docs/04-process/process-log.md` (this task's own entry only) and
+`docs/03-specs/tech-debt.md` (the TD-11 bullet). This report and its copy in the prompts folder are refreshed
+in the same commit.
+
+Checked before writing: `git diff --stat origin/main...origin/docs/T-13c-plan` shows one file, the plan
+(2430 insertions); the plan's header says it "is all the planning session keeps" and its status line reads
+"awaiting the go-ahead and the execution method".
+
+Important 1 — the planning entry. Rewritten in three places of the log entry:
+
+- "Phase": the planning session kept only the plan file on `docs/T-13c-plan` (the branch adds that one file,
+  no pull request, checked 2026-09-25); no planning entry exists on any branch; the owner's answers to Q1–Q7
+  are recorded in this entry, the plan's findings F1–F10 only in the plan file (I did not write that F1–F10
+  are recorded in the entry, as the review's suggested wording had it: this entry cites only a few of them);
+  the plan's status line still says "awaiting the go-ahead"; adding a planning entry or merging the branch is
+  the owner's call.
+- Deviation 5 ("The plan is not on the task branch") now also says the planning session left no entry, the
+  branch has no PR, and that T-13 had a planning entry on its plan branch where this task has none.
+- "Next": the claim that the plan branch's docs PR appends to the log and the backlog is gone; it keeps the
+  owner's review and merge, T-13d after the merge, T-14's v1.27 hand-offs, T-13a/b's own plan gates, and adds
+  that the plan branch has no PR and the rest is the owner's call.
+
+Important 2 — "Verified, not reasoned":
+
+- "Nothing else on ports 3000 and 3113" is removed from that paragraph and put in "Not verified" as the
+  controller's statement, with the one piece of evidence (the API run started its own server on port 3000).
+- The tree claim is replaced by the exact sequence: the first run of each step was on `fe1f910` plus the
+  then-uncommitted edits of `tech-debt.md`, `backlog.md` and the SPEC; the entry and the prompts folder did not
+  exist when the secrets scan, lint, format check, typecheck, unit tests, traceability and API tests ran; the
+  E2E run was started before the entry was written and `npm audit` ran after it. Re-run on `c70681c`: unit
+  (81 files, 1043 tests), `format:check`, `traceability`, and also `npm run secrets:scan` (400 commits, no
+  leaks). Not re-run: lint, typecheck, API and E2E, because only files under `docs/` changed after them and
+  none of those steps is expected to read one. (The review's message listed the secrets scan among the steps
+  not re-run; it was re-run, 400 commits, after `c70681c`, so the log says so.)
+- "Postgres from `compose.yaml`" is now "the local Postgres the controller set up" (I did not check which
+  Postgres it was).
+
+Wording minors, all in the log entry unless named:
+
+- Item 2 of "What the agent got wrong": the heading is now "Five numbers in the plan differed from what was
+  measured"; the F9 sentence is gone. Two causes are stated as known (Step 6: the fixture cases read the real
+  layout; the unit total: Task 4's fix round), and the other three (Step 9's red count, Firefox's second
+  listing, the Overview pixels) are stated as having no established cause.
+- "Every implementer that met a number that differed from the plan reported it and edited no expectation to
+  fit it"; the numbers of Tasks 1–3 matched.
+- "What the agent got right" first bullet: "Most of what the plan measured held when it was re-run; five
+  counts did not", followed by what held, and one added item (Task 4's 46 URL-table tests, red then green).
+- "The three hashes (two fonts and `OFL.txt`)".
+- "Produced", Task 6 bullet: names the four commits after `5d015bf` (`fe1f910`, `c70681c`, `56044c8`, and the
+  fix commit by subject).
+- `tech-debt.md` TD-11 bullet: the pixel counts are no longer called "anti-aliased" outright; it says only
+  the login 1440 px diff image was opened, so the description is read from that image and the small counts.
+
+Checks after the change:
+
+- `git diff origin/main -- docs/04-process/process-log.md`: 276 insertions, 0 deletions (append-only against
+  `main`; the edits in this round change only this task's own, still unmerged entry).
+- `npx vitest run tests/unit/scaffold.test.ts`: 114 passed. `npm run traceability`: "all 18 Release 1 stories
+  are named in a test title". `sh scripts/secret-scan.sh staged`: run before the commit (see the reply).
+- Prettier was not run on the docs (they are Prettier-ignored).
+
+Not touched, as instructed, but the same "until its docs PR merges" wording remains in three other places,
+which imply a plan-branch PR that does not exist: `backlog.md`'s T-13c row ("(on branch `docs/T-13c-plan`
+until its docs PR merges)"), `docs/04-process/prompts/2026-09-24-T-13c.md` (line 13) and
+`docs/04-process/prompts/2026-09-24-T-13c/README.md` (line 7). The controller may want a follow-up.

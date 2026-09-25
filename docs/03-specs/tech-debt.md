@@ -352,8 +352,10 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   On Chromium, Firefox and WebKit the page loads two font files from its own origin and none from
   another (Firefox lists each request twice). Screenshots of the login and Overview pages at 1440,
   768 and 375 px, against the build that used Google Fonts, differ by 46 / 6 / 6 (login) and
-  49 / 41 / 28 (Overview) anti-aliased pixels, at identical image sizes; that is Chromium on
-  macOS only. The files are not byte-identical to what `next/font/google` fetched (one variable
+  49 / 41 / 28 (Overview) pixels, at identical image sizes; that is Chromium on macOS only, and
+  only the login 1440 px diff image was opened (a few glyph edges marked), so "anti-aliasing" is
+  read from that one image and from the small counts, not seen in the other five. The files are
+  not byte-identical to what `next/font/google` fetched (one variable
   file there, two static weights here); `app/fonts/README.md` says so. Known and not fixed: nothing
   checks the hash of `OFL.txt` (the test reads only its title), and the layout check matches by
   substring, so a commented-out reference would satisfy it. T-16 lists the font in the third-party

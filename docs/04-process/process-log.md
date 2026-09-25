@@ -3227,12 +3227,16 @@ them too").
 ## 2026-09-25 — Phase 5: T-13c tech debt TD-7–TD-11 — execution
 
 - **Phase:** 5 (Build the slice), Release 1 — one of the tasks between T-13 and T-14 (backlog
-  v1.24). The plan gate was the planning session's; this entry is the execution. The plan file
-  `docs/04-process/plans/2026-09-24-T-13c.md` and its planning entry are on branch `docs/T-13c-plan`
-  (its docs PR not yet opened by the owner when this entry was written), not on `main` and not on
-  this branch, so this is a new entry and not the planning entry completed — the arrangement T-13
-  had. The plan's status line and the planning entry get their update (executed; what differed) in
-  the docs PR of the plan branch.
+  v1.24). The plan gate was the planning session's; this entry is the execution. The planning
+  session kept only the plan file, `docs/04-process/plans/2026-09-24-T-13c.md`, on branch
+  `docs/T-13c-plan` (checked 2026-09-25: the branch adds that one file to `origin/main` and has no
+  pull request); it is not on `main` and not on this branch. No planning entry exists on any
+  branch. The owner's answers to Q1–Q7 are recorded in this entry (under "Trigger" and "Owner
+  changes and reasoning"); the plan's findings F1–F10 are only in the plan file, apart from the
+  few this entry cites. So this is not the planning entry completed. The plan's status line still
+  reads "awaiting the go-ahead and the execution method". Whether to add a separate planning entry
+  (`AGENTS.md`: every substantive session gets one) or to merge the plan branch is the owner's
+  call.
 - **Participants:** Owner / Agent (Claude Code) — a controller agent with one implementer subagent
   per task (Sonnet 5), one at a time (one Postgres, one port). Task reviews: Task 4's review and
   re-review on Opus; the reviews of Tasks 1, 2, 3 and 5 and Task 5's re-review on Sonnet, against
@@ -3265,10 +3269,13 @@ them too").
     `README.md`), `app/layout.tsx` on `next/font/local`, the ESLint restriction with a violation
     and a control fixture, `tests/fixtures/fonts.ts` and `tests/unit/fonts.test.ts` (4 tests),
     `design-tokens.md` v1.4.
-  - Task 6, `fe1f910` and the commit that follows it — the three layer READMEs; `tech-debt.md`
-    v1.12 (TD-7–TD-11 **Fix in review**), `backlog.md` v1.27, SPEC-reset-and-test-support v1.6
-    (§2.5 and §2.7's first line only, approved by the owner in Q2); this entry;
-    `prompts/2026-09-24-T-13c.md` and its folder.
+  - Task 6, four commits after `5d015bf`. `fe1f910`: the three layer READMEs. `c70681c`:
+    `tech-debt.md` v1.12 (TD-7–TD-11 **Fix in review**), `backlog.md` v1.27,
+    SPEC-reset-and-test-support v1.6 (§2.5 and §2.7's first line only, approved by the owner in
+    Q2), this entry, `prompts/2026-09-24-T-13c.md` and its folder. `56044c8`: the copy of Task 6's
+    report in that folder. The fourth, subject `docs(process): correct T-13c's record — the
+    planning entry, the verified claims, the wording`, is the fix round of Task 6's review; this
+    entry was corrected in it.
 - **Numbers (the plan's F7, measured on this branch):** unit tests 77 files, 958 tests at the
   start; 960 after Task 1; 963 in 78 files after Task 3; 1029 in 80 files after Task 4's first
   commit and 1037 after its fix round; 1043 in 81 files after Task 5. The plan said 1 035 after all
@@ -3295,19 +3302,21 @@ them too").
     refuses `db:reset`'s seed step for a non-local URL, so SPEC-reset-and-test-support v1.6 says
     so, and T-14's row carries the hand-off.
 - **What the agent got right:**
-  - The plan's measurements held where they were runnable. Stylelint 17.15.0 added 75 packages,
-    `npm audit` reported 0 and the install-script test passed (3), as the plan measured. TD-9's
-    rule went red on the two real files when they were set to `1fr 1fr` (`page.module.css:40` and
-    `PotsCard.module.css:57`) and on the control fixture when the regex's first lookbehind was
-    removed. The three font hashes and the two file sizes matched the plan's. The offline
+  - Most of what the plan measured held when it was re-run; five counts did not (item 2 of "What
+    the agent got wrong"). Stylelint 17.15.0 added 75 packages, `npm audit` reported 0 and the
+    install-script test passed (3), as the plan measured. TD-9's rule went red on the two real
+    files when they were set to `1fr 1fr` (`page.module.css:40` and `PotsCard.module.css:57`) and
+    on the control fixture when the regex's first lookbehind was removed. TD-10's 46 URL-table
+    tests were red before the functions existed and green after, as predicted. The three hashes
+    (two fonts and `OFL.txt`) and the two font file sizes matched the plan's. The offline
     `next build` failed with the Google Fonts error before the change and passed after it, with no
     Google URL in `.next`. The three engines each loaded two font files from the app's own origin
     and none from another host.
   - Every guard was made to fail on purpose: TD-9's two mutations; each of TD-10's new conditions
     removed in turn (its own rows go red); the `next.config.ts` cut-out fixture; TD-11's
     hash/use/licence test in the red state before the layout switch (4 failures).
-  - Each implementer reported a number that differed from the plan and edited no expectation to
-    fit it (item 2 of "What the agent got wrong"). Each Important review finding (Tasks 4 and 5)
+  - Every implementer that met a number that differed from the plan reported it and edited no
+    expectation to fit it (item 2 of "What the agent got wrong"; the numbers of Tasks 1–3 matched). Each Important review finding (Tasks 4 and 5)
     was answered by a fix round of the same implementer, in a new commit.
 - **What the agent got wrong or missed** (the owner adds their own findings after review):
   1. **The plan's Task 4 code had a parsing gap; a fix round closed it.** `isLocalDatabaseUrl`
@@ -3325,15 +3334,18 @@ them too").
      re-review's differential fuzz — 1.4 million random URLs against `pg-connection-string` —
      found no URL the guard accepts that pg sends to a non-local host (the reviewer's run, not
      repeated here). The plan's Step 3 code is not the final code.
-  2. **Five numbers in the plan were wrong at the commit they were used at.** Task 4 Step 9's red
+  2. **Five numbers in the plan differed from what was measured.** Task 4 Step 9's red
      count `3 failed | 1 passed` measured `2 failed | 2 passed` (the two failing are the two its
      prose names; both controls pass without the guard). Task 5 Step 6's red count was 4, not 1
      (the fixture cases also run `fontProblems` against the real layout). Firefox reported four
      font requests, the same two URLs twice, where the plan said two per engine (Chromium and
      WebKit: two). The Overview screenshots differ by 49 / 41 / 28 pixels at 1440 / 768 / 375 px,
      not 48 / 40 / 25 (login: 46 / 6 / 6, as planned; no size mismatch). The unit total is 1 043,
-     not 1 035. The same pattern as T-13's fifth lesson: the plan's figures came from a scratch
-     tree (its F9) that no longer existed at execution.
+     not 1 035. Two causes are known: the Step 6 count (the fixture cases read the real layout)
+     and the unit total (Task 4's fix round added 8 tests to a plan that did not have them). For
+     the other three — Step 9's red count, Firefox's second listing, the Overview pixels — no cause
+     was established. T-13's fifth lesson, that a count is re-measured at the commit it is used
+     at, covers them.
   3. **The plan's README sentence overstated the lint rule's scope.** `app/fonts/README.md`, in
      the plan's words, said `eslint.config.mjs` forbids `next/font/google` in `app/` and `src/`.
      The block's `files` are `app/` and the `src/` layers `domain`, `shared`, `ui` and `webmcp` —
@@ -3350,9 +3362,12 @@ them too").
      Opus finding late in the branch instead of per task. The only Important finding in code came
      from Task 4's Opus review, and it was in code the plan dictated; whether an Opus review would
      have found more in the other four is not known.
-  5. **The plan is not on the task branch.** It is on `docs/T-13c-plan` (the ledger's first
-     ruling), so the backlog row's "plan: `docs/04-process/plans/2026-09-24-T-13c.md`" points at a
-     file that reaches `main` only when that branch's docs PR merges, as T-13's plan did.
+  5. **The plan is not on the task branch, and the planning session left no entry.** The plan is
+     on `docs/T-13c-plan` (the ledger's first ruling), which adds only that file and has no pull
+     request yet, so the backlog row's "plan: `docs/04-process/plans/2026-09-24-T-13c.md`" points
+     at a file that reaches `main` only if the owner merges that branch. T-13's plan was on a plan
+     branch too, but it had a planning entry there; this one has none, and the plan's status line
+     is not updated. Both are for the owner to decide.
   6. **The go-ahead and the execution method arrived together.** The plan asked for them as two
      open items; the owner's "start, subagent-driven" (2026-09-25) came as the additional text of
      a `/compact` instruction and was then repeated as a plain message.
@@ -3373,10 +3388,18 @@ them too").
     would satisfy it; the foreign-licence case asserts only `toHaveLength(1)`; the fixture cases
     read the real layout; only `.woff2` files are inspected. TD-9's, TD-10's and TD-11's known
     limits are also in `tech-debt.md` v1.12.
-- **Verified, not reasoned:** on `fe1f910` (Task 6's README commit, on top of `5d015bf`) plus the
-  uncommitted record files of this task, macOS, Node 26.7.0, npm 11.19.0, Postgres from
-  `compose.yaml`, nothing else on ports 3000 and 3113. The steps of `npm run test:all` were run one
-  by one, each a separate command, in the order of that script:
+- **Verified, not reasoned:** macOS, Node 26.7.0, npm 11.19.0, against the local Postgres the
+  controller set up. The steps of `npm run test:all` were run one by one, each a separate command,
+  in the order of that script. They did not all run on the same tree: the first run of each step
+  was on `fe1f910` (on top of `5d015bf`) plus the then-uncommitted edits of `tech-debt.md`,
+  `backlog.md` and SPEC-reset-and-test-support. This entry and the prompts folder did not exist yet
+  when the secrets scan, lint, format check, typecheck, unit tests, traceability and the API tests
+  ran; the E2E run was started before this entry was written, and `npm audit` ran after it. After
+  the records commit `c70681c`, the unit tests (81 files, 1043 tests), `format:check` and
+  `traceability` were re-run, green, and so was `npm run secrets:scan` (400 commits scanned, no
+  leaks in the diffs or the messages). Lint, typecheck, the API tests and the E2E run were not
+  re-run: only files under `docs/` changed after them, and none of those steps is expected to
+  read one. Results of the first runs:
   - `npm run secrets:scan` — "399 commits scanned … no leaks found" for the diffs and "no leaks
     found" for the commit and tag messages.
   - `npm run lint` (ESLint with `--max-warnings 0`, then `lint:css`), `npm run format:check`,
@@ -3401,6 +3424,9 @@ them too").
 - **Not verified:**
   - The CI verdict: the branch was not pushed and no pull request was open when this entry was
     written. Firefox and WebKit on Linux (the font check and the walkthrough ran on macOS only).
+  - That nothing else was using the ports the runs needed: the controller said the machine was
+    free, and nobody checked. The only evidence is that the API run built and started its own
+    server on port 3000 without a clash.
   - TD-8's keyboard walkthrough was not walked by hand. The comment was checked against the test
     body line by line and the unchanged test passes on the three engines (3 passed); SPEC-auth §6
     says "Tab order: demo box → fields → submit → footer link", forward only, which the new
@@ -3468,6 +3494,8 @@ them too").
   (login and Overview at 1440, 768 and 375 px, in the git-ignored workspace), the TD-8 walkthrough
   note ("Tab, Tab, Tab, … as in the test's comment; reverse order not walked"), "TD-8: no
   failing-first test — waived by the owner, Q1 (a)" and "TD-9: Stylelint 17.15.0 added as a dev
-  dependency — the owner's answer to Q4; npm audit 0". The owner reads and merges. The plan
-  branch's docs PR appends to this file and to `backlog.md` too, so expect trivial conflicts.
-  T-13d starts only after T-13c is merged; T-13a and T-13b have their own plan gates.
+  dependency — the owner's answer to Q4; npm audit 0". The owner reads and merges. T-13d starts
+  only after T-13c is merged, and T-14's row carries the hand-offs of v1.27 (the first seed, the
+  `VERCEL` setting); T-13a and T-13b have their own plan gates. The plan branch has no pull
+  request; whether to merge it and whether it gets a planning entry is the owner's call (see the
+  "Phase" field).
