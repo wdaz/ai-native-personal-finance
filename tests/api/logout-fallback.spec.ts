@@ -135,3 +135,40 @@ test("US-03 AC2 a same-origin POST to /login?reason=logout does not apply the fa
   expect(setCookies(response.headersArray())).toEqual([]);
   expect(await isLoggedIn(request)).toBe(true);
 });
+
+/**
+ * T-13d finding F-04/TD-15: POST /api/auth/logout checked no Sec-Fetch-Site of its own — unlike
+ * the GET fallback above, which requires exactly same-origin/navigate/document. A cross-site
+ * request (Sec-Fetch-Site: cross-site — what a form on another site sends) is refused; a
+ * same-origin one (what the app's own logOut() sends) still works, and so does a request that
+ * carries no Sec-Fetch-Site at all (a non-browser client, or a browser predating Fetch
+ * Metadata — SameSite=Lax is that case's own defence, as it always has been).
+ */
+test("T-13d F-04: POST /api/auth/logout refuses a cross-site request; the session lives", async ({
+  request,
+}) => {
+  await logIn(request);
+  const response = await request.post("/api/auth/logout", {
+    headers: { "sec-fetch-site": "cross-site" },
+  });
+
+  expect(response.status()).toBe(403);
+  expect(setCookies(response.headersArray())).toEqual([]);
+  expect(await isLoggedIn(request)).toBe(true);
+});
+
+test("T-13d F-04: POST /api/auth/logout still works same-origin, and with no Sec-Fetch-Site header", async ({
+  request,
+}) => {
+  await logIn(request);
+  const sameOrigin = await request.post("/api/auth/logout", {
+    headers: { "sec-fetch-site": "same-origin" },
+  });
+  expect(sameOrigin.status()).toBe(204);
+  expect(await isLoggedIn(request)).toBe(false);
+
+  await logIn(request);
+  const noHeader = await request.post("/api/auth/logout");
+  expect(noHeader.status()).toBe(204);
+  expect(await isLoggedIn(request)).toBe(false);
+});

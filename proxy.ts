@@ -92,6 +92,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // (review finding I1).
   const resetInvalidated = payload !== null && !authenticated && isSessionValid(payload, now, null);
   const logoutFallback = isLogoutFallback(request);
+  const crossSiteLogout =
+    pathname === "/api/auth/logout" &&
+    request.method === "POST" &&
+    request.headers.get("sec-fetch-site") === "cross-site";
 
   let response: NextResponse;
 
@@ -117,6 +121,15 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     }
   } else if (!isApi && AUTH_PAGES.test(pathname) && authenticated && !logoutFallback) {
     response = NextResponse.redirect(new URL("/overview", request.url), 302);
+  } else if (crossSiteLogout) {
+    // T-13d finding F-04/TD-15: POST /api/auth/logout needs no session (SPEC-auth §2.10), by
+    // design — so, unlike every other route here, it had no check of its own against a
+    // cross-site request (a hostile page auto-submitting a form to it) at all, relying only on
+    // SameSite=Lax. A same-origin fetch (this app's own logOut(), or a client with no Fetch
+    // Metadata support) still passes: only an explicit Sec-Fetch-Site: cross-site is refused.
+    // Not run through ErrorEnvelope/SPEC-auth §2.10 — logout has no documented error shape,
+    // and this is a proxy-level rejection, not a route-handler answer.
+    response = NextResponse.json({ message: "This request must be same-origin" }, { status: 403 });
   } else {
     // Next 16 takes the nonce it puts on its own inline scripts and styles from the *request's*
     // Content-Security-Policy header (next/dist/server/app-render/app-render.js:209-210) — set
