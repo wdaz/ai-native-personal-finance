@@ -265,3 +265,41 @@ and in `git log`, not in this file).
   did not see the reviews.
 - The "Open for the owner" line on `BASE_URL` and the first-deploy window is my one-line paraphrase of the two
   items the controller named; the review's own wording was not available to me.
+
+## Close-out (after the scoped Opus re-review of the final wave: 12 findings addressed, six new minors, all text)
+
+One new commit on top of `8aa2936`, not amended, not pushed, subject `docs: close out T-13c's records —
+stale sentences and the wave's review` (its id is in the reply and in `git log`). Docs only, plus one comment
+in `.env.example`. No re-review of this commit was run; the controller reads its diff.
+
+- `.env.example` (comment only, lines 6-8): now names the full rule — a host that is not localhost, 127.0.0.1
+  or [::1], or a URL that is not a plain postgres:// or postgresql:// URL (no whitespace, no host= or
+  hostaddr= query, no malformed % escape). `tests/unit/scaffold.test.ts` and `tests/unit/secret-guard.test.ts`
+  read this file; both were run.
+- `docs/03-specs/tech-debt.md`: TD-10 — the "known and not fixed" sentence about the message and
+  `.env.example` giving only the host is gone (the messages were fixed in `b041b16`, the comment here); the
+  still-true deferred minors stay (no standing cut-out fixture for the seed and Playwright guards; the seed
+  control test asserts a non-zero exit and no `Refusing` line, not that a connection was tried). TD-9 — the
+  sentence about the config header versus the regex is gone (the header was rewritten in `8aa2936`); the
+  lower-case property name minor stays.
+- `docs/03-specs/backlog.md`: T-13d item (3) now says `prisma migrate reset` resets and applies the
+  migrations but does not run `prisma/seed.ts` (Prisma 7 no longer seeds automatically; only `db seed` calls the
+  seed runner), so on a non-local URL it ends with an empty database; `migrate reset` and `migrate dev`'s reset
+  ask for confirmation, `db push --force-reset` does not; labelled as read from the installed CLI's source
+  (Prisma 7.10.0, `node_modules/prisma/build/cli.js`) by the whole-branch review's second pass, not run. I did
+  not read that file myself; the wording follows the controller's relay. v1.27's changelog now names `migrate
+  dev`'s reset prompt and says the T-14 sentence on `db:reset` was reworded (the seed step refuses, after the
+  unguarded `prisma migrate deploy`).
+- `docs/04-process/process-log.md` (this task's entry only; `git diff origin/main` on it: 347 insertions, 0
+  deletions): "The whole-branch review's Minor 2" is described by content; "Participants" credits the Task 6
+  re-review's further minors to the final wave and records the Opus 5.5 re-review of the wave (12 addressed, six
+  new minors) and that the close-out commit itself was not re-reviewed; the account of `b041b16` now says only
+  `localDatabaseRefusal`'s message says the step "resets or seeds" the database, while `testEnvRefusal`'s says
+  the URL "would expose … the reset and seed routes"; "Not verified" says the re-review ran; the deferred-minor
+  list keeps its historical text with the appended correction that `pg-connection-string` `index.js:20` also
+  re-encodes on a malformed `%` escape (I checked that line: the test is `/ |%[^a-f0-9]|%[a-f0-9][^a-f0-9]/i`);
+  a bullet for the close-out commit under "Produced"; "Next" no longer lists a re-review as pending.
+- Runs: `npx vitest run tests/unit/scaffold.test.ts tests/unit/secret-guard.test.ts
+  tests/unit/shared/env.test.ts` — "Test Files 3 passed (3)", "Tests 198 passed (198)". `npm run traceability`
+  — "all 18 Release 1 stories are named in a test title". `sh scripts/secret-scan.sh staged` — silent, exit 0,
+  run on the four edited files and again with the report copy staged. The report copy was compared with `cmp`.

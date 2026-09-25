@@ -262,9 +262,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   dependency `stylelint` 17.15.0 (75 packages, `npm audit` 0, the install-script test still
   passes). Not read: rows, `grid-auto-columns`, the `grid` shorthands, a track list held in a
   `var()`. Known and not fixed: the property name is matched in lower case only (Prettier
-  lowercases it in `format:check`), and the config's header says a length or a percentage counts
-  as definite where the regex accepts only `0`, `px`, `rem`, `em`, `ch`, `vw`, `vh`, `vmin`,
-  `vmax` and `%` — it fails closed.
+  lowercases it in `format:check`).
 
 ## TD-10 — Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database
 
@@ -306,11 +304,10 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   the fourth is the bypass itself, which either of two conditions catches; removing a condition
   turned its own rows red. The re-review's differential fuzz — 1.4 million random URLs against
   `pg-connection-string` — found no URL the guard accepts that pg sends to a non-local host (the
-  reviewer's run, not repeated here). Known and not fixed: the refusal message and `.env.example`
-  give only the host as the reason, though the whitespace, scheme and escape rules also refuse a
-  URL that does name this machine (a trailing space in `.env.local` reads "does not name this
-  machine"); the seed and Playwright guards have no standing cut-out fixture (only
-  `next.config.ts` has one).
+  reviewer's run, not repeated here). The refusal messages (`b041b16`) and `.env.example`'s
+  comment name the whole rule. Known and not fixed: the seed and Playwright guards have no standing cut-out
+  fixture (only `next.config.ts` has one), and the seed's control test asserts a non-zero exit
+  and no `Refusing` line, not that a connection was tried.
 
 ## TD-11 — Every `next build` downloads Public Sans from Google Fonts
 
