@@ -1,6 +1,10 @@
 # Backlog — Release 1 (vertical slice: Auth + Overview)
 
-Status: **Approved** (v1.34 — 2026-09-25: T-13d's security review — plan Q1–Q8 decided; the
+Status: **Approved** (v1.35 — 2026-09-25: T-13d's fixes — TD-12, TD-15, TD-16 and TD-18 fixed
+(owner decision: everything except the two Vercel-dependent findings, TD-14 and TD-17); TD-13
+investigated, no application-level fix possible (`TRACE` is a Fetch-spec forbidden method);
+`tech-debt.md` v1.19; `auth.md` v1.0.9 documents TD-15's new behaviour; PR #47 open (not yet
+merged); v1.34 — 2026-09-25: T-13d's security review — plan Q1–Q8 decided; the
 131-item OWASP checklist walked (49 PASS, 8 FAIL, 9 BY DESIGN, 46 N/A, 19 NOT TESTED) plus the four
 backlog-specific items; 7 findings (`tech-debt.md` TD-12–TD-18, one FAIL Medium — TD-14, the proxy's
 `.rsc` matcher gap — must be checked against the T-14 preview before anything else at that task);

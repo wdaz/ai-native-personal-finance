@@ -4275,3 +4275,64 @@ them too").
   should be checked against the T-14 preview before that task proceeds past it**, regardless of
   what the owner decides for the others. The owner separately checks the GitHub-Settings items
   (Q3) on a local Claude Code session. Nothing from this task reaches `origin` until then.
+
+## 2026-09-25 — Phase 5: T-13d fixes (TD-12/15/16/18), PR #47
+
+- **Phase:** 5 (Build the slice), Release 1 — continuing the same session as the planning and
+  execution entry above, after the owner triaged the report.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5).
+- **Trigger:** the owner asked which findings were both fixable without touching anything
+  Vercel-dependent and worth prioritizing; after a prioritized answer, "Vercelle bağlı heç nəyə
+  toxunma. Qalanlarını düzəlt" ("Don't touch anything Vercel-related. Fix the rest."), then "Push
+  et və pr aç" ("Push it and open a PR").
+- **Prompt(s):** the conversation itself; no separate prompt file (a continuation of
+  `prompts/2026-09-25-T-13d.md`'s session, not a new task).
+- **Produced:** on `task/T-13d-security-review` (now pushed): four fixes, each with a failing-first
+  test (TD-12: `src/server/session.ts`'s `readCookie`; TD-15: `proxy.ts` refuses a cross-site
+  `POST /api/auth/logout`; TD-16: `next.config.ts`'s `poweredByHeader: false`; TD-18:
+  `src/server/rate-limit.ts`'s `recordAttempt` no longer persists a success row); `tech-debt.md`
+  v1.19 records each as "Fix in review" with its evidence, and TD-13 (`TRACE`) as investigated —
+  no application-level fix exists (undici's own Fetch-spec rejection of `TRACE` as a forbidden
+  method, thrown inside Next's compiled server before this app's code runs); `docs/03-specs/
+  auth.md` v1.0.9 documents TD-15's new behaviour (§2.7, §7); this entry; PR #47.
+- **Evidence:** each fix's test failed red before the fix and passed after (per-fix commands and
+  output in `tech-debt.md`'s "Fix in review" notes and the PR body). Together:
+  `npx playwright test --project=api --workers=1` — **107 passed** (up from 103 on `main`);
+  `npm run lint`, `format:check`, `npx tsc --noEmit`, `npm run traceability` — all clean;
+  `npm run test:coverage` — 1046/1047 unit tests, the one failure the same pre-existing,
+  environment-caused (`npm` 10.9.7 < the repo's `>= 11.19` floor) failure T-13b's session already
+  recorded, not from this diff. `npm run test:e2e` not run (this container has only Chromium, and
+  none of the four fixes touch any UI a browser test exercises), flagged rather than silently
+  skipped.
+- **What the agent got right:** treated the owner's "fix the rest" as an instruction to classify
+  first, not to fix everything — TD-14 and TD-17 (both explicitly Vercel-dependent) were left
+  untouched exactly as asked, and TD-13, initially unclear whether it was fixable at all, was
+  investigated to a definite root cause (a stack trace naming undici's own forbidden-method
+  rejection) rather than left as a vague "needs investigation." Each of the four fixes kept its
+  own failing-first test and its own commit, matching this repository's "one concern per PR
+  commit" discipline even though the owner asked for a batch. SPEC-auth was amended for TD-15's
+  new behaviour rather than left silently diverging from the spec, per the Definition of Done.
+- **What the agent got wrong or missed:** (1) `Array.prototype.findLast` (the first, more direct
+  fix for TD-12) does not typecheck against this project's ES2022 `tsconfig.json` lib target
+  (`findLast` needs ES2023) — caught only by running `npx tsc --noEmit` after the first attempt,
+  not anticipated before writing it; corrected to `.reverse().find(...)`, which needed no lib
+  bump. (2) TD-15's fix chose a 403 body shape (`{"message": "..."}`) that is deliberately *not*
+  `ErrorEnvelope`-shaped, reasoning that a proxy-level rejection of an undocumented route shouldn't
+  force a change to the shared error-code union (`src/shared/schemas.ts`'s `ERROR_CODES`) for one
+  narrow case — a defensible call, but it was made unilaterally rather than flagged as a choice
+  the owner might want to weigh in on, since extending that union was the more "consistent with
+  the rest of the codebase" alternative.
+- **Owner changes and reasoning:** the two-part triage itself ("don't touch Vercel-related, fix
+  the rest") is the owner's own scoping decision, already the trigger above.
+- **Disagreements:** none.
+- **Lessons for the process:** (1) When an owner says "fix the rest" after a prioritized list that
+  included one item needing root-cause investigation first (TD-13), that investigation is still
+  part of "the rest" — worth doing before deciding whether it is fixable, not skipping it as
+  presumptively Vercel-adjacent just because it was originally grouped with other uncertain items.
+  (2) A fix that adds a new HTTP response your own spec's error-envelope schema does not cover is
+  a real fork in the road (extend the shared schema vs. keep the response ad hoc) that is worth
+  surfacing explicitly, not just picking the narrower option and moving on.
+- **Next:** the owner reviews PR #47 (CI, the report Artifact, the four fixes) and merges when
+  ready. TD-14 and TD-17 stay open, explicitly deferred to T-14's own work. The owner's own
+  GitHub-Settings check (Q3) and any decision on TD-13's "no fix possible" status are still
+  theirs to close out.
