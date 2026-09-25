@@ -3224,19 +3224,100 @@ them too").
 - **Next:** the owner reviews and merges; alert #3 closes when CodeQL analyses `main` after the
   merge.
 
+## 2026-09-24 — Phase 5: T-13c tech debt TD-7–TD-11 — planning session
+
+- **Phase:** 5 (Build the slice), Release 1 — the plan gate (`build-workflow.md` §2) for the task
+  the backlog (v1.24–v1.25) put between T-13 and T-14. **This entry was added on 2026-09-25, at
+  the owner's request and after the fact.** The planning session kept only the plan file and wrote
+  no entry of its own, so this one is written afterwards, not during the planning: by the
+  controller of the execution (Claude Code, Sonnet 5), in the same conversation, which continued
+  after a `/compact`, from the plan, its git history and the planning session's own summary of
+  itself. An Opus 5.5 subagent checked it against the plan and its git history, and its findings
+  are applied. It sits here, in the task's pull request and before the execution entry, so that
+  the two read in the order they happened and so that the plan branch and the task branch do not
+  both edit this file.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, superpowers `writing-plans`; an advisor
+  review of the plan before it was handed over — from the session's own summary)
+- **Trigger:** `/superpowers:writing-plans t-13c td-11.` on 2026-09-24, after the owner scheduled
+  TD-7–TD-11 before the deploy (backlog v1.24 for TD-7–TD-10, v1.25 for TD-11, which was found by
+  a failed CI leg on PR #36).
+- **Prompt(s):** none — the session was started by the slash command alone
+  (`prompts/2026-09-24-T-13c.md`).
+- **Produced:** `docs/04-process/plans/2026-09-24-T-13c.md`, about 2 430 lines: Global
+  Constraints, Review Focus, findings F1–F10, questions Q1–Q7 with a recommendation each, six
+  tasks (one per TD, one for the layer READMEs and the records) and a self-review. It is on branch
+  `worktree-plan-t-13c`, pushed as `docs/T-13c-plan` in three commits: `1e96133` (v0.1,
+  2026-09-24, "awaiting the owner's answers"), `20d8c00` (F10's wording) and `c9bec97` (v0.2,
+  2026-09-25: the owner's answers recorded, Task 3 rewritten for Stylelint). There is no pull
+  request, and the plan's status line still reads "awaiting the go-ahead and the execution
+  method". Nothing else changed in the tree: every code block in the plan was written to the
+  worktree, run and removed again (plan F9) — the scratch verification `build-workflow.md` §2
+  allows, run on 2026-09-24 and again on 2026-09-25 for Task 3's rewrite; the plan's header
+  discloses it as a deviation for the owner. Outside the tree: a scratch database
+  `personal_finance_t13c` (dropped on 2026-09-24) and a git-ignored `.env.local`.
+- **What the agent got right:** measured before it proposed (plan F1–F5). TD-7 reproduces, and the
+  new test is red on today's code. The tree already satisfies TD-9's rule (five declarations, all
+  `minmax(0, …)`). node-postgres reads `?host=` over a URL's own host, so a guard on
+  `URL.hostname` is bypassable (F4a). `VERCEL` exists only while a Vercel project setting is on
+  (Vercel's documentation, read 2026-09-24, not a measurement), so the database-host line has to
+  be the one the guard relies on (F4b). `next start` runs
+  `next.config.ts` again (F4c). SPEC-reset-and-test-support §2.5 names `npm run db:reset` for the
+  first deploy, which the guard refuses; the plan raised that as Q2 and drafted the spec wording.
+  `next build` with every outbound HTTPS request sent to a dead proxy fails on Google Fonts before
+  the change and passes after. Flat-config lint rules replace their options per block, so the
+  font restriction had to share the Prisma block (F5f). When the owner overruled a recommendation
+  (Q4), the plan measured what the choice cost — 75 packages, `npm audit` 0, the install-script
+  policy test passing, no CI change — instead of arguing.
+- **What the agent got wrong or missed:**
+  - The plan's first commit was stopped by the pre-commit secret scan: 16
+    `postgres_connection_string` findings, all fake URLs in the plan's prose and in the test code
+    it quoted (F10). The same URLs in the new test files would have stopped their commits too;
+    the plan was rewritten to the scan's placeholder rules before it was handed over.
+  - A first draft of the `design-tokens.md` v1.4 changelog named the font variable in backticks,
+    which turned `tests/unit/scaffold.test.ts` red (F5g).
+  - From the planning session's own summary, not from the plan: a first claim that existing
+    tests would break on an unconditional `notify()` in TD-7's fix was unverified, and was
+    removed (the fix notifies only when a failure was cleared); and the advisor review found
+    three defects in the plan's steps — the pixel comparison ran before the commit, so a
+    `git checkout` would have restored the wrong layout; a `$scratch` shell variable this harness
+    refuses;
+    a claim that had not been measured — all fixed before the plan was handed over.
+  - The plan recommended a unit test for TD-9 over a linter; the owner chose a linter, and Task 3
+    was written twice (a hand-written scanner first, then Stylelint).
+  - What the plan's measurements did not catch is in items 1–3 of the execution entry's "What
+    the agent got wrong or missed": the URL-parsing gap in TD-10's guard, five numbers that
+    differed, and a README sentence that overstated the lint rule's scope.
+- **Owner changes and reasoning:** the owner's answers of 2026-09-25, recorded in the plan (v0.2)
+  and quoted in the execution entry under "Trigger": Q1 (a) fix the comment; Q2, Q3, Q5 and Q6 as
+  recommended; Q4 a linter; Q7 a question back, which the plan renders as "T-13a/b are in the
+  plan, do you recommend it?" (the owner's own words are in the execution entry under
+  "Trigger"). The owner's reasons are not recorded beyond the answers.
+- **Disagreements:** Q4. The plan recommended the unit test (no dependency: one 50-line helper and
+  one 43-line test); the owner chose the linter. The owner decides (`AGENTS.md` §5): the plan
+  measured the cost of the choice and rewrote Task 3; the decision was then recorded by the
+  execution's Task 6 (commit `c70681c`: the tech-debt entry, the backlog changelog and the
+  execution entry below). On Q7 the plan answered that T-13a/b are not in it and recommended
+  running T-13c on its own branch now, with T-13d after it merges.
+- **Lessons for the process:** the secret scan reads fake connection strings, so a plan or a test
+  that shows a URL guard needs placeholder passwords from the start. The plan gate's scratch
+  verification found what reading would not: a `?host=` bypass and a scaffold-test trap. When
+  the owner overrules a recommendation, measuring the cost of their
+  choice is more useful than repeating the recommendation. A plan's "Expected" numbers are
+  measured on a scratch tree and drift; the execution entry lists the ones that did.
+- **Next:** the owner's go-ahead — "start, subagent-driven", 2026-09-25 — and the execution entry
+  below.
+
 ## 2026-09-25 — Phase 5: T-13c tech debt TD-7–TD-11 — execution
 
 - **Phase:** 5 (Build the slice), Release 1 — one of the tasks between T-13 and T-14 (backlog
-  v1.24). The plan gate was the planning session's; this entry is the execution. The planning
-  session kept only the plan file, `docs/04-process/plans/2026-09-24-T-13c.md`, on branch
-  `docs/T-13c-plan` (checked 2026-09-25: the branch adds that one file to `origin/main` and has no
-  pull request); it is not on `main` and not on this branch. No planning entry exists on any
-  branch. The owner's answers to Q1–Q7 are recorded in this entry (under "Trigger" and "Owner
-  changes and reasoning"); the plan's findings F1–F10 are only in the plan file, apart from the
-  few this entry cites. So this is not the planning entry completed. The plan's status line still
-  reads "awaiting the go-ahead and the execution method". Whether to add a separate planning entry
-  (`AGENTS.md`: every substantive session gets one) or to merge the plan branch is the owner's
-  call.
+  v1.24). The plan gate was the planning session's, recorded in the planning entry just above
+  (added on 2026-09-25, after the fact); this entry is the execution. The plan file,
+  `docs/04-process/plans/2026-09-24-T-13c.md`, is on branch `docs/T-13c-plan` (checked
+  2026-09-25: the branch adds that one file to `origin/main` and has no pull request); it is not
+  on `main` and not on this branch. The owner's answers to Q1–Q7 are recorded in this entry
+  (under "Trigger" and "Owner changes and reasoning"); the plan's findings F1–F10 are in the plan
+  file, apart from the few this entry cites. The plan's status line still reads "awaiting the
+  go-ahead and the execution method". Whether to merge the plan branch is the owner's call.
 - **Participants:** Owner / Agent (Claude Code) — a controller agent with one implementer subagent
   per task (Sonnet 5), one at a time (one Postgres, one port). Task reviews: Task 4's review and
   re-review on Opus; the reviews of Tasks 1, 2, 3 and 5 and Task 5's re-review on Sonnet, against
@@ -3252,7 +3333,11 @@ them too").
   handles them. A re-review of the close-out commit itself was not run: the controller read its
   diff. The execution method, subagent-driven development, is the owner's choice. This entry was
   written by the Task 6 implementer (Sonnet 5) from the controller's ledger and the per-task
-  reports, and corrected and extended by the same implementer in the fix rounds.
+  reports, and corrected and extended by the same implementer in the fix rounds. The planning
+  entry above, and the passages of this entry that refer to it (the Phase field, deviation 5, an
+  open item and Next), were written afterwards by the controller (Sonnet 5), at the owner's
+  request, in the commit `docs(process): add T-13c's planning-session entry`; an Opus 5.5
+  subagent checked them and its findings are applied.
 - **Trigger:** the owner's answers to the plan's Q1–Q7 on 2026-09-25 — "Q1 - a, Q2 - tövsiyə olan,
   q3 - tövsiyyə olan, q4 - linter, q5 - tövsiyyə olan, q6 - tövsiyyə olan, q7 - t-13 a/b plana
   daxildir ki, tövsiyyə edirsən?" (Q1 (a); Q2, Q3, Q5 and Q6 as recommended; Q4 a linter; Q7 a
@@ -3399,12 +3484,14 @@ them too").
      Opus finding late in the branch instead of per task. The only Important finding in code came
      from Task 4's Opus review, and it was in code the plan dictated; whether an Opus review would
      have found more in the other four is not known.
-  5. **The plan is not on the task branch, and the planning session left no entry.** The plan is
-     on `docs/T-13c-plan` (the ledger's first ruling), which adds only that file and has no pull
-     request yet, so the backlog row's "plan: `docs/04-process/plans/2026-09-24-T-13c.md`" points
-     at a file that reaches `main` only if the owner merges that branch. T-13's plan was on a plan
-     branch too, but it had a planning entry there; this one has none, and the plan's status line
-     is not updated. Both are for the owner to decide.
+  5. **The plan is not on the task branch, and the planning session left no entry of its own.**
+     The plan is on `docs/T-13c-plan` (the ledger's first ruling), which adds only that file and
+     has no pull request yet, so the backlog row's "plan:
+     `docs/04-process/plans/2026-09-24-T-13c.md`" points at a file that reaches `main` only if the
+     owner merges that branch. T-13's plan was on a plan branch too, and its planning entry came
+     with that branch; this one's planning entry was added afterwards, on 2026-09-25 at the
+     owner's request, in this pull request (the entry above), and the plan's status line is not
+     updated. Whether to merge the plan branch is for the owner to decide.
   6. **The go-ahead and the execution method arrived together.** The plan asked for them as two
      open items; the owner's "start, subagent-driven" (2026-09-25) came as the additional text of
      a `/compact` instruction and was then repeated as a plain message.
@@ -3554,19 +3641,20 @@ them too").
     review's minor about `db:reset` running `prisma migrate deploy` before the seed refuses: a
     migration from an unmerged feature branch would reach a non-local database first. T-14 runs `prisma migrate deploy` directly, so a
     `db:reset`-only pre-check would not get in its way. The controller did not decide it.
-  - Whether the plan branch `docs/T-13c-plan` is merged and gets a planning entry (see "Phase").
+  - Whether the plan branch `docs/T-13c-plan` is merged; its planning entry is in this pull
+    request (see "Phase").
   - Two things the whole-branch review declined to judge, noted here in one line each so a later
     session can look: a `BASE_URL` (the Playwright config's `baseURL`) pointed at a remote server,
     which the `DATABASE_URL` check does not read; and the first-deploy window between
     `prisma migrate deploy` and the first `POST /api/admin/reset`, when the database is empty.
-- **Next:** the controller pushes and opens a draft PR whose description is the Definition of
-  Done checklist, ticked, with the screenshots of Task 5 (login and Overview at 1440, 768 and
-  375 px, in the git-ignored workspace), the TD-8 walkthrough
+- **Next:** the controller pushes and opens a draft PR (done afterwards: #39) whose description
+  is the Definition of Done checklist, ticked, with the screenshots of Task 5 (login and
+  Overview at 1440, 768 and 375 px, in the git-ignored workspace), the TD-8 walkthrough
   note ("Tab, Tab, Tab, … as in the test's comment; reverse order not walked"), "TD-8: no
   failing-first test — waived by the owner, Q1 (a)" and "TD-9: Stylelint 17.15.0 added as a dev
   dependency — the owner's answer to Q4; npm audit 0". The owner reads and merges. T-13d starts
   only after T-13c is merged; its row carries a hand-off of v1.27 (the stock Prisma commands that
   reset a database are not guarded), and T-14's row carries the others (the first seed, the
   `VERCEL` setting, whether `vercel env pull` writes `.env.local`); T-13a and T-13b have their own
-  plan gates. The plan branch has no pull request; whether to merge it and whether it gets a
-  planning entry is the owner's call (see the "Phase" field).
+  plan gates. The plan branch has no pull request; whether to merge it is the owner's call, and
+  its planning entry is in this pull request (see the "Phase" field).
