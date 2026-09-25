@@ -1,0 +1,18 @@
+# Keeps the GitHub Actions pinned in .github/workflows/ current (T-13d F8). Each pin is a full
+# commit SHA with the release it was resolved from in a trailing comment; Dependabot reads that
+# comment, opens a pull request when a newer release exists, and rewrites both together.
+#
+# One grouped pull request per week, so a solo maintainer reviews one change, not one per
+# action. Its pull requests target the default branch (no `target-branch` set).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      github-actions:
+        patterns:
+          - "*"

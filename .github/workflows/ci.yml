@@ -1,5 +1,13 @@
 name: CI
 
+# Every action is pinned to a full commit SHA, with the release it was resolved from in a
+# trailing comment (T-13d F8; the repository's `sha_pinning_required` setting enforces it).
+# `.github/dependabot.yml` keeps the pins current.
+#
+# A job's `name:` (and the E2E matrix label) is the name of its status check. Anything that
+# refers to a check by that string, such as a branch ruleset's required status checks, has to
+# change with it, or the renamed check is never reported and the pull request waits forever.
+
 on:
   pull_request:
   push:
@@ -22,11 +30,11 @@ jobs:
     name: lint · typecheck · unit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -86,11 +94,11 @@ jobs:
       RESET_SECRET: "ci-only-reset-secret-not-a-real-secret"
       CRON_SECRET: "ci-only-cron-secret-not-a-real-secret"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -149,11 +157,11 @@ jobs:
       # The matrix leg's mode; the mode-specific specs skip themselves in the other one.
       WEBMCP_MODE: ${{ matrix['webmcp-mode'] }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -172,7 +180,7 @@ jobs:
 
       - name: Upload the Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: playwright-report-e2e-${{ matrix.browser }}-${{ matrix['webmcp-mode'] }}
           path: playwright-report/
@@ -182,7 +190,7 @@ jobs:
     name: secret scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           # Every commit, not only the tip. scripts/secret-scan.sh refuses a shallow clone
           # rather than pass on one commit (NFR-S5, T-02a).
@@ -200,11 +208,11 @@ jobs:
     name: npm audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version-file: .nvmrc
 
