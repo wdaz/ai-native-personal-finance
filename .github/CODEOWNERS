@@ -1,0 +1,11 @@
+# Code owners (T-13d plan gate, Q4 — owner decision, 2026-09-25: "Codeowner kimi məni göstər").
+# governance.md's Roles table names one Owner (Ruslan) and no other reviewer; the GitHub
+# collaborator list confirms it (one collaborator, @wdaz, admin — read live during T-13d's
+# planning, docs/04-process/plans/2026-09-25-T-13d.md, Finding F7). This file names that owner
+# for every path so a required-review branch rule has someone to route to.
+#
+# It enforces nothing by itself: GitHub only requires a code-owner review when a branch
+# ruleset's "Require review from Code Owners" setting is also on, and this session's tools
+# cannot read or change that setting (same plan, Review Focus 2 / Q3) — confirm it directly in
+# Settings > Rules for `main` if enforcement, not just attribution, is the goal.
+* @wdaz
