@@ -4892,3 +4892,40 @@ them too").
   previews behind Vercel Authentication (TD-14's check needs `x-vercel-protection-bypass`),
   `DATABASE_URL_UNPOOLED` for `migrate deploy`, `npm ci` as the install command, Neon branch
   clean-up against the free plan's ten branches, and OWASP's 19 items not tested without a host.
+
+## 2026-09-25 — Phase 5: before T-14 — Node 24, addendum (CI result, records, a correction)
+
+- **Phase:** 5 (Build the slice), Release 1 — the closing pass of the entry above, after its pull
+  request #57 was merged (2026-09-25 17:48 UTC, merge `36fbf93`, last head `ee8c345`). That entry
+  is not edited (append-only); this one corrects and completes it.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:** the owner's "PR merged", which arrived while the agent was checking its own record
+  against the review and `build-workflow.md` before its final report.
+- **Prompt(s):** none new. The session's two subagent briefs and reports are now in
+  `prompts/2026-09-25-node-24/` (`subagent-vercel-neon-research.md`, `subagent-opus-review.md`),
+  as `build-workflow.md` step 7 asks.
+- **Produced:** those two records; this entry; pull request #57's description, edited after the
+  merge to carry the CI result and the corrected count below (GitHub keeps its edit history).
+- **CI on #57's last head `ee8c345`:** all eleven checks passed — the four E2E legs (Chromium
+  polyfill and off, Firefox, WebKit), `lint · typecheck · unit`, `API tests (Postgres)`, `npm
+  audit`, `secret scan`, and CodeQL's three. The `lint · typecheck · unit` job's log reads
+  `Resolved .nvmrc as 24`, `Found in cache @ /opt/hostedtoolcache/node/24.21.0/x64`, `node:
+  v24.21.0`; the other jobs use the same `setup-node` step, whose logs were not read one by one.
+  Firefox, WebKit and Chromium-off, which the entry above says "ran only in this pull request's
+  CI", are green on Node 24 there.
+- **What the agent got wrong or missed:** the entry above says of the whole-branch review "All
+  four were fixed. Its fifth point … is left as it is". The review had six findings (one
+  Important, five Minor): five were fixed — the violation fixtures, Node 20 out of the list, an
+  exact `@types/node` pin accepted, the npm floor's "holds" limited to local runs and CI, and "back
+  to 26" attributed as the agent's proposal the owner approved — and one was left, CI's missing
+  `check-latest`. The pull request's description had "four fixed … one left" as well, said
+  `secrets:scan` ran as the pre-commit hook (never observed; CI's `secret scan` is the evidence),
+  and marked the prompts item N/A although step 7 applies.
+- **Owner changes and reasoning:** none.
+- **Disagreements:** none.
+- **Lessons for the process:** before writing a review's outcome down, count the fixes and the
+  deferrals against the report's own totals.
+- **Next:** the owner reviews and merges this pull request. In the main checkout: `nvm use`, then
+  `npm ci --ignore-scripts` (its `node_modules` still holds `@types/node` 26). Pull request #57
+  asks two questions — an ADR-0001 amendment for the Node rule, and a backlog item for "back to
+  26". Then T-14's prompt and plan.
