@@ -41,19 +41,19 @@ for (const path of APP_PAGES) {
   });
 }
 
-test("SPEC-auth §2.9 (T-05 hand-off): an authenticated page is no-store because the middleware says so — not Next's default", async ({
+test("SPEC-auth §2.9 (T-05 hand-off): an authenticated page is no-store because the proxy says so — not Next's default", async ({
   request,
 }) => {
   const response = await request.get("/transactions", { maxRedirects: 0 });
   expect(response.status()).toBe(200);
-  // The middleware's literal. Next copies middleware headers onto the response before it
+  // The proxy's literal. Next copies proxy headers onto the response before it
   // renders and writes its own Cache-Control only when none is set yet, and its value for a
   // dynamic page is never the bare "no-store" — so an exact match can only be the
-  // middleware's (T-07 plan D17).
+  // proxy's (T-07 plan D17).
   expect(response.headers()["cache-control"]).toBe("no-store");
 });
 
-test("SPEC-auth §2.9: the contrast — a public page answers Next's own default, so the test above isolates the middleware", async ({
+test("SPEC-auth §2.9: the contrast — a public page answers Next's own default, so the test above isolates the proxy", async ({
   playwright,
   baseURL,
 }) => {

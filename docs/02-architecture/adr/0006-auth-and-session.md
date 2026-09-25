@@ -1,6 +1,14 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
-- Status: **Accepted** (amended 2026-09-24) · Date: 2026-09-13
+- Status: **Accepted** (amended 2026-09-24; amendment (6) proposed 2026-09-25) · Date: 2026-09-13
+- Amendment 2026-09-25 (6) — **proposed, awaiting the owner** (T-13a, TD-2): Next 16 renamed the
+  `middleware` file convention to `proxy`. `middleware.ts` is now `proxy.ts` and
+  `tests/api/middleware.spec.ts` is `tests/api/proxy.spec.ts`, so every mention of those paths and of
+  "the middleware" in this ADR — the body and the amendments below — means the file and the test under
+  their new names. A proxy always runs on the Node.js runtime and Next refuses a `runtime` option in
+  its config, so the Node.js runtime chosen at the T-05 plan gate (Q2) is now the only one. No
+  decision above changes: the route matrix, the session and reset-epoch checks, the headers and the
+  nonce are the same code.
 - Amendment 2026-09-24 (5) — **Accepted by the owner, 2026-09-24** ("2. Bəli" — "2. Yes", the
   answer to the pre-T-14 planning's open item "ADR-0006 amendment (5) and SPEC-webmcp-tools
   v1.0.5 … accept?"; drafted by the agent during T-13, its code merged earlier in PR #28) (T-13

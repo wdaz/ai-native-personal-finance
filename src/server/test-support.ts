@@ -34,7 +34,7 @@ async function seed(request: Request): Promise<Response> {
   return Response.json({ at, variant });
 }
 
-/** SPEC-webmcp-tools §2.8: the entry `middleware.ts` recorded for a tool's request. */
+/** SPEC-webmcp-tools §2.8: the entry `proxy.ts` recorded for a tool's request. */
 async function viaLog(request: Request): Promise<Response> {
   const requestId = new URL(request.url).searchParams.get("requestId");
   const entry = requestId ? findViaRequest(requestId) : undefined;

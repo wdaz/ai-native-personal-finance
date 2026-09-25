@@ -2,7 +2,7 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 
 /**
  * SPEC-webmcp-tools §2.8 over HTTP, against `next start` with APP_ENV=test. The route reading
- * the log and the middleware writing it are different bundles, so a green run here is also the
+ * the log and the proxy writing it are different bundles, so a green run here is also the
  * proof that the buffer really is shared through globalThis (plan F6).
  */
 test.beforeEach(async ({ request }) => {

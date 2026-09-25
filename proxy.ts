@@ -16,14 +16,15 @@ import {
 import { sanitizeNextPath } from "@/src/shared/next-path";
 import { VIA_HEADER } from "@/src/shared/via";
 
-// SPEC-auth §2.9: Node.js runtime, not the Edge default — the reset-epoch check needs the
-// same Prisma/pg client src/server/db.ts uses elsewhere (T-05 plan gate Q2). The matcher
+// Next 16 renamed the `middleware` file convention to `proxy` (TD-2, T-13a). A proxy always runs
+// on the Node.js runtime and Next refuses a `runtime` option in this file, so `config` holds the
+// matcher only. Node.js is what the reset-epoch check needs: the same Prisma/pg client
+// src/server/db.ts uses elsewhere (T-05 plan gate Q2 chose it over the Edge default). The matcher
 // excludes any path with a file extension (avatars and other `public/` assets, favicon) as
 // well as `_next/*` — none of these need a session check, and running the resetEpoch DB
 // query and setting `Cache-Control: no-store` on every image request for a logged-in visitor
 // was needless cost and defeated the browser's own asset caching (review finding M6).
 export const config = {
-  runtime: "nodejs",
   matcher: ["/((?!_next/static|_next/image|favicon\\.ico|.*\\..*).*)"],
 };
 
@@ -56,7 +57,7 @@ function isLogoutFallback(request: NextRequest): boolean {
   );
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const now = new Date();
   const { pathname, search } = request.nextUrl;
   const requestId = crypto.randomUUID();

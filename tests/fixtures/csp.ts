@@ -4,7 +4,7 @@
  */
 const NONCE = /'nonce-([^']+)'/;
 
-/** The nonce of a CSP's `script-src` (the middleware sets the same one on `style-src`). */
+/** The nonce of a CSP's `script-src` (the proxy sets the same one on `style-src`). */
 export function scriptNonce(csp: string | undefined): string | undefined {
   return NONCE.exec(csp?.match(/script-src[^;]+/)?.[0] ?? "")?.[1];
 }

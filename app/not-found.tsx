@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: COPY.notFound };
  * per-request render gets ADR-0006's CSP nonce on Next's own inline scripts and styles; the
  * prerendered default carried none, so the browser blocked all of them on every 404. The
  * markup has no `style` attributes either: a nonce covers elements, never attributes, so the
- * page is styled from a CSS Module with tokens only. tests/api/middleware.spec.ts holds both.
+ * page is styled from a CSS Module with tokens only. tests/api/proxy.spec.ts holds both.
  */
 export default async function NotFound() {
   await connection();

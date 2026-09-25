@@ -58,7 +58,7 @@ test("PR #20 review: the layout never shows a reset time a client sent as x-last
     data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
   });
   expect(login.status()).toBe(200);
-  // With no ResetLog row the middleware reads no reset time and forwards none of its own: only
+  // With no ResetLog row the proxy reads no reset time and forwards none of its own: only
   // its delete stands between the client's header and the layout.
   await db.resetLog.deleteMany();
 

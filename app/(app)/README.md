@@ -15,7 +15,7 @@ T-10: `overview/page.tsx` calls `getOverview(getDb(), fixedClock(BUSINESS_TODAY)
 (SPEC-overview §2.1 — no HTTP self-call to its own `GET /api/overview`) and composes the six
 `src/ui/overview` cards inside `page.module.css`'s stat row and two-column grid (§6); on a
 throw it renders `OverviewError` in place of the grid and logs the failure with the request id
-`middleware.ts` forwards (§2.8).
+`proxy.ts` forwards (§2.8).
 
 T-12: `overview/layout.tsx` — a Server Component that renders `{children}` and
 `<OverviewTools />` (`src/webmcp/tools/`), so the two Release 1 tools are registered while the

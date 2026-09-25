@@ -18,7 +18,7 @@ const FIELDS: readonly LoginField[] = ["email", "password"];
 /**
  * SPEC-auth §2.3–2.4, §3, §4. Validates on blur and on submit (US-31 AC1, plan D9); a valid
  * submit posts to /api/auth/login and, on 200, replaces the URL with the sanitised `next`
- * (T-05's allow-list, shared with the middleware). `flushSync` commits a state change before
+ * (T-05's allow-list, shared with the proxy). `flushSync` commits a state change before
  * focus moves, so focus lands on an enabled field whose message is already linked (plan D7).
  * `method="post"` + `noValidate`: plan D5. The inputs are uncontrolled (see `Field`): the
  * values are read from the DOM, so anything typed or autofilled before hydration is kept.

@@ -13,7 +13,7 @@ describe("sessionHasEnded (SPEC-auth §2.9)", () => {
     await expect(sessionHasEnded(answer({ authenticated: true }))).resolves.toBe(false);
   });
 
-  it("is false when no answer arrives — the next navigation meets the middleware anyway (plan D9)", async () => {
+  it("is false when no answer arrives — the next navigation meets the proxy anyway (plan D9)", async () => {
     await expect(
       sessionHasEnded(async () => {
         throw new TypeError("Failed to fetch");

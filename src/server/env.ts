@@ -1,5 +1,5 @@
 import { WEBMCP_MODES, testEnvRefusal } from "@/src/shared/env";
-// Type only: a runtime import of schemas.ts would pull zod and copy.ts into the middleware
+// Type only: a runtime import of schemas.ts would pull zod and copy.ts into the proxy
 // bundle, which imports this file through db.ts (PR #20 review, finding 8).
 import type { WebMcpMode } from "@/src/shared/schemas";
 

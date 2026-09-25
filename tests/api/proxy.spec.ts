@@ -7,7 +7,7 @@ test.beforeEach(async ({ request }) => {
 /**
  * Logs the demo account in and fails right here when that did not work. Unchecked, a failed
  * login leaves the request unauthenticated and the test fails later at an assertion that reads
- * like a middleware bug (measured 2026-09-24 with a wrong password: "Expected: 302, Received:
+ * like a proxy bug (measured 2026-09-24 with a wrong password: "Expected: 302, Received:
  * 200" on /login, "/login" instead of "/overview", no `reason=reset`).
  */
 async function logInAsDemo(request: APIRequestContext): Promise<void> {
@@ -93,7 +93,7 @@ test("an unauthenticated request to a protected API answers 401 unauthenticated"
   request,
 }) => {
   // /api/overview has its own route handler since T-09 (tests/api/overview.spec.ts), but the
-  // middleware still answers first — it intercepts before Next.js resolves the route, so this
+  // proxy still answers first — it intercepts before Next.js resolves the route, so this
   // asserts the API-side of the protected matrix regardless of what the route itself does.
   const response = await request.get("/api/overview");
   expect(response.status()).toBe(401);
@@ -112,7 +112,7 @@ test("SPEC-auth §2.10: only POST /api/admin/reset is secret-protected, not the 
 test("an incoming ?next= on /login passes through unsanitised — T-06's client sanitises it before navigating", async ({
   request,
 }) => {
-  // The middleware only ever *writes* a next= param (sanitised, via sanitizeNextPath) on its
+  // The proxy only ever *writes* a next= param (sanitised, via sanitizeNextPath) on its
   // own protected-page redirect; it never reads one back on GET /login itself. This is a
   // deliberate hand-off, not a gap: T-06's page must call sanitizeNextPath (src/shared/
   // next-path.ts) before using next for the post-login navigation (SPEC-auth §2.4).
@@ -199,6 +199,52 @@ test("SPEC-reset-and-test-support §2.6: a reset-invalidated session redirects t
   const location = response.headers()["location"] ?? "";
   expect(location).toContain("reason=reset");
   expect(location).toContain("next=%2Ftransactions");
+});
+
+// NFR-S6 names the referrer policy and ADR-0006 lists `X-Content-Type-Options` with it. The four
+// responses below leave the function by four different branches — a page, an API answer, a
+// redirect and a 401 — and the headers are set after all of them.
+test("NFR-S6, ADR-0006: every branch's response carries Referrer-Policy, X-Content-Type-Options and X-Request-Id", async ({
+  request,
+}) => {
+  const branches: Array<[string, number, () => Promise<APIResponse>]> = [
+    ["a public page", 200, () => request.get("/login")],
+    ["a public API answer", 200, () => request.get("/api/auth/session")],
+    ["a redirect", 302, () => request.get("/transactions", { maxRedirects: 0 })],
+    ["a 401", 401, () => request.get("/api/overview")],
+  ];
+  for (const [label, status, send] of branches) {
+    const response = await send();
+    expect(response.status(), `${label}: status`).toBe(status);
+    const headers = response.headers();
+    expect(headers["referrer-policy"], `${label}: Referrer-Policy`).toBe(
+      "strict-origin-when-cross-origin",
+    );
+    expect(headers["x-content-type-options"], `${label}: X-Content-Type-Options`).toBe("nosniff");
+    expect(headers["x-request-id"], `${label}: X-Request-Id`).toBeTruthy();
+  }
+});
+
+// Review finding M6: the matcher excludes any path with a file extension. A logged-in visitor's
+// image request must not meet the session check, the reset-epoch query, `no-store` or the
+// proxy's headers.
+test("review finding M6: a logged-in request for a file with an extension never reaches the proxy", async ({
+  request,
+}) => {
+  await logInAsDemo(request);
+  // The control: a page of the same session does reach it, and answers with what it sets.
+  const page = await request.get("/overview", { maxRedirects: 0 });
+  expect(page.status()).toBe(200);
+  expect(page.headers()["x-request-id"], "the control, /overview: X-Request-Id").toBeTruthy();
+  expect(page.headers()["cache-control"], "the control, /overview: Cache-Control").toBe("no-store");
+
+  const avatar = await request.get("/avatars/bytewise.jpg", { maxRedirects: 0 });
+  expect(avatar.status()).toBe(200);
+  expect(avatar.headers()["content-type"]).toBe("image/jpeg");
+  // Each of these is set by the proxy and by nothing else.
+  expect(avatar.headers()["x-request-id"], "the avatar: X-Request-Id").toBeUndefined();
+  expect(avatar.headers()["content-security-policy"], "the avatar: CSP").toBeUndefined();
+  expect(avatar.headers()["cache-control"], "the avatar: Cache-Control").not.toBe("no-store");
 });
 
 test("ADR-0006 (5): every response asks for its own agent cluster, so Firefox and Safari can run the WebMCP polyfill", async ({

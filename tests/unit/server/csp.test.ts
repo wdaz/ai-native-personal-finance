@@ -6,7 +6,7 @@ const NONCE = "MTIzNDU2Nzg5";
 /**
  * ADR-0006, 2026-09-24 amendment (4) / TD-6: the policy is built in one place and differs by
  * environment only under `next dev`. The production string is pinned byte for byte, so a
- * relaxation can never ship by accident — `tests/api/middleware.spec.ts` pins the same string
+ * relaxation can never ship by accident — `tests/api/proxy.spec.ts` pins the same string
  * on the response of a production build.
  */
 const PRODUCTION_POLICY = `default-src 'self'; script-src 'self' 'nonce-${NONCE}'; style-src 'self' 'nonce-${NONCE}'; frame-ancestors 'none'`;

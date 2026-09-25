@@ -2,7 +2,7 @@
  * SPEC-auth §2.7 (v1.0.6), US-03 AC2: logout always completes. `POST /api/auth/logout` clears
  * the session cookie. If it fails — no answer within LOGOUT_TIMEOUT_MS, or a non-2xx answer —
  * the failure is logged and the caller goes to AFTER_FAILED_LOGOUT instead: a same-origin
- * navigation the middleware answers by clearing the cookie itself (§2.8). The cookie is
+ * navigation the proxy answers by clearing the cookie itself (§2.8). The cookie is
  * httpOnly, so no script can (T-07 plan Q1).
  */
 export const AFTER_LOGOUT = "/login";

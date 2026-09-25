@@ -3,7 +3,7 @@ import { REQUEST_LOG_CAPACITY, findViaRequest, recordViaRequest } from "@/src/se
 
 const TEST_ENV = { APP_ENV: "test" };
 
-/** The buffer lives on globalThis (middleware and route handlers are separate bundles), so a
+/** The buffer lives on globalThis (proxy and route handlers are separate bundles), so a
  * fresh module import does not clear it — each case starts by dropping the holder. */
 beforeEach(() => {
   delete (globalThis as { __pfViaLog?: unknown }).__pfViaLog;

@@ -11,5 +11,5 @@ T-08: `meta/route.ts` — `GET /api/meta` (public, `no-store`, `getMeta`); `admi
 — `POST` (an operator's reset, `reason` in the body) and `GET` (Vercel's cron, the scheduled
 reset), both Bearer `RESET_SECRET` or `CRON_SECRET`, handled in `src/server/admin-reset.ts`.
 
-T-09: `overview/route.ts` — `GET /api/overview` (session-protected by `middleware.ts`,
+T-09: `overview/route.ts` — `GET /api/overview` (session-protected by `proxy.ts`,
 `no-store`, `getOverview`).
