@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { isLocalDatabaseUrl, localDatabaseRefusal, testEnvRefusal } from "@/src/shared/env";
+import {
+  isLocalDatabaseUrl,
+  localDatabaseRefusal,
+  migrationDatabaseUrl,
+  testEnvRefusal,
+} from "@/src/shared/env";
 
 const LOCAL_URLS = [
   "postgresql://postgres:postgres@localhost:5432/personal_finance",
@@ -125,5 +130,63 @@ describe("testEnvRefusal (TD-10: APP_ENV=test)", () => {
     const message = testEnvRefusal({ APP_ENV: "test", DATABASE_URL: neon });
     expect(message).not.toContain("user:password");
     expect(message).not.toContain("neon.tech");
+  });
+});
+
+describe("migrationDatabaseUrl (T-14: Prisma's CLI uses Neon's direct connection)", () => {
+  it("prefers DATABASE_URL_UNPOOLED, the direct URL the Neon integration sets on Vercel", () => {
+    expect(
+      migrationDatabaseUrl({ DATABASE_URL: LOCAL_URLS[0], DATABASE_URL_UNPOOLED: LOCAL_URLS[1] }),
+    ).toBe(LOCAL_URLS[1]);
+  });
+
+  it("falls back to DATABASE_URL when DATABASE_URL_UNPOOLED is unset or empty (local runs, CI)", () => {
+    expect(migrationDatabaseUrl({ DATABASE_URL: LOCAL_URLS[0] })).toBe(LOCAL_URLS[0]);
+    expect(migrationDatabaseUrl({ DATABASE_URL: LOCAL_URLS[0], DATABASE_URL_UNPOOLED: "" })).toBe(
+      LOCAL_URLS[0],
+    );
+  });
+
+  it("is undefined when neither is set, so Prisma names the missing datasource itself", () => {
+    expect(migrationDatabaseUrl({})).toBeUndefined();
+    expect(migrationDatabaseUrl({ DATABASE_URL: "", DATABASE_URL_UNPOOLED: "" })).toBeUndefined();
+  });
+});
+
+describe("localDatabaseRefusal reads DATABASE_URL_UNPOOLED too (T-14, Review Focus 1)", () => {
+  const secret = "s3cret-pw";
+  const remote = `postgresql://user:${secret}@db.example.com:5432/personal_finance`;
+
+  it("refuses a local DATABASE_URL beside a remote DATABASE_URL_UNPOOLED — the shape an env pull leaves", () => {
+    const message = localDatabaseRefusal({
+      DATABASE_URL: LOCAL_URLS[0],
+      DATABASE_URL_UNPOOLED: remote,
+    });
+    expect(message).toMatch(/^Refusing to run: DATABASE_URL or DATABASE_URL_UNPOOLED/);
+    expect(message).not.toContain(secret);
+    expect(message).not.toContain("db.example.com");
+  });
+
+  it("refuses a remote DATABASE_URL_UNPOOLED alone", () => {
+    expect(localDatabaseRefusal({ DATABASE_URL_UNPOOLED: remote })).not.toBeNull();
+  });
+
+  it("(control) lets two local URLs through, and treats an empty one as unset", () => {
+    expect(
+      localDatabaseRefusal({ DATABASE_URL: LOCAL_URLS[0], DATABASE_URL_UNPOOLED: LOCAL_URLS[1] }),
+    ).toBeNull();
+    expect(
+      localDatabaseRefusal({ DATABASE_URL: LOCAL_URLS[0], DATABASE_URL_UNPOOLED: "" }),
+    ).toBeNull();
+  });
+
+  it("makes APP_ENV=test refuse a remote DATABASE_URL_UNPOOLED as it does a remote DATABASE_URL", () => {
+    expect(
+      testEnvRefusal({
+        APP_ENV: "test",
+        DATABASE_URL: LOCAL_URLS[0],
+        DATABASE_URL_UNPOOLED: remote,
+      }),
+    ).toMatch(/^Refusing to run: APP_ENV=test with a DATABASE_URL or DATABASE_URL_UNPOOLED that/);
   });
 });

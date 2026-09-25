@@ -6,6 +6,7 @@ dist/
 coverage/
 playwright-report/
 test-results/
+.lighthouseci/
 
 # env & OS
 .env
@@ -24,8 +25,9 @@ docs/00-discovery/inputs/design/*.html
 .claude/*.local.json
 .claude/worktrees/
 
-# next / vercel
+# next / vercel / neon
 /.vercel
+/.neon
 *.tsbuildinfo
 
 # The Prisma client, generated into src/server by `prisma generate` on every npm install (T-02)

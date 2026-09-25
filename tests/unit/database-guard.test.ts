@@ -16,20 +16,21 @@ const OTHER_MACHINE = `postgresql://user:${SECRET}@db.example.invalid:5432/perso
 const LOCAL_NOBODY_LISTENING = "postgresql://user:password@localhost:1/personal_finance";
 
 /**
- * Runs `npx <args>` in the repository with only `DATABASE_URL` decided by the test — a value
- * already in the environment wins over `.env.local` (prisma.config.ts, playwright.config.ts),
- * so a contributor's own file cannot change the outcome.
+ * Runs `npx <args>` in the repository with only `DATABASE_URL` and `DATABASE_URL_UNPOOLED` decided
+ * by the test (the second empty unless a test says otherwise) — a value already in the
+ * environment wins over `.env.local` (prisma.config.ts, playwright.config.ts), so a contributor's
+ * own file or shell cannot change the outcome.
  */
-function run(args: string[], databaseUrl: string) {
+function run(args: string[], databaseUrl: string, databaseUrlUnpooled = "") {
   return spawnSync("npx", args, {
     cwd: repoRoot,
-    env: { ...childEnv(), DATABASE_URL: databaseUrl },
+    env: { ...childEnv(), DATABASE_URL: databaseUrl, DATABASE_URL_UNPOOLED: databaseUrlUnpooled },
     encoding: "utf8",
     timeout: 90_000,
   });
 }
 
-const REFUSED = /Refusing to run: DATABASE_URL does not name this machine/;
+const REFUSED = /Refusing to run: DATABASE_URL or DATABASE_URL_UNPOOLED does not name this machine/;
 
 describe("the seed refuses another machine's database (TD-10, npm run db:reset)", () => {
   it("stops with the reason, before it opens a connection", () => {
@@ -60,10 +61,10 @@ describe("npm run db:reset refuses another machine's database before it applies 
    * to the script's name for the child, which is what prisma.config.ts keys on. `npx` is not the
    * script, so `run` cannot start it.
    */
-  function dbReset(databaseUrl: string) {
+  function dbReset(databaseUrl: string, databaseUrlUnpooled = "") {
     return spawnSync("npm", ["run", "db:reset"], {
       cwd: repoRoot,
-      env: { ...childEnv(), DATABASE_URL: databaseUrl },
+      env: { ...childEnv(), DATABASE_URL: databaseUrl, DATABASE_URL_UNPOOLED: databaseUrlUnpooled },
       encoding: "utf8",
       timeout: 90_000,
     });
@@ -81,6 +82,16 @@ describe("npm run db:reset refuses another machine's database before it applies 
     expect(text).not.toContain("db.example.invalid");
   }, 90_000);
 
+  it("npm run db:reset refuses a remote DATABASE_URL_UNPOOLED beside a local DATABASE_URL, before any migration (T-14)", () => {
+    const result = dbReset(LOCAL_NOBODY_LISTENING, OTHER_MACHINE);
+    const text = output(result);
+
+    expect(result.status).not.toBe(0);
+    expect(text).toMatch(REFUSED);
+    expect(text).not.toContain(SECRET);
+    expect(text).not.toContain("db.example.invalid");
+  }, 90_000);
+
   it("(control) a local URL is not refused: Prisma goes on and fails at the connection", () => {
     const result = dbReset(LOCAL_NOBODY_LISTENING);
     const text = output(result);
@@ -92,7 +103,11 @@ describe("npm run db:reset refuses another machine's database before it applies 
 
   it("(control, T-14) a direct `prisma migrate deploy` is not guarded: it tries the connection", () => {
     // A direct command has no script name: whatever `npm run` started this suite must not leak in.
-    const env: NodeJS.ProcessEnv = { ...childEnv(), DATABASE_URL: OTHER_MACHINE };
+    const env: NodeJS.ProcessEnv = {
+      ...childEnv(),
+      DATABASE_URL: OTHER_MACHINE,
+      DATABASE_URL_UNPOOLED: "",
+    };
     delete env.npm_lifecycle_event;
     const result = spawnSync("npx", ["prisma", "migrate", "deploy"], {
       cwd: repoRoot,

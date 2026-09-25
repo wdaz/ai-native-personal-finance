@@ -1,3 +1,6 @@
 {
+  "regions": ["fra1"],
+  "installCommand": "npm ci",
+  "buildCommand": "npx prisma migrate deploy && npm run build",
   "crons": [{ "path": "/api/admin/reset", "schedule": "0 3 * * *" }]
 }

@@ -4967,3 +4967,168 @@ them too").
   always production") can decide a plan's whole order; read it before designing the steps, not
   after.
 - **Next:** the owner's go-ahead ("start"); then Task 1 on `task/T-14-deploy`, Native execution.
+
+## 2026-09-26 — Phase 5: T-14 — the deploy, up to the merge
+
+- **Phase:** 5 (Build the slice), Release 1 — T-14, Tasks 1–7 of `plans/2026-09-25-T-14.md`, on
+  `task/T-14-deploy` (PR #60). Task 8, production, waits for the owner's merge.
+- **Participants:** Owner (the Vercel and Neon dashboards, every secret-store write, the production
+  deployment) / Agent (Claude Code, background session; Opus 5.5 to the middle of Task 1, then
+  Sonnet 5 — the harness changed the session's model, and each commit's `Co-Authored-By` names the
+  model that wrote it) / the advisor, a stronger reviewer that sees the transcript (three calls) /
+  Agent (Claude Code, Opus 5.5, one read-only whole-branch review subagent — see "Review").
+- **Trigger:** "başla. #59 merge oldu" ("Start. #59 is merged").
+- **Prompt(s):** `prompts/2026-09-25-T-14-execution.md`; the measurement scripts in
+  `prompts/2026-09-25-T-14/scripts/`; the review's brief, report and dispositions in
+  `prompts/2026-09-25-T-14/opus-review.md`.
+- **Produced (code, TDD, one commit per task):** `7269bec` migrations connect through
+  `DATABASE_URL_UNPOOLED` and TD-10's guard reads it too (9 tests, mutation-checked); `d577fe3`
+  `vercel.json` (`fra1`, `npm ci`, migrate-then-build) with a violating-fixture test; `d41bab3`,
+  `1bbf028` `lighthouserc.json` and the Lighthouse workflow; `f5f4f92`, `27cb3e1` the deploy
+  runbook and the README section. Then the records (`1f35f87`), the prompt record and scripts
+  (`9b34dda`) and the review's fixes (`66e3bfb`). `npm run test:all` on Node 24, before the review's
+  fixes: exit 0 — 83 files / 1067 unit tests, 18 stories traced, 107 API tests, 327 E2E tests (24
+  skipped). After the fixes: 83 files / 1069 unit tests and 107 API tests, and the Chromium and
+  WebKit E2E legs (218 passed, 16 skipped) — but the Firefox leg could not run **on this machine**:
+  Playwright's `browserType.launch` failed with Firefox's "Could not find profile folder", and the
+  same message came from launching Firefox by hand with an existing empty profile directory
+  (`firefox --version` works), so it is the machine, not the repository; the cause was not found
+  and the sandbox was not disabled to look for it. The fixes changed no application or E2E code —
+  only unit tests, the Lighthouse workflow and config, a shell comment and documents — and CI's
+  Firefox leg on `1bbf028` had passed; CI on the new head is the arbiter (recorded in the PR).
+- **Produced (platform, with the owner):** Vercel project `personal-finance` (Hobby team
+  `ruslan-496a`), the Neon-managed integration (`vercel-dev`, `preview/<git-branch>`), the
+  environment per scope, Deployment Protection Standard with a bypass secret, three repository
+  variables for Lighthouse, a data-free first production deployment, and PR #60's preview.
+- **Produced (records):** ADR-0007's amendment of 2026-09-25 (**proposed**, plan Q12);
+  `reset-and-test-support.md` v1.7; `tech-debt.md` v1.21 (TD-14 and TD-17 closed, TD-3 answered,
+  TD-19 and TD-20 opened); `backlog.md` v1.41; the runbook's record table.
+- **Measured on the preview** (`dpl_ATgGrdt4f6JKSXfEaGhVKK8ex7yq`, commit `1bbf028`): `npm ci` and
+  `prisma migrate deploy` ran in the build against the branch's direct host (2 migrations
+  applied); `POST /api/admin/reset` → 204; TD-14 not exposed; TD-17 closed (10× 401, the 11th under
+  another spoofed `X-Forwarded-For` → 429); the proxy's headers, fresh nonces, a `Secure` session
+  cookie, HSTS with `preload`, TLS 1.3, `http://` → 308, no `robots.txt`; `APP_ENV=test` refused
+  by a real Vercel build with TD-10's message. The production-unseeded invariant was checked by
+  mapping the two Neon branches' hosts, and CI on that head was green.
+- **What the plan assumed or predicted that the deployment measured differently** (some were
+  labelled predictions, some were plan steps or decisions; seven were wrong or only partly right):
+  1. Q5/F4 — "import `main` with no variables": the import screen **pre-filled 13 variables from
+     `.env.example`** (Secret, Production and Preview) and created the project **without a
+     deployment**; the first production deployment was `vercel deploy --prod` from a clean export
+     of `main` (source `cli`), after the owner deleted the 13.
+  2. F10/F16 — "the production domain is not restricted": true for the project domain only. The
+     team alias is behind Vercel Authentication, `personal-finance.vercel.app` was taken, and the
+     project domain (`personal-finance-cyan-kappa.vercel.app`) was not attached to the CLI
+     deployment until the owner ran `vercel alias set`.
+  3. 5.2 — "`/login` → 200": 500. The login page prints the demo credentials and a deployment made
+     before the variables existed has none.
+  4. F6 — "the proxy skips `.rsc`": on Vercel `/overview.rsc` **reaches** the proxy (302, request
+     id); `/api/overview.json` (404) and `/overview.segments/*` (200, a static skeleton) skip it, and
+     carry none of its headers.
+  5. F9 — `/_global-error` with `s-maxage=31536000`: `max-age=0, must-revalidate`, yet the CDN
+     stores and replays the body (`PRERENDER`, then `HIT`) beside a fresh header nonce.
+  6. Q3 (a) — "the agent sets the values": Claude Code's auto-mode classifier refused the agent's
+     `vercel env rm` and a `shasum` of `.env.local` ("Secret-Store Writes") and its
+     `vercel deploy --prod` ("Production Deploy"); the owner ran the first and the last.
+  7. 8.4 — "read the cron's log line the next day": Hobby keeps runtime logs for one hour.
+  Still a prediction: the Lighthouse workflow's `environment == 'Production'` (the preview's GitHub
+  deployment is named exactly `Preview`, which supports it). Not predicted at all: `pg`'s
+  `sslmode=require` warning in the build log (TD-20); Lighthouse's reports carrying the session
+  cookie (found by running the workflow's own block locally, fixed before it ever ran); NFR-P2's INP
+  not being measurable by `lhci autorun`; and a local `/overview` LCP of 3.1–3.5 s under Lighthouse's
+  mobile throttling, against NFR-P2's 2.5 s — not evidence, and not a finding until Task 8.6 measures
+  production.
+- **Review:** one Opus 5.5 subagent with read-only tools read the whole branch. It found **1 Critical,
+  4 Important and 16 Minor** and confirmed Review Focus 1–4 and the invariant. The Critical one:
+  the runbook's first-seed command — written before the production domain was known, and never
+  re-read when it was — posted production's `RESET_SECRET` to `personal-finance.vercel.app`, a
+  domain that belongs to someone else, and put the secret on curl's command line; the origin-trial
+  step named the same domain. The Important ones: two of TD-20's three fixes would not work (the
+  reviewer read `node_modules/pg*` to show it), TD-19 and the backlog said the `.json` form and "every
+  response" reach the proxy (they do not, and the responses that skip it lack its headers — measured
+  afterwards), and `npm run test:all` had not been run and recorded. Everything but one item outside
+  the diff was fixed in one pass, each code fix red first (`66e3bfb`); the item left is
+  `governance.md`'s mention of "T-14's Neon preview workflow", the owner's document.
+- **What the agent got right:** used the advisor at the three points where the plan turned from
+  code to platform; every owner step but one (the Neon Console clean-up setting) was verified
+  afterwards from the platform's own read APIs without seeing a secret value; the invariant was
+  proved by mapping the preview's and production's Neon hosts, not assumed; TD-14 was measured with
+  a positive control, and the unexpected `.segments` result was followed up (seven more forms,
+  signed in and not, and the header form a real Next client sends) instead of being called safe or
+  unsafe on one probe; the review's claims were checked before they were acted on.
+- **What the agent got wrong or missed:**
+  - Task 1 missed a test that asserted the old refusal wording (`next-config.test.ts`); the advisor's
+    grep found it before the red run.
+  - The runbook's first step 2 read values with `grep | cut`, which keeps the quotes the same page
+    told the reader to put round a bcrypt hash — every login on the deployment would have failed
+    and a Secret cannot be read back; the advisor caught it before any value was set (`27cb3e1`).
+  - The Lighthouse workflow's one concurrency group *could* let a skipped preview run cancel a
+    production measurement (GitHub's page does not say whether it joins the group), and its reports
+    would have published the session cookie (`d41bab3`); its assertions judged the best of three runs;
+    and its first run after the merge would have measured a 500 page.
+  - The runbook kept a guess (`personal-finance.vercel.app`) after Task 5 replaced it with a fact,
+    and stated things as measured that were predictions, or measured elsewhere; the review found it.
+  - The plan gave the agent secret-store writes and a production deployment without checking
+    whether the harness would allow them; the classifier refused three agent commands (`vercel env
+    rm`, `vercel deploy --prod` and a `shasum` of `.env.local`) and the first two tasks went to the
+    owner mid-run.
+    Four command lines containing the word "alias" were rejected by the harness's shell-alias
+    check (two of the agent's, two of the owner's `!` runs), which cost a detour.
+  - One `Edit` call used a wrong parameter name and still applied; it was re-read before going on.
+- **Owner changes and reasoning:** none to the plan. The owner approved the demo password
+  (`3. bəli`), chose "the owner runs `set-env.sh`" for the variables, ran the deletion of the 13
+  variables, the production deployment, the alias and both `set-env.sh` runs, created the bypass
+  secret and the Neon integration, and asked twice whether to merge PR #60 — answered: not before the
+  review, its fixes and the owner's own decisions below.
+- **Disagreements:** none between the owner and the agent. The harness refused agent actions;
+  recorded as a constraint in the runbook (step 1), not as a disagreement.
+- **Lessons for the process:**
+  1. A plan that gives the agent a secret-store write or a production deployment must ask at its
+     gate whether the harness will allow it; otherwise those steps belong to the owner from the
+     start, with a script.
+  2. A platform's import flow can arrive with state (here, the environment pre-filled from a
+     committed example file); "start empty" needs a step that empties it and a check that it is.
+  3. Labelling predictions worked where it was done: each wrong one was found before it was relied
+     on, at a cost of minutes. Label the plan's *steps* that assume a platform behaviour too (5.1's
+     "expected", Q3's "the agent sets"), and keep the measuring scripts as records
+     (`prompts/…/scripts/`).
+  4. Retention limits (one hour of runtime logs on Hobby) belong in a plan's verification steps,
+     not only in a runbook.
+  5. Run the artefact you are about to publish before publishing it: the Lighthouse cookie leak was
+     invisible in the workflow's text.
+  6. A document written before a fact arrives keeps the guess. When the fact lands (the production
+     domain), grep the documents for the guess — the review caught what the author's passes and the
+     advisor's did not, in a command that sends a secret.
+- **Next:** the owner's decisions — ADR-0007's proposed amendment (accept before the merge, or edit
+  it), TD-19 (fix in this pull request or in its own), TD-20, and whether `total-blocking-time`
+  stands in for NFR-P2's INP; then the owner merges PR #60, which deploys production; then Task 8
+  (8.1–8.7), starting with whether the project domain moved to the new Git deployment.
+
+## 2026-09-26 — Phase 5: T-14 — the owner's decisions at the merge gate (addendum)
+
+- **Phase:** 5 (Build the slice), Release 1 — T-14, addendum to "Phase 5: T-14 — the deploy, up to the
+  merge" (append-only: that entry keeps saying what was true when it was written).
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, background session).
+- **Trigger:** the agent's one message of four decisions before "ready to merge", each with a
+  recommendation; the owner answered "1 qəbul, 2 ayrıca, 3 ayrıca, 4 qalsın" ("1 accept, 2 separate,
+  3 separate, 4 stays").
+- **Prompt(s):** none of its own; the owner's reply is quoted here and in the records it changed.
+- **Produced:** ADR-0007's amendment of 2026-09-25 marked **accepted by the owner** (status line, the
+  amendment's header, the Decision lines it replaces struck through as in the 2026-09-23 amendment,
+  the Review section); `tech-debt.md` records the owner's decisions on TD-19 and TD-20 (each its own
+  small pull request after T-14, both stay Open) and, for the closed TD-17 and TD-14, the plan
+  answer that decided them; `backlog.md`'s v1.41 line says the same; the Lighthouse workflow's
+  comment and the runbook say INP stays unasserted and `total-blocking-time` is read from the first
+  production run.
+- **What the agent got right:** made the four decisions answerable in one line, with a
+  recommendation each; kept PR #60 a draft until the ADR was accepted, so the merge button stayed off.
+- **What the agent got wrong or missed:** two records still said "owner decision: pending" on
+  entries that were already closed (TD-14, TD-17); the review caught TD-14's, the agent found
+  TD-17's while recording these decisions.
+- **Owner changes and reasoning:** none — all four recommendations taken as given.
+- **Disagreements:** none.
+- **Lessons for the process:** a "pending" line on a closed entry is a second place the state is
+  written; when an entry closes, grep the entry for its own stale words.
+- **Next:** CI on the final head; then the agent tells the owner PR #60 may be merged (it is made
+  ready first). After the merge: Task 8, and the two small pull requests (TD-19, TD-20) as the owner
+  schedules them.

@@ -141,6 +141,18 @@ characters. Use a throwaway password, never one you use anywhere else: the login
 `DEMO_PASSWORD_DISPLAY` to every visitor, and the demo credentials are public by design
 (NFR-S1, ADR-0006). The same goes for the value a deployed environment's settings hold.
 
+## Deployment
+
+The app deploys to Vercel (Hobby, region `fra1`) with its database on Neon in Frankfurt; a merge
+to `main` deploys production, and every pull request gets a preview on its own Neon branch
+(ADR-0007). Migrations run in the Vercel build through Neon's direct connection
+(`DATABASE_URL_UNPOOLED`, `vercel.json`). Setting up, seeding, rotating secrets, the origin-trial
+token and rolling back are in the runbook, `docs/04-process/runbooks/deploy.md`.
+
+Never run `vercel env pull`, `neon link` or `neon env pull` inside this checkout: a production
+`DATABASE_URL` in `.env.local` would make `npm run dev` use the production database (the runbook
+says why and where to run them instead).
+
 ## Inputs that already exist
 
 - Challenge brief and seed data: `docs/00-discovery/inputs/`

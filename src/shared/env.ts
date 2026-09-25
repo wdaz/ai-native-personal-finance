@@ -41,9 +41,30 @@ export function isLocalDatabaseUrl(url: string): boolean {
 }
 
 /**
- * TD-10: why a run that resets or seeds the database named by `DATABASE_URL` must stop, or
- * `null` when it may go on. An unset `DATABASE_URL` is not refused here: there is nothing to
- * reset, and the first database call names the missing variable (`databaseUrl()`). The message
+ * TD-10, T-14: the variables a run may reach a database through. `DATABASE_URL` is the
+ * application's (Neon's pooled connection on Vercel); `DATABASE_URL_UNPOOLED` is the direct one
+ * the Neon-managed Vercel integration sets beside it, which Prisma's CLI uses for migrations
+ * (`migrationDatabaseUrl`). A run that resets, seeds or migrates refuses if either is not local —
+ * after a `vercel env pull` the pair can disagree.
+ */
+const DATABASE_URL_NAMES = ["DATABASE_URL", "DATABASE_URL_UNPOOLED"] as const;
+
+/**
+ * T-14: the URL Prisma's CLI connects through (prisma.config.ts). Schema migrations need Neon's
+ * direct connection — its pooler runs PgBouncer in transaction mode, which has no session-level
+ * advisory locks (neon.com/docs/connect/connection-pooling, read 2026-09-25). Locally and in CI only
+ * `DATABASE_URL` exists. Unset and empty both fall back; neither set is `undefined`, and Prisma
+ * names the missing datasource.
+ */
+export function migrationDatabaseUrl(env: EnvVars): string | undefined {
+  return env.DATABASE_URL_UNPOOLED || env.DATABASE_URL || undefined;
+}
+
+/**
+ * TD-10: why a run that resets, seeds or migrates the database named by `DATABASE_URL` or
+ * `DATABASE_URL_UNPOOLED` must stop, or `null` when it may go on. An unset or empty one is not
+ * refused here: there is nothing to reset, and the first database call names the missing
+ * variable (`databaseUrl()`). The message
  * never contains the URL — it holds a password, and CI logs of a public repository are public —
  * so it is a static string that names every reason `isLocalDatabaseUrl` has, not the one that
  * applied: a URL that does name localhost is refused too when it holds whitespace or a malformed
@@ -53,13 +74,17 @@ export function isLocalDatabaseUrl(url: string): boolean {
  * `next.config.ts` and `isTestEnv` reach the check.
  */
 export function localDatabaseRefusal(env: EnvVars): string | null {
-  const url = env.DATABASE_URL;
-  if (!url || isLocalDatabaseUrl(url)) return null;
+  const refused = DATABASE_URL_NAMES.some((name) => {
+    const url = env[name];
+    return url !== undefined && url !== "" && !isLocalDatabaseUrl(url);
+  });
+  if (!refused) return null;
   return (
-    "Refusing to run: DATABASE_URL does not name this machine (localhost, 127.0.0.1 or [::1]) " +
-    "or is not a plain postgres:// or postgresql:// URL (no whitespace, no host= or hostaddr= " +
-    "query, no malformed % escape), and this step resets or seeds that database. Point " +
-    "DATABASE_URL at the local database from compose.yaml (README, Run locally) — TD-10"
+    "Refusing to run: DATABASE_URL or DATABASE_URL_UNPOOLED does not name this machine " +
+    "(localhost, 127.0.0.1 or [::1]) or is not a plain postgres:// or postgresql:// URL (no " +
+    "whitespace, no host= or hostaddr= query, no malformed % escape), and this step resets, seeds " +
+    "or migrates that database. Point both at the local database from compose.yaml (README, Run " +
+    "locally) — TD-10"
   );
 }
 
@@ -85,10 +110,10 @@ export function testEnvRefusal(env: EnvVars): string | null {
   }
   if (localDatabaseRefusal(env) !== null) {
     return (
-      "Refusing to run: APP_ENV=test with a DATABASE_URL that does not name this machine " +
-      "(localhost, 127.0.0.1 or [::1]) or is not a plain postgres:// or postgresql:// URL (no " +
-      "whitespace, no host= or hostaddr= query, no malformed % escape) would expose the " +
-      "unauthenticated /api/test/* reset and seed routes on that database — TD-10"
+      "Refusing to run: APP_ENV=test with a DATABASE_URL or DATABASE_URL_UNPOOLED that does not " +
+      "name this machine (localhost, 127.0.0.1 or [::1]) or is not a plain postgres:// or " +
+      "postgresql:// URL (no whitespace, no host= or hostaddr= query, no malformed % escape) " +
+      "would expose the unauthenticated /api/test/* reset and seed routes on that database — TD-10"
     );
   }
   return null;

@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { defineConfig } from "prisma/config";
-import { localDatabaseRefusal } from "./src/shared/env";
+import { localDatabaseRefusal, migrationDatabaseUrl } from "./src/shared/env";
 
 // Prisma 7 reads no .env file of its own. Local settings live in .env.local (README, "Run
 // locally"), as for Next.js; a variable already in the environment, such as CI's, wins.
@@ -25,7 +25,9 @@ if (process.env.npm_lifecycle_event === "db:reset") {
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: { path: "prisma/migrations", seed: "tsx prisma/seed.ts" },
-  // Optional here: `prisma generate` (postinstall) needs no database. The migrate and seed
-  // commands stop with Prisma's own error when it is missing.
-  datasource: { url: process.env.DATABASE_URL },
+  // T-14: the CLI connects through Neon's direct URL (`DATABASE_URL_UNPOOLED`) when the Neon
+  // integration provides one, since migrations need a direct connection; else `DATABASE_URL`, as
+  // locally and in CI. Optional here: `prisma generate` (postinstall) needs no database. The
+  // migrate and seed commands stop with Prisma's own error when both are missing.
+  datasource: { url: migrationDatabaseUrl(process.env) },
 });
