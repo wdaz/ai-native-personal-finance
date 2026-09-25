@@ -130,6 +130,17 @@ the deployment fails (and a Secret cannot be read back to notice).
   is SSO-protected. The project's own domain is attached with
   `vercel alias set <deployment-url> <project-domain>` — the owner ran it in a terminal outside the
   agent session, because the agent's harness rejects every command line containing the word "alias".
+- **The project domain does not follow a new production deployment on its own.** The first Git
+  production deployment (PR #60's merge) got only the team alias and `…-git-main-…`; the project
+  domain kept serving the old CLI deployment (a data-free `/login` 500 for the public) because the
+  project's `autoAssignCustomDomains` was `false` (`vercel api /v9/projects/<project>`). The owner
+  ran `vercel promote <new-deployment-url> --scope <team> --yes` from an empty scratch directory
+  (`cd "$(mktemp -d)"`, so nothing is linked in the checkout), which moved the domain — Vercel's
+  rollback page says promoting "restores auto-assignment of production domains", but the API still
+  said `false` afterwards, so switch it on (Settings → Environments → Production, or `vercel api
+  /v9/projects/<project> -X PATCH -F autoAssignCustomDomains=true`) and **check after every
+  production deployment** that the domain answers from the new one (the same `/login` 200 check as
+  in step 5, or the deployment's `alias` list from `vercel api /v13/deployments/<id>`).
 - **Under Claude Code's auto mode the agent may not write to the secret store or deploy to
   production**: `vercel env add`/`rm` and `vercel deploy --prod` were refused as agent commands
   ("Secret-Store Writes", "Production Deploy") and are run by the owner with `!` — for the
@@ -233,7 +244,12 @@ the commands are:
   it by hand (Actions → Lighthouse → Run workflow). It judges the median of three runs, and it does
   **not** assert NFR-P2's INP: Lighthouse's INP audit supports only `timespan` mode and `lhci
   autorun` runs `navigation` mode. Owner decision, 2026-09-26: INP stays unasserted;
-  `total-blocking-time` is read from the first production run and decided on with that data.
+  `total-blocking-time` is read from the first production run and decided on with that data — the
+  first real run's reports were never uploaded (`.lighthouseci` is hidden and `upload-artifact`
+  skips hidden files unless `include-hidden-files: true`; fixed in the close-out pull request), so
+  read TBT from the next run's artifact. `gh workflow run lighthouse.yml --ref main` starts it
+  from a terminal. Its first real run (2026-09-26, GitHub's runner, mobile preset): `/overview`
+  median-run LCP 2623.9 ms failed the 2500 ms assertion (TD-21); `/transactions` passed.
 - **Cron** (plan 8.4): `GET /api/admin/reset` with `Authorization: Bearer $CRON_SECRET` and no body
   answers 200 `{ "reset": false, "dueAt": … }` when the interval has not passed, 204 when it has
   (SPEC-reset-and-test-support §2.2); it must not redirect (`curl -sS -o /dev/null -w
@@ -312,6 +328,9 @@ See also vercel.com/docs/environment-variables/rotating-secrets (linked from the
 | ---------- | --------------------------------------------------------- | ------ | ----- |
 | 2026-09-25 | Production domain Vercel assigned (plan step 5.2)         | `personal-finance-cyan-kappa.vercel.app` (project domain; the team alias `personal-finance-ruslan-496a.vercel.app` is SSO-protected) | `personal-finance.vercel.app` taken; the project domain was attached by `vercel alias set` (step 1) |
 | 2026-09-26 | `vercel env add` form used for Preview (plan step 5.6)    | `printf '%s' "$VALUE" \| vercel env add NAME preview --sensitive\|--no-sensitive --project personal-finance --yes` — no branch prompt; the API shows `gitBranch: null` (all non-production branches) | run by the owner through `set-env.sh`; `--yes` was enough |
-|            | First production deployment: migrations applied, seed 204 |        |       |
+| 2026-09-26 | First Git production deployment (PR #60's merge, `44ff1b6`): migrations applied, seed 204 | `prisma migrate deploy` applied both migrations to the production Neon host (`ep-patient-shadow-…`); `POST /api/admin/reset` → 204, `/api/meta` → `lastResetAt`; the function log had `reset reason=manual rows=59` (read within the hour) | the project domain still pointed at the old CLI deployment until the owner ran `vercel promote <deployment-url> --scope <team> --yes` from a scratch directory; `autoAssignCustomDomains` was `false` (step 1) |
+| 2026-09-26 | Production checks after the seed (plan 8.3, 8.4)          | smoke on the public domain all as expected (headers, HSTS `preload`, `Secure` cookie, the seed's balance in `/overview`); the preview's `RESET_SECRET` → 401; `GET /api/admin/reset` with `CRON_SECRET` → 200 `{"reset":false,"dueAt":"2026-10-05T…"}`, no redirect | run through `prompts/2026-09-25-T-14/scripts/` (`task8-secrets.sh` by the owner, `t8-smoke.sh` by the agent) |
+| 2026-09-26 | Lighthouse (plan 8.6): the first automatic run, then `workflow_dispatch` after the seed | the automatic run started on the production `deployment_status` (environment `Production`, as predicted) and stopped at "The deployment must be seeded", as designed; the dispatched run's Chrome started on the GitHub runner without `--no-sandbox`; `/overview` median-run LCP **2623.9 ms** (> 2500, NFR-P2) failed the assertion, `/transactions` passed every assertion | the reports were not uploaded (`.lighthouseci` is hidden; fixed by `include-hidden-files: true`, `docs/T-14-close-out`); TD-21 |
+|            | The first scheduled cron run (03:00 UTC, Hobby: any time in that hour) |        | logs last one hour: read at 03:00–04:00 UTC, or infer from `lastResetAt` |
 |            | Origin-trial token registered — expiry date read          |        |       |
 |            | Relay demo — exact steps and what was seen                |        |       |
