@@ -2,10 +2,10 @@
 
 The briefs the T-13c implementer subagents were dispatched with, and the reports they wrote back,
 copied from the agent's scratch directory on the task branch before the PR (Task 7's, after the PR
-was opened), per `build-workflow.md` §7. Nothing here is a specification: these are working notes, kept so the session is reproducible
-and reviewable. The session's own prompt file is the sibling `../2026-09-24-T-13c.md`; the plan is
-`docs/04-process/plans/2026-09-24-T-13c.md` (on branch `docs/T-13c-plan` until the owner merges the
-plan branch; no PR opened yet).
+was opened), per `build-workflow.md` §7. Nothing here is a specification: these are working notes,
+kept so the session is reproducible and reviewable. The session's own prompt file is the sibling
+`../2026-09-24-T-13c.md`; the plan is `docs/04-process/plans/2026-09-24-T-13c.md` (on branch
+`docs/T-13c-plan` until the owner merges the plan branch; no PR opened yet).
 
 A *brief* is the plan text of one task, extracted for a subagent; a *report* is what the subagent
 wrote back, including the commands it ran, the output it copied from them, and where it deviated.
@@ -24,13 +24,14 @@ staged` reported nothing on them, so no value was replaced and no allowlist was 
 | `task-4-brief.md`, `task-4-report.md` | TD-10: `APP_ENV=test` and database resets refuse to run outside this machine. The report includes fix round 1 (`c316e3b`): the guard reads a URL the way node-postgres does.                                                    |
 | `task-5-brief.md`, `task-5-report.md` | TD-11: Public Sans from committed files. The report includes fix round 1 (`5d015bf`): the README's account of the ESLint restriction's scope.                                                                                    |
 | `task-6-brief.md`, `task-6-report.md` | This records task: the three layer READMEs, `tech-debt.md` v1.12, `backlog.md` v1.27, SPEC-reset-and-test-support v1.6, the process-log entry, this folder, and the full verification run. |
-| `task-7-brief.md`, `task-7-report.md` | The follow-up, made after PR #39 was opened: the owner's choice "B" — `npm run db:reset` refuses another machine's database before `prisma migrate deploy` applies any migration (`prisma.config.ts`, three tests in `database-guard.test.ts`), and the records that said otherwise. Two commits. |
+| `task-7-brief.md`, `task-7-report.md` | The follow-up, made after PR #39 was opened: the owner's choice "B" — `npm run db:reset` refuses another machine's database before `prisma migrate deploy` applies any migration (`prisma.config.ts`, three tests in `database-guard.test.ts`), and the records that said otherwise. Two commits, and a close-out commit that folds in the review's minors. |
 
 Absences, all deliberate:
 
 - **There are no review files.** The session directory holds none: the reviewers' findings reached
   the controller as messages, and are recorded in the follow-up rounds of the reports (Tasks 4 and
-  5) and in the process-log entry's "What the agent got wrong".
+  5), in the "Close-out" section of `task-7-report.md` (the Opus 5.5 review of Task 7 and what the
+  close-out commit did with its minors) and in the process-log entry.
 - **The controller's ledger (`progress.md`) is not copied.** It is neither a brief nor a report.
   It stays in the git-ignored session directory, with the plan-path file and the commit-message
   files. The rulings that mattered, the deferred minors and the deviations are restated in the
@@ -47,4 +48,6 @@ Absences, all deliberate:
 in this folder, and is the only report of that run written after the other files were copied. The
 follow-up's two files are later still: `task-7-brief.md` and `task-7-report.md` were copied after
 the pull request was opened, into the commit `docs: record the owner's B on db:reset — tech-debt,
-backlog, SPEC-reset v1.6, process log, prompts`, and `task-7-report.md` was copied last of all.
+backlog, SPEC-reset v1.6, process log, prompts`. The commit `docs: close out Task 7's records — the
+review's verdict, the pending lines, wording` refreshed `task-7-report.md` with a "Close-out"
+section, so that file, again, was copied last of all.

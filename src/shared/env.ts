@@ -49,7 +49,8 @@ export function isLocalDatabaseUrl(url: string): boolean {
  * applied: a URL that does name localhost is refused too when it holds whitespace or a malformed
  * escape, or has another scheme. Callers: `prisma.config.ts` (for `npm run db:reset`, before
  * `prisma migrate deploy` applies any migration; a direct `prisma migrate deploy` is not
- * guarded), `prisma/seed.ts` and `playwright.config.ts`.
+ * guarded), `prisma/seed.ts`, `playwright.config.ts` and `testEnvRefusal` below, through which
+ * `next.config.ts` and `isTestEnv` reach the check.
  */
 export function localDatabaseRefusal(env: EnvVars): string | null {
   const url = env.DATABASE_URL;

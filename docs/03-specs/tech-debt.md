@@ -294,8 +294,9 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   non-local `DATABASE_URL` after their `.env.local` load, and `prisma.config.ts` refuses it for
   `npm run db:reset` before `prisma migrate deploy`, that script's first step, applies any
   migration (the owner's choice B, below). A direct `npx prisma migrate deploy` is not guarded,
-  by design: T-14 runs it against Neon, and CI against its own database. Not keyed on `NODE_ENV`. The `VERCEL` line depends on Vercel's project setting 'Enable access to
-  System Environment Variables'; the database line does not. The guard fails closed: it also
+  by design: T-14 runs it against Neon, and CI against its own database. Not keyed on
+  `NODE_ENV`. The `VERCEL` line depends on Vercel's project setting 'Enable access to System
+  Environment Variables'; the database line does not. The guard fails closed: it also
   refuses a scheme other than `postgres:`/`postgresql:`, a value with whitespace and a value with
   a malformed percent escape. The first version parsed the raw string with `new URL`; the Opus
   review of Task 4 found that node-postgres (`pg-connection-string`) re-encodes a value with a
@@ -307,20 +308,30 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   turned its own rows red. The re-review's differential fuzz — 1.4 million random URLs against
   `pg-connection-string` — found no URL the guard accepts that pg sends to a non-local host (the
   reviewer's run, not repeated here). The refusal messages (`b041b16`) and `.env.example`'s
-  comment name the whole rule. Known and not fixed: the seed and Playwright guards have no standing cut-out
-  fixture (only `next.config.ts` has one), and the seed's control test asserts a non-zero exit
-  and no `Refusing` line, not that a connection was tried.
+  comment name the whole rule. Known and not fixed: the seed and Playwright guards have no
+  standing cut-out fixture (only `next.config.ts` has one), and the seed's control test asserts
+  a non-zero exit and no `Refusing` line, not that a connection was tried. The `prisma.config.ts`
+  guard of the owner's choice B has the same first gap (the `db:resett` mutation was a one-off
+  run, not a fixture) and a second: no test pins its position after the `.env.local` load. Every
+  test sets `DATABASE_URL` in the environment, which wins over the file, so moving the guard above
+  `loadEnvFile` would leave all seven tests of `database-guard.test.ts` green while a
+  `DATABASE_URL` held only in `.env.local` — the case `vercel env pull` would create — went
+  unrefused (read from the code, not run). Two more items from the Opus 5.5 review of the
+  follow-up are left as they are: the refusal message says "this step resets or seeds that
+  database" though it now also fires at `prisma migrate deploy` — acceptable, "this command"
+  would be exact; and the control test for `localhost:1` asserts `toContain("localhost")`, which
+  the refusal's own text also matches, where `localhost:1` would be sharper.
 - **Owner's choice B, `db:reset` before `migrate deploy`:** 2026-09-25, after PR #39 was opened.
   The seed refused another machine's database, but `prisma migrate deploy`, the first step of
-  `db:reset` (`prisma migrate deploy && prisma db seed`), had already applied every pending
-  migration of the checkout to whatever `DATABASE_URL` named — an unmerged feature-branch
-  migration could reach Neon before the seed refused. The whole-branch review raised it (its
-  Minor 2); the owner chose among A leave it, B check in `prisma.config.ts`, C a separate guard
-  script and D drop `migrate deploy` from `db:reset`, and answered "B". `prisma.config.ts` now
-  calls `localDatabaseRefusal` after its `.env.local` load when `npm_lifecycle_event` is
-  `db:reset`, prints the refusal and exits 1 (a thrown error would be wrapped by Prisma in
-  "Failed to load config file <absolute path> as a TypeScript/JavaScript module"). It is keyed
-  on the npm script's name, not on the Prisma command, because T-14 runs
+  `db:reset` (`prisma migrate deploy && prisma db seed`), would already have applied every
+  pending migration of the checkout to whatever `DATABASE_URL` named — an unmerged
+  feature-branch migration could reach Neon before the seed refused. The whole-branch review
+  raised it (its Minor 2); the owner chose among A leave it, B check in `prisma.config.ts`, C a
+  separate guard script and D drop `migrate deploy` from `db:reset`, and answered "B".
+  `prisma.config.ts` now calls `localDatabaseRefusal` after its `.env.local` load when
+  `npm_lifecycle_event` is `db:reset`, prints the refusal and exits 1 (a thrown error would be
+  wrapped by Prisma in "Failed to load config file <absolute path> as a TypeScript/JavaScript
+  module"). It is keyed on the npm script's name, not on the Prisma command, because T-14 runs
   `npx prisma migrate deploy` on the deployed database directly and CI runs it too. The seed's
   own check stays as the second line, and is the only one for `npx prisma db seed`. Three
   child-process tests in `tests/unit/database-guard.test.ts`: `npm run db:reset` against

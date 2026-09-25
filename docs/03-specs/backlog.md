@@ -19,13 +19,15 @@ Prisma commands that reset a database (`prisma migrate reset`, `prisma db push -
 `migrate dev`'s reset prompt), which the TD-10 guard does not cover, and T-14 gains a check of
 whether `vercel env pull` writes `.env.local`, and of what the local guards then do. T-14's
 sentence on `db:reset` was also reworded, and again after the owner's choice "B" (2026-09-25,
-made after PR #39 was opened, on the review's finding that `prisma migrate deploy` had already
-applied every pending migration when the seed refused): `prisma.config.ts` refuses a non-local
-`DATABASE_URL` for `npm run db:reset` before `prisma migrate deploy` applies any migration, so
-`db:reset` refuses outright; a direct `npx prisma migrate deploy`, which T-14 runs against Neon,
-is not guarded. v1.26 (2026-09-24, branch `docs/accept-adr-0006-5`) — the owner replaced CodeQL's
-default setup with an advanced workflow, `.github/workflows/codeql.yml` (PR #37), because they want
-stronger checks: "Səbəb daha advance yoxlamanın olmasını istəyirəm." The suite is
+made after PR #39 was opened, on the review's finding that `prisma migrate deploy` would already
+have applied every pending migration by the time the seed refused): `prisma.config.ts` refuses a
+non-local `DATABASE_URL` for `npm run db:reset` before `prisma migrate deploy` applies any
+migration, so `db:reset` refuses outright; a direct `npx prisma migrate deploy`, which T-14 runs
+against Neon, is not guarded. T-13d's item 3 was edited for the same follow-up: it now says that
+nothing refuses the stock Prisma reset commands outside `npm run db:reset`. v1.26 (2026-09-24,
+branch `docs/accept-adr-0006-5`) — the owner replaced CodeQL's default setup with an advanced
+workflow, `.github/workflows/codeql.yml` (PR #37), because they want stronger
+checks: "Səbəb daha advance yoxlamanın olmasını istəyirəm." The suite is
 `security-and-quality`, which contains `security-extended` and is available only in advanced setup,
 chosen after a measurement on PR #37 ("Əvvəl ölç, nəticəni göstər" → "Bəli, B-də qal"): 201
 JavaScript/TypeScript rules instead of 87, 27 Actions rules instead of 17, 245 files, 0 results.

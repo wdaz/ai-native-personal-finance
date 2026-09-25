@@ -3339,8 +3339,10 @@ them too").
   request, in the commit `docs(process): add T-13c's planning-session entry`; an Opus 5.5
   subagent checked them and its findings are applied. After the pull request was opened, the
   owner answered the entry's open question about `db:reset` with "B"; one more implementer
-  subagent (Sonnet 5) carried it out as Task 7, in two commits (see "Produced"). Its review by an
-  Opus 5.5 subagent is pending as this is written; the controller will correct this line.
+  subagent (Sonnet 5) carried it out as Task 7, in two commits (see "Produced"). An Opus 5.5
+  subagent then reviewed those two commits adversarially and found them ready to push: no
+  Critical and no Important finding, nine minors, seven of them folded in by a third commit of
+  the same implementer (see "Produced" and "Not verified").
 - **Trigger:** the owner's answers to the plan's Q1–Q7 on 2026-09-25 — "Q1 - a, Q2 - tövsiyə olan,
   q3 - tövsiyyə olan, q4 - linter, q5 - tövsiyyə olan, q6 - tövsiyyə olan, q7 - t-13 a/b plana
   daxildir ki, tövsiyyə edirsən?" (Q1 (a); Q2, Q3, Q5 and Q6 as recommended; Q4 a linter; Q7 a
@@ -3419,8 +3421,26 @@ them too").
     `tech-debt.md`, v1.27's changelog and the T-14 and T-13d rows of `backlog.md`,
     SPEC-reset-and-test-support v1.6 (§2.5 and the Status and Changelog text; the version stays
     v1.6, since this pull request is unmerged), this entry, and `task-7-brief.md` and
-    `task-7-report.md` in the prompts folder. Its review by an Opus 5.5 subagent is pending as
-    this is written.
+    `task-7-report.md` in the prompts folder. An Opus 5.5 subagent reviewed these two commits
+    (see "Not verified"). A third commit, subject `docs: close out Task 7's records — the
+    review's verdict, the pending lines, wording`, folds in seven of its nine minors, as the
+    controller relayed them, and the review's verdict; the two others are recorded in TD-10 and
+    left as they are. The seven, one line each:
+    1. the sentence in "Owner changes and reasoning" that said what B keeps possible is
+       relabelled: a property of the option as it was put to the owner, not a reason they gave;
+    2. TD-10's known limits gain what the `prisma.config.ts` guard lacks: a standing cut-out
+       fixture, and any test that pins its position after the `.env.local` load;
+    3. "had already applied" became "would already have applied" in TD-10 and in `backlog.md`
+       v1.27's changelog: the sentence states what the step would have done, not what happened;
+    4. TD-10's 169-column line and the prompts README's opening paragraph are re-wrapped at 100
+       columns;
+    5. `backlog.md` v1.27's changelog says that T-13d's item 3 was edited for the follow-up;
+    6. `.env.example`'s parenthetical "before it applies any migration" now attaches to "refuses",
+       not to "reset";
+    7. `localDatabaseRefusal`'s docblock lists `testEnvRefusal` among the callers, through which
+       `next.config.ts` and `isTestEnv` reach the check (a comment; no code line changed).
+    The same commit corrects the prompts README's account of where review findings are recorded
+    and refreshes `task-7-report.md` there with a "Close-out" section.
 - **Numbers (the plan's F7, measured on this branch):** unit tests 77 files, 958 tests at the
   start; 960 after Task 1; 963 in 78 files after Task 3; 1029 in 80 files after Task 4's first
   commit and 1037 after its fix round; 1043 in 81 files after Task 5. The plan said 1 035 after all
@@ -3623,6 +3643,13 @@ them too").
   - `tests/unit/scaffold.test.ts` (114) and `npm run traceability` ("all 18 Release 1 stories"),
     on `731a8f4` plus the docs edits; the process-log diff against `origin/main` shows added
     lines only.
+  - For the close-out commit, on the second commit's tree plus its edits: `npx tsc --noEmit`,
+    `npm run lint` and `npx prettier --check .` clean; `tests/unit/shared/env.test.ts` and
+    `tests/unit/database-guard.test.ts`, 2 files, 61 tests passed; `scaffold.test.ts` (114) and
+    `npm run traceability` again; the staged secret scan, silent; the process-log diff against
+    `origin/main` again shows added lines only. The diff of `src/shared/env.ts` is a comment; no
+    code line, message string or test changed. The API and E2E suites were not run again: nothing
+    that runs changed.
 - **Not verified:**
   - The CI verdict: the branch was not pushed and no pull request was open when this entry was
     written. Firefox and WebKit on Linux (the font check and the walkthrough ran on macOS only).
@@ -3650,14 +3677,24 @@ them too").
     re-review of the final fix wave ran and found its 12 findings addressed and six new minors,
     which the close-out commit handles; a re-review of the close-out commit was not run, the
     controller read its diff.
-  - The follow-up on `db:reset`: its CI verdict (its two commits were not pushed); the E2E suite,
-    `npm run test:coverage` and `npm run secrets:scan` over the history were not re-run after it;
-    its review by an Opus 5.5 subagent is pending as this is written, so no review result is
-    recorded here and the controller will correct this line. The guard was measured with
+  - The follow-up on `db:reset`: its CI verdict (its commits were not pushed); the E2E suite,
+    `npm run test:coverage` and `npm run secrets:scan` over the history were not re-run after it.
+    An Opus 5.5 subagent reviewed its two commits adversarially, as the controller relayed it: it
+    ran the guard and probes against a `.invalid` host, which touches no database, and compared
+    `npm_lifecycle_event` under npm, npx and `postinstall`. It did not re-run the full suite, the
+    API tests or the local `db:reset`, and did not run Playwright. Its verdict was "ready to
+    push": no Critical, no Important, nine minors — seven fixed in the close-out commit (see
+    "Produced") and two left as they are, recorded in TD-10: the refusal message says "this step
+    resets or seeds that database" though it now also fires at `migrate deploy` (acceptable;
+    "this command" would be exact), and test 2 asserts `toContain("localhost")`, which the
+    refusal's own text also matches, where `localhost:1` would be sharper. The review is not in
+    the repository (its findings reached the controller as a message). The close-out commit
+    itself was not re-reviewed; the controller read its diff. The guard was measured with
     `DATABASE_URL` set in the environment, not with `.env.local` pointing at another host (the
-    code path is the same: `.env.local` is loaded first and a variable already set wins), and
-    with npm 11.19.0 on macOS only; that npm sets `npm_lifecycle_event` to `db:reset` for the
-    script was observed here, not looked up anywhere else.
+    code path is the same: `.env.local` is loaded first and a variable already set wins, but no
+    test pins that order, see TD-10), and with npm 11.19.0 on macOS only; that npm sets
+    `npm_lifecycle_event` to `db:reset` for the script was observed here and in the review's
+    comparison, not looked up anywhere else.
 - **Owner changes and reasoning:** the answers to the plan's questions, as above: Q1 (a) — the
   comment says what the test does, and the failing-first line of the T-13c row is waived for TD-8,
   since a comment cannot be red; Q2 (a) — the first seed is `POST /api/admin/reset`, and
@@ -3669,9 +3706,11 @@ them too").
   T-13d comes after T-13c is merged. After the pull request was opened and the whole-branch
   review had run, the owner was asked about `db:reset` and `prisma migrate deploy` (the open item
   below) and chose among A (leave it), B (check in `prisma.config.ts`), C (a separate guard
-  script) and D (drop `migrate deploy` from `db:reset`). The owner's words: "B", 2026-09-25. B
-  keeps T-14's direct `npx prisma migrate deploy` possible, since it keys on the npm script's
-  name. Changes made in review: _(owner to fill after review)_
+  script) and D (drop `migrate deploy` from `db:reset`). The owner's words: "B", 2026-09-25; no
+  reason is recorded. Recorded separately, as a property of the option as it was put to the
+  owner and not as their reason: B keeps T-14's direct `npx prisma migrate deploy` possible,
+  since it keys on the npm script's name. Changes made in review: _(owner to fill after
+  review)_
 - **Disagreements:** Q4. The plan recommended a unit test — one helper of about 50 lines and a
   43-line test, no dependency — and named the cost of the alternative; the owner chose a linter.
   Recorded as the owner's decision (`AGENTS.md` §5). The plan then measured what the choice cost
@@ -3716,8 +3755,9 @@ them too").
     `db:reset`. Implemented in the two commits of the follow-up, `feat(env): refuse db:reset
     against another machine's database before it applies migrations (TD-10)` and `docs: record
     the owner's B on db:reset — tech-debt, backlog, SPEC-reset v1.6, process log, prompts` (see
-    "Produced"). A direct `npx prisma migrate deploy` stays unguarded, by design: T-14 runs it
-    against Neon, and CI runs it against its own database. The question as it stood before the
+    "Produced", which also names the close-out commit). A direct `npx prisma migrate deploy`
+    stays unguarded, by design: T-14 runs it against Neon, and CI runs it against its own
+    database. The question as it stood before the
     answer: the seed step refused a non-local `DATABASE_URL`, but `db:reset` ran `prisma migrate
     deploy` first, and that step was not guarded. The plan (F4e) rejected a pre-check script. The
     whole-branch review's minor about `db:reset` running `prisma migrate deploy` before the seed
@@ -3740,5 +3780,5 @@ them too").
   reset a database are not guarded), and T-14's row carries the others (the first seed, the
   `VERCEL` setting, whether `vercel env pull` writes `.env.local`); T-13a and T-13b have their own
   plan gates. The plan branch has no pull request; whether to merge it is the owner's call, and
-  its planning entry is in this pull request (see the "Phase" field). The two commits of the
+  its planning entry is in this pull request (see the "Phase" field). The commits of the
   `db:reset` follow-up were not pushed by their implementer; the controller decides when.

@@ -200,3 +200,69 @@ during-execution bullet on exit versus throw; the run list under "Verified" and 
 verified" that says the Opus 5.5 review is pending; "Owner changes and reasoning" (the owner's
 word: "B"; I recorded no reason, since none was given to me); the open item turned into a
 "Resolved" item that keeps the question as it stood; "Next" (the two commits are not pushed).
+
+## 9. Close-out (a third commit, after the Opus 5.5 review of the two commits)
+
+The review's verdict, as the controller relayed it: ready to push, no Critical, no Important, nine
+minors. This commit is subject `docs: close out Task 7's records — the review's verdict, the
+pending lines, wording` (its id is not in this report: this report is copied into it). It changes
+docs and one code comment; nothing that runs.
+
+What changed, per file:
+
+- `docs/04-process/process-log.md` (added lines only; `git diff origin/main` shows 0 removed):
+  the three "pending" statements about the review (Participants, the end of the follow-up bullet in
+  Produced, Not verified) now say what happened — an Opus 5.5 subagent reviewed the two commits
+  adversarially (ran the guard and probes against a `.invalid` host that touches no database;
+  compared `npm_lifecycle_event` under npm, npx and `postinstall`; did not re-run the full suite,
+  the API tests or the local `db:reset`; did not run Playwright), verdict "ready to push", no
+  Critical, no Important, nine minors, seven fixed here (listed one line each under Produced) and
+  two left as they are and recorded in TD-10; the close-out commit itself was not re-reviewed, the
+  controller read its diff. "Owner changes and reasoning": B's property relabelled as a property of
+  the option as it was put to the owner, not a reason they gave. Also: "Resolved" item and "Next"
+  mention the close-out; a Verified bullet for this commit's runs.
+- `docs/03-specs/tech-debt.md` TD-10: the known limits now include the `prisma.config.ts` guard's
+  missing standing cut-out fixture (the `db:resett` mutation was a one-off) and that no test pins
+  its position after the `.env.local` load (every test sets `DATABASE_URL` in the environment,
+  which wins, so moving the guard above `loadEnvFile` would leave all seven tests green while a
+  `.env.local`-only URL, the case `vercel env pull` creates, went unrefused — stated as read from
+  the code, not run), plus the two items left as they are (message wording; test 2's
+  `toContain("localhost")`); "had already applied" became "would already have applied"; the
+  169-column line and one line my earlier wrap left long are re-wrapped at 100.
+- `docs/03-specs/backlog.md` v1.27 changelog: the same tense fix; one sentence that T-13d's item 3
+  was also edited for the follow-up (nothing refuses the stock Prisma reset commands outside
+  `npm run db:reset`); the v1.26 words that shared a line with it are re-broken, same text.
+- `.env.example`: the parenthetical "before it applies any migration" now attaches to "refuses"
+  ("Both `npm run db:reset` and every Playwright run reset this database, so `db:reset` refuses —
+  before it applies any migration — and so does every Playwright run, a URL whose host is not …").
+- `src/shared/env.ts`: docblock of `localDatabaseRefusal` lists `testEnvRefusal` among the callers
+  (through which `next.config.ts` and `isTestEnv` reach the check). `git diff` shows only comment
+  lines changed.
+- `docs/04-process/prompts/2026-09-24-T-13c/README.md`: opening paragraph re-wrapped at 100; the
+  Task 7 table row says "and a close-out commit"; the "no review files" bullet now points at the
+  "Close-out" section of `task-7-report.md` (Task 7) as well as the Task 4 and 5 rounds; the
+  closing paragraph says this commit refreshed `task-7-report.md`, which is again the last file
+  copied. `task-7-report.md` there is this file, refreshed.
+
+Runs, on the second commit's tree plus these edits:
+
+- `git diff src/shared/env.ts`: 3 lines, all inside the docblock.
+- `npx tsc --noEmit`: no output. `npm run lint`: eslint and stylelint clean.
+- `npx prettier --check src/shared/env.ts`: "All matched files use Prettier code style!". `.env.example`
+  has no Prettier parser ("No parser could be inferred"), so the brief's `prettier --check
+  src/shared/env.ts .env.example` cannot run as written; `npx prettier --check .` (which skips it) is
+  clean too.
+- `npx vitest run tests/unit/shared/env.test.ts tests/unit/database-guard.test.ts`: 2 files, 61
+  tests passed.
+- `npx vitest run tests/unit/scaffold.test.ts`: 114 passed. `npm run traceability`: "all 18 Release
+  1 stories are named in a test title".
+- The process-log diff against `origin/main`: 0 removed lines. Added lines over 100 characters in
+  what this commit touches: none, except one pre-existing-style table row in the prompts README.
+- `sh scripts/secret-scan.sh staged`: silent (run before the commit).
+- No API or E2E run: nothing that runs changed.
+
+Notes: the grouping of the "seven fixed minors" is mine, from the coordinator's list of changes
+(I did not see the review's own numbering). The seven, as written under Produced: the owner-reason
+relabel; TD-10's known-limits gap; the tense; the two over-long lines; the T-13d clause in v1.27's
+changelog; `.env.example`'s parenthetical; the docblock's callers. The prompts README's "Tasks 4, 5
+and 7" style edits follow from this commit and are not counted as minors.
