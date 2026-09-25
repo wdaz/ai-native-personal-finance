@@ -1,6 +1,10 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.18 — 2026-09-25: T-13d's security review adds TD-12–TD-18, one per
+Status: **Approved** (v1.19 — 2026-09-25: owner decision — fix TD-12, TD-15, TD-16, TD-18 now
+(nothing Vercel-related); TD-13 investigated — no application-level fix exists (`TRACE` is a
+Fetch-spec forbidden method, undici/Next's own rejection before any app code runs), stays Open as
+a documented platform limit; TD-14 and TD-17 stay untouched (Vercel-related, owner's instruction);
+v1.18 — 2026-09-25: T-13d's security review adds TD-12–TD-18, one per
 finding (F-01–F-07); none fixed here — "review, don't fix" (skill ground rule) — and nothing in
 this task is pushed to `origin` until the owner has reviewed the full report and decided,
 finding by finding, how to handle each one (plan Q5); v1.17 — 2026-09-25: TD-3's v1.16 paragraph corrected by the Opus 5.5
@@ -27,13 +31,13 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-9 | The `minmax(0, 1fr)` rule for card grids is a comment, not a check | **Closed** | T-13c (PR #39) |
 | TD-10 | Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database | **Closed** | T-13c (PR #39; moved from T-14's T-02 hand-off) |
 | TD-11 | Every `next build` downloads Public Sans from Google Fonts, so a network hiccup fails the build | **Closed** | T-13c (PR #39; v1.11) |
-| TD-12 | Duplicate `pf_session` cookies are read inconsistently between the proxy and the session-probe route | **Open** | T-13d (F-01) |
-| TD-13 | `TRACE` bypasses the proxy entirely on every route: a bare 500 with none of the app's security headers | **Open** | T-13d (F-02) |
+| TD-12 | Duplicate `pf_session` cookies are read inconsistently between the proxy and the session-probe route | **Fix in review** | T-13d (F-01) |
+| TD-13 | `TRACE` bypasses the proxy entirely on every route: a bare 500 with none of the app's security headers | **Open — no fix possible (Fetch-spec forbidden method, undici/Next)** | T-13d (investigated; F-02) |
 | TD-14 | The proxy's dotted-path exclusion may also skip Next's `.rsc`/`.json` transport forms of protected pages on Vercel | **Open — verify against the T-14 preview before anything else at that task** | T-13d (F-03) |
-| TD-15 | `POST /api/auth/logout` has no CSRF check of its own beyond `SameSite=Lax` | **Open** | T-13d (F-04) |
-| TD-16 | `X-Powered-By: Next.js` is sent on every response | **Open** | T-13d (F-05) |
+| TD-15 | `POST /api/auth/logout` has no CSRF check of its own beyond `SameSite=Lax` | **Fix in review** | T-13d (F-04) |
+| TD-16 | `X-Powered-By: Next.js` is sent on every response | **Fix in review** | T-13d (F-05) |
 | TD-17 | The login rate-limit key is client-controlled `X-Forwarded-For` unless the host overwrites it | **Open** | T-13d (F-06) |
-| TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Open** | T-13d (F-07) |
+| TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Fix in review** | T-13d (F-07) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -459,8 +463,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   own cookie parser, keeps the **last** of several same-named cookies) and `GET /api/auth/session`
   (`src/server/session.ts:73-80`'s `readCookie`, keeps the **first**) can disagree on which of two
   duplicate `pf_session` cookies is authoritative.
-- **Owner decision:** pending — recorded here so it is not lost; the owner reviews the full report
-  and decides, per finding, how to handle it (T-13d plan, Q5).
+- **Owner decision:** 2026-09-25 — fix now ("Vercelle bağlı heç nəyə toxunma. Qalanlarını
+  düzəlt" — don't touch anything Vercel-related, fix the rest; this one is not Vercel-related).
 - **What:** verified live: with a valid cookie first and a garbage one second, the session-probe
   route says authenticated but the page/API layer says not; with the order reversed, the opposite.
 - **Risk:** low — no authentication bypass (both readers still require a genuinely valid, sealed
@@ -469,6 +473,14 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 - **Guarded meanwhile by:** nothing; no existing test covers a duplicate cookie.
 - **Fix:** make both readers use the same cookie-parsing rule (first-wins or last-wins,
   consistently), with a failing-first test.
+- **Fix in review:** 2026-09-25, `task/T-13d-security-review` — `readCookie`
+  (`src/server/session.ts`) now keeps the LAST of several same-named cookie pairs
+  (`.reverse().find(...)`, not `.findLast(...)`: the project's `tsconfig.json` lib target is
+  ES2022, one short of `Array.prototype.findLast`, ES2023), matching `proxy.ts`'s own
+  `request.cookies.get`. A new unit test in `tests/unit/server/session.test.ts` failed red
+  (`"first"` received, `"second"` expected) before the fix and passes now; the other 11
+  `readCookie`/session tests are unaffected (every existing case has exactly one `pf_session`
+  occurrence, where `.reverse().find()` and the old `.find()` agree).
 
 ## TD-13 — `TRACE` bypasses the proxy entirely on every route
 
@@ -476,16 +488,33 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   `/api/overview`, `/login` and `/api/auth/session` all answer a bare `500 Internal Server Error`,
   `text/plain`, with none of `proxy.ts`'s response headers (no CSP, no `nosniff`, no
   `Referrer-Policy`, no `X-Request-Id`) — the request never reaches the code that sets them.
-- **Owner decision:** pending.
-- **What:** not yet traced to its exact cause (Node/Next's own handling of an unusual method, vs.
-  something addressable in `proxy.ts`'s matcher). The body is a fixed, generic string; nothing is
-  reflected, so this is not a Cross-Site-Tracing (XST) risk.
+- **Owner decision:** 2026-09-25 — investigated in the same session (below); no application-level
+  fix exists, so this stays open as a documented, accepted platform limitation rather than a task
+  to fix (owner's "fix the rest" after excluding Vercel-only items; this one turned out to need no
+  further code work either way).
+- **What:** traced to its exact cause. `next start` logs, for every `TRACE` request on this Next
+  16.3.5 / Node 22.22 build:
+  ```
+  TypeError: 'TRACE' HTTP method is unsupported.
+      at new P (.next/server/chunks/[root-of-the-server]__0z62pfp._.js:15:5699)
+      ...
+  ```
+  This is undici's own Fetch-spec `Request` constructor rejecting `TRACE` as a "forbidden method"
+  (the WHATWG Fetch standard explicitly forbids `CONNECT`, `TRACE` and `TRACK` from ever
+  constructing a `Request`). Next's App Router builds a standards `Request` object from the
+  incoming connection before it ever reaches `proxy.ts` or any route handler, so the throw happens
+  inside Next's own compiled server code — no application code runs at all for this method, which
+  is exactly why none of `proxy.ts`'s headers appear. The body is a fixed, generic string; nothing
+  is reflected, so this is not a Cross-Site-Tracing (XST) risk.
 - **Risk:** low — the method is already effectively denied (a 500, not a 200), just not through the
   app's own security-header layer; it means "every response carries the pinned headers" has one
-  untested exception.
-- **Guarded meanwhile by:** nothing; no existing test sends `TRACE`.
-- **Fix:** trace the exact cause first; if it is platform behaviour outside this app's code,
-  document it here as accepted (owner's call) rather than treating it as an open FAIL.
+  platform-level exception that no code in this repository can change.
+- **Guarded meanwhile by:** nothing; no existing test sends `TRACE`. Not worth adding one either —
+  the behaviour is Next/undici's own, not this app's, and would break on any upgrade that changes
+  undici's wording rather than this app's own logic.
+- **Fix:** none available in application code — `TRACE` cannot reach a Next.js App Router route at
+  all on this stack, by the Fetch standard's own design. Not carried into T-14 as a deploy check:
+  the same undici/Next behaviour applies on Vercel too, since it is not host-specific.
 
 ## TD-14 — The proxy's dotted-path exclusion may also skip Next's `.rsc`/`.json` transport forms
 of protected pages on Vercel
@@ -523,7 +552,7 @@ of protected pages on Vercel
   `Sec-Fetch-*` header — unlike the GET `/login?reason=logout` fallback, which ADR-0006 amendment
   (3) gates on exactly `Sec-Fetch-Site: same-origin`, `Sec-Fetch-Mode: navigate`,
   `Sec-Fetch-Dest: document`.
-- **Owner decision:** pending.
+- **Owner decision:** 2026-09-25 — fix now (owner: "fix the rest", not Vercel-related).
 - **What:** verified live: a cross-site-shaped `POST` (a hostile `Origin` header, real prior
   session cookie) still answers 204 and clears the session; the *same* shape against the documented
   GET fallback correctly keeps the session. Caveat: `curl` does not enforce `SameSite` the way a
@@ -534,19 +563,38 @@ of protected pages on Vercel
 - **Guarded meanwhile by:** nothing beyond `SameSite=Lax` itself.
 - **Fix:** add the same `Sec-Fetch-Site`/`Origin` check to the POST route, with a failing-first
   test mirroring `tests/api/logout-fallback.spec.ts`'s existing bypass-condition matrix.
+- **Fix in review:** 2026-09-25, `task/T-13d-security-review` — `proxy.ts` refuses
+  `POST /api/auth/logout` with a 403 (`{"message": "This request must be same-origin"}`, no
+  `Set-Cookie`) when `Sec-Fetch-Site: cross-site`; a same-origin request, or one with no
+  `Sec-Fetch-Site` header at all (an older client — `SameSite=Lax` is that case's own defence, as
+  it always was), is unaffected. Narrower than the GET fallback's strict allow-list on purpose:
+  the app's own `logOut()` sends a same-origin `fetch()`, not a navigation, so it never carries
+  `Sec-Fetch-Mode: navigate`/`Sec-Fetch-Dest: document`, and the three existing API tests that call
+  `POST /api/auth/logout` with no Sec-Fetch header at all stayed green unmodified. Two new tests in
+  `tests/api/logout-fallback.spec.ts`: the cross-site case failed red (204 received, 403 expected)
+  before the fix and passes now; the same-origin/no-header case already passed (proving it wasn't
+  vacuously broken by the fix). Not run through `ErrorEnvelope`/SPEC-auth §2.10 — logout has no
+  documented error shape, and this is a proxy-level rejection, not a route-handler answer, so no
+  spec amendment was needed either. Full API suite (`tests/api/logout-fallback.spec.ts`,
+  `auth.spec.ts`, `proxy.spec.ts`, 43 tests) green together with TD-12/TD-16/TD-18's fixes.
 
 ## TD-16 — `X-Powered-By: Next.js` is sent on every response
 
 - **Found:** 2026-09-25, T-13d (security review), Finding F-05 — `next.config.ts` sets no
   `poweredByHeader: false` (Next's own default is `true`); confirmed live, repeatedly, on every
   response probed this session.
-- **Owner decision:** pending.
+- **Owner decision:** 2026-09-25 — fix now (owner: "fix the rest", not Vercel-related).
 - **What:** a plain framework-fingerprinting header; no requirement asks for its absence.
 - **Risk:** low — confirms the framework to an outsider, no more than `package.json` already does
   in this public repository.
 - **Guarded meanwhile by:** nothing; no test asserts its absence.
 - **Fix:** set `poweredByHeader: false`; add a header-absence assertion alongside the existing
   pinned-header tests in `tests/api/proxy.spec.ts`.
+- **Fix in review:** 2026-09-25, `task/T-13d-security-review` — `next.config.ts` sets
+  `poweredByHeader: false`. A new API test, "T-13d F-05: no response carries X-Powered-By"
+  (`tests/api/proxy.spec.ts`), checks the same four response branches the existing pinned-header
+  test uses (a public page, a public API answer, a redirect, a 401); it failed red (`"Next.js"`
+  received) before the fix and passes now.
 
 ## TD-17 — The login rate-limit key is client-controlled `X-Forwarded-For` unless the host overwrites it
 
@@ -572,7 +620,7 @@ of protected pages on Vercel
   inserts a row on every login, success included; `:58-60` deletes only the failure rows for that
   key on a success. Nothing reads a `success: true` row and nothing prunes them before the next
   full reset.
-- **Owner decision:** pending.
+- **Owner decision:** 2026-09-25 — fix now (owner: "fix the rest", not Vercel-related).
 - **What:** verified live: one successful login from a fresh key added one row (`5 → 6`); since
   credentials are public (NFR-S1) and successful logins are never rate-limited, any client can grow
   this table without bound between resets.
@@ -582,3 +630,12 @@ of protected pages on Vercel
 - **Guarded meanwhile by:** nothing; the scheduled reset is the only bound.
 - **Fix:** skip the insert on the success path (it only needs the existing `deleteMany` call), or
   prune rows older than the rate-limit window on write.
+- **Fix in review:** 2026-09-25, `task/T-13d-security-review` — `recordAttempt`
+  (`src/server/rate-limit.ts`) no longer calls `loginAttempt.create` on the success path; a
+  success still deletes the IP's failure rows (SPEC-auth §4: "a successful login clears the IP's
+  counter"), unchanged. A new API test, "T-13d F-07/TD-18: a successful login persists no
+  LoginAttempt row at all" (`tests/api/auth.spec.ts`), failed red (1 row received, 0 expected)
+  before the fix and passes now; the existing rate-limit sequence, stale-window, and
+  failure-count tests (which only ever assert on `success: false` rows) and the threshold tests
+  (`tests/api/threshold.spec.ts`, including "2,001 failed logins alone never trip it") are
+  unaffected.
