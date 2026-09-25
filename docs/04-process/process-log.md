@@ -4185,3 +4185,93 @@ them too").
   causal (the other two corroborate) — left as handed over, per the no-rewrite convention above.
 - **Next:** the owner reviews the whole branch (three commits plus this fix pass). T-13d is next in
   the backlog's stated order once this lands.
+
+## 2026-09-25 — Phase 5: T-13d security review before the deploy — planning and execution
+
+- **Phase:** 5 (Build the slice), Release 1 — the last of the four pre-T-14 tech-debt tasks
+  (backlog v1.24, owner decision 2026-09-24). Planned and executed in one session, on branches
+  `claude/13d-planning-6rnuap` (the plan, pushed) and `task/T-13d-security-review` (the review's
+  own doc deliverables, kept **local only** — see below).
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, orchestrating) / Agent (Claude Code,
+  Opus 5.5 ×4, read-only category-split subagents for the checklist walk).
+- **Trigger:** the owner's "Start planing the 13d", then, after Q1–Q8 were answered across two
+  rounds (the second in Azerbaijani, asking for the GitHub-Settings gap, the report's destination
+  and the extra-items layout to be explained before deciding), "Başla onu sonra ayrıca bir sesiyada
+  edərəm" ("Start it — the other thing [the local GitHub-Settings check] I'll do later in a
+  separate session").
+- **Prompt(s):** `prompts/2026-09-25-T-13d.md`; the plan itself,
+  `docs/04-process/plans/2026-09-25-T-13d.md` (v0.3, all of Q1–Q8 decided); the four subagent
+  briefs and condensed reports under `prompts/2026-09-25-T-13d/`.
+- **Produced:**
+  - The plan (Findings F1–F12 grounded in a scratch build, Review Focus, Q1–Q8, five tasks),
+    `.github/CODEOWNERS` (`* @wdaz`) and `SECURITY.md` — all on `claude/13d-planning-6rnuap`,
+    pushed (these are not review findings; Q4 was a direct, bounded owner instruction, not subject
+    to Q5's hold).
+  - The execution: a fresh local production build (`APP_ENV=production`, commit `aad1423`), four
+    read-only Opus 5.5 subagents split by category group (INFO+CONF+TRAN; AUTHN+SESS+AUTHZ; VAL;
+    DOS+BIZ+CRYP+FILE+CARD+HTML5), every citation touching a finding independently re-verified live
+    by the main session against the running server or by re-running a cited command, per the
+    skill's own rule that only the main session marks an item PASS.
+  - The report: all 131 checklist items (49 PASS, 8 FAIL, 9 BY DESIGN, 46 N/A, 19 NOT TESTED) plus
+    the four backlog-specific items, published as a private Claude Artifact — not committed to the
+    repository, per the `owasp-security-review` skill's own ground rule ("a committed report with
+    open findings is a public disclosure").
+  - `tech-debt.md` v1.18: TD-12–TD-18, one per finding (F-01–F-07), all Open, owner decision
+    pending on each.
+  - `backlog.md` v1.34: this outcome recorded in the Status changelog and the Notes tech-debt
+    bullet.
+  - This entry.
+  - **Not produced / explicitly deferred:** any fix PR (the skill's own rule: "do not open them
+    unless asked" — none was); the GitHub-Settings items (Q3: no tool in this session reads
+    repository Settings; the owner checks them separately, on a local Claude Code session).
+- **What the agent got right:** the planning session's own scratch build caught real, dated
+  evidence (the `X-Powered-By` header, the missing CODEOWNERS/SECURITY.md, the GitHub-tooling gap)
+  before the execution session started, so the plan's Q3/Q4 questions were concrete rather than
+  hypothetical. During execution, the main session did not accept any subagent's "PASS" unverified:
+  every finding was independently reproduced live, and two subagents' predictions were corrected
+  against the run rather than kept — `TRACE`'s response was measured as a bare 500 with no security
+  headers, not the 401 both the VAL and AUTHN subagents predicted. Two subagents independently
+  reached the review's two most significant findings (the proxy-matcher `.rsc` gap; the
+  logout-CSRF gap) from different evidence, which the report calls out explicitly as
+  cross-validation rather than treating either as a single unverified claim.
+- **What the agent got wrong or missed:** (1) the four category-split subagents were dispatched
+  from `task/T-13d-security-review` before that branch had the plan merged onto it (it was cut from
+  `origin/main`, which does not carry the plan — only pushed to `claude/13d-planning-6rnuap`); all
+  four subagents flagged the missing plan file in their own reports and worked from the backlog row
+  and the skill directly instead, which cost some redundant context-gathering across the four and
+  meant none of them could read F1–F12/Review Focus/Q1–Q8 before returning. Fixed mid-session (a
+  fast-forward merge of the plan branch into the execution branch) but only after all four had
+  already run. (2) Finding F-03/TD-14 (the proxy-matcher gap) carries no FAIL row of its own — every
+  one of its checklist items is NOT TESTED, since the decisive half needs a deployed host — which
+  does not fit the report template's own self-check ("every finding names a FAIL row"); the report
+  states this exception explicitly rather than forcing a FAIL status the evidence does not support,
+  but a future run of this skill should decide up front whether a well-evidenced NOT TESTED that
+  could be Critical belongs in the Findings list or needs its own template category. (3) The
+  `POST /api/auth/logout` CSRF reproduction (Finding F-04) used `curl`, which does not enforce
+  `SameSite` the way a browser does; the report flags this caveat, but a browser-based reproduction
+  (a real cross-site page auto-submitting the form) was not attempted, so the finding's real-world
+  exploitability in a modern browser is still somewhat inferred rather than fully demonstrated.
+- **Owner changes and reasoning:** Q3 (b, plus an independent local check with broader GitHub
+  access); Q4 (CODEOWNERS naming the owner; SECURITY.md written); Q5 (broadened beyond
+  Critical/High — every finding is recorded and documented, but nothing from this task reaches
+  `origin` until the owner reviews all of it and decides, finding by finding); Q7 (the report is a
+  Claude Artifact, not a plain scratch file); Q8 (the four backlog-specific items stay a separate
+  report subsection, as recommended).
+- **Disagreements:** none — every plan-gate question was answered as asked, in some cases after a
+  plainer explanation was given first.
+- **Lessons for the process:** (1) When a planning branch and an execution branch are separate
+  (as T-13d's own plan called for), merge the plan onto the execution branch *before* dispatching
+  any subagent from it, not after the first one already needed it — four subagents independently
+  hit the same missing-plan gap this session, which a single check before dispatch would have
+  caught. (2) The `owasp-security-review` skill's own report-template self-check ("every finding
+  names a FAIL row") does not anticipate a well-evidenced NOT TESTED that could be Critical if its
+  unverified half comes back positive — worth a line in the skill itself for how to handle that
+  case consistently, rather than each run deciding ad hoc. (3) A `curl`-based CSRF reproduction
+  proves the *server* performs no check; it does not prove real-browser exploitability, since curl
+  ignores `SameSite`. Worth stating as a standing caveat in the skill's own SESS-13 guidance.
+- **Next:** the owner reviews the published report (Artifact URL given in conversation) and this
+  local branch's docs, and decides, finding by finding, how to handle each of TD-12–TD-18 — as an
+  immediate fix PR, a documented accepted risk, or something else. **TD-14 (the proxy-matcher gap)
+  should be checked against the T-14 preview before that task proceeds past it**, regardless of
+  what the owner decides for the others. The owner separately checks the GitHub-Settings items
+  (Q3) on a local Claude Code session. Nothing from this task reaches `origin` until then.
