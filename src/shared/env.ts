@@ -10,19 +10,29 @@ type EnvVars = Readonly<Record<string, string | undefined>>;
 const LOCAL_DATABASE_HOSTS: readonly string[] = ["localhost", "127.0.0.1", "[::1]"];
 
 /**
- * Is `url` a database URL whose host is this machine? Fails closed: a value that does not
- * parse, names no host (`postgresql:///db`), or carries a `host` or `hostaddr` query parameter
- * is not local. `?host=` matters: node-postgres reads it over the URL's own host (measured
- * 2026-09-24 with pg-connection-string), so `postgresql://localhost/db?host=prod.example.com`
- * connects to `prod.example.com` while `new URL(...).hostname` still says `localhost`.
+ * Is `url` a database URL whose host is this machine? Fails closed: the guard must read the URL
+ * the way node-postgres (pg-connection-string) does, so a value is not local when
+ * - it holds whitespace or a `%` that does not start a two-digit escape: pg then re-encodes the
+ *   whole value with `encodeURI` and parses the result against the base `postgres://base`
+ *   (measured 2026-09-25), so the string parsed here is not the one the driver parses —
+ *   `http://localhost\@evil.example.com/db` plus a trailing space connects to `evil.example.com`
+ *   while `new URL(...).hostname` says `localhost`, and a leading space gives the host `base`;
+ * - its scheme is not `postgres:` or `postgresql:`: both are non-special schemes, where a
+ *   backslash never separates the host from the path, and a special one (`http:`) reads it as `/`;
+ * - it does not parse, names no host (`postgresql:///db`), or carries a `host` or `hostaddr`
+ *   query parameter. `?host=` matters: pg reads it over the URL's own host (measured 2026-09-24),
+ *   so `postgresql://localhost/db?host=prod.example.com` connects to `prod.example.com` while
+ *   `new URL(...).hostname` still says `localhost`.
  */
 export function isLocalDatabaseUrl(url: string): boolean {
+  if (/\s|%(?![0-9a-f]{2})/i.test(url)) return false;
   let parsed: URL;
   try {
     parsed = new URL(url);
   } catch {
     return false;
   }
+  if (parsed.protocol !== "postgres:" && parsed.protocol !== "postgresql:") return false;
   if (parsed.searchParams.has("host") || parsed.searchParams.has("hostaddr")) return false;
   return LOCAL_DATABASE_HOSTS.includes(parsed.hostname.toLowerCase());
 }
@@ -59,8 +69,8 @@ export function testEnvRefusal(env: EnvVars): string | null {
   if (env.APP_ENV !== "test") return null;
   if (env.VERCEL || env.VERCEL_ENV) {
     return (
-      "Refusing to run: APP_ENV=test on a Vercel deployment (VERCEL is set) would expose the " +
-      "unauthenticated /api/test/* reset and seed routes — unset APP_ENV there — TD-10"
+      "Refusing to run: APP_ENV=test on a Vercel deployment (VERCEL or VERCEL_ENV is set) would " +
+      "expose the unauthenticated /api/test/* reset and seed routes — unset APP_ENV there — TD-10"
     );
   }
   if (localDatabaseRefusal(env) !== null) {

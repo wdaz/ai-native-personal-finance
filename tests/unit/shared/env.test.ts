@@ -22,6 +22,18 @@ const NOT_LOCAL_URLS = [
   // node-postgres reads ?host= over the URL's own host (measured 2026-09-24)
   "postgresql://user:password@localhost/personal_finance?host=prod.example.com",
   "postgresql://user:password@localhost/personal_finance?hostaddr=10.0.0.5",
+  // node-postgres re-encodes a value with whitespace or a malformed % escape and parses it as a
+  // different URL (measured 2026-09-25); each of the next three isolates one of the guard's
+  // conditions — the scheme, whitespace, the escape — and the fourth is the bypass they close.
+  // A scheme that is not postgres:/postgresql: (a special one reads a backslash as a delimiter):
+  "http://localhost/personal_finance",
+  // A leading space: pg parses it against its base URL and reads the host as "base":
+  " postgresql://user:password@localhost:5432/personal_finance",
+  // A malformed percent escape, which makes pg re-encode the whole value:
+  "postgresql://user:password@localhost/personal_finance?x=%zz",
+  // The bypass, the scheme and a trailing space together: `new URL` reads the host as localhost,
+  // pg re-encodes the value and connects to evil.example.com:
+  "http://localhost\\@evil.example.com/db ",
   // no host at all: the driver falls back to PGHOST
   "postgresql:///personal_finance",
   "not a url",
