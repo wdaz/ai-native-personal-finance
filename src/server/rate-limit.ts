@@ -52,10 +52,14 @@ export async function recordAttempt(
   success: boolean,
   now: Date,
 ): Promise<void> {
-  await db.loginAttempt.create({ data: { ip, success, at: now } });
-  // "a successful login clears the IP's counter" (SPEC-auth §4) — delete the prior failures
-  // so the very next failed attempt starts a fresh window, not one still holding old ones.
+  // T-13d finding F-07/TD-18: a success row was written here too, though checkRateLimit's own
+  // query only ever reads `success: false` (line 42) — nothing read it, and nothing pruned it
+  // before the next full reset, so with the demo credentials public (NFR-S1) and successful
+  // logins never rate-limited, any client could grow the table without bound between resets.
+  // "a successful login clears the IP's counter" (SPEC-auth §4) only needs the delete below.
   if (success) {
     await db.loginAttempt.deleteMany({ where: { ip, success: false } });
+    return;
   }
+  await db.loginAttempt.create({ data: { ip, success, at: now } });
 }
