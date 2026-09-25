@@ -4604,7 +4604,7 @@ them too").
   "yəni mənim ona icazəm yoxdur. Push protectionda bitir." ("so I do not have permission for
   it. It ends at Push protection.")
 - **Prompt(s):** the conversation itself; no separate prompt file.
-- **Outcome:** neither non-provider patterns nor validity checks is offered on this
+- **Outcome:** neither non-provider patterns nor validity checks are offered on this
   repository, so there is nothing to enable. It is not a permission problem: the repository is
   public and belongs to a personal `User` account, and the API reads both toggles as `disabled`,
   unchanged (2026-09-25). This closes item 3 of "Done" and item (1) of "Next" in the entry
