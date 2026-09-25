@@ -63,7 +63,11 @@ the named package's script and run `npm install-scripts approve <package>` (or `
 `npm run db:reset` applies pending migrations and replaces all data with the seed
 (`prisma/data.json`, dates moved two years on), recording a reset of reason `manual`
 (SPEC-reset-and-test-support §2.5). The API and E2E tests reset the same database; it holds
-demo data only.
+demo data only. Both `db:reset` (its seed step, not the migrations) and every Playwright run
+refuse a `DATABASE_URL` whose host is not `localhost`, `127.0.0.1` or `[::1]`, and `APP_ENV=test`
+is refused on Vercel and with such a URL (TD-10, `src/shared/env.ts`); a deployed database is
+seeded through `POST /api/admin/reset` (SPEC-reset-and-test-support §2.2, §2.5), never through
+`db:reset`.
 
 `npm run dev` sends a **relaxed** Content-Security-Policy, so the console stays free of the
 `eval()` and inline-style errors Next's own development tooling would otherwise raise: under

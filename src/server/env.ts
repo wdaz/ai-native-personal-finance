@@ -1,4 +1,4 @@
-import { WEBMCP_MODES } from "@/src/shared/env";
+import { WEBMCP_MODES, testEnvRefusal } from "@/src/shared/env";
 // Type only: a runtime import of schemas.ts would pull zod and copy.ts into the middleware
 // bundle, which imports this file through db.ts (PR #20 review, finding 8).
 import type { WebMcpMode } from "@/src/shared/schemas";
@@ -11,10 +11,13 @@ export type Env = Readonly<Record<string, string | undefined>>;
 
 /**
  * SPEC-reset-and-test-support §2.7: the test-support routes exist only when
- * `APP_ENV=test`. An exact match — `Test`, `test ` and an unset variable are not test.
+ * `APP_ENV=test`. An exact match — `Test`, `test ` and an unset variable are not test — and
+ * never on a Vercel deployment or against another machine's database (`testEnvRefusal`, TD-10).
+ * `next.config.ts` refuses the same combination when it loads, so a deployment does not build;
+ * this is the second line, for a process whose environment changed after the build.
  */
 export function isTestEnv(env: Env = process.env): boolean {
-  return env.APP_ENV === "test";
+  return env.APP_ENV === "test" && testEnvRefusal(env) === null;
 }
 
 /** ADR-0005: Postgres through Prisma. `.env.example` documents the variable. */

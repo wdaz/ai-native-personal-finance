@@ -4,6 +4,7 @@ import {
   cronSecret,
   demoCredentials,
   demoPasswordHash,
+  isTestEnv,
   resetBytesThreshold,
   resetIntervalDays,
   resetRowThreshold,
@@ -129,5 +130,31 @@ describe("configuredWebmcpMode (SPEC-app-shell §5)", () => {
 
   it("throws on an unrecognised value", () => {
     expect(() => configuredWebmcpMode({ WEBMCP_MODE: "invisible" })).toThrow(/WEBMCP_MODE/);
+  });
+});
+
+describe("isTestEnv (SPEC-reset-and-test-support §2.7, TD-10)", () => {
+  const local = "postgresql://postgres:postgres@localhost:5432/personal_finance";
+  const neon = "postgresql://user:password@ep-cool-name-123456.eu-central-1.aws.neon.tech/neondb";
+
+  it.each([undefined, "", "development", "production", "Test", "test "])(
+    "is false for APP_ENV=%j",
+    (appEnv) => {
+      expect(isTestEnv({ APP_ENV: appEnv, DATABASE_URL: local })).toBe(false);
+    },
+  );
+
+  it("is true for APP_ENV=test, with or without a local database URL", () => {
+    expect(isTestEnv({ APP_ENV: "test" })).toBe(true);
+    expect(isTestEnv({ APP_ENV: "test", DATABASE_URL: local })).toBe(true);
+  });
+
+  it("is false for APP_ENV=test on a Vercel deployment, at runtime as at build (TD-10)", () => {
+    expect(isTestEnv({ APP_ENV: "test", VERCEL: "1", DATABASE_URL: local })).toBe(false);
+    expect(isTestEnv({ APP_ENV: "test", VERCEL_ENV: "production" })).toBe(false);
+  });
+
+  it("is false for APP_ENV=test against another machine's database (TD-10)", () => {
+    expect(isTestEnv({ APP_ENV: "test", DATABASE_URL: neon })).toBe(false);
   });
 });

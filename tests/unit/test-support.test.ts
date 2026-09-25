@@ -32,6 +32,18 @@ describe("test-support routes (SPEC-reset-and-test-support §2.7)", () => {
     ]);
   });
 
+  it("has no /api/test/* route for APP_ENV=test on a deployment or against another machine's database (TD-10)", () => {
+    const neon = "postgresql://user:password@ep-cool-name-123456.eu-central-1.aws.neon.tech/neondb";
+    expect(testSupportRoutes({ APP_ENV: "test", VERCEL: "1" })).toEqual([]);
+    expect(testSupportRoutes({ APP_ENV: "test", VERCEL_ENV: "production" })).toEqual([]);
+    expect(testSupportRoutes({ APP_ENV: "test", DATABASE_URL: neon })).toEqual([]);
+  });
+
+  it("keeps them for APP_ENV=test against the local database (the control for the case above)", () => {
+    const local = "postgresql://postgres:postgres@localhost:5432/personal_finance";
+    expect(testSupportRoutes({ APP_ENV: "test", DATABASE_URL: local })).toHaveLength(3);
+  });
+
   describe("GET /api/test/log (SPEC-reset-and-test-support §2.7)", () => {
     const get = (query: string) =>
       handleTestSupport("GET", ["log"], new Request(`http://localhost/api/test/log${query}`), {
