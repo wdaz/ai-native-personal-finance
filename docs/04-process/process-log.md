@@ -4593,3 +4593,43 @@ them too").
   two settings steps of the previous entry are unblocked by #48's merge (`sha_pinning_required`
   with `allowed_actions`, then the required-checks ruleset) and wait for the owner's "yes";
   (3) review of Dependabot's #50 and of #51; (4) #49 is this entry's pull request.
+
+## 2026-09-25 — Phase 5: T-13d follow-ups, addendum — the secret-scanning toggles are not offered
+
+- **Phase:** 5 (Build the slice), Release 1. An addendum to the "T-13d follow-ups" entry above,
+  which #49 has already merged and which is therefore not edited (the log is append-only).
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Trigger:** the owner's screenshot of Settings → Advanced Security (Secret Protection and
+  Push protection, each with a "Disable" button) and, asked whether more rows lie below it,
+  "yəni mənim ona icazəm yoxdur. Push protectionda bitir." ("so I do not have permission for
+  it. It ends at Push protection.")
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Outcome:** neither non-provider patterns nor validity checks are offered on this
+  repository, so there is nothing to enable. It is not a permission problem: the repository is
+  public and belongs to a personal `User` account, and the API reads both toggles as `disabled`,
+  unchanged (2026-09-25). This closes item 3 of "Done" and item (1) of "Next" in the entry
+  above. The generic-secret gap stays covered by the Gitleaks pre-commit hook and CI job,
+  GitHub's partner patterns with push protection, and T-16's rotation of every secret that was
+  ever real. Why the toggles are not offered is not established: the documentation pages did
+  not say which plans get them, and the owner's screenshot is the only source for what the
+  interface shows.
+- **What the agent got right:** compared the screenshot with the API's `security_and_analysis`
+  before drawing a conclusion, and asked the owner to confirm what lay below the cut-off
+  instead of guessing.
+- **What the agent got wrong or missed:** the agent checked `gh pr view 49` (open) and pushed a
+  follow-up commit seconds later; #49 merged in between (15:56:44Z), so the push recreated the
+  deleted branch `docs/T-13d-github-check` outside any pull request. That is the risk the
+  agent's own note on pushing to a PR branch names; a check made just before a push does not
+  close the window. The commit had also edited the entry that #49 merged, which the append-only
+  rule forbids. Both were noticed on rereading that note. The pull request opened from the
+  stray branch (#52, one commit) was closed, the stray branch was deleted after confirming it
+  held only that commit, and its content moved into this entry. Nothing was lost.
+- **Owner changes and reasoning:** none.
+- **Disagreements:** none.
+- **Lessons for the process:** a push meant only for a branch that is expected to exist should
+  be guarded so it fails when the branch is gone, for example `git push
+  --force-with-lease=<branch>:<sha>`, which here is a fast-forward and forces nothing, and is
+  rejected if the remote branch was deleted. Proposed, not yet used.
+- **Next:** unchanged from the entry above: the two settings steps (`sha_pinning_required` with
+  `allowed_actions`, then the required-checks ruleset) wait for the owner's "yes"; review of
+  Dependabot's #50 and of #51.
