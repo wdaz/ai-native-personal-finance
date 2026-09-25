@@ -17,8 +17,12 @@ on:
 permissions:
   contents: read
 
+# Every deployment — a preview's too — fires `deployment_status`, and a run whose job the `if`
+# below skips is still a run. GitHub's concurrency page does not say whether such a run joins the
+# group (read 2026-09-25), so the group is keyed by environment: a preview's run can never cancel
+# a production measurement that is in progress or waiting.
 concurrency:
-  group: lighthouse
+  group: lighthouse-${{ github.event.deployment.environment || 'manual' }}
   cancel-in-progress: true
 
 jobs:
