@@ -30,11 +30,11 @@ jobs:
     name: lint · typecheck · unit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -94,11 +94,11 @@ jobs:
       RESET_SECRET: "ci-only-reset-secret-not-a-real-secret"
       CRON_SECRET: "ci-only-cron-secret-not-a-real-secret"
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -157,11 +157,11 @@ jobs:
       # The matrix leg's mode; the mode-specific specs skip themselves in the other one.
       WEBMCP_MODE: ${{ matrix['webmcp-mode'] }}
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -180,7 +180,7 @@ jobs:
 
       - name: Upload the Playwright report
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: playwright-report-e2e-${{ matrix.browser }}-${{ matrix['webmcp-mode'] }}
           path: playwright-report/
@@ -190,7 +190,7 @@ jobs:
     name: secret scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Every commit, not only the tip. scripts/secret-scan.sh refuses a shallow clone
           # rather than pass on one commit (NFR-S5, T-02a).
@@ -198,9 +198,11 @@ jobs:
           persist-credentials: false
 
       # Gitleaks 8.30.1 through scripts/gitleaks.sh (SHA-256 pinned): every ref, merge
-      # commits included, output redacted. A finding exits 1 and fails the job. No SARIF
-      # upload: code scanning needs GitHub Code Security, unavailable while the repository
-      # is private (backlog T-02a).
+      # commits included, output redacted. A finding exits 1 and fails the job; the failed job
+      # is the signal. No SARIF is uploaded to code scanning. That is a choice, no longer a
+      # limit: the repository is public and code scanning accepts CodeQL uploads here. An
+      # upload would need `security-events: write` on this job and would list leak locations
+      # as alerts; not decided (T-13d, F9).
       - name: Gitleaks (full history)
         run: scripts/secret-scan.sh history
 
@@ -208,11 +210,11 @@ jobs:
     name: npm audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
 
