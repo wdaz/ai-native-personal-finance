@@ -76,8 +76,10 @@ scheme other than `postgres:`/`postgresql:`, whitespace, a malformed percent esc
 read (`isTestEnv`, the route list, the config file). The config test loads the file in the
 development-server phase only (`PHASE_DEVELOPMENT_SERVER`); `next build` and `next start` were
 exercised by hand, not by a test (T-13c plan, Task 4 Step 11). `database-guard.test.ts` starts
-child processes — the seed and `playwright test --list` — with another machine's `DATABASE_URL`
-and expects the refusal, not a connection. `fonts.test.ts` checks `app/fonts/` (TD-11): every
+child processes — the seed, `npm run db:reset` and `playwright test --list` — with another
+machine's `DATABASE_URL` and expects the refusal, not a connection; for `db:reset`, before Prisma
+has named the host, and with two controls: a local URL is not refused, and a direct
+`npx prisma migrate deploy` (T-14) is not either. `fonts.test.ts` checks `app/fonts/` (TD-11): every
 `.woff2` listed in its README with its real hash, used by `app/layout.tsx`, and the OFL beside
 them. `webmcp/adapter.test.ts` gains the TD-7 pair. Test URLs use the password `password`, or a
 `${…}` variable: the secret scan reads a literal `scheme://user:password@host` as a leak.

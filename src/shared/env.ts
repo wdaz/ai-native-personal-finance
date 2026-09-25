@@ -47,8 +47,9 @@ export function isLocalDatabaseUrl(url: string): boolean {
  * never contains the URL — it holds a password, and CI logs of a public repository are public —
  * so it is a static string that names every reason `isLocalDatabaseUrl` has, not the one that
  * applied: a URL that does name localhost is refused too when it holds whitespace or a malformed
- * escape, or has another scheme. The seed step of `npm run db:reset` is refused after
- * `prisma migrate deploy` has already run, which this guard does not cover.
+ * escape, or has another scheme. Callers: `prisma.config.ts` (for `npm run db:reset`, before
+ * `prisma migrate deploy` applies any migration; a direct `prisma migrate deploy` is not
+ * guarded), `prisma/seed.ts` and `playwright.config.ts`.
  */
 export function localDatabaseRefusal(env: EnvVars): string | null {
   const url = env.DATABASE_URL;

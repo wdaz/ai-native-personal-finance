@@ -10,8 +10,11 @@ import { localDatabaseRefusal } from "@/src/shared/env";
  *
  * It truncates every table, so it runs only against this machine's database (TD-10). The
  * check is here, in the process that makes the destructive call, so it reads the same
- * `DATABASE_URL` the reset would — prisma.config.ts has already loaded `.env.local`. `prisma
- * migrate deploy`, the first half of `db:reset`, is not guarded: T-14 runs it against Neon.
+ * `DATABASE_URL` the reset would — prisma.config.ts has already loaded `.env.local`. It is the
+ * second line for `npm run db:reset`: prisma.config.ts refuses that script before `prisma migrate
+ * deploy`, its first half, applies any migration (the owner's choice, 2026-09-25). A direct `npx
+ * prisma migrate deploy` is not guarded — T-14 runs it against Neon — and this check is also the
+ * only one for `npx prisma db seed`.
  */
 const refusal = localDatabaseRefusal(process.env);
 if (refusal !== null) {

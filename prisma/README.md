@@ -10,5 +10,7 @@ Schema, migrations, seed script, and the `data.json` copy with its checksum test
   (`tests/unit/seed.test.ts` compares them); not formatted by Prettier.
 - `seed.ts` — `npm run db:reset`: `resetToSeed(db, "manual")` (SPEC-reset-and-test-support §2.5).
   It lives here rather than in `scripts/`, which may not import `src/server` (ADR-0002). It
-  refuses a `DATABASE_URL` that does not name this machine (TD-10, `src/shared/env.ts`);
-  `db:reset` runs `prisma migrate deploy` first, and that step is not guarded.
+  refuses a `DATABASE_URL` that does not name this machine (TD-10, `src/shared/env.ts`).
+  `prisma.config.ts` makes the same check for `npm run db:reset` before `prisma migrate deploy`,
+  its first step, applies any migration; a direct `npx prisma migrate deploy` is not guarded
+  (T-14 runs it against Neon).
