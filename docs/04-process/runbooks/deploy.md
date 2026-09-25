@@ -232,7 +232,8 @@ the commands are:
   first seed, so its "The deployment must be seeded" step fails on purpose — seed (step 4), then run
   it by hand (Actions → Lighthouse → Run workflow). It judges the median of three runs, and it does
   **not** assert NFR-P2's INP: Lighthouse's INP audit supports only `timespan` mode and `lhci
-  autorun` runs `navigation` mode (an owner decision whether `total-blocking-time` stands in).
+  autorun` runs `navigation` mode. Owner decision, 2026-09-26: INP stays unasserted;
+  `total-blocking-time` is read from the first production run and decided on with that data.
 - **Cron** (plan 8.4): `GET /api/admin/reset` with `Authorization: Bearer $CRON_SECRET` and no body
   answers 200 `{ "reset": false, "dueAt": … }` when the interval has not passed, 204 when it has
   (SPEC-reset-and-test-support §2.2); it must not redirect (`curl -sS -o /dev/null -w

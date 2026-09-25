@@ -10,7 +10,8 @@
 # The assertions (lighthouserc.json) judge the median run of three: LHCI's default, "optimistic",
 # would pass on the best one. NFR-P2's INP ≤ 200 ms is NOT asserted: Lighthouse's INP audit supports
 # only `timespan` mode (`supportedModes` in lighthouse 12's interaction-to-next-paint.js), and
-# `lhci autorun` runs `navigation` mode — total-blocking-time is the usual lab proxy (owner's call).
+# `lhci autorun` runs `navigation` mode. Owner decision, 2026-09-26: it stays unasserted;
+# total-blocking-time, the usual lab proxy, is read from the first production run (plan 8.6) first.
 name: Lighthouse
 
 on:

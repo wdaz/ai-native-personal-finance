@@ -5103,3 +5103,32 @@ them too").
   it), TD-19 (fix in this pull request or in its own), TD-20, and whether `total-blocking-time`
   stands in for NFR-P2's INP; then the owner merges PR #60, which deploys production; then Task 8
   (8.1–8.7), starting with whether the project domain moved to the new Git deployment.
+
+## 2026-09-26 — Phase 5: T-14 — the owner's decisions at the merge gate (addendum)
+
+- **Phase:** 5 (Build the slice), Release 1 — T-14, addendum to "Phase 5: T-14 — the deploy, up to the
+  merge" (append-only: that entry keeps saying what was true when it was written).
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, background session).
+- **Trigger:** the agent's one message of four decisions before "ready to merge", each with a
+  recommendation; the owner answered "1 qəbul, 2 ayrıca, 3 ayrıca, 4 qalsın" ("1 accept, 2 separate,
+  3 separate, 4 stays").
+- **Prompt(s):** none of its own; the owner's reply is quoted here and in the records it changed.
+- **Produced:** ADR-0007's amendment of 2026-09-25 marked **accepted by the owner** (status line, the
+  amendment's header, the Decision lines it replaces struck through as in the 2026-09-23 amendment,
+  the Review section); `tech-debt.md` records the owner's decisions on TD-19 and TD-20 (each its own
+  small pull request after T-14, both stay Open) and, for the closed TD-17 and TD-14, the plan
+  answer that decided them; `backlog.md`'s v1.41 line says the same; the Lighthouse workflow's
+  comment and the runbook say INP stays unasserted and `total-blocking-time` is read from the first
+  production run.
+- **What the agent got right:** made the four decisions answerable in one line, with a
+  recommendation each; kept PR #60 a draft until the ADR was accepted, so the merge button stayed off.
+- **What the agent got wrong or missed:** two records still said "owner decision: pending" on
+  entries that were already closed (TD-14, TD-17); the review caught TD-14's, the agent found
+  TD-17's while recording these decisions.
+- **Owner changes and reasoning:** none — all four recommendations taken as given.
+- **Disagreements:** none.
+- **Lessons for the process:** a "pending" line on a closed entry is a second place the state is
+  written; when an entry closes, grep the entry for its own stale words.
+- **Next:** CI on the final head; then the agent tells the owner PR #60 may be merged (it is made
+  ready first). After the merge: Task 8, and the two small pull requests (TD-19, TD-20) as the owner
+  schedules them.

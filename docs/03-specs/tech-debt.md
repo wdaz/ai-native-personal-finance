@@ -43,8 +43,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-16 | `X-Powered-By: Next.js` is sent on every response | **Closed** | T-13d (PR #47; F-05) |
 | TD-17 | The login rate-limit key is client-controlled `X-Forwarded-For` unless the host overwrites it | **Closed** (PR #60, in review — Vercel overwrites the header, measured) | T-13d (F-06); T-14 (6.7) |
 | TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Closed** | T-13d (PR #47; F-07) |
-| TD-19 | The proxy does not run for Next's `.segments/*` transport URLs on Vercel | **Open** — harmless while every route is dynamic; owner decides the hardening | T-14 (6.5; residual of TD-14) |
-| TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Open** — owner decides | T-14 (6.2, the Vercel build log) |
+| TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Open** — harmless while every route is dynamic; a separate small PR after T-14 (owner, 2026-09-26) | T-14 (6.5; residual of TD-14) |
+| TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Open** — a separate small PR after T-14 (owner, 2026-09-26) | T-14 (6.2, the Vercel build log) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -659,7 +659,9 @@ of protected pages on Vercel
 - **Found:** 2026-09-25, T-13d (security review), Finding F-06 — `src/server/auth.ts:19-26` takes
   the rate-limit key from the first `X-Forwarded-For` entry if present; Next's bare `next start`
   only fills that header when it is absent (`??=`), never overwriting a client-supplied value.
-- **Owner decision:** pending.
+- **Owner decision:** pending at T-13d. 2026-09-26, T-14 plan Q7 = (a), the owner's "tövsiyələrinlə
+  razıyam": cite Vercel's documentation and measure once, bounded to 12 requests — done, see
+  "Confirmed on Vercel" below.
 - **What:** verified live, bounded to 12 requests: 10 failed logins under one spoofed
   `X-Forwarded-For` correctly trip 429 with `Retry-After: 900`; a different spoofed value is
   unaffected — the key is fully client-chosen on this target. A code comment (`auth.ts:20-22`,
@@ -714,7 +716,7 @@ of protected pages on Vercel
 - **Closed:** 2026-09-25, PR #47 (`task/T-13d-security-review`, merge `40c27f8`) — the owner merged it
   (2026-09-25, 14:56 UTC); CI on the PR's last head (`ece2791`) was green (see TD-12).
 
-## TD-19 — The proxy does not run for Next's `.segments/*` transport URLs on Vercel
+## TD-19 — The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel
 
 - **Found:** 2026-09-26, T-14 plan 6.5 — the measurement that closed TD-14 also showed its
   mechanism is real for two URL forms. `proxy.ts`'s matcher excludes any path containing a dot
@@ -722,7 +724,8 @@ of protected pages on Vercel
   on Vercel a cookie-less `GET /overview.segments/_tree.segment.rsc` answers 200 and
   `GET /api/overview.json` answers 404, **both without** `X-Request-Id`, so the proxy never ran. The
   `.rsc` form does reach the proxy (302, request id; see TD-14).
-- **Owner decision:** pending.
+- **Owner decision:** 2026-09-26, at the merge gate of PR #60 ("2 ayrıca"): not fixed in T-14; a
+  separate small pull request after T-14 merges. The entry stays Open until then.
 - **What:** today the `.segments/*` response is the same 322-byte static route skeleton for every
   such path, with or without a session, because every route is dynamic (`ƒ` in the build output) and
   a dynamic route has no prerendered segment payload. Nothing behind a session is served. Neither
@@ -744,7 +747,8 @@ of protected pages on Vercel
   on a deployment: `next start` answers 404 for them). Alternatively check the session in the `(app)`
   layout as well (T-14 plan Q6 (c)), which also covers a future matcher change. Its own small pull
   request, per the owner's out-of-scope rule.
-- **Picked up by:** the owner decides.
+- **Picked up by:** a separate small pull request after T-14 merges (owner, 2026-09-26); no backlog
+  task exists for it yet.
 
 ## TD-20 — `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not
 
@@ -753,7 +757,10 @@ of protected pages on Vercel
   'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'. In the next major
   version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq
   semantics, which have weaker security guarantees."
-- **Owner decision:** pending.
+- **Owner decision:** 2026-09-26, at the merge gate of PR #60 ("3 ayrıca"): not fixed in T-14; a
+  separate small pull request after T-14 merges (the agent's recommendation was to rewrite
+  `sslmode` to `verify-full` in `createDb`, with a unit test on its options). The entry stays Open
+  until then.
 - **What:** the Neon-managed integration's `DATABASE_URL` carries `sslmode=require`, and
   `src/server/db.ts` hands it to `PrismaPg` (`@prisma/adapter-pg` 7.10.0 → `pg` 8.23.0,
   `pg-connection-string` 2.14.0) unchanged. On `pg` 8 that means the certificate **is** verified.
@@ -779,4 +786,5 @@ of protected pages on Vercel
   unless `sslmode` is first removed from the URL. Whether the integration's URL can be edited by
   hand was not checked; rewriting it in code needs no edit. A unit test on `createDb`'s options
   would pin the choice either way.
-- **Picked up by:** the owner decides.
+- **Picked up by:** a separate small pull request after T-14 merges (owner, 2026-09-26); no backlog
+  task exists for it yet.

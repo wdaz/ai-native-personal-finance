@@ -6,8 +6,11 @@ production deployment (data-free) exist, and the task's own pull request (#60, i
 the code, the runbook and the records; the row below gains what the execution answered, hand-off by
 hand-off; what waits for the merge — the first production seed, the cron, the origin trial,
 Lighthouse on production, the README's URL — stays open in it; `tech-debt.md` v1.21 closes TD-14
-and TD-17 and opens TD-19 and TD-20; ADR-0007's amendment of 2026-09-25 is proposed, not yet
-accepted; v1.40 — 2026-09-25: the runtime moves from Node 26 to Node 24, owner
+and TD-17 and opens TD-19 and TD-20, both left to their own small pull requests after T-14 (owner
+decision at the merge gate, 2026-09-26); ADR-0007's amendment of 2026-09-25, proposed by T-14, was
+accepted by the owner on 2026-09-26; NFR-P2's INP stays unasserted by the Lighthouse workflow (owner
+decision, same day — `total-blocking-time` is measured at Task 8.6 and decided on with data);
+v1.40 — 2026-09-25: the runtime moves from Node 26 to Node 24, owner
 decision before T-14 — Vercel's builds and functions offer 24.x, 22.x and 20.x only, and Node 26
 is not LTS until 2026-10-28; `.nvmrc`, `engines.node` (`24.x`) and `@types/node` follow, held by
 `tests/unit/node-version.test.ts`; back to 26 once Vercel offers it (the agent's proposal, approved
