@@ -102,12 +102,23 @@ describe("next.config.ts refuses APP_ENV=test where a real database could be beh
   const local = "postgresql://postgres:postgres@localhost:5432/personal_finance";
   const neon = "postgresql://user:password@ep-cool-name-123456.eu-central-1.aws.neon.tech/neondb";
 
-  /** Loads a config copy with exactly these four variables set (others left as they are). */
+  /**
+   * Loads a config copy with exactly these five variables set (others left as they are) — the
+   * guard reads `DATABASE_URL_UNPOOLED` too (T-14), so a contributor's exported value must not decide.
+   */
   const loadWith = async (
     configSource: string,
-    env: Partial<Record<"APP_ENV" | "VERCEL" | "VERCEL_ENV" | "DATABASE_URL", string>>,
+    env: Partial<
+      Record<"APP_ENV" | "VERCEL" | "VERCEL_ENV" | "DATABASE_URL" | "DATABASE_URL_UNPOOLED", string>
+    >,
   ) => {
-    const names = ["APP_ENV", "VERCEL", "VERCEL_ENV", "DATABASE_URL"] as const;
+    const names = [
+      "APP_ENV",
+      "VERCEL",
+      "VERCEL_ENV",
+      "DATABASE_URL",
+      "DATABASE_URL_UNPOOLED",
+    ] as const;
     const saved = names.map((name) => [name, process.env[name]] as const);
     for (const name of names) {
       const value = env[name];

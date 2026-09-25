@@ -12,7 +12,7 @@ set -a; . "$D/preview.env"; set +a
 BYPASS_CFG="$T/bypass.cfg"; RESET_CFG="$T/reset.cfg"
 printf 'header = "x-vercel-protection-bypass: %s"\n' "$VERCEL_BYPASS" > "$BYPASS_CFG"
 { printf 'header = "x-vercel-protection-bypass: %s"\n' "$VERCEL_BYPASS"; printf 'header = "Authorization: Bearer %s"\n' "$RESET_SECRET"; } > "$RESET_CFG"
-trap 'rm -f "$BYPASS_CFG" "$RESET_CFG"' EXIT
+trap 'rm -f "$BYPASS_CFG" "$RESET_CFG" "$T/h"' EXIT # $T/h holds the sanity login's Set-Cookie
 
 attempt() { # xff-value password
   jq -n --arg e "$DEMO_EMAIL" --arg p "$2" '{email:$e,password:$p}' \

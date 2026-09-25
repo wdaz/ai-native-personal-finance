@@ -150,11 +150,14 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   twice answers HTTP 500 both times, 8993 bytes, the HTML byte-identical; `x-vercel-cache` is
   `PRERENDER` and then `HIT`, with `cache-control: public, max-age=0, must-revalidate` — not the
   `s-maxage=31536000` the T-14 plan assumed (F9) — so the CDN does store and replay the prerendered
-  body. The proxy still runs (the response has `X-Request-Id`) and the two responses' CSP headers
-  carry **different nonces**, so the header is fresh on every request while the cached body carries
-  no nonce at all: the page behaves as it does locally (unstyled where a nonce would be needed), and
-  the cache changes what the *header* says, not whether the page works. Nothing new to fix; the
-  entry stays Open as a Next 16.3.5 limit.
+  body. The proxy still runs — the two responses' CSP headers carry **different nonces**, and only
+  `proxy.ts` sets that header; a later measurement of the same URL (2026-09-26,
+  `prompts/2026-09-25-T-14/scripts/td19-headers.sh`) also found `Referrer-Policy`,
+  `X-Content-Type-Options` and `X-Request-Id` — so the header is fresh on every request while the
+  cached body carries no nonce at all. *Inference, not measured:* the page then behaves as it does
+  locally (unstyled where a nonce would be needed) and the cache changes what the *header* says, not
+  whether the page works; it was not rendered in a browser. Nothing new to fix; the entry stays Open
+  as a Next 16.3.5 limit.
 
 ## TD-4 — Two "submit is focused after an error" E2E assertions prove nothing on Chromium
 
@@ -546,8 +549,10 @@ of protected pages on Vercel
   covers the RSC/data transport forms of a path — the project's own exclusion swallows that suffix
   too. A `node -e` evaluation of the compiled matcher confirmed the proxy is skipped for
   `/overview.rsc`, `/overview.segments/_tree.segment.rsc` and `/api/overview.json`.
-- **Owner decision:** pending — **this is the review's top item; verify it against the T-14
-  preview before anything else at that task.**
+- **Owner decision:** pending at T-13d — *this is the review's top item; verify it against the T-14
+  preview before anything else at that task.* 2026-09-26, T-14 plan Q6 = (a), the owner's "tövsiyələrinlə
+  razıyam": measure on the seeded preview first, fix in the same pull request only if exposed —
+  not exposed (see "Verified on Vercel" below), so no fix.
 - **What:** locally **confirmed safe** (`http://localhost:3900`, `next start`, 2026-09-25): every
   one of those paths answers a plain 404, because Next's `.rsc`/data-path normalizer is only active
   in "minimal mode", which `next start` does not use. **Vercel runs Next in minimal mode** — whether
@@ -584,8 +589,11 @@ of protected pages on Vercel
   - Baselines: `/overview` → 302 to `/login`; `/api/overview` → 401.
 - **Verdict (plan Q6 = a):** not exposed. No data is reachable without a session on Vercel, so no
   matcher fix was needed in T-14 and the disclosure rule (a private advisory draft, backlog T-13d)
-  did not apply. What the measurement did confirm is the *matcher gap itself* for one URL form —
-  `/overview.segments/*` does skip the proxy on Vercel — recorded as TD-19.
+  did not apply. What the measurement did confirm is the *matcher gap itself* for two URL forms —
+  `/overview.segments/*` (200, a static skeleton) and `/api/overview.json` (404) skip the proxy on
+  Vercel, and neither response carries any of the proxy's headers (2026-09-26, `td19-headers.sh`:
+  no `Content-Security-Policy`, `Referrer-Policy`, `X-Content-Type-Options` or `X-Request-Id`) —
+  recorded as TD-19.
 - **Closed:** 2026-09-26, by the T-14 measurement above, in review on PR #60 (`task/T-14-deploy`);
   the merge and its date are added when the owner merges (as for TD-12).
 
@@ -709,26 +717,31 @@ of protected pages on Vercel
 ## TD-19 — The proxy does not run for Next's `.segments/*` transport URLs on Vercel
 
 - **Found:** 2026-09-26, T-14 plan 6.5 — the measurement that closed TD-14 also showed its
-  mechanism is real for one URL form. `proxy.ts`'s matcher excludes any path containing a dot
-  (`.*\..*`), which swallows Next's appended `\.segments\/.+\.segment\.rsc` suffix; on Vercel a
-  cookie-less `GET /overview.segments/_tree.segment.rsc` answers 200 **without** `X-Request-Id`, so
-  the proxy never ran (the `.rsc` and `.json` forms do reach the proxy; see TD-14).
+  mechanism is real for two URL forms. `proxy.ts`'s matcher excludes any path containing a dot
+  (`.*\..*`), which swallows Next's appended `(\.json|\.rsc|\.segments\/.+\.segment\.rsc)?` suffix;
+  on Vercel a cookie-less `GET /overview.segments/_tree.segment.rsc` answers 200 and
+  `GET /api/overview.json` answers 404, **both without** `X-Request-Id`, so the proxy never ran. The
+  `.rsc` form does reach the proxy (302, request id; see TD-14).
 - **Owner decision:** pending.
-- **What:** today the response is the same 322-byte static route skeleton for every `.segments/*`
-  path, with or without a session, because every route is dynamic (`ƒ` in the build output) and a
-  dynamic route has no prerendered segment payload. Nothing behind a session is served.
-- **Risk:** none today; **latent**. A route that becomes prerendered or cached (partial
+- **What:** today the `.segments/*` response is the same 322-byte static route skeleton for every
+  such path, with or without a session, because every route is dynamic (`ƒ` in the build output) and
+  a dynamic route has no prerendered segment payload. Nothing behind a session is served. Neither
+  response carries any of the proxy's headers (measured 2026-09-26, `td19-headers.sh`: no
+  `Content-Security-Policy`, `Referrer-Policy`, `X-Content-Type-Options` or `X-Request-Id`; the
+  skeleton is not HTML, and the 404 is Vercel's own page).
+- **Risk:** none for data today; **latent**. A route that becomes prerendered or cached (partial
   prerendering, `cacheComponents`, `generateStaticParams` on a protected page) would have its
   segment payloads served at these URLs without any session check, and nothing in the repository
-  would fail. Release 2's pages carry the same matcher.
+  would fail. Meanwhile these responses lack the security headers, the same kind of gap as TD-13's.
+  Release 2's pages carry the same matcher.
 - **Guarded meanwhile by:** every route being dynamic; the measurement in TD-14's entry (re-run
   `/overview.segments/*` cookie-less against a preview whenever a route stops being dynamic).
 - **Fix:** narrow the matcher's exclusion to static assets so the appended suffix is no longer
   swallowed — `_next/static`, `_next/image`, `favicon.ico` and real file extensions such as
   `\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|txt|xml)$` — keeping `tests/api/proxy.spec.ts`'s "file
   with an extension never reaches the proxy" test for real assets, and add a regression test that
-  the `.segments/*` forms of a protected page require a session (it can only fail first on a
-  deployment: `next start` answers 404 for them). Alternatively check the session in the `(app)`
+  the `.segments/*` and `.json` forms of a protected page require a session (it can only fail first
+  on a deployment: `next start` answers 404 for them). Alternatively check the session in the `(app)`
   layout as well (T-14 plan Q6 (c)), which also covers a future matcher change. Its own small pull
   request, per the owner's out-of-scope rule.
 - **Picked up by:** the owner decides.
@@ -747,14 +760,23 @@ of protected pages on Vercel
   Under libpq semantics, `require` encrypts the connection but does not verify the server's
   certificate.
 - **Risk:** low today, latent. A move to `pg` 9 (through `@prisma/adapter-pg` or an override) would
-  silently drop certificate verification on the path to Neon, and no test would notice. Dependabot
-  in this repository watches GitHub Actions only (`.github/dependabot.yml`), so such a bump would be
-  a deliberate `npm` change.
+  silently drop certificate verification on the path to Neon, and no test would notice.
+  `.github/dependabot.yml` configures **version** updates for GitHub Actions only, but Dependabot's
+  *security*-update pull requests are on (`governance.md`, "Default branch") and could propose such
+  a bump if an advisory ever named `pg` 8; an `npm` change by hand could too. Whether Prisma's
+  schema engine verifies the certificate for the build-time `migrate deploy` under `sslmode=require`
+  was not checked — this entry covers `pg` only.
 - **Guarded meanwhile by:** `package-lock.json` (`pg` 8.23.0) and the warning itself in every
   Vercel build log.
-- **Fix:** one of — pin `pg` below 9 with a commented `overrides` entry and a removal task (the
-  owner's preference for `npm audit`, `package.json`'s `"//"` note); pass an explicit `ssl` option
-  in `createDb` so the behaviour does not depend on the URL's `sslmode`; or append
-  `uselibpqcompat=true` / `sslmode=verify-full` when the URL is read (the integration's URL cannot be
-  edited by hand). A unit test on `createDb`'s options would pin it either way.
+- **Fix:** options that **work** (read from `node_modules/pg` and `pg-connection-string` 2.14.0,
+  2026-09-26, in the T-14 review): pin `pg` below 9 with a commented `overrides` entry and a removal
+  task (the owner's preference for `npm audit`, `package.json`'s `"//"` note); and/or rewrite the
+  URL's `sslmode` to `verify-full` in `createDb` before `PrismaPg` gets it. Options that **do not**:
+  `uselibpqcompat=true` with `sslmode=require` sets `rejectUnauthorized = false` at once
+  (`pg-connection-string/index.js`, `parse`), which is the regression this entry warns of; and an
+  explicit `ssl` option passed beside `connectionString` is overwritten by what the URL's `sslmode`
+  parses to (`pg/lib/connection-parameters.js`: `Object.assign({}, config, parse(config.connectionString))`),
+  unless `sslmode` is first removed from the URL. Whether the integration's URL can be edited by
+  hand was not checked; rewriting it in code needs no edit. A unit test on `createDb`'s options
+  would pin the choice either way.
 - **Picked up by:** the owner decides.

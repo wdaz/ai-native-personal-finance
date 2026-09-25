@@ -35,6 +35,13 @@ const vercelConfigProblems = (config: VercelConfig): string[] => {
   return problems;
 };
 
+/**
+ * `.gitignore` must ignore the directory `neon link` writes, exactly as the root-anchored line
+ * `/.neon` (plan F13): a comment or a nested pattern does not count.
+ */
+const gitignoreProblems = (text: string): string[] =>
+  text.split("\n").includes("/.neon") ? [] : ["/.neon"];
+
 describe("vercel.json deploys to fra1, installs with npm ci and migrates before it builds (ADR-0007, T-14)", () => {
   it("says what ADR-0007 and its T-14 amendment say", () => {
     expect(vercelConfigProblems(JSON.parse(read("vercel.json")) as VercelConfig)).toEqual([]);
@@ -72,6 +79,14 @@ describe("vercel.json deploys to fra1, installs with npm ci and migrates before 
   });
 
   it(".gitignore keeps `neon link`'s .neon out of the repository (F13)", () => {
-    expect(read(".gitignore").split("\n")).toContain("/.neon");
+    expect(gitignoreProblems(read(".gitignore"))).toEqual([]);
+  });
+
+  it("(fixture) reports a .gitignore that does not ignore .neon", () => {
+    expect(gitignoreProblems("/.vercel\n*.tsbuildinfo\n")).toEqual(["/.neon"]);
+  });
+
+  it("(fixture) does not take a comment or a nested pattern for the root-anchored line", () => {
+    expect(gitignoreProblems("# /.neon\nsrc/.neon\n")).toEqual(["/.neon"]);
   });
 });

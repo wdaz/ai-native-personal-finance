@@ -1,9 +1,16 @@
 # NFR-P1/P2 (ADR-0007: "Lighthouse CI against the production URL after deploy (warm-up request
 # first)"). Runs when Vercel reports a successful production deployment — the environment name
-# "Production" is a prediction (T-14 plan F16) — or by hand. It measures the stable production
-# alias from the PRODUCTION_URL variable: under Standard Deployment Protection the per-deployment
-# URL is restricted, the production domain is not. The demo credentials are public by design
-# (NFR-S1), so they are repository variables, not secrets. Not a required check.
+# "Production" is a prediction (T-14 plan F16; the preview's GitHub deployment is named exactly
+# "Preview") — or by hand. It measures the project's own production domain, from the PRODUCTION_URL
+# variable: under Standard Deployment Protection the per-deployment URL and the team alias
+# (`<project>-<team>.vercel.app`) are behind Vercel Authentication, the project domain is not. The
+# demo credentials are public by design (NFR-S1), so they are repository variables, not secrets.
+# Not a required check. The first run after the merge comes BEFORE the first seed (runbook, step
+# 4): its "the deployment is seeded" step then fails on purpose — seed, then run it by hand.
+# The assertions (lighthouserc.json) judge the median run of three: LHCI's default, "optimistic",
+# would pass on the best one. NFR-P2's INP ≤ 200 ms is NOT asserted: Lighthouse's INP audit supports
+# only `timespan` mode (`supportedModes` in lighthouse 12's interaction-to-next-paint.js), and
+# `lhci autorun` runs `navigation` mode — total-blocking-time is the usual lab proxy (owner's call).
 name: Lighthouse
 
 on:
@@ -17,13 +24,15 @@ on:
 permissions:
   contents: read
 
-# Every deployment — a preview's too — fires `deployment_status`, and a run whose job the `if`
-# below skips is still a run. GitHub's concurrency page does not say whether such a run joins the
-# group (read 2026-09-25), so the group is keyed by environment: a preview's run can never cancel
-# a production measurement that is in progress or waiting.
+# Every deployment — a preview's too — fires `deployment_status` (several times: queued,
+# in_progress, success, and "inactive" for the one it replaces), and a run whose job the `if` below
+# skips is still a run. GitHub's concurrency page does not say whether such a run joins the group
+# (read 2026-09-25). So the group is keyed by environment, and nothing is cancelled while it runs
+# (`cancel-in-progress: false`): a run that is skipped, or another status of the same deployment,
+# can then never stop a measurement that is under way; it can only replace one that is still waiting.
 concurrency:
   group: lighthouse-${{ github.event.deployment.environment || 'manual' }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   lighthouse:
@@ -43,6 +52,16 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
+
+      # A merge deploys production BEFORE the first seed, so its automatic run would sign in on an
+      # empty, migrated database and measure a 500 page (T-14 review, finding 7). Fail here, plainly.
+      - name: The deployment must be seeded
+        run: |
+          set -euo pipefail
+          if ! curl -fsS -o /dev/null "$BASE_URL/api/meta"; then
+            echo "::error::$BASE_URL/api/meta is not 200: the database is unseeded (the first run after a merge comes before the first seed) or the deployment is down. Seed it (runbook, step 4) and run this workflow again by hand."
+            exit 1
+          fi
 
       - name: Sign in as the demo account and warm up both pages
         env:
@@ -72,8 +91,10 @@ jobs:
       # Every report records the request headers it was measured with, the session cookie among
       # them (found in T-14, step 3: `configSettings.extraHeaders`, in the JSON and the HTML).
       # `::add-mask::` hides the value in this job's log, not in an artifact. The demo account is
-      # public by design (NFR-S1), but a session cookie is not something to publish.
+      # public by design (NFR-S1), but a session cookie is not something to publish — so the upload
+      # below runs only if this step succeeded (T-14 review, finding 6).
       - name: Redact the session cookie from the reports
+        id: redact
         if: always()
         run: |
           set -euo pipefail
@@ -86,8 +107,9 @@ jobs:
           fi
 
       - name: Upload the Lighthouse reports
-        if: always()
+        if: always() && steps.redact.outcome == 'success'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: lighthouse
           path: .lighthouseci
+          retention-days: 7
