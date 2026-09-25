@@ -1,6 +1,7 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.19 — 2026-09-25: owner decision — fix TD-12, TD-15, TD-16, TD-18 now
+Status: **Approved** (v1.20 — 2026-09-25: TD-12, TD-15, TD-16 and TD-18 closed by PR #47 (T-13d);
+TD-13, TD-14 and TD-17 stay Open; v1.19 — 2026-09-25: owner decision — fix TD-12, TD-15, TD-16, TD-18 now
 (nothing Vercel-related); TD-13 investigated — no application-level fix exists (`TRACE` is a
 Fetch-spec forbidden method, undici/Next's own rejection before any app code runs), stays Open as
 a documented platform limit; TD-14 and TD-17 stay untouched (Vercel-related, owner's instruction);
@@ -31,13 +32,13 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-9 | The `minmax(0, 1fr)` rule for card grids is a comment, not a check | **Closed** | T-13c (PR #39) |
 | TD-10 | Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database | **Closed** | T-13c (PR #39; moved from T-14's T-02 hand-off) |
 | TD-11 | Every `next build` downloads Public Sans from Google Fonts, so a network hiccup fails the build | **Closed** | T-13c (PR #39; v1.11) |
-| TD-12 | Duplicate `pf_session` cookies are read inconsistently between the proxy and the session-probe route | **Fix in review** | T-13d (F-01) |
+| TD-12 | Duplicate `pf_session` cookies are read inconsistently between the proxy and the session-probe route | **Closed** | T-13d (PR #47; F-01) |
 | TD-13 | `TRACE` bypasses the proxy entirely on every route: a bare 500 with none of the app's security headers | **Open — no fix possible (Fetch-spec forbidden method, undici/Next)** | T-13d (investigated; F-02) |
 | TD-14 | The proxy's dotted-path exclusion may also skip Next's `.rsc`/`.json` transport forms of protected pages on Vercel | **Open — verify against the T-14 preview before anything else at that task** | T-13d (F-03) |
-| TD-15 | `POST /api/auth/logout` has no CSRF check of its own beyond `SameSite=Lax` | **Fix in review** | T-13d (F-04) |
-| TD-16 | `X-Powered-By: Next.js` is sent on every response | **Fix in review** | T-13d (F-05) |
+| TD-15 | `POST /api/auth/logout` has no CSRF check of its own beyond `SameSite=Lax` | **Closed** | T-13d (PR #47; F-04) |
+| TD-16 | `X-Powered-By: Next.js` is sent on every response | **Closed** | T-13d (PR #47; F-05) |
 | TD-17 | The login rate-limit key is client-controlled `X-Forwarded-For` unless the host overwrites it | **Open** | T-13d (F-06) |
-| TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Fix in review** | T-13d (F-07) |
+| TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Closed** | T-13d (PR #47; F-07) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -481,6 +482,10 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   (`"first"` received, `"second"` expected) before the fix and passes now; the other 11
   `readCookie`/session tests are unaffected (every existing case has exactly one `pf_session`
   occurrence, where `.reverse().find()` and the old `.find()` agree).
+- **Closed:** 2026-09-25, PR #47 (`task/T-13d-security-review`, merge `40c27f8`) — the owner merged it
+  (2026-09-25, 14:56 UTC); CI on the PR's last head (`ece2791`) was green (GitHub's own "code
+  scanning AI findings" run, which this repository does not configure and which did not stop
+  the merge, failed on a model-availability error).
 
 ## TD-13 — `TRACE` bypasses the proxy entirely on every route
 
@@ -577,6 +582,9 @@ of protected pages on Vercel
   documented error shape, and this is a proxy-level rejection, not a route-handler answer, so no
   spec amendment was needed either. Full API suite (`tests/api/logout-fallback.spec.ts`,
   `auth.spec.ts`, `proxy.spec.ts`, 43 tests) green together with TD-12/TD-16/TD-18's fixes.
+- **Closed:** 2026-09-25, PR #47 (`task/T-13d-security-review`, merge `40c27f8`) — the owner merged it
+  (2026-09-25, 14:56 UTC); CI on the PR's last head (`ece2791`) was green (see TD-12 for the one
+  GitHub-side run that was not).
 
 ## TD-16 — `X-Powered-By: Next.js` is sent on every response
 
@@ -595,6 +603,8 @@ of protected pages on Vercel
   (`tests/api/proxy.spec.ts`), checks the same four response branches the existing pinned-header
   test uses (a public page, a public API answer, a redirect, a 401); it failed red (`"Next.js"`
   received) before the fix and passes now.
+- **Closed:** 2026-09-25, PR #47 (`task/T-13d-security-review`, merge `40c27f8`) — the owner merged it
+  (2026-09-25, 14:56 UTC); CI on the PR's last head (`ece2791`) was green (see TD-12).
 
 ## TD-17 — The login rate-limit key is client-controlled `X-Forwarded-For` unless the host overwrites it
 
@@ -639,3 +649,5 @@ of protected pages on Vercel
   failure-count tests (which only ever assert on `success: false` rows) and the threshold tests
   (`tests/api/threshold.spec.ts`, including "2,001 failed logins alone never trip it") are
   unaffected.
+- **Closed:** 2026-09-25, PR #47 (`task/T-13d-security-review`, merge `40c27f8`) — the owner merged it
+  (2026-09-25, 14:56 UTC); CI on the PR's last head (`ece2791`) was green (see TD-12).
