@@ -4929,3 +4929,41 @@ them too").
   `npm ci --ignore-scripts` (its `node_modules` still holds `@types/node` 26). Pull request #57
   asks two questions — an ADR-0001 amendment for the Node rule, and a backlog item for "back to
   26". Then T-14's prompt and plan.
+
+## 2026-09-25 — Phase 5: T-14 planning — the deploy plan at the gate
+
+- **Phase:** 5 (Build the slice), Release 1 — T-14's plan gate (`build-workflow.md` §2). No code,
+  no deployment, no Vercel or Neon change, no environment variable.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session) / Agent (Claude Code,
+  Opus 5.5, one general-purpose research subagent).
+- **Trigger:** "T-14 üçün plan hazırlaya bilərik indi?" ("Can we prepare the plan for T-14 now?"),
+  after PRs #57 and #58.
+- **Prompt(s):** `prompts/2026-09-25-T-14.md`; the research brief and report in
+  `prompts/2026-09-25-T-14/subagent-t14-research.md`; the earlier research it built on in
+  `prompts/2026-09-25-node-24/subagent-vercel-neon-research.md`.
+- **Produced:** `plans/2026-09-25-T-14.md` v0.1, then v0.2 with the owner's answers — 17 findings
+  with sources, 5 review-focus items, 13 questions, 8 tasks; PR #59.
+- **What the research changed:** the plan's order. A new Vercel project's first deployment is
+  always production, even from a non-production branch, and the Neon-managed integration needs a
+  Git-linked project and refuses to install over an existing `DATABASE_URL`. So the project cannot
+  be made to preview first; the plan's safety rests instead on an invariant — the production
+  database holds no seed data until T-14 merges. The same research answered TD-17 from Vercel's
+  documentation (it overwrites `X-Forwarded-For`), found HSTS automatic on `vercel.app`, and
+  reproduced TD-14's matcher gap with Next's own matcher builder.
+- **What the agent got right:** asked the advisor before writing and again before opening the PR;
+  both passes changed the plan — the invariant, seeding the preview before TD-14 so an empty
+  database cannot read as "safe", `X-Request-Id` to tell whether the proxy ran, a positive control
+  taken from a signed-in RSC response, the custody of secret values, and the `APP_ENV=test` probe
+  deployed to the existing project from a clean export.
+- **What the agent got wrong or missed:** v0.1's first draft had a TD-14 positive control that
+  could not work (`/overview.rsc` never reaches the proxy, with or without a session), left out
+  T-13d's disclosure rule for an exploitable finding, and had a `vercel deploy` probe that would have
+  offered to create a new project; the advisor's second pass caught all three before the PR, and
+  commit `ea61724` fixed them.
+- **Owner changes and reasoning:** none to the plan's content — "tövsiyələrinlə razıyam" ("I agree
+  with your recommendations"), with the project name `personal-finance` for Q4.
+- **Disagreements:** none.
+- **Lessons for the process:** a platform's first-run behaviour (here, "the first deployment is
+  always production") can decide a plan's whole order; read it before designing the steps, not
+  after.
+- **Next:** the owner's go-ahead ("start"); then Task 1 on `task/T-14-deploy`, Native execution.
