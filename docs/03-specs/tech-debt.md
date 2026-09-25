@@ -1,6 +1,9 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.15 — 2026-09-25: TD-2 closed by PR #44 (T-13a); v1.14 — 2026-09-25: TD-2 fixed in T-13a, in review on `task/T-13a-proxy`; its Fix line's `runtime` advice is corrected (Next 16.3.5 refuses the option); v1.13 — 2026-09-25: TD-7–TD-11 closed by PR #39 (T-13c); v1.12 — 2026-09-25: TD-7–TD-11 fixed in T-13c, in review on `task/T-13c-tech-debt`; TD-10's `db:reset` refusal also comes before `prisma migrate deploy`, the owner's choice B; v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.17 — 2026-09-25: TD-3's v1.16 paragraph corrected by the Opus 5.5
+whole-branch review — the component Next renders for `/_global-error` is `AppError`, not
+`DefaultGlobalError` (different builtin files), and the response carries two inline `<script>` tags,
+not three; v1.16 — 2026-09-25: TD-3 investigated at T-13b — no fix exists in Next 16.3.5 (measured), the entry's "not reachable by a normal request" claim corrected, pinned by `tests/api/proxy.spec.ts`; v1.15 — 2026-09-25: TD-2 closed by PR #44 (T-13a); v1.14 — 2026-09-25: TD-2 fixed in T-13a, in review on `task/T-13a-proxy`; its Fix line's `runtime` advice is corrected (Next 16.3.5 refuses the option); v1.13 — 2026-09-25: TD-7–TD-11 closed by PR #39 (T-13c); v1.12 — 2026-09-25: TD-7–TD-11 fixed in T-13c, in review on `task/T-13c-tech-debt`; TD-10's `db:reset` refusal also comes before `prisma migrate deploy`, the owner's choice B; v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -12,7 +15,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 |----|-------|--------|--------------|
 | TD-1 | The CSP nonce reaches Next through an undocumented header copy | **Closed** | T-07 |
 | TD-2 | `middleware.ts` uses a deprecated file convention (`proxy`) | **Closed** | T-13a (PR #44; v1.10) |
-| TD-3 | `/_global-error` is prerendered, without the CSP nonce | Open | T-13b (v1.10) |
+| TD-3 | `/_global-error` is prerendered, without the CSP nonce | **Open — no fix in Next 16.3.5** | T-13b (investigated; v1.16) |
 | TD-4 | Two "submit is focused after an error" E2E assertions prove nothing on Chromium | **Closed** | T-13 |
 | TD-5 | Zod's `jitless` setting rides on importing `src/shared/schemas.ts` | **Closed** | T-11 |
 | TD-6 | `next dev` fills the console with CSP violations (the policy has no dev variant) | **Closed** | `fix/td-6-dev-csp` (PR #23) |
@@ -92,6 +95,36 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 - **Guarded meanwhile by:** nothing automatic; it is not reachable by a normal request.
 - **Fix:** to be found — an `app/global-error.tsx` without `style` attributes still leaves the
   prerendered inline scripts; worth a look when a task first adds an error UI.
+- **Investigated (T-13b, 2026-09-25):** no application-level fix exists in Next 16.3.5.
+  `/_global-error` is `UNDERSCORE_GLOBAL_ERROR_ROUTE`
+  (`node_modules/next/dist/shared/lib/entry-constants.js:33`), forced static unconditionally by
+  `isPageStatic()` (`node_modules/next/dist/build/utils.js:595-609`) regardless of `connection()`
+  or `export const dynamic = "force-dynamic"` — measured on a scratch rebuild. A custom
+  `app/global-error.tsx` is not even rendered for this specific artifact: a scratch
+  `app/global-error.tsx` with `force-dynamic` still produced Next's own bundled `DefaultGlobalError`
+  body byte for byte after a clean `next build`. Also corrected: **the route is directly reachable**
+  by a plain `GET /_global-error` — not "not reachable by a normal request" as the entry above said
+  — the proxy runs on it like any other page (no file extension, so the matcher does not exclude
+  it) and mints a fresh nonce on its response header every time; only the prerendered body stays
+  fixed, carrying no nonce on its one `<style>` or its three inline `<script>` tags, and
+  `style="…"` attributes throughout, which no nonce covers regardless. `tests/api/proxy.spec.ts`'s
+  new TD-3 test pins this exact shape, so it — not the paragraphs above — is what catches a future
+  Next release that changes it. The owner may still want the gap filed upstream (with Vercel/Next);
+  nothing here does that.
+- **Correction to the paragraph above (Opus 5.5 whole-branch review, 2026-09-25):** the component
+  Next actually renders for `/_global-error` is **`AppError`**
+  (`node_modules/next/dist/client/components/builtin/app-error.js`, its own comment: "This is the
+  static 500.html page for App Router apps. Always a server error, rendered at build time"), not
+  `global-error.js`'s `DefaultGlobalError` as the paragraph above said — the two are different
+  builtin files. The app-loader hardcodes `AppError` as this synthetic route's page module and
+  strips its `layout` entry (`node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js:109,358-375,389-391`),
+  gated only on the route id (`:124,765`) — nothing about what `app/global-error.tsx` contains
+  enters that decision, which is *why* the scratch probe's markup never appeared, a stronger reason
+  than "still produced the stock body." `DefaultGlobalError` is a separate builtin every page's
+  client bundle does carry, for a client-side error after hydration — never for this route. Also:
+  the response has **two** inline `<script>` tags, not three (re-measured, a fresh
+  `rm -rf .next && npx next build`), and `AppError` has no second ("Back") button at all — that
+  button belongs to `DefaultGlobalError`, which this route never renders.
 
 ## TD-4 — Two "submit is focused after an error" E2E assertions prove nothing on Chromium
 

@@ -3945,3 +3945,243 @@ them too").
   that says "every branch" for three of four, the unsaved `next dev` headers, a repeated phrase in
   the T-13b hand-off) and the stale word at line 117 of the ADR are the owner's call. The next task
   in the backlog's order is T-13b (TD-3).
+
+## 2026-09-25 — Phase 5: T-13b `/_global-error` under the CSP (TD-3) — planning session
+
+- **Phase:** 5 (Build the slice), Release 1 — the next task after T-13a in the backlog's order
+  (backlog v1.31, Notes). The plan, `docs/04-process/plans/2026-09-25-T-13b.md` (v0.1), was written
+  on 2026-09-25 on this session's harness-assigned branch `claude/laughing-clarke-fpp7vz` (the
+  repository's own convention would name it `docs/T-13b-plan`, as T-13a's and T-13c's plans did — the
+  plan discloses the deviation in its own header). The owner has not yet answered Q1–Q4; the execution
+  is a later entry.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5).
+- **Trigger:** the owner's message "Task 13B planlamağa başla" ("Start planning Task 13B"), the
+  backlog's T-13b row (TD-3) and `tech-debt.md`'s TD-3 entry, which both already anticipated this
+  outcome: "if Next 16.3.5 allows no fix, the measured reason goes into TD-3 for the owner to decide,
+  instead of a forced change."
+- **Prompt(s):** `prompts/2026-09-25-T-13b.md`
+- **Produced:** the plan (Findings F1–F4, Review Focus 1–5, Q1–Q4, three tasks — Task 3 gated on Q2 —
+  and a self-review). In this session's own working tree, all removed afterwards and `git status`
+  confirmed clean: `npm ci` (`node_modules/`, gitignored); `npx next build` run twice, once unmodified
+  and once with a throwaway `app/global-error.tsx` (`force-dynamic`); `npx next start -p 3900` once,
+  read by one `curl -D -` of `GET /_global-error`; a copied `.env.local` (gitignored) with placeholder
+  secrets, needed only because the build wants a `SESSION_SECRET`/`DEMO_PASSWORD_HASH`/etc. to exist —
+  the app's routes are all dynamic, so no Docker/Postgres was needed to build. The throwaway
+  `app/global-error.tsx` and `.next/` were deleted; `.env.local` was deleted too, since it existed
+  only for this scratch build.
+- **What the agent got right:** it did not stop at TD-3's own text or the backlog row's framing —
+  both were checked against Next's installed source and a real build/serve/request cycle rather than
+  assumed. That found two things neither TD-3 nor the backlog row said: the route is directly
+  reachable by a plain `GET` (TD-3's "not reachable by a normal request" is wrong, F1), and a custom
+  `app/global-error.tsx` is not even selected for this specific synthetic artifact, which is a
+  stronger and more specific finding than T-06 finding F1's earlier "a trial build with `connection()`
+  … still listed `/_global-error` as prerendered" (F3). It also found the exact three places in Next's
+  own build code that force this (`entry-constants.js`, `build/utils.js` twice, `export/index.js`),
+  rather than stopping at "it renders as static."
+- **What the agent got wrong or missed:** left for the owner to find at the plan gate; nothing is
+  flagged here since this entry is written by the same session that wrote the plan it describes.
+- **Owner changes and reasoning:** left for the owner (`build-workflow.md` §2, §7).
+- **Disagreements:** none yet — Q1–Q4 are open.
+- **Lessons for the process:** a tech-debt entry's "Guarded meanwhile by: … not reachable by a normal
+  request" is itself a claim that needs checking before the next task that reads it relies on it; this
+  one had gone unchecked since 2026-09-23 (T-06 finding F1's process-log entry) because nothing had
+  reason to try `curl` against it until this task's own scope asked for a fix or a measured reason.
+- **Next:** the owner answers Q1–Q4. If Q1 is "yes" and Q4 names inline execution, the next session
+  runs Task 1 and Task 2 (and Task 3, if Q2 says "now") from a fresh `origin/main`, on
+  `task/T-13b-global-error`.
+
+## 2026-09-25 — Phase 5: T-13b `/_global-error` under the CSP (TD-3) — execution
+
+- **Phase:** 5 (Build the slice), Release 1. Executed in the same session as the plan, on this
+  session's harness-assigned branch `claude/laughing-clarke-fpp7vz` (no separate `task/T-13b-…`
+  branch — the deviation the plan's header already discloses; `origin/main` had not moved since the
+  plan's base, `7ffe212`, so nothing needed rebasing).
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5).
+- **Trigger:** the owner's "Belə anladığım qədər çox kiçik bir taskdır. 3 sualın cavabı
+  recomendentionlara yes cavabıdır." ("As I understand it, this is a very small task. The answer to
+  the 3 questions is yes to the recommendations.") — read as Q1–Q4 all "yes to the recommendation"
+  (`prompts/2026-09-25-T-13b.md`).
+- **Prompt(s):** `prompts/2026-09-25-T-13b.md`
+- **Produced:**
+  - `tests/api/proxy.spec.ts`: one test, "TD-3: /_global-error is reachable directly; its own CSP
+    carries a nonce but its inline tags never do" (Task 1). Commit `a9f8fa0`.
+  - `docs/03-specs/tech-debt.md` v1.16: TD-3's table row reworded "Open — no fix in Next 16.3.5";
+    a new "Investigated (T-13b, 2026-09-25)" paragraph appended after the existing Found/Owner
+    decision/Risk/Guarded/Fix lines, which stay as written. `docs/03-specs/backlog.md` v1.32: a new
+    Changelog clause; the Notes tech-debt bullet gains an "Open at v1.32: …" sentence, appended
+    after "Open at v1.30: …", not rewriting it (Task 2).
+  - This entry and the owner's go-ahead appended to `prompts/2026-09-25-T-13b.md`.
+- **Evidence:**
+  - Task 1, Step 2 (run the new test alone): **PASS** immediately, `npx playwright test
+    --project=api -g "TD-3"` — 1 passed. This is not a fix, so there was no red-then-green cycle on
+    application code; the plan predicted exactly this (Findings F1–F4 already measured the same
+    response the test now pins).
+  - Task 1, Step 3 (prove the assertions discriminate, not vacuous): pointed the test at
+    `/api/auth/session` — **FAIL** at `expect(first.status()).toBe(500)` (received 200; the plan
+    predicted the failure would land on the "at least one inline tag" assertion instead — both
+    prove the same thing, a JSON response has no HTML body either way, so the plan's line number was
+    a prediction and this is the correction, ledgered here rather than in the plan itself, which
+    stays as written). Then pointed it at `/definitely-not-a-page` (T-06 finding F1's fixed
+    `/_not-found`) — **FAIL** exactly as predicted, at "none of the inline tags carry this
+    response's nonce" (received two `<script nonce="…">` tags that do carry it). Both scratch edits
+    reverted; `git diff` confirmed the file matched the committed version before Task 1's commit.
+  - Task 1, Step 4 (full API suite): `npx playwright test --project=api --workers=1` — **103
+    passed** (up from 102, exactly the plan's prediction).
+  - Full-suite checks run for both tasks together: `npm run lint`, `npm run format:check`,
+    `npm run typecheck`, `npm run traceability` ("all 18 Release 1 stories") — all clean.
+    `npm run test:coverage` — **1045/1046 unit tests passed**; the one failure,
+    `tests/unit/install-scripts.test.ts` ("fails when a dependency's install script is no longer
+    named in allowScripts"), is pre-existing and environment-caused, not from this diff: this
+    session's npm is 10.9.7, below the `>= 11.19` `engines` floor, and the README already documents
+    that an older npm "only warns … and does not enforce the install-script policy" — the fixture
+    expects enforcement that this npm version does not perform. Not investigated further; out of
+    T-13b's scope, and the coverage gate table itself did not print (the run stopped at the one
+    failure) so the gate's own pass/fail is unconfirmed here.
+  - `npm run test:e2e` was **not run** — no browser in the diff exercises anything new (the change
+    is one API test plus prose), and this session has only Chromium pre-installed, not Firefox or
+    WebKit. Flagged rather than silently skipped, per governance's "reported output is copied from
+    the run."
+  - The database this session used was not the project's Docker/Postgres 18 (`compose.yaml`): no
+    Docker daemon is available in this container, so a local Postgres 16 cluster
+    (`pg_ctlcluster 16 main start`, a `postgres` role and `personal_finance` database created by
+    hand) stood in. `npm run db:reset` applied both migrations and the seed against it without
+    incident.
+- **What the agent got right:** it re-verified the plan's own findings by running the test rather
+  than trusting F1–F4's numbers unchanged, and it proved Task 1's assertions were not vacuously true
+  by mutation (Step 3) before committing, per the Definition of Done rule the plan itself named in
+  Global Constraints. It corrected TD-3's stale "not reachable" claim in the same paragraph as the
+  new "no fix" finding, rather than leaving two contradictory sentences in the entry.
+- **What the agent got wrong or missed:** (1) The plan's Task 1 Step 3 predicted the
+  `/api/auth/session` mutation would fail at the "at least one inline tag" assertion; it actually
+  failed one assertion earlier, at the status check, since that route is a 200 JSON answer, not a
+  500 HTML page — same conclusion (the assertion discriminates), different line, corrected here per
+  governance's "reported output is copied from the run, never from the brief," not silently. (2) No
+  Docker daemon exists in this session's container, which the plan's own scratch-verification
+  disclosure did not anticipate (it only foresaw needing no database at all, for `next build`); a
+  local Postgres 16 cluster substituted for the project's Docker/Postgres 18 `compose.yaml` service,
+  a version this task did not need to reconcile since nothing here touches the schema. (3) The
+  coverage gate's own summary table did not print because `vitest run --coverage` stopped at the one
+  unrelated failure; whether the `src/domain` ≥ 90% gate itself still holds was not separately
+  confirmed, since re-running with that one test skipped would have meant editing a tracked test
+  file outside this task's scope.
+- **Owner changes and reasoning:** left for the owner (`build-workflow.md` §7).
+- **Disagreements:** none. The owner's "3 sualın" (3 questions) against the plan's four lettered
+  questions is not a disagreement — Q4 (execution method) reads more as a process choice than a
+  decision in the way Q1–Q3 are, so the owner's count and the plan's numbering are read as
+  consistent, not corrected against each other.
+- **Lessons for the process:** (1) A plan's mutation-check predictions (which assertion a control
+  input fails at) are themselves predictions and can be off by one assertion without the underlying
+  finding being wrong — worth a line making that explicit next time a plan writes one. (2) This
+  environment has no Docker daemon; a task whose plan assumes `compose.yaml` needs a documented
+  fallback (a local Postgres cluster, as used here) rather than discovering it mid-execution.
+- **Next:** the owner reviews. `docs/04-process/plans/2026-09-25-T-13b.md`'s Status is not yet
+  updated to Done — that is a separate, small docs commit once the owner has seen this diff, in the
+  same pattern T-13a's and T-13c's plans used. T-13a and T-13c are both already merged, so the next
+  task in the backlog's stated order (Notes: "T-13d is last, so the security review reads the code
+  T-14 deploys") is T-13d.
+
+## 2026-09-25 — Phase 5: T-13b whole-branch review (Opus 5.5) and fix pass
+
+- **Phase:** 5 (Build the slice), Release 1. The Q4 review the plan called for, dispatched as a
+  read-only subagent (Explore, model `opus`) against `git diff $(git merge-base origin/main
+  HEAD)..HEAD` (the plan, the test, the doc corrections — commits `6209798`, `a9f8fa0`, `863755c`).
+- **Participants:** Owner (via the Q4 answer authorizing this step) / Agent (Claude Code, Sonnet 5,
+  orchestrating) / Agent (Claude Code, Opus 5.5, the reviewer subagent, read-only).
+- **Trigger:** the plan's Q4 ("one fresh Opus 5.5 reviewer over the whole diff"), the owner's "yes to
+  the recommendations."
+- **Prompt(s):** the review brief was written inline in the dispatch, not saved to a separate file
+  (small enough to reproduce here): read-only, no git-state changes; verify the new test actually
+  passes against a live build; spot-check every Next-internals citation in the plan and
+  `tech-debt.md` against the installed source; confirm the backlog/tech-debt version-bump edits
+  followed the append-only-snapshot convention; check the process-log entries against the diff and
+  the mutation-check evidence; confirm nothing beyond Q1–Q4's authorization landed (no
+  `app/global-error.tsx`); report Critical/Important/Minor.
+- **Produced:** the reviewer's report (ten findings; reproduced in full in the agent hand-back this
+  session's transcript holds — not re-copied here since the corrections below are the acted-on
+  record); then, in this session:
+  - `docs/03-specs/tech-debt.md` v1.17: a new "Correction to the paragraph above" note after TD-3's
+    v1.16 "Investigated" paragraph (not rewriting it, following TD-2's own precedent) — the
+    component Next renders for `/_global-error` is `AppError`
+    (`node_modules/next/dist/client/components/builtin/app-error.js`), not `global-error.js`'s
+    `DefaultGlobalError`; the response carries two inline `<script>` tags, not three; `AppError` has
+    no "Back" button (that belongs to `DefaultGlobalError`, never rendered here).
+  - `docs/03-specs/backlog.md` v1.33: a new Changelog clause recording the review and its two
+    Important fixes; a "from T-13b" hand-off appended to T-13d's row (the Q2 deferral, and an
+    unmeasured caching nuance — see below).
+  - `tests/api/proxy.spec.ts`: the TD-3 test's own code comment corrected to say `AppError`, not
+    `DefaultGlobalError` — the test's assertions themselves needed no change (see "What the agent
+    got right").
+  - `tests/fixtures/csp.ts`: its doc comment now names `tests/api/proxy.spec.ts` as a third user (of
+    `inlineTags` only — that file keeps its own local `scriptSrcNonce`).
+  - `docs/04-process/prompts/2026-09-25-T-13b.md`: one cross-reference corrected (it pointed at "What
+    the agent got wrong or missed"; the reconciliation is actually under "Disagreements", in the
+    previous entry — process-log.md is append-only, so that entry itself is not touched).
+  - **Explicitly NOT touched, per this repository's "a dated Notes/Findings snapshot is not
+    rewritten" convention (learned at backlog v1.22/v1.28, restated in T-13a's plan lesson 3):**
+    `docs/04-process/plans/2026-09-25-T-13b.md`'s F2–F4 — a first attempt at this fix pass edited
+    them in place and was reverted (`git checkout -- docs/04-process/plans/2026-09-25-T-13b.md`)
+    once the convention was recalled; the plan stays exactly as it was handed over and answered,
+    wrong component name included, and this entry is where the correction lives instead.
+- **What the agent got right:** the reviewer ran the new test for real (`npx playwright test
+  --project=api -g "TD-3"`, 1 passed) rather than reading it and guessing, and it read
+  `next-app-loader/index.js`'s `isAppErrorRoute`/`appErrorPath` wiring rather than stopping at "it's
+  static" — a stronger, more specific citation than the plan's own F3 (T-06 finding F1's "still
+  listed `/_global-error` as prerendered" was corroborating, not causal). Re-verified independently
+  here, fresh (`rm -rf .next && npx next build`, then a small Python script over the built HTML
+  rather than counting by eye): two `<script>` tags, one `<style>`, seven `style=`-bearing elements
+  (`div, div, svg, h1, p, form, button` — `path` carries `fill`, not `style`), title
+  `500: This page couldn't load` hardcoded in `app-error.js`'s own JSX (a `DefaultGlobalError`
+  render would need no such `<title>`, since that component has none) and no "buttonGroup"/"Back"
+  text anywhere in the built file — every one of the reviewer's Important claims confirmed exactly
+  as reported. The test's own assertions (`tags.length > 0`, no tag matches the response's nonce)
+  hold regardless of which builtin component renders or the exact tag count, so nothing there needed
+  a code fix — the wrong claims were confined to prose (a plan finding, a doc paragraph, a code
+  comment), never load-bearing on what the test actually checks.
+- **What the agent got wrong or missed:** (1) The Next-internals research read `getGlobalErrorStyles`
+  in `app-render.js` (which names its component `GlobalError`, wired from `components['global-error']`)
+  and the scratch probe's negative result (the custom file's markup never appeared) and concluded
+  the rendered component must be `global-error.js`'s `DefaultGlobalError` — without checking
+  `next-app-loader/index.js` for how the synthetic route's page module is actually chosen. Both
+  components share `error-styles.js` and produce visually similar output, and the probe *did* prove
+  the right thing (a custom `global-error.tsx` is not used for this route) by the wrong route,
+  since it never needed to name which builtin renders instead — that inference was gratuitous, not
+  required by anything F3 was there to establish. (2) The inline `<script>` count (F4: "three") was
+  never counted programmatically at the time — recounted now, it is two; the style-attribute
+  element list named `path` (which carries `fill`, not `style`) and omitted that there are two
+  `div`s, coincidentally still summing to seven. (3) A "Back" button was attributed to this response
+  from `DefaultGlobalError`'s own (`isServerError` branch's) shape without checking that the HTML
+  actually captured had no such button and no `buttonGroup` wrapper at all — a detail that was
+  sitting in the same terminal output already quoted in the plan's F1.
+- **The reviewer's own miss, corrected here rather than re-litigated with it:** its Important finding
+  3 read the execution entry's second mutation check (pointing the test at `/definitely-not-a-page`)
+  as impossible given the plan's literal Step 3 wording, since the hard status assertion would fail
+  first on that route's 404 — true only if the request URL alone had changed. The execution actually
+  changed the expected status too, from `toBe(500)` to `toBe(404)`, in the same edit (a sensible
+  adaptation the plan's own Step 3 text under-specified, and one this session made without a ledger
+  line calling it out as a deviation — that omission, not the mutation check itself, is the real
+  finding here). The reviewer's own independent recheck of the filter logic ("in memory") landed on
+  the same two-tag/zero-tag numbers the execution entry reports, so nothing about the test or the
+  evidence was actually wrong — only the execution entry's account of *how* the second mutation was
+  set up was underspecified enough for a careful reader to doubt it.
+- **Owner changes and reasoning:** left for the owner.
+- **Disagreements:** the reviewer's Important finding 3, as above — not acted on as a text change
+  (the mutation check's own logged result already matches what the reviewer independently
+  recomputed); recorded here as the ruling instead.
+- **Lessons for the process:** (1) A finding that infers *which* specific mechanism explains a
+  measured result should trace the actual code path (here: the app-loader's page-module wiring),
+  not stop at "the probe's markup didn't appear" and reach for the most obviously-named candidate
+  (`global-error.js`, when the constant is `UNDERSCORE_GLOBAL_ERROR_ROUTE`) — a plausible-sounding
+  component name is not evidence for itself. (2) Any tag or element *count* claimed in a finding
+  should be produced by a script over the actual file, the same discipline this repository already
+  applies to file inventories (T-13a's F6) — "seven, counted from the source above" invites an
+  eyeballing error the total can hide. (3) A ledgered deviation from a plan's literal step ("also
+  changed the expected status for the second mutation, which Step 3's text did not name") should be
+  written into the process-log entry that reports the step, not left for a reviewer to have to infer
+  or a later session to have to explain.
+- **Deferred minors (owner's call, not acted on):** the nonce check only rejects the exact response
+  nonce, not any nonce or a case difference (unlike this file's own `/gi` pattern at line 42, added
+  after a CodeQL alert); TD-3's table row dropped the "(v1.10)" pointer TD-2's kept; the plan's own
+  F2 overstates three Next source locations as independent causes when only `isPageStatic` is
+  causal (the other two corroborate) — left as handed over, per the no-rewrite convention above.
+- **Next:** the owner reviews the whole branch (three commits plus this fix pass). T-13d is next in
+  the backlog's stated order once this lands.

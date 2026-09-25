@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type APIResponse } from "@playwright/test";
+import { inlineTags } from "../fixtures/csp";
 
 test.beforeEach(async ({ request }) => {
   await request.post("/api/test/reset");
@@ -260,4 +261,53 @@ test("ADR-0006 (5): every response asks for its own agent cluster, so Firefox an
   const overview = await request.get("/overview", { maxRedirects: 0 });
   expect(overview.status()).toBe(200);
   expect(overview.headers()["origin-agent-cluster"], "/overview").toBe("?1");
+});
+
+// TD-3 (tech-debt.md), investigated at T-13b (2026-09-25): `/_global-error` is Next 16.3.5's own
+// synthetic 500-equivalent fallback (UNDERSCORE_GLOBAL_ERROR_ROUTE,
+// next/dist/shared/lib/entry-constants.js), forced static unconditionally by `isPageStatic`
+// (next/dist/build/utils.js) regardless of `connection()` or `export const dynamic =
+// "force-dynamic"`. The app-loader hardcodes this route's page module to its own bundled
+// `AppError` (next/dist/client/components/builtin/app-error.js), never the app's
+// `global-error.tsx` — measured: a scratch app/global-error.tsx with force-dynamic still produced
+// the stock AppError body. No application-level fix exists in this Next version, so this pins the
+// gap's exact shape rather than closing it: if a future Next release changes any of this, the
+// assertions below fail first.
+test("TD-3: /_global-error is reachable directly; its own CSP carries a nonce but its inline tags never do", async ({
+  request,
+}) => {
+  const first = await request.get("/_global-error");
+  expect(first.status()).toBe(500);
+  const firstNonce = scriptSrcNonce(first);
+  expect(firstNonce, "the response's own CSP still carries a nonce").toBeTruthy();
+  expect(first.headers()["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+
+  const second = await request.get("/_global-error");
+  const secondNonce = scriptSrcNonce(second);
+  // The proxy runs on this path like any other — it has no file extension, so the matcher does
+  // not exclude it — and mints a fresh nonce every time; only the prerendered body stays fixed.
+  expect(secondNonce, "a fresh nonce on a second request").toBeTruthy();
+  expect(secondNonce).not.toBe(firstNonce);
+
+  for (const [label, response, nonce] of [
+    ["first", first, firstNonce],
+    ["second", second, secondNonce],
+  ] as const) {
+    const html = await response.text();
+    const tags = inlineTags(html);
+    // Next's bundled fallback UI always inlines its RSC payload push and one <style>; none at all
+    // would mean this matched nothing, not that the page is fixed.
+    expect(tags.length, `${label}: at least one inline tag`).toBeGreaterThan(0);
+    expect(
+      tags.filter((tag) => tag.includes(`nonce="${nonce}"`)),
+      `${label}: none of the inline tags carry this response's nonce`,
+    ).toEqual([]);
+    // Next's own fallback UI still uses style="…" attributes too; style-src-attr falls back to
+    // style-src, which has no 'unsafe-inline'/'unsafe-hashes' in this policy — no nonce ever
+    // covers an attribute, so a browser drops every one of these regardless.
+    expect(
+      (html.match(/\sstyle="[^"]*"/g) ?? []).length,
+      `${label}: style attributes present (none of which any nonce could allow)`,
+    ).toBeGreaterThan(0);
+  }
 });
