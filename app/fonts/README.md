@@ -4,7 +4,7 @@ Public Sans, served by `next/font/local` from `app/layout.tsx` (weights 400 and 
 subset, `variable: "--font-public-sans"`). It replaced `next/font/google` in T-13c (TD-11,
 `docs/03-specs/tech-debt.md`): that loader downloads the font while `next build` runs, so a
 Google Fonts outage failed CI builds (PR #36) and would fail a Vercel deploy. `eslint.config.mjs`
-forbids importing `next/font/google` in `app/` and `src/` (fixture:
+forbids importing `next/font/google` in `app/` and in every `src/` layer except `server` (fixture:
 `tests/fixtures/boundaries/app-imports-next-font-google.tsx.fixture`).
 
 ## Files
