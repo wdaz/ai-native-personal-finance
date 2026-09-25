@@ -9,4 +9,6 @@ Schema, migrations, seed script, and the `data.json` copy with its checksum test
 - `data.json` — a byte-for-byte copy of `docs/00-discovery/inputs/data.json`
   (`tests/unit/seed.test.ts` compares them); not formatted by Prettier.
 - `seed.ts` — `npm run db:reset`: `resetToSeed(db, "manual")` (SPEC-reset-and-test-support §2.5).
-  It lives here rather than in `scripts/`, which may not import `src/server` (ADR-0002).
+  It lives here rather than in `scripts/`, which may not import `src/server` (ADR-0002). It
+  refuses a `DATABASE_URL` that does not name this machine (TD-10, `src/shared/env.ts`);
+  `db:reset` runs `prisma migrate deploy` first, and that step is not guarded.

@@ -183,10 +183,85 @@ Checks after the change:
 - `git diff origin/main -- docs/04-process/process-log.md`: 276 insertions, 0 deletions (append-only against
   `main`; the edits in this round change only this task's own, still unmerged entry).
 - `npx vitest run tests/unit/scaffold.test.ts`: 114 passed. `npm run traceability`: "all 18 Release 1 stories
-  are named in a test title". `sh scripts/secret-scan.sh staged`: run before the commit (see the reply).
+  are named in a test title". `sh scripts/secret-scan.sh staged`: run before the commit, silent, exit 0.
 - Prettier was not run on the docs (they are Prettier-ignored).
 
 Not touched, as instructed, but the same "until its docs PR merges" wording remains in three other places,
 which imply a plan-branch PR that does not exist: `backlog.md`'s T-13c row ("(on branch `docs/T-13c-plan`
 until its docs PR merges)"), `docs/04-process/prompts/2026-09-24-T-13c.md` (line 13) and
 `docs/04-process/prompts/2026-09-24-T-13c/README.md` (line 7). The controller may want a follow-up.
+
+## Final fix wave (after the whole-branch review: ready to merge, no Critical/Important)
+
+Two new commits on top of `f117b2a`, neither amended, neither pushed. The first is `b041b16`
+`fix(env): say why a database URL is refused, and what the refusal covers (TD-10)`; the second has the
+subject `docs: fold in T-13c's final-review minors — hand-offs, wording, comments` (its id is in the reply
+and in `git log`, not in this file).
+
+### Commit 1 — `b041b16`, one file: `src/shared/env.ts`
+
+- `localDatabaseRefusal`'s message keeps the prefix `Refusing to run: DATABASE_URL does not name this
+  machine (localhost, 127.0.0.1 or [::1])` and continues "or is not a plain postgres:// or postgresql:// URL
+  (no whitespace, no host= or hostaddr= query, no malformed % escape), and this step resets or seeds that
+  database. Point DATABASE_URL at the local database from compose.yaml (README, Run locally) — TD-10".
+  "This command" became "this step" (under `npm run db:reset` the seed step is refused after `prisma migrate
+  deploy` has run). `testEnvRefusal`'s second message keeps its prefix (`Refusing to run: APP_ENV=test with a
+  DATABASE_URL that does not name this machine`) and adds the same clause. Both are still static strings: no
+  URL, password or host. The docblocks say so, and that `migrate deploy` is not covered.
+- The docblock of `isLocalDatabaseUrl`: "two hex digits" instead of "two-digit escape"; pg re-encodes on a
+  space or a malformed escape, the guard refuses any whitespace and a `%` that ends the value, which is
+  stricter, on purpose. `testEnvRefusal`'s docblock says "a `DATABASE_URL` that `localDatabaseRefusal` refuses
+  — another machine, or a value the guard cannot read as local".
+- Before editing, `grep -rn "does not name this machine\|resets or seeds"` (ts, tsx, md, example, mjs, json,
+  yml; `node_modules`, `.next`, `.superpowers`, `.git` excluded) found no test under `tests/api` or
+  `tests/e2e` and no other doc quoting the old text. It found only the two unit regexes on the prefixes
+  (`tests/unit/next-config.test.ts:135`, `tests/unit/database-guard.test.ts:32`), the docblocks in
+  `src/shared/env.ts`, the process-log line that quotes the phrase, and the copied Task 4 brief and report
+  (history, not edited). `tests/unit/shared/env.test.ts` matches only `^Refusing to run: DATABASE_URL`,
+  `Vercel deployment`, `Vercel` and `DATABASE_URL`.
+- Runs: `npx vitest run tests/unit/shared/env.test.ts tests/unit/server/env.test.ts
+  tests/unit/test-support.test.ts tests/unit/next-config.test.ts tests/unit/database-guard.test.ts` — "Test
+  Files 5 passed (5)", "Tests 139 passed (139)", tests unchanged. `npx vitest run` — "Test Files 81 passed
+  (81)", "Tests 1043 passed (1043)". `npx tsc --noEmit`, `npm run lint` and `npx prettier --check .` — clean.
+  `sh scripts/secret-scan.sh staged` — silent, exit 0.
+
+### Commit 2 — the docs commit
+
+- `prisma/README.md` — one sentence: the seed refuses a `DATABASE_URL` that does not name this machine
+  (TD-10, `src/shared/env.ts`); `db:reset` runs `prisma migrate deploy` first, and that step is not guarded.
+- `stylelint.config.mjs` — header comment only: the accepted minimums (`0` and px, rem, em, ch, vw, vh, vmin,
+  vmax, percent), that any other unit (cm, pt, svw, …) is reported with "write minmax(0, Nfr)" and fails
+  closed, and a `var()` indirection in the "not read" list. Checked on a scratch CSS file (deleted): `2cm`,
+  `12pt` and `5svw` minima reported; `minmax(120px, 1.5fr)` accepted; `var(--cols)` not read.
+  `npx vitest run tests/unit/css-grid.test.ts` — 3 passed; `npm run lint` clean.
+- `tests/unit/README.md` — the config test loads the file in the development-server phase only
+  (`PHASE_DEVELOPMENT_SERVER`, checked in `tests/unit/next-config.test.ts`); `next build` and `next start` were
+  exercised by hand (T-13c plan, Task 4 Step 11). `npx prettier --check` on it, `prisma/README.md`,
+  `tests/fixtures/README.md`, `src/shared/README.md` and `stylelint.config.mjs` — all formatted.
+- `docs/04-process/process-log.md` (this task's entry only; `git diff origin/main` on it: 333 insertions, 0
+  deletions): the 147-byte line re-wrapped; "and nobody checked" now "no check is recorded"; `format:check`
+  printed "All matched files use Prettier code style!", not "no output" (corrected); the Opus reviews and their
+  results, and the final wave with its commits, named in "Participants", "Produced", "Verified" and "Not
+  verified"; a new bullet "Open for the owner, not decided here" (the `db:reset`-before-`migrate deploy`
+  question with plan F4e and the review's Minor 2, the plan branch, and the two declined-to-judge items, one
+  line each); "Next" updated.
+- The loose "until its docs PR merges" wording became "until the owner merges the plan branch (no PR opened
+  yet)" in `backlog.md` (T-13c row), `prompts/2026-09-24-T-13c.md` and `prompts/2026-09-24-T-13c/README.md`.
+- `docs/03-specs/backlog.md` — T-13d item (3) gains the stock Prisma reset commands (`prisma migrate reset`,
+  `prisma db push --force-reset`, `migrate dev`'s reset prompt), labelled to-check and not measured, with what
+  was read (`prisma.config.ts` loads `.env.local`, nothing refuses); T-14 gains the `vercel env pull` check
+  (unmeasured), and its sentence on `db:reset` now says the seed step refuses, after `prisma migrate deploy`;
+  v1.27's changelog names both.
+- This report: the phrase "run before the commit (see the reply)" in Fix round 1 now reads "run before the
+  commit, silent, exit 0"; this section is appended; the copy in `docs/04-process/prompts/2026-09-24-T-13c/`
+  is refreshed and compared with `cmp`.
+
+### Not done / to know
+
+- The API and E2E suites were not re-run, as instructed: the wave changes message text and comments only, and
+  no API or E2E spec quotes the old text (grep above).
+- The Task 6 review and whole-branch review are described in the log only as far as the controller relayed
+  them (two Important defects and minors; ready to merge, a CI-shaped simulation, 37 Stylelint snippets); I
+  did not see the reviews.
+- The "Open for the owner" line on `BASE_URL` and the first-deploy window is my one-line paraphrase of the two
+  items the controller named; the review's own wording was not available to me.

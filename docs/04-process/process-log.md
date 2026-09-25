@@ -3240,10 +3240,16 @@ them too").
 - **Participants:** Owner / Agent (Claude Code) — a controller agent with one implementer subagent
   per task (Sonnet 5), one at a time (one Postgres, one port). Task reviews: Task 4's review and
   re-review on Opus; the reviews of Tasks 1, 2, 3 and 5 and Task 5's re-review on Sonnet, against
-  `governance.md` v1.3 (item 4 of "What the agent got wrong"). The whole-branch review, on Opus
-  5.5, is dispatched after this entry is committed; its findings are not recorded here. The
-  execution method, subagent-driven development, is the owner's choice. This entry was written by
-  the Task 6 implementer (Sonnet 5) from the controller's ledger and the per-task reports.
+  `governance.md` v1.3 (item 4 of "What the agent got wrong"). The review of Task 6 and the
+  whole-branch review ran on Opus 5.5. The whole-branch review found the branch ready to merge
+  with no Critical or Important finding; the Task 6 review found two Important defects, both in
+  this entry's text (the planning entry, the "Verified" claims), and wording minors, all fixed in
+  `f117b2a`, which its re-review found addressed. The whole-branch review's minors were folded
+  into a final fix wave (two commits, see "Produced"), and a scoped re-review of that wave is to
+  follow; its verdict is not recorded here. The execution method, subagent-driven development, is
+  the owner's choice. This entry was written by the Task 6 implementer (Sonnet 5) from the
+  controller's ledger and the per-task reports, and corrected and extended by the same
+  implementer in the two fix rounds.
 - **Trigger:** the owner's answers to the plan's Q1–Q7 on 2026-09-25 — "Q1 - a, Q2 - tövsiyə olan,
   q3 - tövsiyyə olan, q4 - linter, q5 - tövsiyyə olan, q6 - tövsiyyə olan, q7 - t-13 a/b plana
   daxildir ki, tövsiyyə edirsən?" (Q1 (a); Q2, Q3, Q5 and Q6 as recommended; Q4 a linter; Q7 a
@@ -3264,7 +3270,8 @@ them too").
   - Task 4, `c1ef26d`, `c316e3b` — TD-10: `isLocalDatabaseUrl`, `localDatabaseRefusal` and
     `testEnvRefusal` in `src/shared/env.ts`, read by `next.config.ts` (build and start),
     `isTestEnv`, `prisma/seed.ts` and `playwright.config.ts`; 66 tests in five files, and 8 more in
-    the fix round; `.env.example` and the README say what refuses what.
+    the fix round; `.env.example` and the README say what refuses what. The final fix wave
+    (below) rewrote the two refusal messages.
   - Task 5, `3c57648`, `5d015bf` — TD-11: `app/fonts/` (two `.woff2` files, `OFL.txt`,
     `README.md`), `app/layout.tsx` on `next/font/local`, the ESLint restriction with a violation
     and a control fixture, `tests/fixtures/fonts.ts` and `tests/unit/fonts.test.ts` (4 tests),
@@ -3273,9 +3280,26 @@ them too").
     `tech-debt.md` v1.12 (TD-7–TD-11 **Fix in review**), `backlog.md` v1.27,
     SPEC-reset-and-test-support v1.6 (§2.5 and §2.7's first line only, approved by the owner in
     Q2), this entry, `prompts/2026-09-24-T-13c.md` and its folder. `56044c8`: the copy of Task 6's
-    report in that folder. The fourth, subject `docs(process): correct T-13c's record — the
-    planning entry, the verified claims, the wording`, is the fix round of Task 6's review; this
+    report in that folder. `f117b2a`, subject `docs(process): correct T-13c's record — the
+    planning entry, the verified claims, the wording`: the fix round of Task 6's review; this
     entry was corrected in it.
+  - The final fix wave, after the whole-branch review, two commits that fold in its minors.
+    `b041b16`, `fix(env): say why a database URL is refused, and what the refusal covers
+    (TD-10)`: both refusal messages in `src/shared/env.ts` now say that a URL is also refused
+    when it holds whitespace, a malformed `%` escape or a `host=`/`hostaddr=` query, or is not a
+    `postgres://` or `postgresql://` URL, and that the step "resets or seeds" the database (it
+    said "this command", though under `npm run db:reset` the seed step is refused after
+    `prisma migrate deploy` has run); the prefixes the tests match are unchanged, the messages
+    are still static strings without a URL, password or host, and the docblock says two hex
+    digits and that refusing any whitespace is stricter than pg's re-encode, on purpose. The
+    second commit, subject `docs: fold in T-13c's final-review minors — hand-offs, wording,
+    comments` (its id is not in this entry): `prisma/README.md` says the seed refuses a
+    non-local `DATABASE_URL` and that `prisma migrate deploy` is not guarded;
+    `stylelint.config.mjs`'s header lists the accepted units and the `var()` indirection it does
+    not read (comment only); `tests/unit/README.md` says the config test loads the file in the
+    development-server phase only; this entry (a re-wrapped line, three corrected claims, the
+    review results, these commits and "Open for the owner"); the plan-branch wording in
+    `backlog.md` and the prompts record; and two hand-offs in `backlog.md` (T-13d item 3, T-14).
 - **Numbers (the plan's F7, measured on this branch):** unit tests 77 files, 958 tests at the
   start; 960 after Task 1; 963 in 78 files after Task 3; 1029 in 80 files after Task 4's first
   commit and 1037 after its fix round; 1043 in 81 files after Task 5. The plan said 1 035 after all
@@ -3316,8 +3340,9 @@ them too").
     removed in turn (its own rows go red); the `next.config.ts` cut-out fixture; TD-11's
     hash/use/licence test in the red state before the layout switch (4 failures).
   - Every implementer that met a number that differed from the plan reported it and edited no
-    expectation to fit it (item 2 of "What the agent got wrong"; the numbers of Tasks 1–3 matched). Each Important review finding (Tasks 4 and 5)
-    was answered by a fix round of the same implementer, in a new commit.
+    expectation to fit it (item 2 of "What the agent got wrong"; the numbers of Tasks 1–3
+    matched). Each Important review finding (Tasks 4 and 5) was answered by a fix round of the
+    same implementer, in a new commit.
 - **What the agent got wrong or missed** (the owner adds their own findings after review):
   1. **The plan's Task 4 code had a parsing gap; a fix round closed it.** `isLocalDatabaseUrl`
      parsed the raw string with `new URL`. node-postgres (`pg-connection-string`) re-encodes a
@@ -3402,8 +3427,9 @@ them too").
   read one. Results of the first runs:
   - `npm run secrets:scan` — "399 commits scanned … no leaks found" for the diffs and "no leaks
     found" for the commit and tag messages.
-  - `npm run lint` (ESLint with `--max-warnings 0`, then `lint:css`), `npm run format:check`,
-    `npm run typecheck` — no output beyond the script names; each exited 0.
+  - `npm run lint` (ESLint with `--max-warnings 0`, then `lint:css`) and `npm run typecheck` —
+    no output beyond the script names; each exited 0. `npm run format:check` — "All matched files
+    use Prettier code style!".
   - `npm run test:coverage` — 81 files, 1043 tests passed; statements 99.53 % (426/428), the
     `src/domain` 90 % gate holds.
   - `npm run traceability` — "all 18 Release 1 stories are named in a test title".
@@ -3421,12 +3447,26 @@ them too").
   compilation; `next start` with another machine's URL refused and left nothing listening;
   `test:api` on `test-support.spec.ts`, 9 passed), and so were Task 5's offline builds, the
   three-engine font check and the pixel comparison; their output is in the reports.
+
+  After the final fix wave (`b041b16` and the docs commit after it), on the changed tree: the five
+  test files that read the refusal messages, unchanged — `tests/unit/shared/env.test.ts`,
+  `server/env.test.ts`, `test-support.test.ts`, `next-config.test.ts` and `database-guard.test.ts`
+  — 5 files, 139 tests passed, as before the change; the full unit suite, 81 files and 1043
+  tests; `npx tsc --noEmit`, `npm run lint` and `npx prettier --check .`, clean;
+  `tests/unit/css-grid.test.ts`, 3 passed, and a scratch stylelint run over `minmax(2cm, 1fr)`,
+  `minmax(12pt, 1fr)` and `minmax(5svw, 1fr)` (all three reported), `minmax(120px, 1.5fr)`
+  (accepted) and `var(--cols)` (not read), which is what the rewritten header comment says;
+  `tests/unit/scaffold.test.ts` (114) and `npm run traceability` ("all 18 Release 1 stories");
+  `sh scripts/secret-scan.sh staged`, silent, before each commit. `grep` found no other test
+  and no API or E2E spec quoting the old message text, only the two unit regexes on its prefixes
+  (`next-config.test.ts`, `database-guard.test.ts`), so the API and E2E suites were not re-run:
+  the wave changed message text and comments, no logic.
 - **Not verified:**
   - The CI verdict: the branch was not pushed and no pull request was open when this entry was
     written. Firefox and WebKit on Linux (the font check and the walkthrough ran on macOS only).
   - That nothing else was using the ports the runs needed: the controller said the machine was
-    free, and nobody checked. The only evidence is that the API run built and started its own
-    server on port 3000 without a clash.
+    free, and no check is recorded. The only evidence is that the API run built and started its
+    own server on port 3000 without a clash.
   - TD-8's keyboard walkthrough was not walked by hand. The comment was checked against the test
     body line by line and the unchanged test passes on the three engines (3 passed); SPEC-auth §6
     says "Tab order: demo box → fields → submit → footer link", forward only, which the new
@@ -3442,7 +3482,10 @@ them too").
   - That the pre-commit hook ran on Tasks 3 and 5: the implementers saw no output from it and
     inferred it from the successful commits; each ran `scripts/secret-scan.sh staged` by hand
     (exit 0). Task 6's full run re-ran `npm run secrets:scan` over the history (see "Verified").
-  - The whole-branch review's verdict (Opus 5.5, not yet run).
+  - The whole-branch review's own runs — a CI-shaped simulation and 37 adversarial Stylelint
+    snippets, as the controller relayed them — were not repeated here, and the review itself is
+    not in the repository (its findings reached the controller as messages). The scoped
+    re-review of the final fix wave has not run.
 - **Owner changes and reasoning:** the answers to the plan's questions, as above: Q1 (a) — the
   comment says what the test does, and the failing-first line of the T-13c row is waived for TD-8,
   since a comment cannot be red; Q2 (a) — the first seed is `POST /api/admin/reset`, and
@@ -3489,13 +3532,27 @@ them too").
   10. **Both Important findings of a first review round were in text or code the plan dictated**
       (Task 4's code, Task 5's README), as in T-13. The plan author should read its own
       code and prose as a reviewer would.
-- **Next:** the whole-branch review on Opus 5.5, then the controller pushes and opens a draft PR
-  whose description is the Definition of Done checklist, ticked, with the screenshots of Task 5
+- **Open for the owner, not decided here:**
+  - **Should `npm run db:reset` be guarded before `prisma migrate deploy` runs?** Today the seed
+    step refuses a non-local `DATABASE_URL`, but `db:reset` runs `prisma migrate deploy` first,
+    and that step is not guarded. The plan (F4e) rejected a pre-check script. The whole-branch
+    review's Minor 2: a migration from an unmerged feature branch would reach a non-local
+    database before the seed refuses. T-14 runs `prisma migrate deploy` directly, so a
+    `db:reset`-only pre-check would not get in its way. The controller did not decide it.
+  - Whether the plan branch `docs/T-13c-plan` is merged and gets a planning entry (see "Phase").
+  - Two things the whole-branch review declined to judge, noted here in one line each so a later
+    session can look: a `BASE_URL` (the Playwright config's `baseURL`) pointed at a remote server,
+    which the `DATABASE_URL` check does not read; and the first-deploy window between
+    `prisma migrate deploy` and the first `POST /api/admin/reset`, when the database is empty.
+- **Next:** a scoped re-review of the final fix wave on Opus 5.5, then the controller pushes and
+  opens a draft PR whose description is the Definition of Done checklist, ticked, with the
+  screenshots of Task 5
   (login and Overview at 1440, 768 and 375 px, in the git-ignored workspace), the TD-8 walkthrough
   note ("Tab, Tab, Tab, … as in the test's comment; reverse order not walked"), "TD-8: no
   failing-first test — waived by the owner, Q1 (a)" and "TD-9: Stylelint 17.15.0 added as a dev
   dependency — the owner's answer to Q4; npm audit 0". The owner reads and merges. T-13d starts
-  only after T-13c is merged, and T-14's row carries the hand-offs of v1.27 (the first seed, the
-  `VERCEL` setting); T-13a and T-13b have their own plan gates. The plan branch has no pull
-  request; whether to merge it and whether it gets a planning entry is the owner's call (see the
-  "Phase" field).
+  only after T-13c is merged; its row carries a hand-off of v1.27 (the stock Prisma commands that
+  reset a database are not guarded), and T-14's row carries the others (the first seed, the
+  `VERCEL` setting, whether `vercel env pull` writes `.env.local`); T-13a and T-13b have their own
+  plan gates. The plan branch has no pull request; whether to merge it and whether it gets a
+  planning entry is the owner's call (see the "Phase" field).

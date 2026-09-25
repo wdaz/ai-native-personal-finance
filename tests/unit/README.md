@@ -73,7 +73,9 @@ control in `fixtures/css-grid/`: a bare `fr` column track must be reported, on i
 and `testEnvRefusal`, including the values that `new URL` and node-postgres read differently (a
 scheme other than `postgres:`/`postgresql:`, whitespace, a malformed percent escape);
 `server/env.test.ts`, `test-support.test.ts` and `next-config.test.ts` pin where the refusal is
-read (`isTestEnv`, the route list, the config at build and start). `database-guard.test.ts` starts
+read (`isTestEnv`, the route list, the config file). The config test loads the file in the
+development-server phase only (`PHASE_DEVELOPMENT_SERVER`); `next build` and `next start` were
+exercised by hand, not by a test (T-13c plan, Task 4 Step 11). `database-guard.test.ts` starts
 child processes — the seed and `playwright test --list` — with another machine's `DATABASE_URL`
 and expects the refusal, not a connection. `fonts.test.ts` checks `app/fonts/` (TD-11): every
 `.woff2` listed in its README with its real hash, used by `app/layout.tsx`, and the OFL beside
