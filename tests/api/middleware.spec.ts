@@ -201,6 +201,52 @@ test("SPEC-reset-and-test-support §2.6: a reset-invalidated session redirects t
   expect(location).toContain("next=%2Ftransactions");
 });
 
+// NFR-S6 names the referrer policy and ADR-0006 lists `X-Content-Type-Options` with it. The four
+// responses below leave the function by four different branches — a page, an API answer, a
+// redirect and a 401 — and the headers are set after all of them.
+test("NFR-S6, ADR-0006: every branch's response carries Referrer-Policy, X-Content-Type-Options and X-Request-Id", async ({
+  request,
+}) => {
+  const branches: Array<[string, number, () => Promise<APIResponse>]> = [
+    ["a public page", 200, () => request.get("/login")],
+    ["a public API answer", 200, () => request.get("/api/auth/session")],
+    ["a redirect", 302, () => request.get("/transactions", { maxRedirects: 0 })],
+    ["a 401", 401, () => request.get("/api/overview")],
+  ];
+  for (const [label, status, send] of branches) {
+    const response = await send();
+    expect(response.status(), `${label}: status`).toBe(status);
+    const headers = response.headers();
+    expect(headers["referrer-policy"], `${label}: Referrer-Policy`).toBe(
+      "strict-origin-when-cross-origin",
+    );
+    expect(headers["x-content-type-options"], `${label}: X-Content-Type-Options`).toBe("nosniff");
+    expect(headers["x-request-id"], `${label}: X-Request-Id`).toBeTruthy();
+  }
+});
+
+// Review finding M6: the matcher excludes any path with a file extension. A logged-in visitor's
+// image request must not meet the session check, the reset-epoch query, `no-store` or the
+// middleware's headers.
+test("review finding M6: a logged-in request for a file with an extension never reaches the middleware", async ({
+  request,
+}) => {
+  await logInAsDemo(request);
+  // The control: a page of the same session does reach it, and answers with what it sets.
+  const page = await request.get("/overview", { maxRedirects: 0 });
+  expect(page.status()).toBe(200);
+  expect(page.headers()["x-request-id"], "the control, /overview: X-Request-Id").toBeTruthy();
+  expect(page.headers()["cache-control"], "the control, /overview: Cache-Control").toBe("no-store");
+
+  const avatar = await request.get("/avatars/bytewise.jpg", { maxRedirects: 0 });
+  expect(avatar.status()).toBe(200);
+  expect(avatar.headers()["content-type"]).toBe("image/jpeg");
+  // Each of these is set by the middleware and by nothing else.
+  expect(avatar.headers()["x-request-id"], "the avatar: X-Request-Id").toBeUndefined();
+  expect(avatar.headers()["content-security-policy"], "the avatar: CSP").toBeUndefined();
+  expect(avatar.headers()["cache-control"], "the avatar: Cache-Control").not.toBe("no-store");
+});
+
 test("ADR-0006 (5): every response asks for its own agent cluster, so Firefox and Safari can run the WebMCP polyfill", async ({
   request,
 }) => {
