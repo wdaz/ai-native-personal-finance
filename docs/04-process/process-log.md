@@ -4698,3 +4698,59 @@ them too").
   selected`, a workflow that adds a non-GitHub action needs the list edited first; (4) T-16's
   required-`secret scan` item is done by this ruleset and is struck through in `backlog.md`
   v1.38.
+
+## 2026-09-25 — Phase 5: README "Demo credentials" — a throwaway-password warning
+
+- **Phase:** 5 (Build the slice), Release 1 — a documentation fix outside any task. No code, no
+  GitHub setting and no workflow was changed.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, background session, own worktree).
+- **Trigger:** the owner pasted the README's "Demo credentials" section and asked, in Azerbaijani,
+  where its instructions take effect and why they are in the README; then "Demo credentials —
+  yeni bunun Readme olmağı problem yaratmır?" ("does its being in the README not create a
+  problem?"); then "Bunu qeydə al və düzəldib pr aç" ("record this, fix it and open a PR").
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Found:**
+  1. The README holds no secret: a generation command with the placeholder `your-password`, and
+     variable names that `.env.example` lists too. The demo password is public by design —
+     NFR-S1 (`non-functional-requirements.md`) and ADR-0006 ("shown in plain text on the login
+     page") — so the section is not a leak.
+  2. Where the section takes effect: `src/server/env.ts` `demoPasswordHash()` reads and shape-
+     checks the hash, `src/server/auth.ts` compares it with `bcrypt.compare`, and `demoCredentials()`
+     feeds the login page's demo box. The `\$` escape is undone by `@next/env`, not by app code;
+     CI's `env:` block carries the raw hash. Three error messages in `env.ts` name "README, Demo
+     credentials", which is why the section stays in the README.
+  3. **The gap:** the section said "whatever password you want" and "shown on the login page" but
+     never said the password should be disposable. A reader could put a password they use
+     elsewhere into `DEMO_PASSWORD_DISPLAY`, and the login page prints that value to every
+     visitor.
+- **Produced:** `README.md`, "Demo credentials": "throwaway" in the first sentence, and a closing
+  sentence that says to use a throwaway password, why (the login page prints it, public by
+  design, NFR-S1 and ADR-0006) and that it covers a deployed environment's value too; this entry.
+  Pull request from `docs/readme-throwaway-password` to `main` (`develop` does not exist until
+  Release 1 closes, governance v1.4).
+- **What the agent got right:** read NFR-S1 and ADR-0006 before calling the section harmless, so
+  the answer was "no leak, one gap" and not a reflex either way; found that the section is a code
+  dependency (the `env.ts` messages) before suggesting it be moved; checked that no test reads the
+  root `README.md`.
+- **What the agent got wrong or missed:** the first search for the variable's uses was cut by
+  `head -50` and hid every hit in `src/`; it was re-run scoped to `src/`, `.github/` and
+  `.env.example`. The `$`-expansion behaviour of `@next/env` was not run in this session — the
+  README's claim rests on the T-05 review (the `ci.yml` comment) and `tests/unit/server/env.test.ts`.
+  Not checked: whether `.gitleaks.toml` allowlists the CI-only hash and password in `ci.yml`. The
+  warning is advice; nothing stops a reader from reusing a real password.
+- **Observed, not fixed:** the escape-or-raw rule is written in three places — the README, the
+  comment above `DEMO_PASSWORD_HASH` in `ci.yml`, and the doc comment on `demoPasswordHash()`. A
+  change to one can leave the others stale. Each serves a different reader (a developer, a CI
+  editor, a maintainer of `env.ts`), so they were not merged into one; recorded as a known
+  duplication.
+- **Owner changes and reasoning:** the owner accepted the finding and asked for it to be recorded,
+  fixed and opened as a pull request. The agent's proposal was one sentence; it also added the word
+  "throwaway" to the section's first sentence, because a reader who stops after the command never
+  reaches the last paragraph.
+- **Disagreements:** none.
+- **Lessons for the process:** a value that is public by design still needs a warning where the
+  reader chooses it. NFR-S1 tells the app to show the demo password; nothing told the person
+  picking it to make it disposable.
+- **Next:** the owner reviews and merges the pull request. T-14 (deploy) sets
+  `DEMO_PASSWORD_DISPLAY` on the platform; its settings step should choose a throwaway value, which
+  the README now says.
