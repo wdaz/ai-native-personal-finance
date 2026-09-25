@@ -4474,3 +4474,67 @@ them too").
   checklist in `governance.md`; open there: default branch (Dependabot decides), the hotfix
   route, T-16's order. Nothing is pushed: plan Q5 still holds for T-13d and the owner has not
   yet answered the push question.
+
+## 2026-09-25 — Phase 5: T-13d F8 and required status checks — decisions, and the pin PR
+
+- **Phase:** 5 (Build the slice), Release 1 — the two items of the settings check that the
+  owner asked to fix ("Actions SHA pin və Required status check. bunları necə düzəldə bilərik?",
+  "how can we fix the Actions SHA pin and the required status check"). Same local session.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Owner's decisions**, to a structured question after the agent read the job names, the
+  check runs on `main`'s head and PR #47's head, and resolved each action's commit: (1) the
+  required checks are all seven that report from GitHub Actions except `npm audit` (it is
+  non-blocking by design, owner decision 2026-09-22, so it is always green); (2) also a
+  Dependabot config for `github-actions` and `allowed_actions` limited to GitHub-owned actions
+  (every action in use is `actions/*` or `github/*`); (3) prepare the pin pull request now;
+  the GitHub settings only after a further "yes".
+- **Produced:** branch `chore/pin-actions-to-sha`, one local commit `b632c26` on `origin/main`
+  (`40c27f8`), separate from the docs branch so the two do not both append to this file:
+  all 13 `uses:` lines in `ci.yml` and `codeql.yml` pinned to the commit their tag pointed at
+  on 2026-09-25 (`actions/checkout` v5.1.0, `actions/setup-node` v5.0.0,
+  `actions/upload-artifact` v4.6.2, `github/codeql-action` v4.38.2), each with a `# vX.Y.Z`
+  comment; `.github/dependabot.yml` (github-actions, weekly, one group, prefix `chore(ci)`); a
+  comment in `ci.yml` that a job's name is its check name.
+- **Evidence:** `grep` finds 0 `uses:` lines that are not `@<40 hex> # v…` and 13 that are;
+  both workflows and `dependabot.yml` parse (PyYAML); Prettier is clean; no test or script reads
+  workflow text (`grep` over `tests/` and `scripts/`). Not run: the workflows themselves — they
+  run on the pull request, which is also the first proof that the pins resolve.
+- **Ready, not applied.** After the pin PR merges, in this order (turning
+  `sha_pinning_required` on before that would fail every workflow that names a tag):
+  1. `gh api -X PUT repos/wdaz/ai-native-personal-finance/actions/permissions -F enabled=true
+     -f allowed_actions=selected -F sha_pinning_required=true`, then
+     `gh api -X PUT repos/wdaz/ai-native-personal-finance/actions/permissions/selected-actions
+     -F github_owned_allowed=true -F verified_allowed=false`.
+  2. A second ruleset, added beside the existing one instead of editing it (a rollback is one
+     delete), `gh api -X POST repos/wdaz/ai-native-personal-finance/rulesets --input <file>`, the
+     file being: `{"name": "main: required CI checks", "target": "branch", "enforcement":
+     "active", "bypass_actors": [], "conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"],
+     "exclude": []}}, "rules": [{"type": "required_status_checks", "parameters":
+     {"strict_required_status_checks_policy": false, "do_not_enforce_on_create": false,
+     "required_status_checks": [` one `{"context": …, "integration_id": 15368}` (GitHub
+     Actions) for each of `lint · typecheck · unit`, `API tests (Postgres)`,
+     `E2E (Chromium, off)`, `E2E (Chromium, polyfill)`, `E2E (Firefox, polyfill)`,
+     `E2E (WebKit, polyfill)`, `secret scan` `]}}]}`. The payload shapes were not run; the
+     first response is their check.
+  Each is a Settings change on the owner's repository, so each waits for the owner's word.
+- **What the agent got right:** ordered the steps by what each one breaks (settings after the
+  merge), chose an additive ruleset over editing the one named "Copilot review for default
+  branch", took the SHAs from the API instead of memory, and left `npm audit` out because a
+  check that cannot fail protects nothing. The first draft of `dependabot.yml` pointed at
+  `governance.md`'s new section, which lives on the other branch; caught before the commit.
+- **What the agent got wrong or missed:** a pin freezes what the tags pointed at on
+  2026-09-25; the agent did not read the actions' code, and says so in the commit message. Not
+  verified: that Dependabot rewrites the `# v5.1.0` comment together with the SHA (its
+  documented behaviour, first seen when its first pull request arrives).
+- **Owner changes and reasoning:** the three decisions above.
+- **Disagreements:** none.
+- **Lessons for the process:** a required status check is a string contract between a ruleset
+  and a workflow; renaming a job leaves the check "Expected" forever, and with no bypass actor
+  the way out is editing the ruleset. `ci.yml` now says so next to the jobs.
+- **Next:** (1) the owner's word to push both local branches and open the pin pull request;
+  (2) after it merges, the two settings steps above; (3) the required-check ruleset also
+  covers T-16's "make the T-02a `secret scan` check required in the `main` ruleset" — record it
+  in T-16's row when the ruleset exists; (4) at the `develop` switch, the same seven checks go
+  into `develop`'s ruleset and Dependabot's target branch is decided; (5) F9's stale SARIF
+  comment in `ci.yml` is still open.
