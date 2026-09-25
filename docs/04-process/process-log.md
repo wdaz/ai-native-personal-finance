@@ -4568,7 +4568,11 @@ them too").
      generic patterns; the owner's account is a `User`, so the option is probably not offered.
      Whether the non-provider button is offered on a personal-account public repository is not
      known until the owner tries. A risk not tested: the local placeholder connection string in
-     `ci.yml` and `.env.example` may raise an alert.
+     `ci.yml` and `.env.example` may raise an alert. **Settled the same evening:** the owner's
+     screenshot of the section shows only Secret Protection and Push protection, both on, and
+     the owner confirmed the section ends there. Neither toggle is offered on this repository
+     (a public repository of a personal `User` account; not a permission problem), so there is
+     nothing to enable. The API still reads both as `disabled`, unchanged.
 - **Observed** (not asked for): #48 was merged by the owner (`0ec510c`) and Dependabot opened
   #50 within minutes, "Bump the github-actions group with 3 updates" (`actions/checkout`
   v5.1.0 → v7.0.1, `actions/setup-node` v5.0.0 → v7.0.0, `actions/upload-artifact` v4.6.2 →
@@ -4589,7 +4593,9 @@ them too").
 - **Disagreements:** none.
 - **Lessons for the process:** a search summary is a lead, not a source; two sentences in one
   summary can contradict each other, and only the documentation's own text settles it.
-- **Next:** (1) the owner tries the non-provider toggle and says what the button does; (2) the
+- **Next:** (1) closed: the non-provider and validity toggles are not offered, so the
+  generic-secret gap stays covered by the Gitleaks pre-commit hook and CI job, GitHub's partner
+  patterns with push protection, and T-16's rotation of every secret that was ever real; (2) the
   two settings steps of the previous entry are unblocked by #48's merge (`sha_pinning_required`
   with `allowed_actions`, then the required-checks ruleset) and wait for the owner's "yes";
   (3) review of Dependabot's #50 and of #51; (4) #49 is this entry's pull request.
