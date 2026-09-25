@@ -23,7 +23,7 @@ Sources were read on 2026-09-25 unless a date is given.
 | Piece               | Value                                                                                                                                                                                     | Source                                                                                          |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | Vercel project      | `personal-finance` (owner's choice, T-14 plan Q4), Hobby plan                                                                                                                             | plan Q4                                                                                         |
-| Production URL      | `https://personal-finance.vercel.app` **if that name was free** — `vercel.app` names are global, so the domain Vercel actually assigned is in the record table below                       | plan Q4, step 5.2                                                                               |
+| Production URL      | `https://personal-finance-cyan-kappa.vercel.app` — the project's own domain (`personal-finance.vercel.app` was taken: `vercel.app` names are global). The team alias `personal-finance-ruslan-496a.vercel.app` is behind Vercel Authentication, so it is **not** the public URL | plan Q4; measured 2026-09-26 (T-14 steps 5.2, 6.4); ADR-0007 amendment 2026-09-25, line 5 |
 | Functions region    | `fra1` (`vercel.json` `regions`), next to the database; Vercel's default is `iad1`                                                                                                        | `vercel.json`, `tests/unit/vercel-config.test.ts`; vercel.com/docs/functions/configuring-functions/region |
 | Node                | 24.x (`.nvmrc`, `engines.node`); Vercel offers 24.x, 22.x, 20.x                                                                                                                           | plan F1; vercel.com/docs/functions/runtimes/node-js/node-js-versions                            |
 | Neon project        | `solitary-truth-56663324`, `aws-eu-central-1` (Frankfurt), Postgres 18; a Neon region cannot change after creation                                                                        | plan F2 (Neon CLI)                                                                              |
@@ -107,13 +107,39 @@ the deployment fails (and a Secret cannot be read back to notice).
   deployment builds and runs without a database, pages that read data answer 500, and the
   production database (an empty Neon branch) holds no seed data until the T-14 pull request has
   merged and passed its checks on its own preview.
+- **Vercel's import screen pre-fills the environment variables from `.env.example`** (measured
+  2026-09-25: 13 Secret variables for Production and Preview, created with the project) — empty the
+  list before creating the project, or delete them afterwards, once per name:
+  `vercel env rm NAME --project personal-finance --yes`. `vercel env ls --project personal-finance`
+  must then say "No Environment Variables found". While `DATABASE_URL` exists the Neon integration
+  fails.
+- **A data-free production answers `/` with 302 to `/login` and `/login` with 500**: the login page
+  prints the demo credentials, and `DEMO_EMAIL` / `DEMO_PASSWORD_DISPLAY` are unset (an environment
+  change never reaches an existing deployment). That is the invariant working, not a fault; nobody
+  redeploys it by hand before the pull request has merged.
+- If the dashboard shows "No Production Deployment … push to main, or run vercel --prod" (as it did
+  here, the import having created the project without a build), make the first deployment from a
+  clean export, never from the checkout: `git archive --format=tar --output=<tmp>/main.tar origin/main`,
+  extract it into an empty scratch directory outside the repository, then
+  `vercel deploy <scratch-dir> --prod --project personal-finance --yes`. It is a `cli`-source
+  deployment (no Git commit) and gets only the team alias `personal-finance-<team>.vercel.app`, which
+  is SSO-protected. The project's own domain is attached with
+  `vercel alias set <deployment-url> <project-domain>` — the owner ran it in a terminal outside the
+  agent session, because the agent's harness rejects every command line containing the word "alias".
+- **Under Claude Code's auto mode the agent may not write to the secret store or deploy to
+  production**: `vercel env add`/`rm` and `vercel deploy --prod` were refused as agent commands
+  ("Secret-Store Writes", "Production Deploy") and are run by the owner with `!` — for the
+  variables, a script that sources the 0600 files and prints names only. Reads, `gh variable set`,
+  a scratch preview deployment and `vercel remove` of it were allowed.
 - Creating the project with `vercel` from a laptop would make an unmerged branch production. Never
-  do that; deploy a scratch directory only after `vercel link --project personal-finance` (an
-  unlinked directory offers to create a new project).
+  do that; deploy a scratch directory with `--project personal-finance` (an unlinked directory
+  offers to create a new project).
 - The Neon integration needs a Vercel project that is already linked to Git, and fails if
   `DATABASE_URL` (or `PGHOST`, `PGUSER`, `PGDATABASE`, `PGPASSWORD`) already exists there — which is
-  why the import has no variables (plan F3). After installing it, check that no new production
-  deployment appeared (`vercel ls personal-finance`).
+  why the import has no variables (plan F3). It sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED` for
+  Production and Development only (Preview values are injected per deployment) and creates the
+  `vercel-dev` branch. After installing it, check that no new production deployment appeared
+  (`vercel ls personal-finance`; measured 2026-09-26: none did).
 
 ### 2. Setting a value without printing it
 
@@ -197,7 +223,10 @@ the commands are:
   (SPEC-reset-and-test-support §2.2); it must not redirect (`curl -sS -o /dev/null -w
   '%{http_code} %{redirect_url}\n'`). The scheduled run's own log line is `reset skipped
   reason=scheduled dueAt=<time> requestId=<id>` or `reset reason=scheduled rows=<n> requestId=<id>`
-  (`src/server/admin-reset.ts`; `vercel logs` or the dashboard, the day after).
+  (`src/server/admin-reset.ts`). **Hobby keeps runtime logs for one hour** (vercel.com/docs/limits,
+  `last_updated` 2026-09-16), so "the day after" reads nothing: read the line within the hour after
+  03:00 UTC (`vercel logs`, or the dashboard), or infer the run from `GET /api/meta` — `lastResetAt`
+  moves only when a reset happened. The same limit applies to step 4's `reset reason=manual` line.
   Vercel does not retry a failed run (plan F11).
 - **A preview's secret does not open production** (plan Review Focus 3): the preview's
   `RESET_SECRET` against production's `/api/admin/reset` → 401.
@@ -265,8 +294,8 @@ See also vercel.com/docs/environment-variables/rotating-secrets (linked from the
 
 | Date       | What                                                      | Result | Notes |
 | ---------- | --------------------------------------------------------- | ------ | ----- |
-|            | Production domain Vercel assigned (plan step 5.2)         |        |       |
-|            | `vercel env add` form used for Preview (plan step 5.6)    |        |       |
+| 2026-09-25 | Production domain Vercel assigned (plan step 5.2)         | `personal-finance-cyan-kappa.vercel.app` (project domain; the team alias `personal-finance-ruslan-496a.vercel.app` is SSO-protected) | `personal-finance.vercel.app` taken; the project domain was attached by `vercel alias set` (step 1) |
+| 2026-09-26 | `vercel env add` form used for Preview (plan step 5.6)    | `printf '%s' "$VALUE" \| vercel env add NAME preview --sensitive\|--no-sensitive --project personal-finance --yes` — no branch prompt; the API shows `gitBranch: null` (all non-production branches) | run by the owner through `set-env.sh`; `--yes` was enough |
 |            | First production deployment: migrations applied, seed 204 |        |       |
 |            | Origin-trial token registered — expiry date read          |        |       |
 |            | Relay demo — exact steps and what was seen                |        |       |
