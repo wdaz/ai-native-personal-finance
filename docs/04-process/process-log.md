@@ -4797,3 +4797,84 @@ them too").
 - **Lessons for the process:** none beyond the entries above.
 - **Next:** T-14 is unblocked. It starts with its plan and plan gate; TD-14 is its first check,
   on the preview of its own pull request and before that merges.
+
+## 2026-09-25 — Phase 5: before T-14 — the deploy accounts, and Node 24
+
+- **Phase:** 5 (Build the slice), Release 1 — between T-13d's close and T-14's plan. No T-14
+  artefact: no prompt, no plan, no deploy, no `vercel.json` or ADR change.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:** the owner asked "T-14 başlamaq üçün nə tələb olunur?" ("what does starting T-14
+  need?"), then "Vercele deploy üçün nə lazımdır?" ("what does a Vercel deploy need?"), and set up
+  the Neon and Vercel accounts during the session, pasting each vendor's agent-onboarding prompt.
+  A documentation subagent found that Vercel builds and runs Node 24.x at most, while this
+  repository pinned Node 26. The owner pasted Vercel Sandbox's SDK reference "NODE 26 uyğunluğu
+  üçün" ("for Node 26 compatibility"), dropped it once told it does not change the build runtime,
+  and answered the proposal to move to Node 24 with "bəli et" ("yes, do it").
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Produced:** in this pull request — `tests/unit/node-version.test.ts` (failing first:
+  `expected [ 20, 22, 24 ] to include 26`, `expected '>=26' to be '26.x'`, on Node v24.20.0);
+  `.nvmrc` 24; `package.json` `engines.node` `24.x` and `@types/node` `^24.13.6` (the lockfile
+  changes `@types/node` and its `undici-types` only); `README.md`; `backlog.md` v1.40; this entry.
+  Outside the repository, on the owner's word: Vercel CLI 60.0.1, logged in as the owner's Vercel
+  account, nine `vercel-labs/agent-skills` skills and the Vercel MCP server at user scope; Neon CLI
+  6.1.0 (npm `neon`, from `neondatabase/neon-pkgs`), eight Neon skills at user level, and the Neon
+  MCP server at user scope — OAuth, so no API key was minted, `readonly=true`, pinned to the
+  project. `claude mcp list` showed both "Connected" after the owner's `/mcp` sign-in.
+- **Owner decisions, recorded here as facts (their documents change in T-14):**
+  1. **Neon project** `solitary-truth-56663324`, created on neon.com, region **AWS Europe
+     (Frankfurt)** `aws-eu-central-1`, Postgres 18 (the local and CI image is `postgres:18.6`),
+     one branch, `production`; Neon Auth, object storage, functions and AI gateway off (ADR-0006's
+     own session stays). A Neon project's region cannot change (neon.com/docs/introduction/regions,
+     read 2026-09-25), so Vercel's functions must run in `fra1` — Vercel's default is `iad1`
+     (vercel.com/docs/functions/configuring-functions/region, read 2026-09-25). `vercel.json`
+     `regions` and an ADR-0007 amendment belong to T-14.
+  2. **Neon's onboarding steps 4–7 are deferred to T-14's plan.** Read from the CLI's README before
+     running anything: `neon link` with a branch also runs `env pull`, which would have written the
+     production `DATABASE_URL` and `DATABASE_URL_UNPOOLED` into a new `.env.local` in the checkout
+     (`next dev` is not guarded by TD-10, the test and reset commands are); `.neon` is not
+     git-ignored; `neon config init` installs `@neon/config` and `@neon/env`; an empty `neon.ts`
+     deployed changes nothing. `neon mcp -y` would have minted an account-wide API key and
+     `neon skills -y` writes into the working directory, so `--oauth`, `--read-only`,
+     `--project-id` and `--global` were used instead.
+  3. **Vercel Sandbox is not used.** It runs microVMs for untrusted code (sessions of at most 45
+     minutes on Hobby); its `node26` images do not change the Node that Vercel builds and
+     functions run.
+  4. **Node 24.** Vercel's builds and functions offer 24.x (default), 22.x and 20.x
+     (vercel.com/docs/functions/runtimes/node-js/node-js-versions, read 2026-09-25). Node 26 is
+     "Current" until its LTS on 2026-10-28 (github.com/nodejs/Release `schedule.json`, read
+     2026-09-25); Node 24 took four weeks from LTS to Vercel (Vercel changelog, 2025-11-25). Node
+     24.21.0 bundles npm 11.19.0 (nodejs.org/dist/index.json), so `engines.npm >=11.19` and
+     `strict-allow-scripts` hold. `engines.node` is `24.x`, not `>=24`: Vercel reads it, and an
+     open range would move to a newer major there before CI's `.nvmrc` does.
+- **What ran where:** locally on nvm's Node v24.20.0 and npm 11.19.0, placed first on `PATH` and
+  printed by every run — `npm ci --ignore-scripts`, lint (ESLint and Stylelint), `format:check`,
+  `typecheck`, `test:coverage` (82 files, 1050 tests), `traceability` (18 of 18 stories), `npm
+  audit --audit-level=high` (0), `test:api` (107 passed, its `next build` included) and E2E on
+  Chromium in polyfill mode (109 passed, 8 skipped). Firefox, WebKit and Chromium-off ran only in
+  this pull request's CI, which reads `.nvmrc`.
+- **What the agent got right:** read each vendor onboarding command's documentation before running
+  it, which kept a production database URL out of the checkout and an account-wide API key out of
+  `~/.claude.json`; checked where each MCP entry was actually written.
+- **What the agent got wrong or missed:** it ran `vercel mcp --clients "Claude Code"` from the
+  home directory; the command started a device login nobody had asked for (the owner approved it
+  in the browser) and wrote the MCP entry at *local* scope for that directory, where no session of
+  this repository would have seen it. The agent moved it to user scope with `claude mcp add
+  --scope user` and removed the stray entry. Node 26 was pinned at T-01 and no review since
+  compared it with the deploy target.
+- **Owner changes and reasoning:** Frankfurt instead of the agent's AWS US East 1 (N. Virginia)
+  — "bura o yaxındır" ("it is close to here").
+- **Disagreements:** the region. The agent recommended US East 1 next to Vercel's default `iad1`,
+  since Lighthouse CI will likely run from US-hosted runners (not checked); the owner chose
+  Frankfurt, and the agent's condition — functions in `fra1` — was accepted. NFR-P1 from a US
+  runner is unmeasured; T-14 measures it.
+- **Lessons for the process:** a runtime is chosen from the deploy target's supported list, not
+  the newest release; `tests/unit/node-version.test.ts` now holds that, and raising its list is a
+  step taken after re-reading Vercel's page. Vendor onboarding prompts for agents default to the
+  widest scope (the working directory, account-wide keys, write tools); read them first. ADR-0001
+  names no Node version — whether it should is the owner's question on this pull request.
+- **Next:** the owner reviews and merges. A shell whose `node` is Homebrew's 26 keeps running 26
+  until `nvm use` in the repository; `engines` only warns. Then T-14: its prompt and plan, with the
+  plan-gate questions this session listed — how a Neon branch's URL reaches a Vercel preview build,
+  previews behind Vercel Authentication (TD-14's check needs `x-vercel-protection-bypass`),
+  `DATABASE_URL_UNPOOLED` for `migrate deploy`, `npm ci` as the install command, Neon branch
+  clean-up against the free plan's ten branches, and OWASP's 19 items not tested without a host.
