@@ -3989,3 +3989,93 @@ them too").
 - **Next:** the owner answers Q1–Q4. If Q1 is "yes" and Q4 names inline execution, the next session
   runs Task 1 and Task 2 (and Task 3, if Q2 says "now") from a fresh `origin/main`, on
   `task/T-13b-global-error`.
+
+## 2026-09-25 — Phase 5: T-13b `/_global-error` under the CSP (TD-3) — execution
+
+- **Phase:** 5 (Build the slice), Release 1. Executed in the same session as the plan, on this
+  session's harness-assigned branch `claude/laughing-clarke-fpp7vz` (no separate `task/T-13b-…`
+  branch — the deviation the plan's header already discloses; `origin/main` had not moved since the
+  plan's base, `7ffe212`, so nothing needed rebasing).
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5).
+- **Trigger:** the owner's "Belə anladığım qədər çox kiçik bir taskdır. 3 sualın cavabı
+  recomendentionlara yes cavabıdır." ("As I understand it, this is a very small task. The answer to
+  the 3 questions is yes to the recommendations.") — read as Q1–Q4 all "yes to the recommendation"
+  (`prompts/2026-09-25-T-13b.md`).
+- **Prompt(s):** `prompts/2026-09-25-T-13b.md`
+- **Produced:**
+  - `tests/api/proxy.spec.ts`: one test, "TD-3: /_global-error is reachable directly; its own CSP
+    carries a nonce but its inline tags never do" (Task 1). Commit `a9f8fa0`.
+  - `docs/03-specs/tech-debt.md` v1.16: TD-3's table row reworded "Open — no fix in Next 16.3.5";
+    a new "Investigated (T-13b, 2026-09-25)" paragraph appended after the existing Found/Owner
+    decision/Risk/Guarded/Fix lines, which stay as written. `docs/03-specs/backlog.md` v1.32: a new
+    Changelog clause; the Notes tech-debt bullet gains an "Open at v1.32: …" sentence, appended
+    after "Open at v1.30: …", not rewriting it (Task 2).
+  - This entry and the owner's go-ahead appended to `prompts/2026-09-25-T-13b.md`.
+- **Evidence:**
+  - Task 1, Step 2 (run the new test alone): **PASS** immediately, `npx playwright test
+    --project=api -g "TD-3"` — 1 passed. This is not a fix, so there was no red-then-green cycle on
+    application code; the plan predicted exactly this (Findings F1–F4 already measured the same
+    response the test now pins).
+  - Task 1, Step 3 (prove the assertions discriminate, not vacuous): pointed the test at
+    `/api/auth/session` — **FAIL** at `expect(first.status()).toBe(500)` (received 200; the plan
+    predicted the failure would land on the "at least one inline tag" assertion instead — both
+    prove the same thing, a JSON response has no HTML body either way, so the plan's line number was
+    a prediction and this is the correction, ledgered here rather than in the plan itself, which
+    stays as written). Then pointed it at `/definitely-not-a-page` (T-06 finding F1's fixed
+    `/_not-found`) — **FAIL** exactly as predicted, at "none of the inline tags carry this
+    response's nonce" (received two `<script nonce="…">` tags that do carry it). Both scratch edits
+    reverted; `git diff` confirmed the file matched the committed version before Task 1's commit.
+  - Task 1, Step 4 (full API suite): `npx playwright test --project=api --workers=1` — **103
+    passed** (up from 102, exactly the plan's prediction).
+  - Full-suite checks run for both tasks together: `npm run lint`, `npm run format:check`,
+    `npm run typecheck`, `npm run traceability` ("all 18 Release 1 stories") — all clean.
+    `npm run test:coverage` — **1045/1046 unit tests passed**; the one failure,
+    `tests/unit/install-scripts.test.ts` ("fails when a dependency's install script is no longer
+    named in allowScripts"), is pre-existing and environment-caused, not from this diff: this
+    session's npm is 10.9.7, below the `>= 11.19` `engines` floor, and the README already documents
+    that an older npm "only warns … and does not enforce the install-script policy" — the fixture
+    expects enforcement that this npm version does not perform. Not investigated further; out of
+    T-13b's scope, and the coverage gate table itself did not print (the run stopped at the one
+    failure) so the gate's own pass/fail is unconfirmed here.
+  - `npm run test:e2e` was **not run** — no browser in the diff exercises anything new (the change
+    is one API test plus prose), and this session has only Chromium pre-installed, not Firefox or
+    WebKit. Flagged rather than silently skipped, per governance's "reported output is copied from
+    the run."
+  - The database this session used was not the project's Docker/Postgres 18 (`compose.yaml`): no
+    Docker daemon is available in this container, so a local Postgres 16 cluster
+    (`pg_ctlcluster 16 main start`, a `postgres` role and `personal_finance` database created by
+    hand) stood in. `npm run db:reset` applied both migrations and the seed against it without
+    incident.
+- **What the agent got right:** it re-verified the plan's own findings by running the test rather
+  than trusting F1–F4's numbers unchanged, and it proved Task 1's assertions were not vacuously true
+  by mutation (Step 3) before committing, per the Definition of Done rule the plan itself named in
+  Global Constraints. It corrected TD-3's stale "not reachable" claim in the same paragraph as the
+  new "no fix" finding, rather than leaving two contradictory sentences in the entry.
+- **What the agent got wrong or missed:** (1) The plan's Task 1 Step 3 predicted the
+  `/api/auth/session` mutation would fail at the "at least one inline tag" assertion; it actually
+  failed one assertion earlier, at the status check, since that route is a 200 JSON answer, not a
+  500 HTML page — same conclusion (the assertion discriminates), different line, corrected here per
+  governance's "reported output is copied from the run, never from the brief," not silently. (2) No
+  Docker daemon exists in this session's container, which the plan's own scratch-verification
+  disclosure did not anticipate (it only foresaw needing no database at all, for `next build`); a
+  local Postgres 16 cluster substituted for the project's Docker/Postgres 18 `compose.yaml` service,
+  a version this task did not need to reconcile since nothing here touches the schema. (3) The
+  coverage gate's own summary table did not print because `vitest run --coverage` stopped at the one
+  unrelated failure; whether the `src/domain` ≥ 90% gate itself still holds was not separately
+  confirmed, since re-running with that one test skipped would have meant editing a tracked test
+  file outside this task's scope.
+- **Owner changes and reasoning:** left for the owner (`build-workflow.md` §7).
+- **Disagreements:** none. The owner's "3 sualın" (3 questions) against the plan's four lettered
+  questions is not a disagreement — Q4 (execution method) reads more as a process choice than a
+  decision in the way Q1–Q3 are, so the owner's count and the plan's numbering are read as
+  consistent, not corrected against each other.
+- **Lessons for the process:** (1) A plan's mutation-check predictions (which assertion a control
+  input fails at) are themselves predictions and can be off by one assertion without the underlying
+  finding being wrong — worth a line making that explicit next time a plan writes one. (2) This
+  environment has no Docker daemon; a task whose plan assumes `compose.yaml` needs a documented
+  fallback (a local Postgres cluster, as used here) rather than discovering it mid-execution.
+- **Next:** the owner reviews. `docs/04-process/plans/2026-09-25-T-13b.md`'s Status is not yet
+  updated to Done — that is a separate, small docs commit once the owner has seen this diff, in the
+  same pattern T-13a's and T-13c's plans used. T-13a and T-13c are both already merged, so the next
+  task in the backlog's stated order (Notes: "T-13d is last, so the security review reads the code
+  T-14 deploys") is T-13d.
