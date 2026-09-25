@@ -4754,3 +4754,46 @@ them too").
 - **Next:** the owner reviews and merges the pull request. T-14 (deploy) sets
   `DEMO_PASSWORD_DISPLAY` on the platform; its settings step should choose a throwaway value, which
   the README now says.
+
+## 2026-09-25 — Phase 5: T-13d closed
+
+- **Phase:** 5 (Build the slice), Release 1 — the closing pass of T-13d, as T-13a and T-13c had
+  one (a documentation pull request after the task's own merges).
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Trigger:** the owner asked whether T-14 could start once the settings work was done; the
+  agent answered that the T-13d gate was met, and that `tech-debt.md` still read "Fix in review"
+  for four entries whose pull request had merged. Then: "T-13d bağla. Başqa heçnə lazım deyil."
+  ("Close T-13d. Nothing else is needed.")
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Produced:** `tech-debt.md` v1.20 (TD-12, TD-15, TD-16, TD-18 **Closed**, each with a
+  "Closed" line: PR #47, merge `40c27f8`, 14:56 UTC, last head `ece2791`); `backlog.md` v1.39
+  (Status line, the tech-debt note's open list, and a hand-off from T-13d in T-14's row); the
+  plan `2026-09-25-T-13d.md` marked Done; this entry.
+- **What T-13d delivered, in one place:** the 131-item OWASP review (49 pass, 8 fail, 9 by design,
+  46 not applicable, 19 not tested) and its seven findings, TD-12–TD-18. Four are fixed and
+  merged (PR #47: TD-12, TD-15, TD-16, TD-18); TD-13 (`TRACE`) has no fix possible; TD-14 and
+  TD-17 depend on Vercel and go to T-14. The four backlog-specific items: the full-history secret
+  scan passed; the GitHub-side settings were read with `gh` and settled (the `main` ruleset,
+  private vulnerability reporting, secret scanning, Actions, fork pull requests), and three of
+  them were tightened on the owner's word: fork approval is `all_external_contributors`, Actions
+  runs only full-SHA pins of GitHub-owned actions, and the ruleset "main: required CI checks"
+  requires seven checks (#48, #51, #54 and the entries above); `CODEOWNERS` and `SECURITY.md`
+  exist; the branch model (`develop`, release-only `main`) is decided and written in
+  `governance.md` v1.4, to start when Release 1 closes.
+- **Not decided, left open on purpose:** the review's Medium finding that Prisma's stock reset
+  commands are not guarded (TD-10's own note already says "not guarded, still"); the Gitleaks
+  SARIF upload (F9 fixed only the comment); and what the review could not reach without a
+  deployed host (19 not-tested items, TLS and HSTS among them), which is T-14's to re-check.
+- **What the agent got right:** took the pull request's last head, `ece2791`, for the CI
+  claim: the commit first looked at, `f6310c1`, showed most jobs `cancelled`, only because
+  later pushes superseded its runs (the workflow's `concurrency` group does that for pull
+  requests). The record also names the one run that did fail on that head, GitHub's own "code
+  scanning AI findings", so "green" is not overstated.
+- **What the agent got wrong or missed:** nothing that changed an outcome in this pass. The
+  T-14 hand-off was added on the agent's own reading that a closing pass hands findings to the
+  next task; the owner said nothing else was needed, so it is the one part the owner may drop.
+- **Owner changes and reasoning:** none.
+- **Disagreements:** none.
+- **Lessons for the process:** none beyond the entries above.
+- **Next:** T-14 is unblocked. It starts with its plan and plan gate; TD-14 is its first check,
+  on the preview of its own pull request and before that merges.
