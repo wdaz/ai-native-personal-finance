@@ -11,8 +11,9 @@ test.beforeEach(async ({ request }) => {
 /**
  * US-32 AC3 — the documented keyboard walkthrough of /login (SPEC-auth §6 tab order):
  * Tab → "Copy demo email" → "Copy demo password" → Email → Password → "Show password" →
- * "Login" → "Sign Up". Space on the toggle shows the password. Shift+Tab back to the fields,
- * type the demo credentials, Enter submits.
+ * "Login" → "Sign Up". The demo credentials are typed on the way forward, Space on the toggle
+ * shows the password, then the Password field is focused directly and Enter submits. The
+ * reverse order (Shift+Tab) is not walked: SPEC-auth §6 documents the forward order only (TD-8).
  */
 test.describe("keyboard-only login", () => {
   test("US-32 AC1 AC3 keyboard-only login: tab order, visible focus, Space toggles, Enter submits", async ({
