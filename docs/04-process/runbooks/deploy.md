@@ -69,9 +69,12 @@ second refuses a non-local `DATABASE_URL` whatever the platform says).
 The agent generates each value (`openssl rand -base64 48`) and writes each scope's set to
 `~/.config/personal-finance-deploy/production.env` and `…/preview.env` — mode `0600`, **outside the
 repository** (plan Q3 = a). The owner keeps the files or moves them into a password manager.
-Every check below reads them without printing. A file holds `NAME=value` lines; write a bcrypt
-hash single-quoted (`DEMO_PASSWORD_HASH='$2b$10$…'`) so a shell that sources the file does not
-expand its `$` characters.
+Every check below reads them without printing. A file holds `NAME='value'` lines — **every value
+single-quoted**, so a shell that sources the file does not expand the `$` characters of a bcrypt
+hash (`DEMO_PASSWORD_HASH='$2b$10$…'`) — and it is read **one way only**: sourced by a shell
+(`set -a; . file; set +a`), which strips the quotes. Never `grep '^NAME=' | cut -d= -f2-`: that
+keeps the quotes, and a quoted hash stored in Vercel makes bcrypt reject it, so every login on
+the deployment fails (and a Secret cannot be read back to notice).
 
 ## Rules that do not bend
 
@@ -120,13 +123,22 @@ The form, from `vercel env add --help` (CLI 60.0.1): `vercel env add NAME [envir
 file through a pipe, and only the variable's name appears on the command line:
 
 ```sh
-# Secret (Vercel does not show the value again): read from the file, never echoed.
-grep '^SESSION_SECRET=' ~/.config/personal-finance-deploy/production.env | cut -d= -f2- | tr -d '\n' \
-  | vercel env add SESSION_SECRET production --sensitive --project personal-finance
+set -a; . ~/.config/personal-finance-deploy/production.env; set +a   # quotes stripped by the shell
+# Secret (Vercel does not show the value again): from the variable, never echoed.
+printf '%s' "$SESSION_SECRET" | vercel env add SESSION_SECRET production --sensitive --project personal-finance
 # Config (readable in the dashboard): for values that are not secret.
 printf '%s' polyfill | vercel env add WEBMCP_MODE production --no-sensitive --project personal-finance
 vercel env ls --project personal-finance            # names and scopes only (rule 3)
 ```
+
+**Before the demo hash is set** (a Secret cannot be read back, so this is the only check), from the
+repository root, with the file sourced as above — booleans only, nothing printed:
+
+```sh
+node -e 'const b=require("bcryptjs");const h=process.env.DEMO_PASSWORD_HASH;console.log({rawBcrypt:/^\$2[aby]\$\d\d\$/.test(h),matchesDisplayedPassword:b.compareSync(process.env.DEMO_PASSWORD_DISPLAY,h)})'
+```
+
+Both must be `true`.
 
 For Preview, `vercel env add NAME preview` asks for a Git branch; leaving it empty means every
 non-production branch. The exact non-interactive form used the first time is recorded in the
