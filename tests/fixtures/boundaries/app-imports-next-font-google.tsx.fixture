@@ -1,0 +1,6 @@
+// Linted as app/imports-next-font-google.tsx.
+// TD-11: `next/font/google` downloads the font while `next build` runs, so a Google Fonts
+// outage fails the build (PR #36's CI). Fonts are served with `next/font/local`.
+import { Public_Sans } from "next/font/google";
+
+export const font = Public_Sans({ subsets: ["latin"], weight: ["400", "700"] });

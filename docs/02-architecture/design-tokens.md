@@ -1,7 +1,13 @@
 # Design tokens
 
-Status: **Approved** (v1.3 — 2026-09-23: the close-circle icon, T-08; v1.2 — 2026-09-23: app shell tokens and the sign-out icon, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
-Changelog: v1.3 (2026-09-23, T-08, owner decision at its plan gate, Q2 (d)) — the Icons
+Status: **Approved** (v1.4 — 2026-09-24: Public Sans is served by `next/font/local` from committed files, TD-11, owner decision "a"; v1.3 — 2026-09-23: the close-circle icon, T-08; v1.2 — 2026-09-23: app shell tokens and the sign-out icon, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
+Changelog: v1.4 (2026-09-24, T-13c, owner decision "a" on TD-11) — the Typography section names
+`next/font/local` instead of `next/font/google`. The Google loader downloads the font while
+`next build` runs, and a Google Fonts outage failed CI builds (PR #36). The two files, their
+source, version and licence are in `app/fonts/README.md`. No token changes: the CSS variable
+`next/font` sets, the weights 400 and 700 and `display: swap` stay, so `src/ui/tokens.css` and
+the presets are untouched. (`scaffold.test.ts` reads every backticked double-dash name in this
+file as a documented token, so the font variable is not written that way here.) v1.3 (2026-09-23, T-08, owner decision at its plan gate, Q2 (d)) — the Icons
 section adds `close-circle`, used by the reset banner's dismiss button. It is not a Figma icon
 and not a Phosphor file: the Claude Design prototype draws it inline as its modals' close
 control (a 32 × 32 viewBox, a circle of radius 12.25 and an x, stroke 1.5, round caps). No new
@@ -38,7 +44,7 @@ Source: `../00-discovery/inputs/design/style-guide.html` (Claude Design export o
 
 The 15 theme colours (Green … Pink) are the `Theme` enum in `src/shared/enums.ts`; `data.json` stores them as hex, the seed maps hex → enum name.
 
-## Typography — Public Sans (`next/font/google`, weights 400 and 700)
+## Typography — Public Sans (`next/font/local`, weights 400 and 700, latin; files in `app/fonts/`)
 
 | Token | Preset | Weight | Size | Line height |
 |-------|--------|--------|------|-------------|

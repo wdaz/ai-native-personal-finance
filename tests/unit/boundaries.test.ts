@@ -114,6 +114,14 @@ const violations = [
     message: "ADR-0002: only src/server may import Prisma",
   },
   {
+    // TD-11: the build downloads the font from Google Fonts. Same block as the Prisma rule —
+    // the Prisma cases above still pass only if the two patterns coexist.
+    fixture: "app-imports-next-font-google.tsx.fixture",
+    lintAs: "app/imports-next-font-google.tsx",
+    ruleId: "no-restricted-imports",
+    message: "TD-11: next/font/google downloads the font at build time",
+  },
+  {
     fixture: "domain-uses-new-date.ts.fixture",
     lintAs: "src/domain/uses-new-date.ts",
     ruleId: "no-restricted-syntax",
@@ -182,6 +190,10 @@ const allowed = [
   {
     fixture: "server-imports-domain-allowed.ts.fixture",
     lintAs: "src/server/imports-domain-allowed.ts",
+  },
+  {
+    fixture: "app-imports-next-font-local-allowed.tsx.fixture",
+    lintAs: "app/imports-next-font-local-allowed.tsx",
   },
   {
     fixture: "scripts-imports-shared-allowed.ts.fixture",

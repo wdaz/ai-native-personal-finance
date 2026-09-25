@@ -152,6 +152,10 @@ const config = [
     // the layer that must stay dependency-free: T-04 writes its Zod schemas by hand
     // rather than deriving them from Prisma types, and changing that is an ADR
     // conversation rather than a silent allowance.
+    // TD-11 shares this block on purpose: flat config gives a rule the options of the LAST
+    // block that sets it for a file, it does not merge them, so a second `no-restricted-imports`
+    // block over `app/**` would silently switch the Prisma pattern off there. A new restricted
+    // import goes into `patterns` below.
     files: [
       "app/**/*.{ts,tsx}",
       "src/domain/**/*.{ts,tsx}",
@@ -171,6 +175,11 @@ const config = [
               group: ["@prisma/client", "@prisma/client/**", "**/prisma/**", "prisma/*"],
               message:
                 "ADR-0002: only src/server may import Prisma; reach the database through it.",
+            },
+            {
+              group: ["next/font/google", "next/font/google/**"],
+              message:
+                "TD-11: next/font/google downloads the font at build time, so a network hiccup fails the build; serve it with next/font/local from committed files (app/fonts/README.md).",
             },
           ],
         },
