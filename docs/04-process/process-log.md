@@ -4634,6 +4634,71 @@ them too").
   `allowed_actions`, then the required-checks ruleset) wait for the owner's "yes"; review of
   Dependabot's #50 and of #51.
 
+## 2026-09-25 — Phase 5: T-13d — SHA pinning enforced, seven required checks applied
+
+- **Phase:** 5 (Build the slice), Release 1. The two settings steps that the entries above left
+  ready and waiting. Same local session.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Trigger:** the owner's "hazırda yalnız 53 is open. İki ayara bəli deyirəm" ("only #53 is
+  open now. I say yes to the two settings"); #50 and #51 had merged by then.
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Before, so it can be undone:** `actions/permissions` read
+  `{"enabled":true,"allowed_actions":"all","sha_pinning_required":false}`; the rulesets were the
+  one, id 23907266.
+- **Pre-flight:** `git grep` on `origin/main`: 13 `uses:` lines, 13 pinned, 0 not; `main`'s CI
+  and CodeQL green after #50 and #51 (both push runs completed); no run in progress or queued
+  when the setting was changed, because a job still starting could resolve its actions in the
+  gap between two calls.
+- **Applied, in this order:**
+  1. `gh api -X PUT repos/wdaz/ai-native-personal-finance/actions/permissions -F enabled=true
+     -f allowed_actions=selected -F sha_pinning_required=true`, then
+     `gh api -X PUT repos/wdaz/ai-native-personal-finance/actions/permissions/selected-actions
+     -F github_owned_allowed=true -F verified_allowed=false`. Read back:
+     `{"enabled":true,"allowed_actions":"selected",…,"sha_pinning_required":true}` and
+     `{"github_owned_allowed":true,"patterns_allowed":[],"verified_allowed":false}`.
+  2. `gh api -X POST repos/wdaz/ai-native-personal-finance/rulesets --input <file>`: the ruleset
+     "main: required CI checks", id 24007893, target the default branch, `enforcement: active`,
+     no bypass actor, `strict_required_status_checks_policy: false`, one rule,
+     `required_status_checks`, seven contexts each bound to GitHub Actions
+     (`integration_id: 15368`): `lint · typecheck · unit`, `API tests (Postgres)`,
+     `E2E (Chromium, off)`, `E2E (Chromium, polyfill)`, `E2E (Firefox, polyfill)`,
+     `E2E (WebKit, polyfill)`, `secret scan`. `npm audit` is left out: it is non-blocking by
+     design (owner decision 2026-09-22) and so cannot fail. The payload shape the previous entry
+     said had not been run was accepted on the first call.
+- **Evidence:** between the two steps, #53's CI and CodeQL were re-run under the new Actions
+  settings: CI 8 of 8 jobs, CodeQL 2 of 2, all success, so the pins resolve and the
+  GitHub-owned list is enough. After the ruleset: `rules/branches/main` lists
+  `required_status_checks (24007893)` beside the six rules of 23907266, and #53 stayed
+  `CLEAN`/`MERGEABLE`, which it would not if a context name did not match a reported check.
+- **Not tested:** a red check actually stopping a merge (no pull request is failing to try it
+  on); that the next Dependabot pull request for an action passes all seven (#50 passed the same
+  seven checks before the ruleset existed).
+- **To undo:** `gh api -X DELETE repos/wdaz/ai-native-personal-finance/rulesets/24007893`;
+  `gh api -X PUT repos/wdaz/ai-native-personal-finance/actions/permissions -F enabled=true -f
+  allowed_actions=all -F sha_pinning_required=false`.
+- **Also this evening:** Copilot reviewed #53 (one Low finding, verb agreement; fixed in
+  `74b11e7`). That push used `--force-with-lease=<ref>:<sha>` as the guard the previous entry
+  proposed; it went through as a plain fast-forward, and the harness allowed it, so the
+  rejection on a deleted branch is still unobserved. A GitHub-managed run, "Code scanning AI
+  findings on PR #53", failed with `Model "claude-opus-5" is not available`: GitHub's side, not
+  a check on the pull request and not among the required ones.
+- **What the agent got right:** waited for the in-progress runs before changing the Actions
+  policy, proved the new policy on a real re-run before creating the ruleset, and kept the
+  ruleset separate from the existing one so that undoing it is one call.
+- **What the agent got wrong or missed:** nothing that changed an outcome. One thing left
+  unknown on purpose: the required set counts four E2E legs, and a flaky leg will now block a
+  merge; the way out is editing the ruleset, since there is no bypass actor.
+- **Owner changes and reasoning:** the two "yes" answers.
+- **Disagreements:** none.
+- **Lessons for the process:** for a policy change that can make workflows fail to start,
+  change it when nothing is running, and prove it with a re-run of a real workflow before the
+  next dependent change.
+- **Next:** (1) the owner merges #53; (2) at the `develop` switch, the same seven checks go into
+  `develop`'s ruleset (`governance.md` "Open at the switch"); (3) with `allowed_actions:
+  selected`, a workflow that adds a non-GitHub action needs the list edited first; (4) T-16's
+  required-`secret scan` item is done by this ruleset and is struck through in `backlog.md`
+  v1.38.
+
 ## 2026-09-25 — Phase 5: README "Demo credentials" — a throwaway-password warning
 
 - **Phase:** 5 (Build the slice), Release 1 — a documentation fix outside any task. No code, no
