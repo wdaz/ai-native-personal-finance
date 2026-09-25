@@ -4538,3 +4538,58 @@ them too").
   in T-16's row when the ruleset exists; (4) at the `develop` switch, the same seven checks go
   into `develop`'s ruleset and Dependabot's target branch is decided; (5) F9's stale SARIF
   comment in `ci.yml` is still open.
+
+## 2026-09-25 — Phase 5: T-13d follow-ups — fork policy applied, F9 comment, secret-scanning toggles
+
+- **Phase:** 5 (Build the slice), Release 1 — the three open items of the settings check, after
+  the agent explained each from GitHub's documentation. Same local session.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Trigger:** the owner's answers: "1. all_external_contributors", "2. Bunları hardan edə
+  bilərəm yolunu deyərsən özüm cəhd edəcəm." ("where can I do these — give me the path, I will
+  try myself"), "3. Şərhi düzəlt" ("fix the comment").
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Done:**
+  1. **Fork pull request approval policy** `first_time_contributors` →
+     `all_external_contributors`: `gh api -X PUT
+     repos/wdaz/ai-native-personal-finance/actions/permissions/fork-pr-contributor-approval -f
+     approval_policy=all_external_contributors`, read back with the same path's `GET`:
+     `{"approval_policy":"all_external_contributors"}`. The one GitHub setting this session
+     changed; the same call with the old value undoes it. The reason, from GitHub's
+     documentation: under the old policy a contributor with any merged commit or pull request
+     stops needing approval; the new one asks for every external run, and a fork run gets a
+     read-only token and no secrets either way.
+  2. **F9, the stale SARIF comment:** pull request #51 (`chore/ci-sarif-comment`, one commit,
+     comment lines only in `ci.yml`). It says the omission is a choice, no longer a limit, and
+     that an upload is not decided. Kept apart from #48, which had already merged.
+  3. **Secret scanning's two toggles: left to the owner, not touched.** The path, from
+     GitHub's documentation: repository **Settings → Security → Advanced Security → Secret
+     Protection → Non-provider patterns → Enable**. Validity checks: the documentation says
+     they are only for GitHub Team or Enterprise with Secret Protection, and not supported for
+     generic patterns; the owner's account is a `User`, so the option is probably not offered.
+     Whether the non-provider button is offered on a personal-account public repository is not
+     known until the owner tries. A risk not tested: the local placeholder connection string in
+     `ci.yml` and `.env.example` may raise an alert.
+- **Observed** (not asked for): #48 was merged by the owner (`0ec510c`) and Dependabot opened
+  #50 within minutes, "Bump the github-actions group with 3 updates" (`actions/checkout`
+  v5.1.0 → v7.0.1, `actions/setup-node` v5.0.0 → v7.0.0, `actions/upload-artifact` v4.6.2 →
+  v7.0.1). That settles two things left unverified in the entry above: Dependabot rewrites the
+  SHA and the `# vX.Y.Z` comment together, and CodeQL ran and passed on a Dependabot pull
+  request (11 of 11 checks). It is not merged; the agent has not read the three actions'
+  release notes, two of the bumps are two major versions, and the `upload-artifact` step
+  (`if: failure()`) is not exercised by a green run.
+- **What the agent got right:** checked each pull request's state before pushing (#48 had
+  merged, so the comment fix went to a branch of its own), and built the explanation on the
+  documentation's own sentences, saying where a page was silent.
+- **What the agent got wrong or missed:** a web-search summary claimed validity checks are
+  "free for public repositories" and, two lines later, "only for Team or Enterprise". The
+  documentation page carries the second; the first was dropped, and the answer said which
+  statements had no direct quote. The agent also cannot say who can see code scanning alerts on
+  a public repository, which is why the Gitleaks upload stays undecided.
+- **Owner changes and reasoning:** the three answers above.
+- **Disagreements:** none.
+- **Lessons for the process:** a search summary is a lead, not a source; two sentences in one
+  summary can contradict each other, and only the documentation's own text settles it.
+- **Next:** (1) the owner tries the non-provider toggle and says what the button does; (2) the
+  two settings steps of the previous entry are unblocked by #48's merge (`sha_pinning_required`
+  with `allowed_actions`, then the required-checks ruleset) and wait for the owner's "yes";
+  (3) review of Dependabot's #50 and of #51; (4) #49 is this entry's pull request.
