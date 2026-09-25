@@ -3184,3 +3184,42 @@ them too").
   - Merge order: PR #37 first, so that `main` has CodeQL again for the ruleset's code-scanning
     rule, then this PR.
 - **Next:** the owner merges PR #37, then this PR; T-13a's plan gate.
+
+## 2026-09-24 — Phase 5: CodeQL alert #3, a stat-then-read race in the traceability check
+
+- **Phase:** 5 (Build the slice), Release 1 — a small fix to a CI script, no product code.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5)
+- **Trigger:** the owner sent the link to code-scanning alert #3, `js/file-system-race`
+  ("The file may have changed since it was checked", `scripts/traceability.ts:160`, high by rule).
+  It is the only open alert. It was created 2026-09-24T18:46:51Z by the first analysis of `main`
+  (`102f0fb`) under the advanced workflow's `security-and-quality` suite (201 rules).
+- **Prompt(s):** none — the conversation itself.
+- **Produced:** branch `test/codeql-file-system-race`:
+  - `scripts/traceability.ts` — `testSources` lists each directory with
+    `readdirSync(dir, { withFileTypes: true })` and reads the entry type from the `Dirent`, so
+    no `statSync(path)` runs before `readFileSync(path)`; the unused `statSync` import is gone.
+  - this entry.
+- **What the agent got right:** found the check and the use (`statSync` at line 158, `readFileSync`
+  at line 160, same path) before choosing a fix, and kept the fix to the one call CodeQL names.
+  `tests/unit/traceability.test.ts` already pins what `testSources` must do — subdirectories are
+  walked, `fixtures/` is skipped, a helper file's calls do not count — so the change needed no new
+  test: 55 passed, `npm run traceability` still reports all 18 Release 1 stories, and
+  `typecheck`, `eslint` and `prettier --check` on the file are clean. One behaviour differs:
+  `Dirent.isDirectory()` does not follow a symlink, `statSync` did. `tests/` holds no symlink
+  (`find tests -type l`), so nothing changes today, and a symlinked directory can no longer loop
+  the walk.
+- **What the agent got wrong or missed:** the race itself cannot be tested from Vitest, so the
+  proof that the alert closes is CodeQL's next analysis of `main`, not this run. The same
+  check-then-use shape sits in `tests/fixtures/a11y-routes.ts` (`existsSync`/`statSync`); it
+  reads no file afterwards, CodeQL does not flag it, and it is left alone.
+- **Owner changes and reasoning:** none yet. Fixing rather than dismissing follows the owner's
+  preference for zero open advisories over accepted ones.
+- **Disagreements:** none.
+- **Lessons for the process:** an open discrepancy, not a finding. The analysis of PR #37's merge
+  ref (`47b9fe4`, `security-and-quality`, 201 rules) reported `results_count: 0` for
+  JavaScript/TypeScript; the analysis of `main` at `102f0fb` with the same suite and rule count
+  reported 1 — this alert, in a file PR #37 did not touch. Why the two differ was not
+  investigated. Until it is known, a clean scan of a pull request does not show that the
+  repository is clean.
+- **Next:** the owner reviews and merges; alert #3 closes when CodeQL analyses `main` after the
+  merge.
