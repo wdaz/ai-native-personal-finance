@@ -5,7 +5,7 @@ copied from the agent's scratch directory on the task branch before the PR (Task
 was opened), per `build-workflow.md` §7. Nothing here is a specification: these are working notes,
 kept so the session is reproducible and reviewable. The session's own prompt file is the sibling
 `../2026-09-24-T-13c.md`; the plan is `docs/04-process/plans/2026-09-24-T-13c.md` (on branch
-`docs/T-13c-plan` until the owner merges the plan branch; no PR opened yet).
+`docs/T-13c-plan` while the task ran; merged to `main` as PR #41 on 2026-09-25).
 
 A *brief* is the plan text of one task, extracted for a subagent; a *report* is what the subagent
 wrote back, including the commands it ran, the output it copied from them, and where it deviated.
