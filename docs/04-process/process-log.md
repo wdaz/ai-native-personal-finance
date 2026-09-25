@@ -3899,3 +3899,49 @@ them too").
 - **Next:** the push and the pull request, which the owner merges (agents never merge). After the merge
   a docs commit closes TD-2 in `tech-debt.md`, says in `backlog.md` that T-13a is merged and sets the
   plan's status to Done. ADR-0006 amendment (6) becomes *accepted* only when the owner says so.
+
+## 2026-09-25 — Owner accepts ADR-0006 amendment (6); T-13a closed
+
+- **Phase:** 5 (Build the slice), Release 1 — a document status change and the closure of T-13a; no
+  code.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5)
+- **Trigger:** the T-13a execution entry's last line: ADR-0006 amendment (6), proposed with PR #44,
+  "becomes *accepted* only when the owner says so". After the closing report of the execution session
+  the owner wrote "2. Bunu tam anlamadım." ("2. I did not fully understand this."), the agent
+  explained it, and the owner answered: "ADR-0006 bağlı qərarı qəbul edirəm. Artıq pr merge olub. Doc
+  sənədinə bu dəyişikliyi əlavə et." ("I accept the decision on ADR-0006. The PR has already merged.
+  Add this change to the docs."). PR #44 was merged on 2026-09-25 at 10:27 UTC (merge `00e39e9`).
+- **Prompt(s):** none — the conversation itself.
+- **Produced:** branch `docs/T-13a-closed`, cut from `origin/main` `00e39e9`, in two commits:
+  - `docs(adr)` — `docs/02-architecture/adr/0006-auth-and-session.md`: the status line no longer
+    calls amendment (6) proposed and the amendment reads "Accepted by the owner, 2026-09-25", in the
+    wording amendment (5) uses. Its text is unchanged.
+  - `docs(specs)` — `docs/03-specs/tech-debt.md` v1.15 marks TD-2 **Closed** (PR #44, merge
+    `00e39e9`, CI green on the last head `374c853`); `docs/03-specs/backlog.md` v1.31 says T-13a is
+    merged and the amendment accepted; `docs/04-process/plans/2026-09-25-T-13a.md` v0.3 has Status
+    *Done*, as T-13c's plan did; and this entry.
+- **What the agent got right:** only live documents changed. The T-13a execution entry, backlog v1.30's
+  changelog, the plan's Q5 row and findings, the prompt files and the review report describe amendment
+  (6) as proposed; they are history and stay as written, and `git grep` for "amendment (6)" and
+  "proposed, awaiting" was read hit by hit to tell the two kinds apart. The Notes' "Open at v1.30" line
+  is a snapshot of that version and was not touched.
+- **What the agent got wrong or missed:** (1) The closing report of the execution session said
+  "ADR-0006 amendment (6) stays *proposed*; acceptance only on your word" without saying what the
+  amendment is, what it changes or where to read it, and it numbered two lists whose items both start
+  with "2". The owner had to ask, and the agent explained it in plain words. (2) The owner asked to
+  "add this change to the docs". The agent took it as the plan's whole post-merge docs change — TD-2
+  closed, the backlog, the plan's Status — and not the ADR alone, because the report had announced that
+  docs commit; it made the ADR acceptance its own commit so that it can be read alone. If only the ADR
+  was meant, the second commit is the part to drop. (3) Noticed and not fixed, since it predates this
+  task: the ADR's body still calls amendment (5) "proposed" (`Origin-Agent-Cluster: ?1`, line 117
+  of `0006-auth-and-session.md`), though the owner accepted it on 2026-09-24.
+- **Owner changes and reasoning:** "ADR-0006 bağlı qərarı qəbul edirəm" — accepted as proposed. The
+  two "Owner changes and reasoning" fields of the T-13a entries are still left for the owner.
+- **Disagreements:** none.
+- **Lessons for the process:** (1) A request to the owner for a decision says what the decision is
+  about and where to read it, before it asks. (2) A closing report numbers one list only, so that an
+  answer such as "2." has one meaning.
+- **Next:** the owner reviews and merges. The three minors the T-13a review left open (a test title
+  that says "every branch" for three of four, the unsaved `next dev` headers, a repeated phrase in
+  the T-13b hand-off) and the stale word at line 117 of the ADR are the owner's call. The next task
+  in the backlog's order is T-13b (TD-3).

@@ -1,7 +1,9 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
-- Status: **Accepted** (amended 2026-09-24; amendment (6) proposed 2026-09-25) · Date: 2026-09-13
-- Amendment 2026-09-25 (6) — **proposed, awaiting the owner** (T-13a, TD-2): Next 16 renamed the
+- Status: **Accepted** (amended 2026-09-25) · Date: 2026-09-13
+- Amendment 2026-09-25 (6) — **Accepted by the owner, 2026-09-25** ("ADR-0006 bağlı qərarı qəbul
+  edirəm" — "I accept the decision on ADR-0006", after PR #44 with its code had merged; drafted by
+  the agent during T-13a) (T-13a, TD-2): Next 16 renamed the
   `middleware` file convention to `proxy`. `middleware.ts` is now `proxy.ts` and
   `tests/api/middleware.spec.ts` is `tests/api/proxy.spec.ts`, so every mention of those paths and of
   "the middleware" in this ADR — the body and the amendments below — means the file and the test under
