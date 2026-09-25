@@ -13,10 +13,9 @@ Please use GitHub's private vulnerability reporting for this repository — the 
 public issue or pull request. It opens a private draft security advisory that only the
 maintainer can see until a fix is ready.
 
-If that button is not available to you, private vulnerability reporting may not be turned on for
-this repository yet (`docs/04-process/plans/2026-09-25-T-13d.md`, Q3/F7 — this is being checked
-as part of the pre-deploy security review); please open a regular issue asking the maintainer to
-enable it, without describing the finding there.
+Private vulnerability reporting is turned on for this repository (read from GitHub's API,
+2026-09-25). If the button is still not available to you, please open a regular issue asking
+the maintainer for a private channel, without describing the finding there.
 
 ## What happens next
 

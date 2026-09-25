@@ -4336,3 +4336,260 @@ them too").
   ready. TD-14 and TD-17 stay open, explicitly deferred to T-14's own work. The owner's own
   GitHub-Settings check (Q3) and any decision on TD-13's "no fix possible" status are still
   theirs to close out.
+
+## 2026-09-25 — Phase 5: T-13d, the GitHub-Settings check (plan Q3)
+
+- **Phase:** 5 (Build the slice), Release 1 — closing the one part of T-13d the review left NOT
+  TESTED: the GitHub repository settings (plan Q3, decision (b): "NOT TESTED, no tool access in
+  the remote session; the owner checks on a local session"). This is that local session: `gh`
+  signed in as `wdaz` (token scopes `repo`, `read:org`, `workflow`, `gist`), read-only.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Trigger:** the owner's "T-13D github yoxlaması qalıb. Ona baxa bilərsən?" ("T-13d's GitHub
+  check is still left. Can you look at it?").
+- **Prompt(s):** the conversation itself; a continuation of `prompts/2026-09-25-T-13d.md`, no
+  separate prompt file.
+- **Produced:** the check below; on a docs-only branch from `origin/main` (`40c27f8`), local
+  only: `SECURITY.md` and `.github/CODEOWNERS` (two sentences that said a setting was unknown now
+  state what was read), `backlog.md` v1.36 and this entry. The private review-report Artifact was
+  republished (version 3) with the results: a new update section at the top, a per-item result
+  table in Task 3 §2, and the statements that called these items open updated (the summary, the
+  method note, Observation 1, F9's search-based basis, "a failing job still fails the build" —
+  which is not a gate without a required check — and PR #47, now merged). **No GitHub setting
+  was changed** — every call was a `GET`.
+- **Evidence:** read 2026-09-25 with `gh api repos/wdaz/ai-native-personal-finance/<path>` for
+  the repository itself (no path), `rulesets`, `rulesets/23907266`, `rules/branches/main`,
+  `branches/main/protection`, `actions/permissions`, `actions/permissions/workflow`,
+  `actions/permissions/fork-pr-contributor-approval`, `private-vulnerability-reporting`,
+  `code-scanning/default-setup`, `code-scanning/analyses`, `code-scanning/alerts`,
+  `secret-scanning/alerts`, `dependabot/alerts`, `codeowners/errors` and `community/profile`
+  (16 calls; the last is not used as evidence); plus the two workflow files read locally. What
+  each said:
+  - **`main` ruleset — PASS, matches the T-13d row.** One active ruleset (id 23907266, named
+    "Copilot review for default branch", target `~DEFAULT_BRANCH`), no bypass actors,
+    `current_user_can_bypass: never`. Rules: `deletion`, `non_fast_forward`, `pull_request` (0
+    approvals; no code-owner review, last-push approval or thread resolution), `code_scanning`
+    (CodeQL, `security_alerts_threshold: high_or_higher`, `alerts_threshold: errors`) — and two
+    the row does not name: `code_quality` (`errors`) and `copilot_code_review` (on push and on
+    drafts). No classic branch protection (404).
+  - **No required status check** (the row said so too). A failing `ci.yml` job — the gitleaks
+    `secret-scan` job among them — does not block a merge. Low; FAIL or BY DESIGN is the
+    owner's call (below).
+  - **CODEOWNERS — BY DESIGN.** GitHub's validator reports 0 errors for `* @wdaz`; enforcement is
+    off (`require_code_owner_review: false`) and should stay off: the only code owner authors
+    every pull request, GitHub does not count an author's approval of their own pull request
+    (documented rule, not tested here), and the ruleset has no bypass actor.
+  - **Private vulnerability reporting — PASS:** `enabled: true`, so `SECURITY.md`'s reporting
+    path works.
+  - **Secret scanning:** enabled, push protection enabled, Dependabot security updates enabled;
+    non-provider patterns and validity checks `disabled`, as the row said. Whether GitHub offers
+    those two toggles to this repository was not checked.
+  - **Actions:** `allowed_actions: all`, `sha_pinning_required: false`; the default token is
+    read-only and workflows cannot approve pull requests. F8 (third-party actions pinned by tag)
+    stands; `sha_pinning_required` is the setting that would enforce full-SHA pins.
+  - **Fork pull requests — PASS.** Approval policy `first_time_contributors` (GitHub's other
+    two: a looser `first_time_contributors_new_to_github`, a tighter `all_external_contributors`).
+    Both workflows trigger only on `push`, `pull_request` and `schedule` — no
+    `pull_request_target`, no `workflow_run` — and reference no `secrets.*`; by GitHub's
+    documented rule a fork's `pull_request` run gets a read-only token and no secrets (not tested
+    with a real fork pull request).
+  - **Code scanning:** default setup `not-configured` (the advanced `codeql.yml`, owner decision
+    in v1.26); CodeQL analyses for `main` (`40c27f8`) and PR #47's merge ref are uploaded, 0
+    results. Open alerts: code scanning 0, secret scanning 0, Dependabot 0.
+  - **F9 settled:** `ci.yml:193-195` says "No SARIF upload: code scanning needs GitHub Code
+    Security, unavailable while the repository is private". The repository is public
+    (`private: false`) and CodeQL uploads are accepted, so the comment is stale. Not touched
+    here: a workflow file, and not part of PR #47.
+  - **Not tested:** a real fork pull request; whether `code_quality` and `copilot_code_review`
+    ever fire or block; a direct push to `main` (the blocking rules were read, not exercised).
+- **What the agent got right:** followed the plan's own "what would settle it" path, read-only,
+  and compared each of the T-13d row's claims with the live setting instead of restating them —
+  which surfaced five things the row omitted (the two extra rules, `bypass_actors: []`,
+  `require_code_owner_review: false`, Dependabot security updates). Did not use
+  `community/profile` as evidence for `SECURITY.md`: it has no security-policy field.
+- **What the agent got wrong or missed:** the first draft of the `CODEOWNERS` comment stated as
+  settled fact that turning code-owner review on would block every merge; corrected before the
+  commit to "GitHub's documented rule, not tested here", and to name the no-bypass condition it
+  depends on. Did not check whether the two non-provider secret-scanning toggles are available on
+  this repository's plan.
+- **Owner changes and reasoning:** none yet — the decisions below are open.
+- **Disagreements:** none.
+- **Lessons for the process:** (1) Plan Q3(b) held up: marking the items NOT TESTED with the exact
+  local command as "what would settle it" made this follow-up mechanical — 16 read-only calls, no
+  new access. Keep naming the command, not "check GitHub". (2) The backlog row stated GitHub's
+  state in the present tense ("today it requires…") with no date or command; the read confirmed
+  it but found five omissions. A settings claim in a spec should carry the date and the command
+  that read it.
+- **Next:** the owner decides, each a Settings or workflow change this session did **not** make:
+  (1) required status checks on `main`, and which jobs — a Low finding if kept as is; (2)
+  `allowed_actions` all versus GitHub-owned only (both workflows use only `actions/*` and
+  `github/*`), and `sha_pinning_required` — turning it on fails today's tag-pinned workflows
+  until they are re-pinned; (3) fork approval `first_time_contributors` versus
+  `all_external_contributors`; (4) non-provider patterns and validity checks; (5) the stale SARIF
+  comment in `ci.yml`. No TD entry is opened until the owner decides. Plan Q5 still holds for
+  T-13d, so nothing here is pushed until the owner has read it.
+
+## 2026-09-25 — Phase 5: branch model — `develop` and a release-only `main`
+
+- **Phase:** 5 (Build the slice), Release 1 — a process decision, taken in the session that read
+  the GitHub settings (entry above). No code, no GitHub setting and no workflow was changed.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Trigger:** two owner messages after the settings check. First "main bir başa push etməni
+  qadağan edə bilərik?" ("can we forbid pushing straight to main?") — already true: the `main`
+  ruleset is `active`, requires a pull request, has no bypass actor and `current_user_can_bypass:
+  never` (re-read 2026-09-25). Then: "İkinci bir branch açılmalıdır və o development vaxtı o
+  istifadə olunmalıdır. adı develop olsun. release 1-dən sonra main pr və ya merge
+  qadağandandır. Yalnız release deploylarından sonra." ("A second branch must be opened, used
+  during development, named develop. After Release 1, PRs and merges to main are forbidden,
+  only after release deploys.")
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Produced:** `governance.md` v1.4 (new section "Branches and releases"), `backlog.md` v1.37
+  (Status line and a hand-off in T-15's row), this entry. On the same local branch as the entry
+  above, as separate commits.
+- **The owner's three answers**, to a structured question, after the agent read ADR-0007, both
+  workflows' triggers and the ruleset: (1) **deploy** — a `develop` → `main` merge is the deploy,
+  `main` stays production, ADR-0007 does not change (the other reading of "only after release
+  deploys" — deploy first, `main` records it afterwards — would have needed an ADR-0007
+  amendment and a second Vercel production branch); (2) **start** — when Release 1 closes; until
+  then pull requests go to `main` as today; (3) **enforcement** — a required status check that
+  fails unless the pull request's head branch is `develop`, no bypass actor (rejected: an
+  `update` rule with an owner bypass, because the agent pushes with the owner's account and a
+  bypass right would be the agent's too; and a rule in `governance.md` alone).
+- **What the agent got right:** asked before writing, since the sentence had two readings that
+  lead to different deploy pipelines, and read what the change would touch first. That found
+  three things the message did not mention: CodeQL's `pull_request` and `push` triggers name only
+  `main`, so a `develop` ruleset's CodeQL gate would have nothing to read; Dependabot's security
+  updates are on and, by GitHub's documented behaviour (not checked), target the default branch;
+  T-16 also edits `main`'s ruleset.
+- **What the agent got wrong or missed:** a ruleset has no condition on a pull request's source
+  branch as far as the agent knows; it did not check that against GitHub's documentation, and the
+  required-check design rests on it. The check does not enforce *when* a release pull request is
+  opened, only *from where*; the timing stays a rule in `governance.md`.
+- **Owner changes and reasoning:** the three answers above.
+- **Disagreements:** none.
+- **Lessons for the process:** governance.md had no branching rule at all, and AGENTS.md §2, both
+  workflows and the ruleset each hard-code `main` separately. A branch-model change touches all
+  of them; the switch task's checklist is written down now (governance "Open at the switch") so
+  it is not rediscovered later.
+- **Next:** the switch is not done. It is a task of its own after T-15, planned then with the
+  checklist in `governance.md`; open there: default branch (Dependabot decides), the hotfix
+  route, T-16's order. Nothing is pushed: plan Q5 still holds for T-13d and the owner has not
+  yet answered the push question.
+
+## 2026-09-25 — Phase 5: T-13d F8 and required status checks — decisions, and the pin PR
+
+- **Phase:** 5 (Build the slice), Release 1 — the two items of the settings check that the
+  owner asked to fix ("Actions SHA pin və Required status check. bunları necə düzəldə bilərik?",
+  "how can we fix the Actions SHA pin and the required status check"). Same local session.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Owner's decisions**, to a structured question after the agent read the job names, the
+  check runs on `main`'s head and PR #47's head, and resolved each action's commit: (1) the
+  required checks are all seven that report from GitHub Actions except `npm audit` (it is
+  non-blocking by design, owner decision 2026-09-22, so it is always green); (2) also a
+  Dependabot config for `github-actions` and `allowed_actions` limited to GitHub-owned actions
+  (every action in use is `actions/*` or `github/*`); (3) prepare the pin pull request now;
+  the GitHub settings only after a further "yes".
+- **Produced:** branch `chore/pin-actions-to-sha`, one local commit `b632c26` on `origin/main`
+  (`40c27f8`), separate from the docs branch so the two do not both append to this file:
+  all 13 `uses:` lines in `ci.yml` and `codeql.yml` pinned to the commit their tag pointed at
+  on 2026-09-25 (`actions/checkout` v5.1.0, `actions/setup-node` v5.0.0,
+  `actions/upload-artifact` v4.6.2, `github/codeql-action` v4.38.2), each with a `# vX.Y.Z`
+  comment; `.github/dependabot.yml` (github-actions, weekly, one group, prefix `chore(ci)`); a
+  comment in `ci.yml` that a job's name is its check name.
+- **Evidence:** `grep` finds 0 `uses:` lines that are not `@<40 hex> # v…` and 13 that are;
+  both workflows and `dependabot.yml` parse (PyYAML); Prettier is clean; no test or script reads
+  workflow text (`grep` over `tests/` and `scripts/`). Not run: the workflows themselves — they
+  run on the pull request, which is also the first proof that the pins resolve.
+- **Ready, not applied.** After the pin PR merges, in this order (turning
+  `sha_pinning_required` on before that would fail every workflow that names a tag):
+  1. `gh api -X PUT repos/wdaz/ai-native-personal-finance/actions/permissions -F enabled=true
+     -f allowed_actions=selected -F sha_pinning_required=true`, then
+     `gh api -X PUT repos/wdaz/ai-native-personal-finance/actions/permissions/selected-actions
+     -F github_owned_allowed=true -F verified_allowed=false`.
+  2. A second ruleset, added beside the existing one instead of editing it (a rollback is one
+     delete), `gh api -X POST repos/wdaz/ai-native-personal-finance/rulesets --input <file>`, the
+     file being: `{"name": "main: required CI checks", "target": "branch", "enforcement":
+     "active", "bypass_actors": [], "conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"],
+     "exclude": []}}, "rules": [{"type": "required_status_checks", "parameters":
+     {"strict_required_status_checks_policy": false, "do_not_enforce_on_create": false,
+     "required_status_checks": [` one `{"context": …, "integration_id": 15368}` (GitHub
+     Actions) for each of `lint · typecheck · unit`, `API tests (Postgres)`,
+     `E2E (Chromium, off)`, `E2E (Chromium, polyfill)`, `E2E (Firefox, polyfill)`,
+     `E2E (WebKit, polyfill)`, `secret scan` `]}}]}`. The payload shapes were not run; the
+     first response is their check.
+  Each is a Settings change on the owner's repository, so each waits for the owner's word.
+- **What the agent got right:** ordered the steps by what each one breaks (settings after the
+  merge), chose an additive ruleset over editing the one named "Copilot review for default
+  branch", took the SHAs from the API instead of memory, and left `npm audit` out because a
+  check that cannot fail protects nothing. The first draft of `dependabot.yml` pointed at
+  `governance.md`'s new section, which lives on the other branch; caught before the commit.
+- **What the agent got wrong or missed:** a pin freezes what the tags pointed at on
+  2026-09-25; the agent did not read the actions' code, and says so in the commit message. Not
+  verified: that Dependabot rewrites the `# v5.1.0` comment together with the SHA (its
+  documented behaviour, first seen when its first pull request arrives).
+- **Owner changes and reasoning:** the three decisions above.
+- **Disagreements:** none.
+- **Lessons for the process:** a required status check is a string contract between a ruleset
+  and a workflow; renaming a job leaves the check "Expected" forever, and with no bypass actor
+  the way out is editing the ruleset. `ci.yml` now says so next to the jobs.
+- **Next:** (1) the owner's word to push both local branches and open the pin pull request;
+  (2) after it merges, the two settings steps above; (3) the required-check ruleset also
+  covers T-16's "make the T-02a `secret scan` check required in the `main` ruleset" — record it
+  in T-16's row when the ruleset exists; (4) at the `develop` switch, the same seven checks go
+  into `develop`'s ruleset and Dependabot's target branch is decided; (5) F9's stale SARIF
+  comment in `ci.yml` is still open.
+
+## 2026-09-25 — Phase 5: T-13d follow-ups — fork policy applied, F9 comment, secret-scanning toggles
+
+- **Phase:** 5 (Build the slice), Release 1 — the three open items of the settings check, after
+  the agent explained each from GitHub's documentation. Same local session.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Trigger:** the owner's answers: "1. all_external_contributors", "2. Bunları hardan edə
+  bilərəm yolunu deyərsən özüm cəhd edəcəm." ("where can I do these — give me the path, I will
+  try myself"), "3. Şərhi düzəlt" ("fix the comment").
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Done:**
+  1. **Fork pull request approval policy** `first_time_contributors` →
+     `all_external_contributors`: `gh api -X PUT
+     repos/wdaz/ai-native-personal-finance/actions/permissions/fork-pr-contributor-approval -f
+     approval_policy=all_external_contributors`, read back with the same path's `GET`:
+     `{"approval_policy":"all_external_contributors"}`. The one GitHub setting this session
+     changed; the same call with the old value undoes it. The reason, from GitHub's
+     documentation: under the old policy a contributor with any merged commit or pull request
+     stops needing approval; the new one asks for every external run, and a fork run gets a
+     read-only token and no secrets either way.
+  2. **F9, the stale SARIF comment:** pull request #51 (`chore/ci-sarif-comment`, one commit,
+     comment lines only in `ci.yml`). It says the omission is a choice, no longer a limit, and
+     that an upload is not decided. Kept apart from #48, which had already merged.
+  3. **Secret scanning's two toggles: left to the owner, not touched.** The path, from
+     GitHub's documentation: repository **Settings → Security → Advanced Security → Secret
+     Protection → Non-provider patterns → Enable**. Validity checks: the documentation says
+     they are only for GitHub Team or Enterprise with Secret Protection, and not supported for
+     generic patterns; the owner's account is a `User`, so the option is probably not offered.
+     Whether the non-provider button is offered on a personal-account public repository is not
+     known until the owner tries. A risk not tested: the local placeholder connection string in
+     `ci.yml` and `.env.example` may raise an alert.
+- **Observed** (not asked for): #48 was merged by the owner (`0ec510c`) and Dependabot opened
+  #50 within minutes, "Bump the github-actions group with 3 updates" (`actions/checkout`
+  v5.1.0 → v7.0.1, `actions/setup-node` v5.0.0 → v7.0.0, `actions/upload-artifact` v4.6.2 →
+  v7.0.1). That settles two things left unverified in the entry above: Dependabot rewrites the
+  SHA and the `# vX.Y.Z` comment together, and CodeQL ran and passed on a Dependabot pull
+  request (11 of 11 checks). It is not merged; the agent has not read the three actions'
+  release notes, two of the bumps are two major versions, and the `upload-artifact` step
+  (`if: failure()`) is not exercised by a green run.
+- **What the agent got right:** checked each pull request's state before pushing (#48 had
+  merged, so the comment fix went to a branch of its own), and built the explanation on the
+  documentation's own sentences, saying where a page was silent.
+- **What the agent got wrong or missed:** a web-search summary claimed validity checks are
+  "free for public repositories" and, two lines later, "only for Team or Enterprise". The
+  documentation page carries the second; the first was dropped, and the answer said which
+  statements had no direct quote. The agent also cannot say who can see code scanning alerts on
+  a public repository, which is why the Gitleaks upload stays undecided.
+- **Owner changes and reasoning:** the three answers above.
+- **Disagreements:** none.
+- **Lessons for the process:** a search summary is a lead, not a source; two sentences in one
+  summary can contradict each other, and only the documentation's own text settles it.
+- **Next:** (1) the owner tries the non-provider toggle and says what the button does; (2) the
+  two settings steps of the previous entry are unblocked by #48's merge (`sha_pinning_required`
+  with `allowed_actions`, then the required-checks ruleset) and wait for the owner's "yes";
+  (3) review of Dependabot's #50 and of #51; (4) #49 is this entry's pull request.
