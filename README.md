@@ -43,7 +43,9 @@ gate is met and recorded in the process log.
 
 ## Run locally
 
-Requires Node 26 (see `.nvmrc`), npm 11.19+ and Docker: Postgres runs in a container
+Requires Node 24 (see `.nvmrc`; `nvm use` in the repository picks it up — the newest major
+Vercel builds and runs, held by `tests/unit/node-version.test.ts`), npm 11.19+ and Docker:
+Postgres runs in a container
 (`compose.yaml`). `allowScripts` and `strict-allow-scripts` need npm 11.19; an older npm only
 warns `Unknown project config` and does not enforce the install-script policy below.
 
