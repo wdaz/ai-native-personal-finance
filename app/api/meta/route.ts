@@ -3,7 +3,7 @@ import { errorResponse } from "@/src/server/http";
 import { getMeta } from "@/src/server/meta";
 
 /**
- * SPEC-app-shell §5: public and `no-store`. The middleware adds `no-store` to authenticated
+ * SPEC-app-shell §5: public and `no-store`. The proxy adds `no-store` to authenticated
  * pages only, so this route sets it itself (T-08 plan D11).
  */
 export async function GET(): Promise<Response> {

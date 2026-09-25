@@ -12,13 +12,13 @@ import { AgentToolsStatus } from "@/src/webmcp/AgentToolsStatus";
 import { WebMcpProvider } from "@/src/webmcp/WebMcpProvider";
 
 /**
- * SPEC-app-shell §2.1: the authenticated pages' layout (the middleware has checked the
+ * SPEC-app-shell §2.1: the authenticated pages' layout (the proxy has checked the
  * session). Every response must render per request (ADR-0006): Next then puts its CSP nonce
  * on the inline scripts and styles — a prerendered page carries none and the shell never
  * hydrates. In Next 16.3.5 `app/not-found.tsx`'s own `connection()` (T-06 F1) already makes
  * every route dynamic; this call keeps the app pages per-request without depending on that
  * file, and tests/api/app-pages.spec.ts fails only when both calls are gone. Meta is read with
- * `getMeta(db)` directly, not over HTTP (§2.1), reusing the reset time the middleware already
+ * `getMeta(db)` directly, not over HTTP (§2.1), reusing the reset time the proxy already
  * read (`x-last-reset-at`); a missing or malformed value falls back to the database. When it
  * fails the page renders without the reset banner (§3, "meta unavailable"). T-11: `WebMcpProvider`
  * wraps `Shell`, and `<AgentToolsStatus>` (`src/webmcp`) is passed into `src/ui`'s

@@ -1,5 +1,5 @@
 /**
- * The Content-Security-Policy `middleware.ts` sets on every response and forwards on the
+ * The Content-Security-Policy `proxy.ts` sets on every response and forwards on the
  * request (ADR-0006, amendment 2026-09-24 (4); TD-6).
  *
  * Production policy — the only one that ships:
@@ -13,7 +13,7 @@
  *
  * The relaxation is opt-in on the exact string `"development"`: an unset, empty, misspelled or
  * differently cased `NODE_ENV` — and `test` and `production` — all get the production policy.
- * `tests/unit/server/csp.test.ts` pins both policies; `tests/api/middleware.spec.ts` pins the
+ * `tests/unit/server/csp.test.ts` pins both policies; `tests/api/proxy.spec.ts` pins the
  * production one on a real response.
  */
 export function buildCsp(nonce: string, nodeEnv: string | undefined): string {

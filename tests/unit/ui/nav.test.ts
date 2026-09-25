@@ -14,7 +14,7 @@ describe("NAV_ITEMS (SPEC-app-shell §2.2)", () => {
     expect(Object.values(PAGE_NAMES)).toEqual(NAV_ITEMS.map(({ label }) => label));
   });
 
-  it("links only to routes the middleware protects and login may return to (SPEC-auth §2.4, §2.8)", () => {
+  it("links only to routes the proxy protects and login may return to (SPEC-auth §2.4, §2.8)", () => {
     for (const { href } of NAV_ITEMS) expect(sanitizeNextPath(href)).toBe(href);
   });
 });

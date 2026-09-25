@@ -78,7 +78,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "npm run build && npm run start",
-    // T-05: the middleware makes "/" always redirect (SPEC-auth §2.8), which Playwright's
+    // T-05: the proxy makes "/" always redirect (SPEC-auth §2.8), which Playwright's
     // readiness probe never treats as ready (it wants a 2xx) — /api/auth/session answers
     // 200 regardless of session state and needs no auth (SPEC-auth §2.10's public list).
     url: `${baseURL}/api/auth/session`,

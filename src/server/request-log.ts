@@ -6,7 +6,7 @@ export const REQUEST_LOG_CAPACITY = 200;
 
 export type ViaLogEntry = { requestId: string; via: typeof VIA_WEBMCP; route: string };
 
-// middleware.ts and the route handlers are compiled as separate bundles, so a module-level
+// proxy.ts and the route handlers are compiled as separate bundles, so a module-level
 // buffer written by one would not be the one the other reads. Like the Prisma client
 // (src/server/db.ts), the buffer lives on globalThis. A Map keeps insertion order, so its
 // first key is always the oldest entry.

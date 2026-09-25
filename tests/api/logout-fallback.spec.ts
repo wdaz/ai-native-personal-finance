@@ -4,7 +4,7 @@ import { SessionResponseSchema } from "@/src/shared/schemas";
 /**
  * SPEC-auth §2.7–2.8 (v1.0.7), ADR-0006 (2026-09-23, T-07 plan gate): when
  * POST /api/auth/logout fails, the client navigates to /login?reason=logout. For a same-origin
- * GET document navigation only, the middleware clears the session cookie and renders the login
+ * GET document navigation only, the proxy clears the session cookie and renders the login
  * page instead of redirecting a logged-in visitor to /overview. Any other request — another
  * Sec-Fetch-Site (a link on another site is logout CSRF; "none" is a typed URL), another
  * Sec-Fetch-Mode or -Dest (a same-origin fetch, an iframe), another method, or a browser that

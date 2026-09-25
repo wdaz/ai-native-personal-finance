@@ -7,7 +7,7 @@ test.beforeEach(async ({ request }) => {
 /**
  * Logs the demo account in and fails right here when that did not work. Unchecked, a failed
  * login leaves the request unauthenticated and the test fails later at an assertion that reads
- * like a middleware bug (measured 2026-09-24 with a wrong password: "Expected: 302, Received:
+ * like a proxy bug (measured 2026-09-24 with a wrong password: "Expected: 302, Received:
  * 200" on /login, "/login" instead of "/overview", no `reason=reset`).
  */
 async function logInAsDemo(request: APIRequestContext): Promise<void> {
@@ -93,7 +93,7 @@ test("an unauthenticated request to a protected API answers 401 unauthenticated"
   request,
 }) => {
   // /api/overview has its own route handler since T-09 (tests/api/overview.spec.ts), but the
-  // middleware still answers first — it intercepts before Next.js resolves the route, so this
+  // proxy still answers first — it intercepts before Next.js resolves the route, so this
   // asserts the API-side of the protected matrix regardless of what the route itself does.
   const response = await request.get("/api/overview");
   expect(response.status()).toBe(401);
@@ -112,7 +112,7 @@ test("SPEC-auth §2.10: only POST /api/admin/reset is secret-protected, not the 
 test("an incoming ?next= on /login passes through unsanitised — T-06's client sanitises it before navigating", async ({
   request,
 }) => {
-  // The middleware only ever *writes* a next= param (sanitised, via sanitizeNextPath) on its
+  // The proxy only ever *writes* a next= param (sanitised, via sanitizeNextPath) on its
   // own protected-page redirect; it never reads one back on GET /login itself. This is a
   // deliberate hand-off, not a gap: T-06's page must call sanitizeNextPath (src/shared/
   // next-path.ts) before using next for the post-login navigation (SPEC-auth §2.4).
@@ -227,8 +227,8 @@ test("NFR-S6, ADR-0006: every branch's response carries Referrer-Policy, X-Conte
 
 // Review finding M6: the matcher excludes any path with a file extension. A logged-in visitor's
 // image request must not meet the session check, the reset-epoch query, `no-store` or the
-// middleware's headers.
-test("review finding M6: a logged-in request for a file with an extension never reaches the middleware", async ({
+// proxy's headers.
+test("review finding M6: a logged-in request for a file with an extension never reaches the proxy", async ({
   request,
 }) => {
   await logInAsDemo(request);
@@ -241,7 +241,7 @@ test("review finding M6: a logged-in request for a file with an extension never 
   const avatar = await request.get("/avatars/bytewise.jpg", { maxRedirects: 0 });
   expect(avatar.status()).toBe(200);
   expect(avatar.headers()["content-type"]).toBe("image/jpeg");
-  // Each of these is set by the middleware and by nothing else.
+  // Each of these is set by the proxy and by nothing else.
   expect(avatar.headers()["x-request-id"], "the avatar: X-Request-Id").toBeUndefined();
   expect(avatar.headers()["content-security-policy"], "the avatar: CSP").toBeUndefined();
   expect(avatar.headers()["cache-control"], "the avatar: Cache-Control").not.toBe("no-store");

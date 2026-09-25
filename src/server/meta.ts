@@ -4,9 +4,9 @@ import { configuredWebmcpMode, resetIntervalDays, webmcpOriginTrialToken, type E
 import { latestReset } from "./reset";
 
 /**
- * The request header through which `middleware.ts` hands the `(app)` layout the latest
+ * The request header through which `proxy.ts` hands the `(app)` layout the latest
  * `ResetLog.at` it has already read for the session check, so a page render makes no second
- * read (PR #20 review). The middleware always deletes a client-sent copy first.
+ * read (PR #20 review). The proxy always deletes a client-sent copy first.
  */
 export const LAST_RESET_AT_HEADER = "x-last-reset-at";
 
@@ -21,7 +21,7 @@ export function parseForwardedResetAt(value: string | null): Date | null {
 
 /**
  * SPEC-app-shell §2.1, §5: the one place the meta DTO is assembled. The `(app)` layout calls it
- * directly (no HTTP self-call), passing the reset time the middleware forwarded. `GET /api/meta`
+ * directly (no HTTP self-call), passing the reset time the proxy forwarded. `GET /api/meta`
  * passes none, so it reads the database. Throws when there is no reset to report
  * (`latestReset`) or the configuration is invalid.
  */

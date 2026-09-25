@@ -19,7 +19,7 @@ export const metadata: Metadata = { title: PAGE_NAMES.overview };
 /**
  * SPEC-overview §2.1: reads `getOverview` directly — no HTTP self-call, the same call
  * `GET /api/overview` makes (T-09). §2.8: on a throw, a single error card replaces the grid;
- * the failure is logged with the request id `middleware.ts` forwards on every request.
+ * the failure is logged with the request id `proxy.ts` forwards on every request.
  */
 export default async function OverviewPage() {
   let overview: Awaited<ReturnType<typeof getOverview>> | undefined;

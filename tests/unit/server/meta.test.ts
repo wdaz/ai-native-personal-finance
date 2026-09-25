@@ -15,7 +15,7 @@ const untouchable = new Proxy(
 const AT = "2026-09-12T03:00:00.000Z";
 
 describe("getMeta (SPEC-app-shell §2.1, §5)", () => {
-  it("PR #20 review: with the reset time the middleware forwarded, it reads no database", async () => {
+  it("PR #20 review: with the reset time the proxy forwarded, it reads no database", async () => {
     expect(await getMeta(untouchable, {}, new Date(AT))).toEqual({
       lastResetAt: AT,
       resetIntervalDays: 10,

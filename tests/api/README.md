@@ -17,7 +17,7 @@ locally). Each test resets it; it holds demo data only.
   the "never seeded" 500 (SPEC-overview §6)
 - `via-log.spec.ts` (T-12) — an `X-Via: webmcp` request is on record at `GET /api/test/log`
   under its `X-Request-Id`, also when it answers 401; 404 for an unknown, empty or missing id
-  (SPEC-webmcp-tools §2.8). A green run also proves the buffer is shared between the middleware
+  (SPEC-webmcp-tools §2.8). A green run also proves the buffer is shared between the proxy
   and the route bundles through `globalThis`.
 - `schema-drift.spec.ts` (T-13) — `prisma/schema.prisma` and the migrations agree
   (`scripts/schema-drift.sh`, `npm run db:drift`); needs a migrated database (`npm run db:reset`
