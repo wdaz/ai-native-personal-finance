@@ -3782,3 +3782,103 @@ them too").
   plan gates. The plan branch has no pull request; whether to merge it is the owner's call, and
   its planning entry is in this pull request (see the "Phase" field). The commits of the
   `db:reset` follow-up were not pushed by their implementer; the controller decides when.
+
+## 2026-09-25 — Phase 5: T-13a middleware → proxy (TD-2) — planning session
+
+- **Phase:** 5 (Build the slice), Release 1 — one of the tasks between T-13 and T-14 (backlog v1.29).
+  The plan, `docs/04-process/plans/2026-09-25-T-13a.md` (v0.2), was written and answered on
+  2026-09-25 on branch `docs/T-13a-plan`; the owner merged it as PR #43 the same day. The execution is
+  the next entry.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5).
+- **Trigger:** the backlog's T-13a row (TD-2) and the owner's command
+  `/anthropic-skills:writing-plans start 13a`. The owner first said the plan's Q1 was not clear
+  ("Birinci sual anlamadım. Çətinlik nədir hazırda?" — "I did not understand the first question. What
+  is the difficulty at the moment?"). Then the answers to Q1–Q6: "1. razı — 2. bəli — 3. Bunu müzakirə
+  edək. Linterin buna nə aidiyyatı. — 4. Bəli dəyişsin — 5. yes — 6. Bəli. Amma hələ icraya razılıq
+  verməmişəm." ("1. agreed — 2. yes — 3. Let us discuss this. What has the linter to do with it. — 4.
+  Yes, change it — 5. yes — 6. Yes. But I have not yet agreed to the execution."). After the discussion
+  of Q3: "Cavab a. pr yenilə merge edim." ("Answer (a). Update the PR, I will merge it.")
+- **Prompt(s):** `prompts/2026-09-25-T-13a.md`
+- **Produced:** the plan (about 960 lines: findings F1–F11, Q1–Q6 with the owner's answers, four
+  tasks, self-review), PR #43. In a scratch worktree, all removed afterwards: the codemod, the plan's
+  code, mutations that fail the new tests on purpose, the unit, API and four E2E runs on the renamed
+  tree, `next dev`, a scratch database. Finding F10 lists what ran and what stays outside the tree.
+- **What the agent got right:** it measured the premise of the row before planning on it — Next 16.3.5
+  refuses `runtime` in a proxy, so TD-2's own Fix line would have broken the build (F1). It found that
+  nothing pinned `Referrer-Policy`, `X-Content-Type-Options` or the matcher's exclusion of files with an
+  extension, and put two tests, red by mutation, in front of the rename (F4). It ran the codemod and
+  read what it really did (F2), and it labelled each number as measured or predicted.
+- **What the agent got wrong or missed:** (1) The backlog row and TD-2 were wrong about `runtime`, and the
+  code comment above `config` cited "SPEC-auth §2.9" for a runtime that §2.9 never states; neither had
+  been checked against Next's documentation (F1). (2) The planning session's own `--dry` run of the
+  codemod renamed the file: `--dry` is not dry (F2). (3) Q1 was worded around the `runtime` option
+  without first saying what was wrong; the owner did not understand it and the agent had to explain it
+  in plain words. (4) Q3 offered the guard against a returning `middleware.ts` as a unit test only,
+  although this repository's own pattern for "keep X from coming back" is an ESLint rule (the
+  ADR-0002 boundaries, TD-11's `next/font/google` ban, and the owner chose a linter over a unit test
+  for T-13c's TD-9); the owner's question exposed it, and the lint form was then measured in a scratch
+  copy and recorded under Q3. (5) The scratch prototype of that lint rule wrote a stub over the
+  tracked `middleware.ts` by mistake; `git restore middleware.ts` followed at once and `git status`
+  was empty afterwards (F10).
+- **Owner changes and reasoning:** left for the owner (`build-workflow.md` §7).
+- **Disagreements:** none. Q3 was discussed rather than answered at first; the owner then chose (a), no
+  guard, and the lint-rule alternative stays in the plan as the recorded option.
+- **Lessons for the process:** (1) A codemod's `--dry` is not a promise; check `git status` after any
+  codemod. (2) "Behaves as before" in a task row needs its pinning tests written first, on the old
+  code. (3) A tech-debt Fix line is a hypothesis; read it against the tool's own documentation before
+  planning on it. (4) A code comment that cites a spec section (`SPEC-auth §2.9`) is not evidence that
+  the section says it. (5) Offer a guard in the repository's own form (a lint rule here), not only in
+  the form that came to mind first. (6) A question to the owner says what is wrong before it names the
+  options.
+- **Next:** the owner merged the plan (PR #43); the execution session starts from a fresh
+  `origin/main` (next entry).
+
+## 2026-09-25 — Phase 5: T-13a middleware → proxy (TD-2) — execution
+
+- **Phase:** 5 (Build the slice), Release 1, the same task as the entry above. Branch
+  `task/T-13a-proxy`, cut from `origin/main` `c0112af` (the merge of PR #43), so the plan is on
+  `main`. Four commits: `6df4cda` (the two API tests), `2002327` (the rename), `18002d1` (every live
+  reference), and the commit that holds this entry, the specs' wording bumps, ADR-0006 amendment (6),
+  `tech-debt.md` v1.14 and `backlog.md` v1.30.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5), executed inline through the superpowers
+  `executing-plans` skill — the owner's choice at the plan gate (Q6). No per-task subagents. The
+  whole-branch review is a separate Opus 5.5 subagent (`governance.md` v1.3).
+- **Trigger:** the owner's go-ahead after merging the plan: `/superpowers:executing-plans main brache
+  keç plan artıq ordadır. İcraya başla` ("switch to main, the plan is already there; start the
+  execution").
+- **Prompt(s):** `prompts/2026-09-25-T-13a.md`
+- **Produced:** `tests/api/middleware.spec.ts` gains two tests (Task 1); `middleware.ts` is `proxy.ts`
+  without `runtime`, with a rewritten comment (Task 2); 32 files say "proxy" in their live prose, the
+  spec is `tests/api/proxy.spec.ts` (Task 3); SPEC-auth v1.0.8, SPEC-app-shell v1.4.1,
+  SPEC-reset-and-test-support v1.6.1, SPEC-webmcp-tools v1.0.6, `system-overview.md` v1.0.1, ADR-0006
+  amendment (6) *proposed*, `tech-debt.md` v1.14 (TD-2 in review, with the correction to its Fix line),
+  `backlog.md` v1.30 with hand-offs to T-13b, T-13d and T-14, this entry and its prompt record
+  (Task 4).
+- **What the agent got right:** every number the plan measured came out the same in the run. Task 1's
+  tests pass on the old code (16 in the spec, 102 in the API suite) and each fails on purpose under its
+  mutation — `Referrer-Policy` deleted, `X-Content-Type-Options` deleted, the matcher widened to
+  `/(.*)`. `next build` printed the deprecation sentence once before Task 2 and 0 times after. The three
+  controls broke the build as the plan says: `runtime` kept, both files present, the old export name.
+  Unit 81 files / 1 046 tests, API 102, Chromium with the polyfill 109 passed / 8 skipped, Chromium
+  with `WEBMCP_MODE=off` 106 / 11, Firefox and WebKit 218 / 16; `next dev` sends the relaxed CSP and
+  its log line names `proxy.ts`. `git status` was checked after the codemod and after `next dev`
+  (which rewrote `next-env.d.ts`; restored).
+- **What the agent got wrong or missed:** (1) The plan's Step 1 check expected seven files and its Step 7
+  prediction nine, and both left out `proxy.ts` itself: the comment Task 2 writes names the old
+  convention on purpose, so the run listed eight and would list ten. Nothing was wrong in the tree;
+  the plan's expectation was. Ledger ruling. (2) The plan's commit commands carry no trailers; the
+  agent wrote each message to a file and used `git commit -F` so all four carry the session's
+  `Co-Authored-By` and `Claude-Session` lines. (3) F6 says Task 3 changes "about 45 lines"; it is 50 —
+  the number of lines `git grep` finds. (4) Task 4's exact substring replacements, the five version
+  bumps and the backlog edits were made with small scripts that assert each substring occurs exactly
+  once, not with the Edit tool; the effect is the same and the scripts are not committed.
+- **Owner changes and reasoning:** left for the owner (`build-workflow.md` §7).
+- **Disagreements:** none.
+- **Lessons for the process:** (1) A check's expected list has to be computed over the tree the task
+  leaves behind: a comment that explains a rename must name the old word, so a "no more `middleware`"
+  gate has to allow it. (2) A plan's commit steps should carry the trailers the project requires, or
+  the executor has to remember to add them.
+- **Next:** one Opus 5.5 review of the whole branch, then the push and the pull request, which the owner
+  merges. After the merge a docs commit closes TD-2 in `tech-debt.md`, says in `backlog.md` that T-13a
+  is merged and sets the plan's status to Done. ADR-0006 amendment (6) becomes *accepted* only when the
+  owner says so.

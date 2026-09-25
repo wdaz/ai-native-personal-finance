@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.13 — 2026-09-25: TD-7–TD-11 closed by PR #39 (T-13c); v1.12 — 2026-09-25: TD-7–TD-11 fixed in T-13c, in review on `task/T-13c-tech-debt`; TD-10's `db:reset` refusal also comes before `prisma migrate deploy`, the owner's choice B; v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.14 — 2026-09-25: TD-2 fixed in T-13a, in review on `task/T-13a-proxy`; its Fix line's `runtime` advice is corrected (Next 16.3.5 refuses the option); v1.13 — 2026-09-25: TD-7–TD-11 closed by PR #39 (T-13c); v1.12 — 2026-09-25: TD-7–TD-11 fixed in T-13c, in review on `task/T-13c-tech-debt`; TD-10's `db:reset` refusal also comes before `prisma migrate deploy`, the owner's choice B; v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -11,7 +11,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | Id | Title | Status | Picked up by |
 |----|-------|--------|--------------|
 | TD-1 | The CSP nonce reaches Next through an undocumented header copy | **Closed** | T-07 |
-| TD-2 | `middleware.ts` uses a deprecated file convention (`proxy`) | Open | T-13a (v1.10) |
+| TD-2 | `middleware.ts` uses a deprecated file convention (`proxy`) | In review | T-13a (v1.10; `task/T-13a-proxy`) |
 | TD-3 | `/_global-error` is prerendered, without the CSP nonce | Open | T-13b (v1.10) |
 | TD-4 | Two "submit is focused after an error" E2E assertions prove nothing on Chromium | **Closed** | T-13 |
 | TD-5 | Zod's `jitless` setting rides on importing `src/shared/schemas.ts` | **Closed** | T-11 |
@@ -66,6 +66,14 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   E2E suite, which fail on any of those.
 - **Fix:** run the codemod, keep `runtime: "nodejs"` and the matcher, re-run the API and E2E
   suites; fold TD-1's fix into the same change.
+- **Correction to the Fix above (2026-09-25, T-13a plan):** "keep `runtime: "nodejs"`" fails — Next
+  16.3.5 refuses the option in a proxy: `Route segment config is not allowed in Proxy file`. The
+  codemod removes it; a proxy always runs on Node.js. "Fold TD-1's fix into the same change" had
+  nothing to fold: TD-1 was closed by T-07.
+- **Fix in review:** 2026-09-25, branch `task/T-13a-proxy` — `proxy.ts`; `next build` prints no
+  deprecation warning; `tests/api/proxy.spec.ts` holds the old suite and two new tests (the
+  `Referrer-Policy` and `X-Content-Type-Options` headers on every branch; the matcher's exclusion of
+  files with an extension); API 102, unit 1 046, and the four E2E legs green.
 
 ## TD-3 — `/_global-error` is prerendered, without the CSP nonce
 
