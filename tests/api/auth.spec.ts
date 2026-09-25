@@ -98,6 +98,18 @@ test("a successful login clears the IP's failure count", async ({ request }) => 
   expect(await db.loginAttempt.count({ where: { success: false } })).toBe(0);
 });
 
+test("T-13d F-07/TD-18: a successful login persists no LoginAttempt row at all", async ({
+  request,
+}) => {
+  await request.post("/api/auth/login", {
+    data: { email: process.env.DEMO_EMAIL, password: process.env.DEMO_PASSWORD_DISPLAY },
+  });
+  // Nothing reads a success row (only checkRateLimit's success:false query does), and nothing
+  // prunes it before the next full reset — so it should never be written in the first place.
+  expect(await db.loginAttempt.count({ where: { success: true } })).toBe(0);
+  expect(await db.loginAttempt.count()).toBe(0);
+});
+
 test("US-02 signup always answers demo_instance, 400 on invalid input", async ({ request }) => {
   const ok = await request.post("/api/auth/signup", {
     data: { name: "A", email: "a@b.com", password: "password123" },

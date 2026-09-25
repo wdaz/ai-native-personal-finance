@@ -69,12 +69,21 @@ export function sessionCookieHeader(
  * sends the space — splitting on the literal "; " only missed a cookie sent as "a=1;b=2"
  * (Copilot review, Medium). Splits on a semicolon and any amount of following whitespace
  * instead.
+ *
+ * Keeps the LAST match when a name repeats (T-13d finding F-01/TD-12): `proxy.ts`'s own
+ * `request.cookies.get` (Next's `@edge-runtime/cookies`) keeps the last of several same-named
+ * cookies, so this reader — the only other place `pf_session` is parsed, for the public
+ * `GET /api/auth/session` probe — has to agree with it, or the two can answer differently for
+ * the same request.
  */
 export function readCookie(cookieHeader: string | null, name: string): string | undefined {
   if (!cookieHeader) return undefined;
   const prefix = `${name}=`;
+  // .reverse().find(...), not .findLast(...): the project's lib target is ES2022, one short of
+  // Array.prototype.findLast (ES2023).
   return cookieHeader
     .split(/;\s*/)
+    .reverse()
     .find((pair) => pair.startsWith(prefix))
     ?.slice(prefix.length);
 }

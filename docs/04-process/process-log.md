@@ -4185,3 +4185,154 @@ them too").
   causal (the other two corroborate) — left as handed over, per the no-rewrite convention above.
 - **Next:** the owner reviews the whole branch (three commits plus this fix pass). T-13d is next in
   the backlog's stated order once this lands.
+
+## 2026-09-25 — Phase 5: T-13d security review before the deploy — planning and execution
+
+- **Phase:** 5 (Build the slice), Release 1 — the last of the four pre-T-14 tech-debt tasks
+  (backlog v1.24, owner decision 2026-09-24). Planned and executed in one session, on branches
+  `claude/13d-planning-6rnuap` (the plan, pushed) and `task/T-13d-security-review` (the review's
+  own doc deliverables, kept **local only** — see below).
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, orchestrating) / Agent (Claude Code,
+  Opus 5.5 ×4, read-only category-split subagents for the checklist walk).
+- **Trigger:** the owner's "Start planing the 13d", then, after Q1–Q8 were answered across two
+  rounds (the second in Azerbaijani, asking for the GitHub-Settings gap, the report's destination
+  and the extra-items layout to be explained before deciding), "Başla onu sonra ayrıca bir sesiyada
+  edərəm" ("Start it — the other thing [the local GitHub-Settings check] I'll do later in a
+  separate session").
+- **Prompt(s):** `prompts/2026-09-25-T-13d.md`; the plan itself,
+  `docs/04-process/plans/2026-09-25-T-13d.md` (v0.3, all of Q1–Q8 decided); the four subagent
+  briefs and condensed reports under `prompts/2026-09-25-T-13d/`.
+- **Produced:**
+  - The plan (Findings F1–F12 grounded in a scratch build, Review Focus, Q1–Q8, five tasks),
+    `.github/CODEOWNERS` (`* @wdaz`) and `SECURITY.md` — all on `claude/13d-planning-6rnuap`,
+    pushed (these are not review findings; Q4 was a direct, bounded owner instruction, not subject
+    to Q5's hold).
+  - The execution: a fresh local production build (`APP_ENV=production`, commit `aad1423`), four
+    read-only Opus 5.5 subagents split by category group (INFO+CONF+TRAN; AUTHN+SESS+AUTHZ; VAL;
+    DOS+BIZ+CRYP+FILE+CARD+HTML5), every citation touching a finding independently re-verified live
+    by the main session against the running server or by re-running a cited command, per the
+    skill's own rule that only the main session marks an item PASS.
+  - The report: all 131 checklist items (49 PASS, 8 FAIL, 9 BY DESIGN, 46 N/A, 19 NOT TESTED) plus
+    the four backlog-specific items, published as a private Claude Artifact — not committed to the
+    repository, per the `owasp-security-review` skill's own ground rule ("a committed report with
+    open findings is a public disclosure").
+  - `tech-debt.md` v1.18: TD-12–TD-18, one per finding (F-01–F-07), all Open, owner decision
+    pending on each.
+  - `backlog.md` v1.34: this outcome recorded in the Status changelog and the Notes tech-debt
+    bullet.
+  - This entry.
+  - **Not produced / explicitly deferred:** any fix PR (the skill's own rule: "do not open them
+    unless asked" — none was); the GitHub-Settings items (Q3: no tool in this session reads
+    repository Settings; the owner checks them separately, on a local Claude Code session).
+- **What the agent got right:** the planning session's own scratch build caught real, dated
+  evidence (the `X-Powered-By` header, the missing CODEOWNERS/SECURITY.md, the GitHub-tooling gap)
+  before the execution session started, so the plan's Q3/Q4 questions were concrete rather than
+  hypothetical. During execution, the main session did not accept any subagent's "PASS" unverified:
+  every finding was independently reproduced live, and two subagents' predictions were corrected
+  against the run rather than kept — `TRACE`'s response was measured as a bare 500 with no security
+  headers, not the 401 both the VAL and AUTHN subagents predicted. Two subagents independently
+  reached the review's two most significant findings (the proxy-matcher `.rsc` gap; the
+  logout-CSRF gap) from different evidence, which the report calls out explicitly as
+  cross-validation rather than treating either as a single unverified claim.
+- **What the agent got wrong or missed:** (1) the four category-split subagents were dispatched
+  from `task/T-13d-security-review` before that branch had the plan merged onto it (it was cut from
+  `origin/main`, which does not carry the plan — only pushed to `claude/13d-planning-6rnuap`); all
+  four subagents flagged the missing plan file in their own reports and worked from the backlog row
+  and the skill directly instead, which cost some redundant context-gathering across the four and
+  meant none of them could read F1–F12/Review Focus/Q1–Q8 before returning. Fixed mid-session (a
+  fast-forward merge of the plan branch into the execution branch) but only after all four had
+  already run. (2) Finding F-03/TD-14 (the proxy-matcher gap) carries no FAIL row of its own — every
+  one of its checklist items is NOT TESTED, since the decisive half needs a deployed host — which
+  does not fit the report template's own self-check ("every finding names a FAIL row"); the report
+  states this exception explicitly rather than forcing a FAIL status the evidence does not support,
+  but a future run of this skill should decide up front whether a well-evidenced NOT TESTED that
+  could be Critical belongs in the Findings list or needs its own template category. (3) The
+  `POST /api/auth/logout` CSRF reproduction (Finding F-04) used `curl`, which does not enforce
+  `SameSite` the way a browser does; the report flags this caveat, but a browser-based reproduction
+  (a real cross-site page auto-submitting the form) was not attempted, so the finding's real-world
+  exploitability in a modern browser is still somewhat inferred rather than fully demonstrated.
+- **Owner changes and reasoning:** Q3 (b, plus an independent local check with broader GitHub
+  access); Q4 (CODEOWNERS naming the owner; SECURITY.md written); Q5 (broadened beyond
+  Critical/High — every finding is recorded and documented, but nothing from this task reaches
+  `origin` until the owner reviews all of it and decides, finding by finding); Q7 (the report is a
+  Claude Artifact, not a plain scratch file); Q8 (the four backlog-specific items stay a separate
+  report subsection, as recommended).
+- **Disagreements:** none — every plan-gate question was answered as asked, in some cases after a
+  plainer explanation was given first.
+- **Lessons for the process:** (1) When a planning branch and an execution branch are separate
+  (as T-13d's own plan called for), merge the plan onto the execution branch *before* dispatching
+  any subagent from it, not after the first one already needed it — four subagents independently
+  hit the same missing-plan gap this session, which a single check before dispatch would have
+  caught. (2) The `owasp-security-review` skill's own report-template self-check ("every finding
+  names a FAIL row") does not anticipate a well-evidenced NOT TESTED that could be Critical if its
+  unverified half comes back positive — worth a line in the skill itself for how to handle that
+  case consistently, rather than each run deciding ad hoc. (3) A `curl`-based CSRF reproduction
+  proves the *server* performs no check; it does not prove real-browser exploitability, since curl
+  ignores `SameSite`. Worth stating as a standing caveat in the skill's own SESS-13 guidance.
+- **Next:** the owner reviews the published report (Artifact URL given in conversation) and this
+  local branch's docs, and decides, finding by finding, how to handle each of TD-12–TD-18 — as an
+  immediate fix PR, a documented accepted risk, or something else. **TD-14 (the proxy-matcher gap)
+  should be checked against the T-14 preview before that task proceeds past it**, regardless of
+  what the owner decides for the others. The owner separately checks the GitHub-Settings items
+  (Q3) on a local Claude Code session. Nothing from this task reaches `origin` until then.
+
+## 2026-09-25 — Phase 5: T-13d fixes (TD-12/15/16/18), PR #47
+
+- **Phase:** 5 (Build the slice), Release 1 — continuing the same session as the planning and
+  execution entry above, after the owner triaged the report.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5).
+- **Trigger:** the owner asked which findings were both fixable without touching anything
+  Vercel-dependent and worth prioritizing; after a prioritized answer, "Vercelle bağlı heç nəyə
+  toxunma. Qalanlarını düzəlt" ("Don't touch anything Vercel-related. Fix the rest."), then "Push
+  et və pr aç" ("Push it and open a PR").
+- **Prompt(s):** the conversation itself; no separate prompt file (a continuation of
+  `prompts/2026-09-25-T-13d.md`'s session, not a new task).
+- **Produced:** on `task/T-13d-security-review` (now pushed): four fixes, each with a failing-first
+  test (TD-12: `src/server/session.ts`'s `readCookie`; TD-15: `proxy.ts` refuses a cross-site
+  `POST /api/auth/logout`; TD-16: `next.config.ts`'s `poweredByHeader: false`; TD-18:
+  `src/server/rate-limit.ts`'s `recordAttempt` no longer persists a success row); `tech-debt.md`
+  v1.19 records each as "Fix in review" with its evidence, and TD-13 (`TRACE`) as investigated —
+  no application-level fix exists (undici's own Fetch-spec rejection of `TRACE` as a forbidden
+  method, thrown inside Next's compiled server before this app's code runs); `docs/03-specs/
+  auth.md` v1.0.9 documents TD-15's new behaviour (§2.7, §7); this entry; PR #47.
+- **Evidence:** each fix's test failed red before the fix and passed after (per-fix commands and
+  output in `tech-debt.md`'s "Fix in review" notes and the PR body). Together:
+  `npx playwright test --project=api --workers=1` — **107 passed** (up from 103 on `main`);
+  `npm run lint`, `format:check`, `npx tsc --noEmit`, `npm run traceability` — all clean;
+  `npm run test:coverage` — 1046/1047 unit tests, the one failure the same pre-existing,
+  environment-caused (`npm` 10.9.7 < the repo's `>= 11.19` floor) failure T-13b's session already
+  recorded, not from this diff. `npm run test:e2e` not run (this container has only Chromium, and
+  none of the four fixes touch any UI a browser test exercises), flagged rather than silently
+  skipped.
+- **What the agent got right:** treated the owner's "fix the rest" as an instruction to classify
+  first, not to fix everything — TD-14 and TD-17 (both explicitly Vercel-dependent) were left
+  untouched exactly as asked, and TD-13, initially unclear whether it was fixable at all, was
+  investigated to a definite root cause (a stack trace naming undici's own forbidden-method
+  rejection) rather than left as a vague "needs investigation." Each of the four fixes kept its
+  own failing-first test and its own commit, matching this repository's "one concern per PR
+  commit" discipline even though the owner asked for a batch. SPEC-auth was amended for TD-15's
+  new behaviour rather than left silently diverging from the spec, per the Definition of Done.
+- **What the agent got wrong or missed:** (1) `Array.prototype.findLast` (the first, more direct
+  fix for TD-12) does not typecheck against this project's ES2022 `tsconfig.json` lib target
+  (`findLast` needs ES2023) — caught only by running `npx tsc --noEmit` after the first attempt,
+  not anticipated before writing it; corrected to `.reverse().find(...)`, which needed no lib
+  bump. (2) TD-15's fix chose a 403 body shape (`{"message": "..."}`) that is deliberately *not*
+  `ErrorEnvelope`-shaped, reasoning that a proxy-level rejection of an undocumented route shouldn't
+  force a change to the shared error-code union (`src/shared/schemas.ts`'s `ERROR_CODES`) for one
+  narrow case — a defensible call, but it was made unilaterally rather than flagged as a choice
+  the owner might want to weigh in on, since extending that union was the more "consistent with
+  the rest of the codebase" alternative.
+- **Owner changes and reasoning:** the two-part triage itself ("don't touch Vercel-related, fix
+  the rest") is the owner's own scoping decision, already the trigger above.
+- **Disagreements:** none.
+- **Lessons for the process:** (1) When an owner says "fix the rest" after a prioritized list that
+  included one item needing root-cause investigation first (TD-13), that investigation is still
+  part of "the rest" — worth doing before deciding whether it is fixable, not skipping it as
+  presumptively Vercel-adjacent just because it was originally grouped with other uncertain items.
+  (2) A fix that adds a new HTTP response your own spec's error-envelope schema does not cover is
+  a real fork in the road (extend the shared schema vs. keep the response ad hoc) that is worth
+  surfacing explicitly, not just picking the narrower option and moving on.
+- **Next:** the owner reviews PR #47 (CI, the report Artifact, the four fixes) and merges when
+  ready. TD-14 and TD-17 stay open, explicitly deferred to T-14's own work. The owner's own
+  GitHub-Settings check (Q3) and any decision on TD-13's "no fix possible" status are still
+  theirs to close out.
