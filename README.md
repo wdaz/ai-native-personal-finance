@@ -91,7 +91,8 @@ commit either way.
 
 | Command                       | What it runs                                                                                                     |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `npm run lint`                | ESLint, including the ADR-0002 import boundaries                                                                 |
+| `npm run lint`                | ESLint, including the ADR-0002 import boundaries, then `lint:css`                                                |
+| `npm run lint:css`            | Stylelint over `app/` and `src/`: a bare `fr` column track fails (TD-9)                                          |
 | `npm run format:check`        | Prettier                                                                                                         |
 | `npm run typecheck`           | `tsc --noEmit`, strict                                                                                           |
 | `npm run secrets:scan`        | Gitleaks on all commit diffs and messages — first in `test:all`                                                  |
