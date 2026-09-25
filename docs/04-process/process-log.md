@@ -4079,3 +4079,109 @@ them too").
   same pattern T-13a's and T-13c's plans used. T-13a and T-13c are both already merged, so the next
   task in the backlog's stated order (Notes: "T-13d is last, so the security review reads the code
   T-14 deploys") is T-13d.
+
+## 2026-09-25 — Phase 5: T-13b whole-branch review (Opus 5.5) and fix pass
+
+- **Phase:** 5 (Build the slice), Release 1. The Q4 review the plan called for, dispatched as a
+  read-only subagent (Explore, model `opus`) against `git diff $(git merge-base origin/main
+  HEAD)..HEAD` (the plan, the test, the doc corrections — commits `6209798`, `a9f8fa0`, `863755c`).
+- **Participants:** Owner (via the Q4 answer authorizing this step) / Agent (Claude Code, Sonnet 5,
+  orchestrating) / Agent (Claude Code, Opus 5.5, the reviewer subagent, read-only).
+- **Trigger:** the plan's Q4 ("one fresh Opus 5.5 reviewer over the whole diff"), the owner's "yes to
+  the recommendations."
+- **Prompt(s):** the review brief was written inline in the dispatch, not saved to a separate file
+  (small enough to reproduce here): read-only, no git-state changes; verify the new test actually
+  passes against a live build; spot-check every Next-internals citation in the plan and
+  `tech-debt.md` against the installed source; confirm the backlog/tech-debt version-bump edits
+  followed the append-only-snapshot convention; check the process-log entries against the diff and
+  the mutation-check evidence; confirm nothing beyond Q1–Q4's authorization landed (no
+  `app/global-error.tsx`); report Critical/Important/Minor.
+- **Produced:** the reviewer's report (ten findings; reproduced in full in the agent hand-back this
+  session's transcript holds — not re-copied here since the corrections below are the acted-on
+  record); then, in this session:
+  - `docs/03-specs/tech-debt.md` v1.17: a new "Correction to the paragraph above" note after TD-3's
+    v1.16 "Investigated" paragraph (not rewriting it, following TD-2's own precedent) — the
+    component Next renders for `/_global-error` is `AppError`
+    (`node_modules/next/dist/client/components/builtin/app-error.js`), not `global-error.js`'s
+    `DefaultGlobalError`; the response carries two inline `<script>` tags, not three; `AppError` has
+    no "Back" button (that belongs to `DefaultGlobalError`, never rendered here).
+  - `docs/03-specs/backlog.md` v1.33: a new Changelog clause recording the review and its two
+    Important fixes; a "from T-13b" hand-off appended to T-13d's row (the Q2 deferral, and an
+    unmeasured caching nuance — see below).
+  - `tests/api/proxy.spec.ts`: the TD-3 test's own code comment corrected to say `AppError`, not
+    `DefaultGlobalError` — the test's assertions themselves needed no change (see "What the agent
+    got right").
+  - `tests/fixtures/csp.ts`: its doc comment now names `tests/api/proxy.spec.ts` as a third user (of
+    `inlineTags` only — that file keeps its own local `scriptSrcNonce`).
+  - `docs/04-process/prompts/2026-09-25-T-13b.md`: one cross-reference corrected (it pointed at "What
+    the agent got wrong or missed"; the reconciliation is actually under "Disagreements", in the
+    previous entry — process-log.md is append-only, so that entry itself is not touched).
+  - **Explicitly NOT touched, per this repository's "a dated Notes/Findings snapshot is not
+    rewritten" convention (learned at backlog v1.22/v1.28, restated in T-13a's plan lesson 3):**
+    `docs/04-process/plans/2026-09-25-T-13b.md`'s F2–F4 — a first attempt at this fix pass edited
+    them in place and was reverted (`git checkout -- docs/04-process/plans/2026-09-25-T-13b.md`)
+    once the convention was recalled; the plan stays exactly as it was handed over and answered,
+    wrong component name included, and this entry is where the correction lives instead.
+- **What the agent got right:** the reviewer ran the new test for real (`npx playwright test
+  --project=api -g "TD-3"`, 1 passed) rather than reading it and guessing, and it read
+  `next-app-loader/index.js`'s `isAppErrorRoute`/`appErrorPath` wiring rather than stopping at "it's
+  static" — a stronger, more specific citation than the plan's own F3 (T-06 finding F1's "still
+  listed `/_global-error` as prerendered" was corroborating, not causal). Re-verified independently
+  here, fresh (`rm -rf .next && npx next build`, then a small Python script over the built HTML
+  rather than counting by eye): two `<script>` tags, one `<style>`, seven `style=`-bearing elements
+  (`div, div, svg, h1, p, form, button` — `path` carries `fill`, not `style`), title
+  `500: This page couldn't load` hardcoded in `app-error.js`'s own JSX (a `DefaultGlobalError`
+  render would need no such `<title>`, since that component has none) and no "buttonGroup"/"Back"
+  text anywhere in the built file — every one of the reviewer's Important claims confirmed exactly
+  as reported. The test's own assertions (`tags.length > 0`, no tag matches the response's nonce)
+  hold regardless of which builtin component renders or the exact tag count, so nothing there needed
+  a code fix — the wrong claims were confined to prose (a plan finding, a doc paragraph, a code
+  comment), never load-bearing on what the test actually checks.
+- **What the agent got wrong or missed:** (1) The Next-internals research read `getGlobalErrorStyles`
+  in `app-render.js` (which names its component `GlobalError`, wired from `components['global-error']`)
+  and the scratch probe's negative result (the custom file's markup never appeared) and concluded
+  the rendered component must be `global-error.js`'s `DefaultGlobalError` — without checking
+  `next-app-loader/index.js` for how the synthetic route's page module is actually chosen. Both
+  components share `error-styles.js` and produce visually similar output, and the probe *did* prove
+  the right thing (a custom `global-error.tsx` is not used for this route) by the wrong route,
+  since it never needed to name which builtin renders instead — that inference was gratuitous, not
+  required by anything F3 was there to establish. (2) The inline `<script>` count (F4: "three") was
+  never counted programmatically at the time — recounted now, it is two; the style-attribute
+  element list named `path` (which carries `fill`, not `style`) and omitted that there are two
+  `div`s, coincidentally still summing to seven. (3) A "Back" button was attributed to this response
+  from `DefaultGlobalError`'s own (`isServerError` branch's) shape without checking that the HTML
+  actually captured had no such button and no `buttonGroup` wrapper at all — a detail that was
+  sitting in the same terminal output already quoted in the plan's F1.
+- **The reviewer's own miss, corrected here rather than re-litigated with it:** its Important finding
+  3 read the execution entry's second mutation check (pointing the test at `/definitely-not-a-page`)
+  as impossible given the plan's literal Step 3 wording, since the hard status assertion would fail
+  first on that route's 404 — true only if the request URL alone had changed. The execution actually
+  changed the expected status too, from `toBe(500)` to `toBe(404)`, in the same edit (a sensible
+  adaptation the plan's own Step 3 text under-specified, and one this session made without a ledger
+  line calling it out as a deviation — that omission, not the mutation check itself, is the real
+  finding here). The reviewer's own independent recheck of the filter logic ("in memory") landed on
+  the same two-tag/zero-tag numbers the execution entry reports, so nothing about the test or the
+  evidence was actually wrong — only the execution entry's account of *how* the second mutation was
+  set up was underspecified enough for a careful reader to doubt it.
+- **Owner changes and reasoning:** left for the owner.
+- **Disagreements:** the reviewer's Important finding 3, as above — not acted on as a text change
+  (the mutation check's own logged result already matches what the reviewer independently
+  recomputed); recorded here as the ruling instead.
+- **Lessons for the process:** (1) A finding that infers *which* specific mechanism explains a
+  measured result should trace the actual code path (here: the app-loader's page-module wiring),
+  not stop at "the probe's markup didn't appear" and reach for the most obviously-named candidate
+  (`global-error.js`, when the constant is `UNDERSCORE_GLOBAL_ERROR_ROUTE`) — a plausible-sounding
+  component name is not evidence for itself. (2) Any tag or element *count* claimed in a finding
+  should be produced by a script over the actual file, the same discipline this repository already
+  applies to file inventories (T-13a's F6) — "seven, counted from the source above" invites an
+  eyeballing error the total can hide. (3) A ledgered deviation from a plan's literal step ("also
+  changed the expected status for the second mutation, which Step 3's text did not name") should be
+  written into the process-log entry that reports the step, not left for a reviewer to have to infer
+  or a later session to have to explain.
+- **Deferred minors (owner's call, not acted on):** the nonce check only rejects the exact response
+  nonce, not any nonce or a case difference (unlike this file's own `/gi` pattern at line 42, added
+  after a CodeQL alert); TD-3's table row dropped the "(v1.10)" pointer TD-2's kept; the plan's own
+  F2 overstates three Next source locations as independent causes when only `isPageStatic` is
+  causal (the other two corroborate) — left as handed over, per the no-rewrite convention above.
+- **Next:** the owner reviews the whole branch (three commits plus this fix pass). T-13d is next in
+  the backlog's stated order once this lands.

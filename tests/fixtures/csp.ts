@@ -1,6 +1,8 @@
 /**
  * Reading ADR-0006's per-request nonce out of a response — shared by the API tests that check
- * a page renders per request (tests/api/auth-pages.spec.ts, app-pages.spec.ts).
+ * a page renders per request (tests/api/auth-pages.spec.ts, app-pages.spec.ts) and, for
+ * `inlineTags` only, `tests/api/proxy.spec.ts`'s TD-3 test (T-13b) — that file keeps its own
+ * local `scriptSrcNonce`, predating this shared `scriptNonce`.
  */
 const NONCE = /'nonce-([^']+)'/;
 

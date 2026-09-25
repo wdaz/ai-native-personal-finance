@@ -267,10 +267,12 @@ test("ADR-0006 (5): every response asks for its own agent cluster, so Firefox an
 // synthetic 500-equivalent fallback (UNDERSCORE_GLOBAL_ERROR_ROUTE,
 // next/dist/shared/lib/entry-constants.js), forced static unconditionally by `isPageStatic`
 // (next/dist/build/utils.js) regardless of `connection()` or `export const dynamic =
-// "force-dynamic"`, and always rendered from Next's own bundled DefaultGlobalError — measured: a
-// scratch app/global-error.tsx with force-dynamic still produced the stock body. No
-// application-level fix exists in this Next version, so this pins the gap's exact shape rather than
-// closing it: if a future Next release changes any of this, the assertions below fail first.
+// "force-dynamic"`. The app-loader hardcodes this route's page module to its own bundled
+// `AppError` (next/dist/client/components/builtin/app-error.js), never the app's
+// `global-error.tsx` — measured: a scratch app/global-error.tsx with force-dynamic still produced
+// the stock AppError body. No application-level fix exists in this Next version, so this pins the
+// gap's exact shape rather than closing it: if a future Next release changes any of this, the
+// assertions below fail first.
 test("TD-3: /_global-error is reachable directly; its own CSP carries a nonce but its inline tags never do", async ({
   request,
 }) => {
