@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.12 — 2026-09-25: TD-7–TD-11 fixed in T-13c, in review on `task/T-13c-tech-debt`; TD-10's `db:reset` refusal also comes before `prisma migrate deploy`, the owner's choice B; v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
+Status: **Approved** (v1.13 — 2026-09-25: TD-7–TD-11 closed by PR #39 (T-13c); v1.12 — 2026-09-25: TD-7–TD-11 fixed in T-13c, in review on `task/T-13c-tech-debt`; TD-10's `db:reset` refusal also comes before `prisma migrate deploy`, the owner's choice B; v1.11 — 2026-09-24: TD-11, `next build` fetches Public Sans from Google Fonts, found by a failed CI leg on PR #36; fixed in T-13c, owner decision; v1.10 — 2026-09-24, owner decision before T-14: every open entry is fixed before the deploy, each as a backlog task of its own — TD-2 by T-13a, TD-3 by T-13b — and four known items that had no entry become TD-7–TD-10, fixed by T-13c; v1.9 — 2026-09-24: TD-4's evidence note names the right lines and says CI now runs Firefox and WebKit; v1.8 — 2026-09-24: TD-4 closed by T-13; v1.7 — 2026-09-24: TD-6 closed by PR #23; v1.6 — 2026-09-24: TD-5 closed by T-11; v1.5 — 2026-09-24: TD-6 fix in review, owner chose option (b) and accepted ADR-0006 amendment (4); v1.4 — 2026-09-23: TD-6, the dev-mode CSP console noise, owner request during T-07's execution; v1.3 — 2026-09-23: TD-1 closed by T-07; v1.2 — 2026-09-23: TD-1 assigned to T-07, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: TD-4 and TD-5 from T-06's whole-branch review, owner decision; v1.0 — 2026-09-23, owner decision at the T-06 plan gate: tech debt lives in its own file, linked from `backlog.md`, so the link is never lost) · Author(s): Agent · Date: 2026-09-23
 
 Known shortcuts and fragilities the owner has decided to keep for now. Every entry has an id
 (`TD-n`), where it was found, the owner's decision, the risk, what guards it meanwhile, the
@@ -16,11 +16,11 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-4 | Two "submit is focused after an error" E2E assertions prove nothing on Chromium | **Closed** | T-13 |
 | TD-5 | Zod's `jitless` setting rides on importing `src/shared/schemas.ts` | **Closed** | T-11 |
 | TD-6 | `next dev` fills the console with CSP violations (the policy has no dev variant) | **Closed** | `fix/td-6-dev-csp` (PR #23) |
-| TD-7 | The WebMCP status indicator can keep saying `unavailable` while a new registration runs | **Fix in review** — closes when the PR merges | T-13c |
-| TD-8 | The keyboard login walkthrough's comment says "Shift+Tab back"; the test focuses the field directly | **Fix in review** — closes when the PR merges | T-13c |
-| TD-9 | The `minmax(0, 1fr)` rule for card grids is a comment, not a check | **Fix in review** — closes when the PR merges | T-13c |
-| TD-10 | Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database | **Fix in review** — closes when the PR merges | T-13c (moved from T-14's T-02 hand-off) |
-| TD-11 | Every `next build` downloads Public Sans from Google Fonts, so a network hiccup fails the build | **Fix in review** — closes when the PR merges | T-13c (v1.11) |
+| TD-7 | The WebMCP status indicator can keep saying `unavailable` while a new registration runs | **Closed** | T-13c (PR #39) |
+| TD-8 | The keyboard login walkthrough's comment says "Shift+Tab back"; the test focuses the field directly | **Closed** | T-13c (PR #39) |
+| TD-9 | The `minmax(0, 1fr)` rule for card grids is a comment, not a check | **Closed** | T-13c (PR #39) |
+| TD-10 | Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database | **Closed** | T-13c (PR #39; moved from T-14's T-02 hand-off) |
+| TD-11 | Every `next build` downloads Public Sans from Google Fonts, so a network hiccup fails the build | **Closed** | T-13c (PR #39; v1.11) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -207,6 +207,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   still pending — red on the old code (the last pushed status was `unavailable`, `mode()` said
   `polyfill`), green now — and pins that a `register()` after no failure pushes nothing. Known and
   not fixed: the first test checks the last pushed status, not that `notify()` fired exactly once.
+- **Closed:** 2026-09-25, PR #39 (`task/T-13c-tech-debt`, merge `8ffe0b1`) — the owner merged it (2026-09-25,
+  07:24 UTC); CI on the PR's last head (`f5e7a1c`) was green.
 
 ## TD-8 — The keyboard login walkthrough's comment says "Shift+Tab back"
 
@@ -228,6 +230,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   Enter — and that reverse order is not walked, because SPEC-auth §6 documents the forward order
   only. No test changed; the owner waived the failing-first line for a comment (T-13c plan, Q1
   (a)). The unchanged test passes on Chromium, Firefox and WebKit (3 passed).
+- **Closed:** 2026-09-25, PR #39 (`task/T-13c-tech-debt`, merge `8ffe0b1`) — the owner merged it (2026-09-25,
+  07:24 UTC); CI on the PR's last head (`f5e7a1c`) was green.
 
 ## TD-9 — The `minmax(0, 1fr)` rule for card grids is a comment, not a check
 
@@ -263,6 +267,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   passes). Not read: rows, `grid-auto-columns`, the `grid` shorthands, a track list held in a
   `var()`. Known and not fixed: the property name is matched in lower case only (Prettier
   lowercases it in `format:check`).
+- **Closed:** 2026-09-25, PR #39 (`task/T-13c-tech-debt`, merge `8ffe0b1`) — the owner merged it (2026-09-25,
+  07:24 UTC); CI on the PR's last head (`f5e7a1c`) was green.
 
 ## TD-10 — Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database
 
@@ -340,6 +346,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   `npx prisma migrate deploy` against the other machine's URL is not refused either. Not
   guarded, still: a direct `prisma migrate deploy`, by design, and the stock reset commands
   (T-13d, item 3).
+- **Closed:** 2026-09-25, PR #39 (`task/T-13c-tech-debt`, merge `8ffe0b1`) — the owner merged it (2026-09-25,
+  07:24 UTC); CI on the PR's last head (`f5e7a1c`) was green.
 
 ## TD-11 — Every `next build` downloads Public Sans from Google Fonts
 
@@ -389,3 +397,5 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   checks the hash of `OFL.txt` (the test reads only its title), and the layout check matches by
   substring, so a commented-out reference would satisfy it. T-16 lists the font in the third-party
   notices (backlog v1.27).
+- **Closed:** 2026-09-25, PR #39 (`task/T-13c-tech-debt`, merge `8ffe0b1`) — the owner merged it (2026-09-25,
+  07:24 UTC); CI on the PR's last head (`f5e7a1c`) was green.
