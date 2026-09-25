@@ -132,7 +132,7 @@ describe("next.config.ts refuses APP_ENV=test where a real database could be beh
 
   it("does not build with APP_ENV=test and another machine's DATABASE_URL", async () => {
     await expect(loadWith(source, { APP_ENV: "test", DATABASE_URL: neon })).rejects.toThrow(
-      /APP_ENV=test with a DATABASE_URL that does not name this machine/,
+      /APP_ENV=test with a DATABASE_URL or DATABASE_URL_UNPOOLED that does not name this machine/,
     );
   });
 

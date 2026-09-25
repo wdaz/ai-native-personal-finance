@@ -165,9 +165,11 @@ describe("T-01 scaffold", () => {
         .filter((name): name is string => Boolean(name)),
     );
 
-    // ADR-0005/0006/0007 and SPEC-webmcp-tools §2.1, plus the R1 spec variables (D6).
+    // ADR-0005/0006/0007 (and ADR-0007's T-14 amendment) and SPEC-webmcp-tools §2.1, plus the R1
+    // spec variables (D6).
     const required = [
       "DATABASE_URL",
+      "DATABASE_URL_UNPOOLED",
       "SESSION_SECRET",
       "DEMO_EMAIL",
       "DEMO_PASSWORD_HASH",
