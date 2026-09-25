@@ -5,7 +5,10 @@
 # for every path so a required-review branch rule has someone to route to.
 #
 # It enforces nothing by itself: GitHub only requires a code-owner review when a branch
-# ruleset's "Require review from Code Owners" setting is also on, and this session's tools
-# cannot read or change that setting (same plan, Review Focus 2 / Q3) — confirm it directly in
-# Settings > Rules for `main` if enforcement, not just attribution, is the goal.
+# ruleset's "Require review from Code Owners" setting is also on. Read from GitHub's API on
+# 2026-09-25 (`gh api repos/wdaz/ai-native-personal-finance/rules/branches/main`): that setting
+# (`require_code_owner_review`) is off in the `main` ruleset. Leave it off: the only code owner
+# is also the author of every pull request, and GitHub does not count an author's approval of
+# their own pull request (GitHub's documented rule; not tested here), so with no bypass actor in
+# the ruleset (none today) turning it on would block every merge.
 * @wdaz
