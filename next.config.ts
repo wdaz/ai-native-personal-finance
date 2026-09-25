@@ -34,6 +34,10 @@ const nextConfig: NextConfig = {
   // only by the owner's decision (AGENTS.md §2), so the feature is off.
   // tests/unit/next-config.test.ts holds it off.
   agentRules: false,
+  // T-13d finding F-05/TD-16: Next's default sends `X-Powered-By: Next.js` on every response,
+  // a plain framework-fingerprint with nothing asking for it. tests/api/proxy.spec.ts pins the
+  // absence on every response branch.
+  poweredByHeader: false,
   env: {
     NEXT_PUBLIC_WEBMCP_MODE: webmcpMode,
     NEXT_PUBLIC_APP_ENV: process.env.APP_ENV ?? "development",

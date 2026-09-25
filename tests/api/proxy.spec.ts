@@ -226,6 +226,21 @@ test("NFR-S6, ADR-0006: every branch's response carries Referrer-Policy, X-Conte
   }
 });
 
+// T-13d finding F-05/TD-16: Next's own poweredByHeader default leaked the framework on every
+// response, with nothing asserting its absence.
+test("T-13d F-05: no response carries X-Powered-By", async ({ request }) => {
+  const branches: Array<[string, () => Promise<APIResponse>]> = [
+    ["a public page", () => request.get("/login")],
+    ["a public API answer", () => request.get("/api/auth/session")],
+    ["a redirect", () => request.get("/transactions", { maxRedirects: 0 })],
+    ["a 401", () => request.get("/api/overview")],
+  ];
+  for (const [label, send] of branches) {
+    const response = await send();
+    expect(response.headers()["x-powered-by"], `${label}: X-Powered-By`).toBeUndefined();
+  }
+});
+
 // Review finding M6: the matcher excludes any path with a file extension. A logged-in visitor's
 // image request must not meet the session check, the reset-epoch query, `no-store` or the
 // proxy's headers.
