@@ -3,7 +3,8 @@
 Status: **Approved** (v1.40 — 2026-09-25: the runtime moves from Node 26 to Node 24, owner
 decision before T-14 — Vercel's builds and functions offer 24.x, 22.x and 20.x only, and Node 26
 is not LTS until 2026-10-28; `.nvmrc`, `engines.node` (`24.x`) and `@types/node` follow, held by
-`tests/unit/node-version.test.ts`, back to 26 once Vercel offers it; T-14's and T-16's rows now
+`tests/unit/node-version.test.ts`; back to 26 once Vercel offers it (the agent's proposal, approved
+by the owner; no task tracks it yet); T-14's and T-16's rows now
 name Node 24, and the measurements they quote on `node:26` stay as they were measured; v1.39 —
 2026-09-25: T-13d is closed — its pull request #47 is merged (merge
 `40c27f8`), the settings check and the settings it led to are on `main` (v1.36–v1.38), and

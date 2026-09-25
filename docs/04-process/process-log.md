@@ -4811,8 +4811,11 @@ them too").
   üçün" ("for Node 26 compatibility"), dropped it once told it does not change the build runtime,
   and answered the proposal to move to Node 24 with "bəli et" ("yes, do it").
 - **Prompt(s):** the conversation itself; no separate prompt file.
-- **Produced:** in this pull request — `tests/unit/node-version.test.ts` (failing first:
-  `expected [ 20, 22, 24 ] to include 26`, `expected '>=26' to be '26.x'`, on Node v24.20.0);
+- **Produced:** in this pull request — `tests/unit/node-version.test.ts` (failing first, as first
+  committed: `expected [ 20, 22, 24 ] to include 26`, `expected '>=26' to be '26.x'`, on Node
+  v24.20.0; after the review below its list is `[22, 24]`, its checks are functions with three
+  `(fixture)` cases, and with `.nvmrc` set back to 26 by hand all three real checks failed —
+  `expected [ 22, 24 ] to include 26` among them — before the file was restored);
   `.nvmrc` 24; `package.json` `engines.node` `24.x` and `@types/node` `^24.13.6` (the lockfile
   changes `@types/node` and its `undici-types` only); `README.md`; `backlog.md` v1.40; this entry.
   Outside the repository, on the owner's word: Vercel CLI 60.0.1, logged in as the owner's Vercel
@@ -4842,10 +4845,14 @@ them too").
   4. **Node 24.** Vercel's builds and functions offer 24.x (default), 22.x and 20.x
      (vercel.com/docs/functions/runtimes/node-js/node-js-versions, read 2026-09-25). Node 26 is
      "Current" until its LTS on 2026-10-28 (github.com/nodejs/Release `schedule.json`, read
-     2026-09-25); Node 24 took four weeks from LTS to Vercel (Vercel changelog, 2025-11-25). Node
-     24.21.0 bundles npm 11.19.0 (nodejs.org/dist/index.json), so `engines.npm >=11.19` and
-     `strict-allow-scripts` hold. `engines.node` is `24.x`, not `>=24`: Vercel reads it, and an
-     open range would move to a newer major there before CI's `.nvmrc` does.
+     2026-09-25); Node 24 took four weeks from LTS to Vercel (Vercel changelog, 2025-11-25). The
+     agent proposed 24 now and 26 again once Vercel offers it; the owner approved it. Node 24.20.0
+     and later bundle npm 11.19.0 (nodejs.org/dist/index.json), so `engines.npm >=11.19` and
+     `strict-allow-scripts` hold locally and on CI; on Vercel, whose 24.x minor and npm are
+     Vercel's to pick, it is unverified until T-14 reads the install log. `engines.node` is
+     `24.x`, not `>=24`: Vercel reads it, and an open range would move to a newer major there
+     before CI's `.nvmrc` does. Node 20 is out of the test's list: iron-session 9 needs Node
+     >= 22.13, and Vercel deprecates 20 on 2026-10-01.
 - **What ran where:** locally on nvm's Node v24.20.0 and npm 11.19.0, placed first on `PATH` and
   printed by every run — `npm ci --ignore-scripts`, lint (ESLint and Stylelint), `format:check`,
   `typecheck`, `test:coverage` (82 files, 1050 tests), `traceability` (18 of 18 stories), `npm
@@ -4860,7 +4867,14 @@ them too").
   in the browser) and wrote the MCP entry at *local* scope for that directory, where no session of
   this repository would have seen it. The agent moved it to user scope with `claude mcp add
   --scope user` and removed the stray entry. Node 26 was pinned at T-01 and no review since
-  compared it with the deploy target.
+  compared it with the deploy target. The whole-branch review (Opus 5.5, read-only) found that the
+  new guard shipped without the violation fixture DoD v1.1 asks of a config guard, so its
+  `@types/node` check had never been seen to fail; that its list accepted Node 20, which this
+  repository's dependencies refuse; that it rejected an exact `@types/node` pin; and that this
+  entry said the npm floor "holds" on Vercel without evidence. All four were fixed. Its fifth
+  point — CI's `setup-node` takes the runner's cached 24.x rather than the newest, since the
+  workflows set no `check-latest` — is left as it is: today's runner image caches 24.21.0 (npm
+  11.19.0), and an older one would fail `install-scripts.test.ts` loudly.
 - **Owner changes and reasoning:** Frankfurt instead of the agent's AWS US East 1 (N. Virginia)
   — "bura o yaxındır" ("it is close to here").
 - **Disagreements:** the region. The agent recommended US East 1 next to Vercel's default `iad1`,
