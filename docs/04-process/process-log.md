@@ -3945,3 +3945,47 @@ them too").
   that says "every branch" for three of four, the unsaved `next dev` headers, a repeated phrase in
   the T-13b hand-off) and the stale word at line 117 of the ADR are the owner's call. The next task
   in the backlog's order is T-13b (TD-3).
+
+## 2026-09-25 — Phase 5: T-13b `/_global-error` under the CSP (TD-3) — planning session
+
+- **Phase:** 5 (Build the slice), Release 1 — the next task after T-13a in the backlog's order
+  (backlog v1.31, Notes). The plan, `docs/04-process/plans/2026-09-25-T-13b.md` (v0.1), was written
+  on 2026-09-25 on this session's harness-assigned branch `claude/laughing-clarke-fpp7vz` (the
+  repository's own convention would name it `docs/T-13b-plan`, as T-13a's and T-13c's plans did — the
+  plan discloses the deviation in its own header). The owner has not yet answered Q1–Q4; the execution
+  is a later entry.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5).
+- **Trigger:** the owner's message "Task 13B planlamağa başla" ("Start planning Task 13B"), the
+  backlog's T-13b row (TD-3) and `tech-debt.md`'s TD-3 entry, which both already anticipated this
+  outcome: "if Next 16.3.5 allows no fix, the measured reason goes into TD-3 for the owner to decide,
+  instead of a forced change."
+- **Prompt(s):** `prompts/2026-09-25-T-13b.md`
+- **Produced:** the plan (Findings F1–F4, Review Focus 1–5, Q1–Q4, three tasks — Task 3 gated on Q2 —
+  and a self-review). In this session's own working tree, all removed afterwards and `git status`
+  confirmed clean: `npm ci` (`node_modules/`, gitignored); `npx next build` run twice, once unmodified
+  and once with a throwaway `app/global-error.tsx` (`force-dynamic`); `npx next start -p 3900` once,
+  read by one `curl -D -` of `GET /_global-error`; a copied `.env.local` (gitignored) with placeholder
+  secrets, needed only because the build wants a `SESSION_SECRET`/`DEMO_PASSWORD_HASH`/etc. to exist —
+  the app's routes are all dynamic, so no Docker/Postgres was needed to build. The throwaway
+  `app/global-error.tsx` and `.next/` were deleted; `.env.local` was deleted too, since it existed
+  only for this scratch build.
+- **What the agent got right:** it did not stop at TD-3's own text or the backlog row's framing —
+  both were checked against Next's installed source and a real build/serve/request cycle rather than
+  assumed. That found two things neither TD-3 nor the backlog row said: the route is directly
+  reachable by a plain `GET` (TD-3's "not reachable by a normal request" is wrong, F1), and a custom
+  `app/global-error.tsx` is not even selected for this specific synthetic artifact, which is a
+  stronger and more specific finding than T-06 finding F1's earlier "a trial build with `connection()`
+  … still listed `/_global-error` as prerendered" (F3). It also found the exact three places in Next's
+  own build code that force this (`entry-constants.js`, `build/utils.js` twice, `export/index.js`),
+  rather than stopping at "it renders as static."
+- **What the agent got wrong or missed:** left for the owner to find at the plan gate; nothing is
+  flagged here since this entry is written by the same session that wrote the plan it describes.
+- **Owner changes and reasoning:** left for the owner (`build-workflow.md` §2, §7).
+- **Disagreements:** none yet — Q1–Q4 are open.
+- **Lessons for the process:** a tech-debt entry's "Guarded meanwhile by: … not reachable by a normal
+  request" is itself a claim that needs checking before the next task that reads it relies on it; this
+  one had gone unchecked since 2026-09-23 (T-06 finding F1's process-log entry) because nothing had
+  reason to try `curl` against it until this task's own scope asked for a fix or a measured reason.
+- **Next:** the owner answers Q1–Q4. If Q1 is "yes" and Q4 names inline execution, the next session
+  runs Task 1 and Task 2 (and Task 3, if Q2 says "now") from a fresh `origin/main`, on
+  `task/T-13b-global-error`.
