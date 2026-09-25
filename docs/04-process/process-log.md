@@ -4427,3 +4427,50 @@ them too").
   `all_external_contributors`; (4) non-provider patterns and validity checks; (5) the stale SARIF
   comment in `ci.yml`. No TD entry is opened until the owner decides. Plan Q5 still holds for
   T-13d, so nothing here is pushed until the owner has read it.
+
+## 2026-09-25 — Phase 5: branch model — `develop` and a release-only `main`
+
+- **Phase:** 5 (Build the slice), Release 1 — a process decision, taken in the session that read
+  the GitHub settings (entry above). No code, no GitHub setting and no workflow was changed.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Trigger:** two owner messages after the settings check. First "main bir başa push etməni
+  qadağan edə bilərik?" ("can we forbid pushing straight to main?") — already true: the `main`
+  ruleset is `active`, requires a pull request, has no bypass actor and `current_user_can_bypass:
+  never` (re-read 2026-09-25). Then: "İkinci bir branch açılmalıdır və o development vaxtı o
+  istifadə olunmalıdır. adı develop olsun. release 1-dən sonra main pr və ya merge
+  qadağandandır. Yalnız release deploylarından sonra." ("A second branch must be opened, used
+  during development, named develop. After Release 1, PRs and merges to main are forbidden,
+  only after release deploys.")
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Produced:** `governance.md` v1.4 (new section "Branches and releases"), `backlog.md` v1.37
+  (Status line and a hand-off in T-15's row), this entry. On the same local branch as the entry
+  above, as separate commits.
+- **The owner's three answers**, to a structured question, after the agent read ADR-0007, both
+  workflows' triggers and the ruleset: (1) **deploy** — a `develop` → `main` merge is the deploy,
+  `main` stays production, ADR-0007 does not change (the other reading of "only after release
+  deploys" — deploy first, `main` records it afterwards — would have needed an ADR-0007
+  amendment and a second Vercel production branch); (2) **start** — when Release 1 closes; until
+  then pull requests go to `main` as today; (3) **enforcement** — a required status check that
+  fails unless the pull request's head branch is `develop`, no bypass actor (rejected: an
+  `update` rule with an owner bypass, because the agent pushes with the owner's account and a
+  bypass right would be the agent's too; and a rule in `governance.md` alone).
+- **What the agent got right:** asked before writing, since the sentence had two readings that
+  lead to different deploy pipelines, and read what the change would touch first. That found
+  three things the message did not mention: CodeQL's `pull_request` and `push` triggers name only
+  `main`, so a `develop` ruleset's CodeQL gate would have nothing to read; Dependabot's security
+  updates are on and, by GitHub's documented behaviour (not checked), target the default branch;
+  T-16 also edits `main`'s ruleset.
+- **What the agent got wrong or missed:** a ruleset has no condition on a pull request's source
+  branch as far as the agent knows; it did not check that against GitHub's documentation, and the
+  required-check design rests on it. The check does not enforce *when* a release pull request is
+  opened, only *from where*; the timing stays a rule in `governance.md`.
+- **Owner changes and reasoning:** the three answers above.
+- **Disagreements:** none.
+- **Lessons for the process:** governance.md had no branching rule at all, and AGENTS.md §2, both
+  workflows and the ruleset each hard-code `main` separately. A branch-model change touches all
+  of them; the switch task's checklist is written down now (governance "Open at the switch") so
+  it is not rediscovered later.
+- **Next:** the switch is not done. It is a task of its own after T-15, planned then with the
+  checklist in `governance.md`; open there: default branch (Dependabot decides), the hotfix
+  route, T-16's order. Nothing is pushed: plan Q5 still holds for T-13d and the owner has not
+  yet answered the push question.
