@@ -120,7 +120,12 @@ export async function register(tools: ToolDefinition[]): Promise<void> {
   generation?.abort();
   const controller = new AbortController();
   generation = controller;
+  // `mode()` reads the flag directly and is right at once, but a listener (the indicator) keeps
+  // the last status it was pushed — `unavailable` — until the tools settle, unless it is told
+  // now. Only a cleared failure changes what `status()` says, so nothing else is pushed (TD-7).
+  const hadFailed = registrationFailed;
   clearFailure();
+  if (hadFailed) notify();
 
   const context = await getModelContext();
   if (context === null || controller.signal.aborted) return;

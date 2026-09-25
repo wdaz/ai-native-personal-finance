@@ -304,6 +304,63 @@ describe("a rejected registration is reported, not swallowed (SPEC-webmcp-tools 
     warn.mockRestore();
   });
 
+  it("TD-7 — the next register() tells the listeners the failure is gone before its tools settle", async () => {
+    const adapter = await freshAdapter({ NEXT_PUBLIC_WEBMCP_MODE: "polyfill" });
+    const { context } = await polyfillReady();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    context.registerTool.mockImplementationOnce(async () => {
+      throw securityError();
+    });
+    await adapter.register([fakeTool("a")]);
+    const statuses: Array<{ mode: string | null; count: number }> = [];
+    adapter.onStatus((status) => statuses.push(status));
+    expect(statuses[statuses.length - 1]).toEqual({ mode: "unavailable", count: 0 });
+
+    let settle: () => void = () => undefined;
+    context.registerTool.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          settle = resolve;
+        }),
+    );
+    const registering = adapter.register([fakeTool("a")]);
+    await vi.waitFor(() => expect(context.registerTool).toHaveBeenCalledTimes(2));
+
+    // `registerTool` is still pending: `mode()` already says polyfill, so must the listener.
+    expect(adapter.mode()).toBe("polyfill");
+    expect(statuses[statuses.length - 1]).toEqual({ mode: "polyfill", count: 0 });
+
+    settle();
+    await registering;
+    expect(statuses[statuses.length - 1]).toEqual({ mode: "polyfill", count: 1 });
+    warn.mockRestore();
+  });
+
+  it("TD-7 — a register() that follows no failure pushes nothing before its tools settle", async () => {
+    const adapter = await freshAdapter({ NEXT_PUBLIC_WEBMCP_MODE: "polyfill" });
+    const { context } = await polyfillReady();
+    await adapter.register([fakeTool("a")]);
+    const statuses: Array<{ mode: string | null; count: number }> = [];
+    adapter.onStatus((status) => statuses.push(status));
+    const before = statuses.length;
+
+    let settle: () => void = () => undefined;
+    context.registerTool.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          settle = resolve;
+        }),
+    );
+    const registering = adapter.register([fakeTool("b")]);
+    await vi.waitFor(() => expect(context.registerTool).toHaveBeenCalledTimes(2));
+
+    expect(statuses).toHaveLength(before);
+
+    settle();
+    await registering;
+    expect(statuses[statuses.length - 1]).toEqual({ mode: "polyfill", count: 1 });
+  });
+
   it("a superseded generation stays silent: its late rejection neither warns nor sets the error", async () => {
     const adapter = await freshAdapter({ NEXT_PUBLIC_WEBMCP_MODE: "polyfill" });
     const { context } = await polyfillReady();
