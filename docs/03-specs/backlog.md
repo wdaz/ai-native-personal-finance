@@ -1,6 +1,13 @@
 # Backlog — Release 1 (vertical slice: Auth + Overview)
 
-Status: **Approved** (v1.35 — 2026-09-25: T-13d's fixes — TD-12, TD-15, TD-16 and TD-18 fixed
+Status: **Approved** (v1.36 — 2026-09-25: T-13d's GitHub-Settings check (plan Q3, the item the
+review left NOT TESTED) is done — read-only, `gh` as `wdaz`, nothing changed on GitHub: the `main`
+ruleset, private vulnerability reporting, secret scanning, Actions and fork-PR settings match the
+T-13d row's account; the ruleset also carries `code_quality` and `copilot_code_review` rules the
+row does not name; there is no required status check, so a failing CI job does not block a merge;
+CODEOWNERS enforcement is off on purpose; what stays with the owner is listed in
+`process-log.md`'s entry of the same date; `SECURITY.md` and `CODEOWNERS` now state what was
+read; v1.35 — 2026-09-25: T-13d's fixes — TD-12, TD-15, TD-16 and TD-18 fixed
 (owner decision: everything except the two Vercel-dependent findings, TD-14 and TD-17); TD-13
 investigated, no application-level fix possible (`TRACE` is a Fetch-spec forbidden method);
 `tech-debt.md` v1.19; `auth.md` v1.0.9 documents TD-15's new behaviour; PR #47 open (not yet

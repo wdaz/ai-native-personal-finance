@@ -4336,3 +4336,94 @@ them too").
   ready. TD-14 and TD-17 stay open, explicitly deferred to T-14's own work. The owner's own
   GitHub-Settings check (Q3) and any decision on TD-13's "no fix possible" status are still
   theirs to close out.
+
+## 2026-09-25 — Phase 5: T-13d, the GitHub-Settings check (plan Q3)
+
+- **Phase:** 5 (Build the slice), Release 1 — closing the one part of T-13d the review left NOT
+  TESTED: the GitHub repository settings (plan Q3, decision (b): "NOT TESTED, no tool access in
+  the remote session; the owner checks on a local session"). This is that local session: `gh`
+  signed in as `wdaz` (token scopes `repo`, `read:org`, `workflow`, `gist`), read-only.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, local session).
+- **Trigger:** the owner's "T-13D github yoxlaması qalıb. Ona baxa bilərsən?" ("T-13d's GitHub
+  check is still left. Can you look at it?").
+- **Prompt(s):** the conversation itself; a continuation of `prompts/2026-09-25-T-13d.md`, no
+  separate prompt file.
+- **Produced:** the check below; on a docs-only branch from `origin/main` (`40c27f8`), local
+  only: `SECURITY.md` and `.github/CODEOWNERS` (two sentences that said a setting was unknown now
+  state what was read), `backlog.md` v1.36 and this entry. The private review-report Artifact was
+  republished (version 3) with the results: a new update section at the top, a per-item result
+  table in Task 3 §2, and the statements that called these items open updated (the summary, the
+  method note, Observation 1, F9's search-based basis, "a failing job still fails the build" —
+  which is not a gate without a required check — and PR #47, now merged). **No GitHub setting
+  was changed** — every call was a `GET`.
+- **Evidence:** read 2026-09-25 with `gh api repos/wdaz/ai-native-personal-finance/<path>` for
+  the repository itself (no path), `rulesets`, `rulesets/23907266`, `rules/branches/main`,
+  `branches/main/protection`, `actions/permissions`, `actions/permissions/workflow`,
+  `actions/permissions/fork-pr-contributor-approval`, `private-vulnerability-reporting`,
+  `code-scanning/default-setup`, `code-scanning/analyses`, `code-scanning/alerts`,
+  `secret-scanning/alerts`, `dependabot/alerts`, `codeowners/errors` and `community/profile`
+  (16 calls; the last is not used as evidence); plus the two workflow files read locally. What
+  each said:
+  - **`main` ruleset — PASS, matches the T-13d row.** One active ruleset (id 23907266, named
+    "Copilot review for default branch", target `~DEFAULT_BRANCH`), no bypass actors,
+    `current_user_can_bypass: never`. Rules: `deletion`, `non_fast_forward`, `pull_request` (0
+    approvals; no code-owner review, last-push approval or thread resolution), `code_scanning`
+    (CodeQL, `security_alerts_threshold: high_or_higher`, `alerts_threshold: errors`) — and two
+    the row does not name: `code_quality` (`errors`) and `copilot_code_review` (on push and on
+    drafts). No classic branch protection (404).
+  - **No required status check** (the row said so too). A failing `ci.yml` job — the gitleaks
+    `secret-scan` job among them — does not block a merge. Low; FAIL or BY DESIGN is the
+    owner's call (below).
+  - **CODEOWNERS — BY DESIGN.** GitHub's validator reports 0 errors for `* @wdaz`; enforcement is
+    off (`require_code_owner_review: false`) and should stay off: the only code owner authors
+    every pull request, GitHub does not count an author's approval of their own pull request
+    (documented rule, not tested here), and the ruleset has no bypass actor.
+  - **Private vulnerability reporting — PASS:** `enabled: true`, so `SECURITY.md`'s reporting
+    path works.
+  - **Secret scanning:** enabled, push protection enabled, Dependabot security updates enabled;
+    non-provider patterns and validity checks `disabled`, as the row said. Whether GitHub offers
+    those two toggles to this repository was not checked.
+  - **Actions:** `allowed_actions: all`, `sha_pinning_required: false`; the default token is
+    read-only and workflows cannot approve pull requests. F8 (third-party actions pinned by tag)
+    stands; `sha_pinning_required` is the setting that would enforce full-SHA pins.
+  - **Fork pull requests — PASS.** Approval policy `first_time_contributors` (GitHub's other
+    two: a looser `first_time_contributors_new_to_github`, a tighter `all_external_contributors`).
+    Both workflows trigger only on `push`, `pull_request` and `schedule` — no
+    `pull_request_target`, no `workflow_run` — and reference no `secrets.*`; by GitHub's
+    documented rule a fork's `pull_request` run gets a read-only token and no secrets (not tested
+    with a real fork pull request).
+  - **Code scanning:** default setup `not-configured` (the advanced `codeql.yml`, owner decision
+    in v1.26); CodeQL analyses for `main` (`40c27f8`) and PR #47's merge ref are uploaded, 0
+    results. Open alerts: code scanning 0, secret scanning 0, Dependabot 0.
+  - **F9 settled:** `ci.yml:193-195` says "No SARIF upload: code scanning needs GitHub Code
+    Security, unavailable while the repository is private". The repository is public
+    (`private: false`) and CodeQL uploads are accepted, so the comment is stale. Not touched
+    here: a workflow file, and not part of PR #47.
+  - **Not tested:** a real fork pull request; whether `code_quality` and `copilot_code_review`
+    ever fire or block; a direct push to `main` (the blocking rules were read, not exercised).
+- **What the agent got right:** followed the plan's own "what would settle it" path, read-only,
+  and compared each of the T-13d row's claims with the live setting instead of restating them —
+  which surfaced five things the row omitted (the two extra rules, `bypass_actors: []`,
+  `require_code_owner_review: false`, Dependabot security updates). Did not use
+  `community/profile` as evidence for `SECURITY.md`: it has no security-policy field.
+- **What the agent got wrong or missed:** the first draft of the `CODEOWNERS` comment stated as
+  settled fact that turning code-owner review on would block every merge; corrected before the
+  commit to "GitHub's documented rule, not tested here", and to name the no-bypass condition it
+  depends on. Did not check whether the two non-provider secret-scanning toggles are available on
+  this repository's plan.
+- **Owner changes and reasoning:** none yet — the decisions below are open.
+- **Disagreements:** none.
+- **Lessons for the process:** (1) Plan Q3(b) held up: marking the items NOT TESTED with the exact
+  local command as "what would settle it" made this follow-up mechanical — 16 read-only calls, no
+  new access. Keep naming the command, not "check GitHub". (2) The backlog row stated GitHub's
+  state in the present tense ("today it requires…") with no date or command; the read confirmed
+  it but found five omissions. A settings claim in a spec should carry the date and the command
+  that read it.
+- **Next:** the owner decides, each a Settings or workflow change this session did **not** make:
+  (1) required status checks on `main`, and which jobs — a Low finding if kept as is; (2)
+  `allowed_actions` all versus GitHub-owned only (both workflows use only `actions/*` and
+  `github/*`), and `sha_pinning_required` — turning it on fails today's tag-pinned workflows
+  until they are re-pinned; (3) fork approval `first_time_contributors` versus
+  `all_external_contributors`; (4) non-provider patterns and validity checks; (5) the stale SARIF
+  comment in `ci.yml`. No TD entry is opened until the owner decides. Plan Q5 still holds for
+  T-13d, so nothing here is pushed until the owner has read it.
