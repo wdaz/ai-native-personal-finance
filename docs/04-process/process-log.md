@@ -5300,6 +5300,11 @@ them too").
     password could contain the text it matched — three things a reader of `pg-connection-string`'s
     `parse` alone would have caught, found by the review instead. The agent's brief to the reviewer
     also called `pg` a direct dependency; it is a devDependency, and the reviewer corrected it.
+  - Two new test fixtures put a password with `&` in a URL on a non-local host
+    (`neon.example.com`), which the repository's own pre-commit `gitleaks` rule
+    (`postgres_connection_string`) refused; the fixtures now use `localhost`, as the neighbouring
+    ones do. The hook's `--no-verify` escape and a `.gitleaksignore` (none has ever existed) were
+    not used.
 - **Owner changes and reasoning:** none yet.
 - **Disagreements:** none.
 - **Lessons for the process:**
