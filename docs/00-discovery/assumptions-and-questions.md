@@ -1,6 +1,6 @@
 # Assumptions and open questions
 
-Status: Draft · Updated: 2026-09-08 (A4, A5, Q1, Q2 settled)
+Status: Draft · Updated: 2026-09-26 (Q3 and Q4 status cells only — closed by the NFRs and ADR-0001; the assumptions and the other questions are as of 2026-09-08) · 2026-09-08 (A4, A5, Q1, Q2 settled)
 
 ## Assumptions
 
@@ -19,6 +19,6 @@ Status: Draft · Updated: 2026-09-08 (A4, A5, Q1, Q2 settled)
 |---|----------|-----------|--------|
 | Q1 | Auth vs single-user: demo login with shared data, per-visitor sandbox, or no auth? | Requirements | **Decided 2026-09-08: demo login, shared dataset** |
 | Q2 | Reset semantics: full reset to seed, or only user-created records? | Requirements | **Decided 2026-09-08: full reset to seed data** |
-| Q3 | Browser matrix for WebMCP: native / polyfill / none, and how it is surfaced to the user | Requirements | **Answered** in `research/webmcp-status.md` §Implications 1; to be written as an NFR |
-| Q4 | Stack (Next.js vs Angular vs other) | Architecture | Deferred by decision |
+| Q3 | Browser matrix for WebMCP: native / polyfill / none, and how it is surfaced to the user | Requirements | **Answered** in `research/webmcp-status.md` §Implications 1; **written as NFR-W2 and NFR-B2** (`docs/01-requirements/non-functional-requirements.md`, approved 2026-09-13) |
+| Q4 | Stack (Next.js vs Angular vs other) | Architecture | **Decided** in `docs/02-architecture/adr/0001-stack.md` (Accepted, 2026-09-13): Next.js full-stack |
 | Q5 | Which WebMCP capabilities are exposed, and what safeguards apply to mutating tools | Requirements (NFR) → Architecture (ADR) | **Decided 2026-09-13:** read + add/edit/money tools; delete tools with on-screen confirmation (PRD OQ-5, NFR-W5) |
