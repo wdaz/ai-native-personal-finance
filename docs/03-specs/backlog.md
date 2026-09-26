@@ -1,6 +1,9 @@
 # Backlog — Release 1 (vertical slice: Auth + Overview)
 
-Status: **Approved** (v1.43 — 2026-09-26: **T-14 is done** — PR #60 (`44ff1b6`) and its close-out PR
+Status: **Approved** (v1.44 — 2026-09-26: TD-20 is fixed in its own pull request, #64 (in review;
+`tech-debt.md` v1.24) — no task row changes: `createDb` names `sslmode=verify-full` for `pg`, so the
+certificate check on the path to Neon does not depend on `pg` 8's reading of `require`, and a later
+`pg` 9 (simulated in a test) keeps it; v1.43 — 2026-09-26: **T-14 is done** — PR #60 (`44ff1b6`) and its close-out PR
 #61 (`73a12ea`) are merged, production runs from Git on a seeded Neon branch at
 `https://personal-finance-cyan-kappa.vercel.app`, and every hand-off in its row is answered; what it
 leaves is named in the row and in `tech-debt.md` v1.23 — TD-19 and TD-20 (their own pull requests),
@@ -263,5 +266,6 @@ Notes
   every route is dynamic) and **TD-20** (`pg`'s `sslmode=require` warning); TD-14 and TD-17 were
   closed by T-14's measurements on its preview (PR #60, merged; `tech-debt.md` v1.21–v1.22). Open at
   v1.42 also: **TD-21** (`/overview`'s LCP on production, 2624 ms and then 2594 ms against
-  NFR-P2's 2.5 s — kept by the owner as a documented exception at v1.43).
+  NFR-P2's 2.5 s — kept by the owner as a documented exception at v1.43). At v1.44 **TD-20** is
+  fixed and in review (PR #64); it closes when the owner merges.
 - Every PR follows `definition-of-done.md`; the owner merges. `release-1-stories.txt` = US-01, 02, 03, 04, 05, 06, 07, 08, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41.

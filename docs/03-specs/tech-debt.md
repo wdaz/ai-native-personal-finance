@@ -1,6 +1,10 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.23 — 2026-09-26: TD-21 gets the second Lighthouse measurement (`/overview`
+Status: **Approved** (v1.24 — 2026-09-26: TD-20 fixed in PR #64 (`fix/td-20-pg-sslmode`, in review):
+`createDb` gives `pg` a URL whose `sslmode=prefer|require|verify-ca` is written `verify-full`, so the
+certificate check on the path to Neon no longer depends on `pg` 8's reading of `require`; `pg` 9's
+libpq reading is simulated in a test; the entry's first option, an `overrides` pin below 9, is not
+needed; v1.23 — 2026-09-26: TD-21 gets the second Lighthouse measurement (`/overview`
 LCP 2594 ms again, the LCP element is the reset banner's text with a 1950 ms render delay) and the
 owner's decision: kept as a documented exception; v1.22 — 2026-09-26: T-14's production half — TD-14 and TD-17's closing lines
 carry PR #60's merge (`44ff1b6`); TD-21 opened — the first real Lighthouse run measured
@@ -48,7 +52,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-17 | The login rate-limit key is client-controlled `X-Forwarded-For` unless the host overwrites it | **Closed** (PR #60, `44ff1b6` — Vercel overwrites the header, measured) | T-13d (F-06); T-14 (6.7) |
 | TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Closed** | T-13d (PR #47; F-07) |
 | TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Open** — harmless while every route is dynamic; a separate small PR after T-14 (owner, 2026-09-26) | T-14 (6.5; residual of TD-14) |
-| TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Open** — a separate small PR after T-14 (owner, 2026-09-26) | T-14 (6.2, the Vercel build log) |
+| TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Fixed, in review** (PR #64) — closes when the owner merges it | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
 | TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — kept as a documented exception (owner, 2026-09-26) | T-14 (8.6) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
@@ -795,6 +799,32 @@ of protected pages on Vercel
   would pin the choice either way.
 - **Picked up by:** a separate small pull request after T-14 merges (owner, 2026-09-26); no backlog
   task exists for it yet.
+- **Fixed in:** 2026-09-26, PR #64 (`fix/td-20-pg-sslmode`; in review — the owner merges). The
+  entry's second option, the agent's recommendation at the merge gate: `createDb` hands the adapter
+  the URL with `sslmode=prefer|require|verify-ca` written `verify-full` (`src/server/db-url.ts`,
+  `withVerifiedSsl`). Only those three values change, as text — the userinfo, the host and the other
+  parameters stay byte for byte; a URL with `uselibpqcompat` is left as written, since its owner chose
+  libpq semantics; the local database's URL (no `sslmode`, or `disable`) is untouched.
+  - The first option, an `overrides` pin of `pg` below 9, is not taken: the rewrite is correct on
+    every `pg` version, and a pin would have added an entry for `package.json`'s `"//"` note and a
+    removal task. Neither of the options this entry lists as not working is used.
+- **Measured:** `parse` from the installed `pg-connection-string` 2.14.0, on a Neon-shaped URL —
+  `sslmode=require`: `ssl = {}` today (verified, and the warning), `{ rejectUnauthorized: false }`
+  under `useLibpqCompat` (what `pg` 9 will do); `sslmode=verify-full`: `{}` under both, no warning.
+  On the Vercel preview of PR #64 (2026-09-26, commit `e34bb79`): the build log has no `SECURITY
+  WARNING` line, where the preview of PR #63's build log (the control, the same day, before the fix)
+  prints it at "Generating static pages"; signed in as the demo account, `/overview` (200) and
+  `/api/overview` (200) answer — the pool connects to Neon under `verify-full`, as it did under
+  `require`.
+- **Guarded now by:** `tests/unit/server/db-url.test.ts` (what `withVerifiedSsl` changes and leaves
+  alone; the reading of `pg` 9 simulated with `useLibpqCompat`, with a fixture showing the
+  integration's URL stop verifying the certificate and the rewritten one keep it) and
+  `tests/unit/server/db.test.ts` (`createDb`'s options, with the adapter and the client mocked).
+- **Not covered, as before:** the schema engine that `prisma migrate deploy` runs at build time
+  reads the URL itself (`prisma.config.ts`); whether it verifies the certificate under
+  `sslmode=require` was not checked. Whether the integration's URL can be edited by hand was not
+  checked either; rewriting it in code needs no edit.
+- **Closed:** on the owner's merge of PR #64 — written here then, not before.
 
 ## TD-21 — The Overview page's LCP misses NFR-P2's 2.5 s on production
 

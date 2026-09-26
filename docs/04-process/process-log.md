@@ -5242,3 +5242,51 @@ them too").
 - **Next:** TD-19 and TD-20 as their own small pull requests when the owner schedules them; renew the
   origin-trial token before 2026-11-17; observe the 03:00 UTC cron's first scheduled run on 2026-09-27
   (03:00–04:00 UTC, or infer from `lastResetAt`) if the owner wants it recorded.
+
+## 2026-09-26 — Phase 5: TD-20 — `sslmode` named for `pg`, not inherited from `pg` 8
+
+- **Phase:** 5 (Build the slice), Release 1 — tech debt outside any backlog task. The owner had kept
+  TD-20 for its own small pull request at PR #60's merge gate ("3 ayrıca").
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, background session).
+- **Trigger:** the owner's "TD-19 və TD-20 hazırla." ("Prepare TD-19 and TD-20"), after the agent's
+  list of what was left (`backlog.md` v1.43).
+- **Prompt(s):** `prompts/2026-09-26-TD-20.md`.
+- **Produced:** PR #64 (`fix/td-20-pg-sslmode`, draft until the owner reads it) —
+  `src/server/db-url.ts` (`withVerifiedSsl`), `src/server/db.ts` (`createDb` uses it),
+  `tests/unit/server/db-url.test.ts`, `tests/unit/server/db.test.ts`; `tech-debt.md` v1.24,
+  `backlog.md` v1.44, this entry.
+- **Measured:**
+  - `pg-connection-string` 2.14.0's `parse` on a Neon-shaped URL: `sslmode=require` gives `ssl = {}`
+    today (verified, with the deprecation warning) and `{ rejectUnauthorized: false }` under its
+    `useLibpqCompat` option, which is the reading `pg` 9 will make the default; `sslmode=verify-full`
+    gives `{}` under both, with no warning.
+  - Unit 1087 passed (18 new), API project 107 passed; `db.test.ts` failed first (the adapter was given
+    `require`).
+  - On the Vercel preview of the PR (commit `e34bb79`): the build log has no `SECURITY WARNING` line;
+    the log of PR #63's preview build, taken the same morning as a control, prints it at "Generating
+    static pages". Signed in as the demo account, `/overview` and `/api/overview` answer 200, so the
+    pool connects to Neon under `verify-full` as it did under `require`.
+- **What the agent got right:** used the library's own compatibility switch to simulate `pg` 9 in a
+  test, so the test states the regression (a fixture shows the integration's URL stop verifying the
+  certificate) instead of comparing two strings; changed the URL as text, not through `new URL`,
+  after reading in `src/shared/env.ts` how node-postgres re-encodes some URLs; compared the preview's
+  build log with a control log rather than reading it alone; left the `overrides` pin out and said why.
+- **What the agent got wrong or missed:**
+  - It ran `npm ci` in the second worktree with a `cd` from the first. That moved the shell's working
+    directory, and the harness then refused every command until the session re-entered its own
+    worktree — several steps lost, and the pull request the session was still working on (#63) was
+    left waiting for a commit.
+  - Whether the schema engine that `prisma migrate deploy` runs at build time verifies the
+    certificate under `sslmode=require` is still unchecked; the entry said so and this change does not
+    settle it.
+- **Owner changes and reasoning:** none yet.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A library's compatibility switch can stand in for a major upgrade in a test; a guard against a
+     future default is only a guard if the test can read that default today.
+  2. A build-log claim ("the warning is gone") needs a control log from a build that had it.
+  3. Work in two worktrees means `EnterWorktree` with `path`, never `cd` — the isolation check reads
+     the shell's directory.
+- **Next:** the owner reviews and merges PR #64; TD-20 gets its **Closed** line on the merge. PR #63
+  and PR #64 both put a v1.24 line at the top of `tech-debt.md`'s and `backlog.md`'s headers: the
+  second to merge needs a docs-only rebase (v1.25), which the agent does when asked.
