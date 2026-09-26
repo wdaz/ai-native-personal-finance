@@ -5557,3 +5557,159 @@ them too").
 - **Next:** the owner reviews and merges this pull request. Left as they were: the 03:00 UTC cron's
   first scheduled run (2026-09-27, 03:00–04:00 UTC), the origin-trial renewal before 2026-11-17, and
   TD-21.
+
+## 2026-09-26 — Phase 5: T-16 closed — the order reversed, its open items moved to T-15
+
+- **Phase:** 5 (Build the slice), Release 1 — T-16's close, before T-15. No code.
+- **Participants:** Owner / Agent (Claude Code, background session — Sonnet 5, then Opus 5.5).
+- **Trigger:** after PR #66 the owner asked which five decisions were waiting ("hansı 5 qərar məni
+  gözləyir?"), answered four of them, asked for item 4 to be explained and for research on the licence
+  holder's name, and then said that T-16 must close, that `develop` must not be an obstacle, that T-15
+  closes Release 1 with T-16 finished before it, and that the five remaining parts can finish as part
+  of T-15.
+- **Prompt(s):** `prompts/2026-09-26-T-16-close.md`.
+- **Produced:**
+  - `03-specs/backlog.md` v1.48:
+    - The T-16 row is marked Closed and its Depends cell is `T-14`. Its approval item and its guard-files
+      item are struck through as replaced by the owner's branch rule.
+    - T-15's row gains a "from T-16 (v1.48)" hand-off: the licence, the notices, the README attribution,
+      the flagged scan, the rotation question, the `overrides` entry, the home-directory paths and the
+      six comments that name T-16. Its Depends cell is now `T-14, T-16`.
+    - The Notes: the order line is rewritten, and v1.46's sentence that T-16 "waits for T-15" is
+      corrected.
+    - The `concurrency` item is measured and moved to the done list.
+  - `04-process/governance.md` v1.5 — "Branches and releases":
+    - `develop` takes changes only through a pull request.
+    - `main` takes pull requests from `develop` and from hotfix branches only. This replaces the line
+      that said a separate hotfix route needed its own decision.
+    - Copilot's review gates nothing.
+    - T-16 closes without waiting for the switch.
+    - The hotfix branch pattern and how a hotfix returns to `develop` are left to the switch's plan.
+  - This entry and the prompt record.
+- **Measured (2026-09-26, `gh`, `origin/main` `a7bd4f3`):**
+  - *Consecutive pushes to `main`.* Four pairs or triples of runs overlapped in time. Each finished
+    with its own verdict, one of them a `failure`, and none was cancelled.
+  - *Cancelled `main` runs.* Of the 70 `main` push runs on record, one is cancelled: `a15fe68`, PR #4's
+    merge on 2026-09-22. It was superseded by `bbf4606` 14 s later, which is the bug T-13 fixed.
+  - *Pull requests.* On `fix/td-20-pg-sslmode`, two runs were cancelled by the next push to the pull
+    request.
+  - *Home-directory paths.* 86 lines in 48 files, all under `docs/04-process/`, none outside it.
+  - *Comments naming T-16.* Six comments name T-16 as the owner of a step (in `ci.yml`, `secret-scan.sh`,
+    `AgentToolsStatus.tsx`, two READMEs and `package.json`). No test pins the text.
+- **Research (the licence holder's name):**
+  - The MIT template's placeholder is "Copyright (c) [year] [fullname]"
+    ([choosealicense.com/licenses/mit](https://choosealicense.com/licenses/mit/), read 2026-09-26).
+  - Using a real name is the common practice. A pseudonym is lawful: the U.S. Copyright Office does not
+    require the author's real name, and a nickname or short form of a legal name is not a pseudonym.
+    Its help pages were found through a search on 2026-09-26; the FAQ page the agent opened did not
+    cover the point.
+  - The repository says "Ruslan Haqverdi" (README "Owner", `research/frontend-mentor-license.md`'s
+    footer). The GitHub profile says "Ruslan". The agent recommended the full name, for one name across
+    the licence, the footer and the portfolio. The owner chose it: "Copyright (c) 2026 Ruslan Haqverdi -
+    bu olsun".
+- **What the agent got right:**
+  - It read the last two owner lines as one instruction (close the row, move the open items) instead of
+    asking again.
+  - It measured the `concurrency` item and closed it, so it did not carry it into T-15.
+  - It checked its own claim that no `main` run had been cancelled, found one, and wrote down which run
+    it was and why.
+  - It kept the new text free of the home-directory prefix. In the prompt record it replaced only that
+    prefix and said so.
+- **What the agent got wrong or missed:**
+  - In PR #66 and in its answers it said T-16 "waits for T-15", reading the backlog's Depends column.
+    The backlog said both "T-15 closes Release 1" (T-15's row) and "T-16 is the last task of Release 1"
+    (Notes), and PR #65's body had pointed at that conflict. The agent picked one side instead of asking.
+  - Its first explanation of the rotation item, as one line in a list, did not reach the owner ("heç nə
+    anlamadım").
+  - Its first draft of the done list said no `main` run had ever been cancelled, before it counted.
+- **Owner changes and reasoning:**
+  - T-16 closes before T-15, and `develop` blocks neither.
+  - Item 1: Copilot is not stable enough to gate a merge. `main` and `develop` take pull requests only,
+    and `main` takes them only from `develop` and hotfix branches.
+  - Item 2 (licence) and item 5 (`overrides`): option a.
+  - Item 3: the home-directory paths leave the tree, even though history keeps them.
+  - Item 4, after the agent explained it in full (what a secret and a rotation are, why T-16 asked for
+    one before the flip, and why nothing needed rotating at the flip): option a ("4. a"). The rotation
+    item is N/A, and only a secret that T-15's flagged scan finds is rotated (`deploy.md` step 8).
+  - The licence holder: "Copyright (c) 2026 Ruslan Haqverdi".
+  - These two answers came while this pull request was open, so they are in it and not in a new
+    version: the backlog stays at v1.48.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. When two documents disagree about order, put the disagreement in front of the owner. Do not
+     answer from whichever document was read first.
+  2. A security item explained as one line of a list is a label, not an explanation. Say what the thing
+     is, why it was asked for and what changed since then.
+  3. Before calling a record clean ("none cancelled"), count it.
+- **Next:**
+  - The owner reviews and merges this pull request. No decision of the five is left open.
+  - T-15's plan gate orders the work of the "from T-16" hand-off. The owner asked that the home paths
+    not show "after the next pull request", so that item may come first, as a small pull request of its
+    own. (Superseded by the next entry: that hand-off is now T-15a.)
+
+## 2026-09-26 — Phase 5: T-15 split into four subtasks, the `develop` switch moved inside it
+
+- **Phase:** 5 (Build the slice), Release 1 — planning the order of T-15. No code.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:**
+  - The owner asked what "home path" meant and what T-15 now held. The agent grouped T-15's row into
+    four parts: the retrospective, the Release 2 spec work, the branch model, and the items from T-16.
+  - The owner asked for four subtasks, run in the order go-public → branch model → retrospective →
+    Release 2, told the agent to ask its questions, and asked for the change inside PR #68.
+- **Prompt(s):** `prompts/2026-09-26-T-16-close.md` (the same record, continued).
+- **Produced (in PR #68, backlog still v1.48, `governance.md` still v1.5 — neither is merged yet):**
+  - Backlog: four rows, each depending on the one before it.
+    - **T-15a**, the go-public finish: T-16's hand-off, with the flagged history scan last.
+    - **T-15b**, the full `develop` switch.
+    - **T-15c**, the retrospective, with the lessons the log has sent to it.
+    - **T-15d**, Release 2 spec work opened.
+  - Backlog: T-15's row is now an umbrella. It maps each of its hand-offs to a subtask and keeps its
+    old text. Its branch-model hand-off is struck through where the owner changed it. The Notes order
+    line is extended.
+  - `governance.md`, "Branches and releases": the switch is T-15b, after T-15a and before the
+    retrospective. The old wording ("from the close of Release 1", "a task of its own, run after T-15")
+    is quoted where it changed. The plan's list gains the bootstrap question below.
+  - This entry and the continued prompt record.
+- **What the agent got right:**
+  - It asked only what changes the work. T-15b's scope reverses a written governance line; the scan's
+    place depends on which branch later work lands on; T-15d's extent decides whether it is a small
+    task or several sessions.
+  - It took the subtask naming (T-15a–T-15d, as T-13a–T-13d) from precedent instead of asking.
+  - It noticed that T-15a may be more than one pull request, and wrote "T-15a's pull requests are the
+    last work pull requests to `main`".
+- **What the agent got wrong or missed:**
+  - Its first grouping of T-15 used the letters A–D for different parts than the owner's subtasks.
+    The owner's remapping ("A - D, B - C …") was needed to undo that. Numbered groups would not have
+    collided with the subtask letters.
+- **Owner changes and reasoning:**
+  - The `develop` switch is no longer a task after Release 1. It is T-15b, before the retrospective,
+    and governance is updated to say so ("Əlavə olaraq governance yenilənir bu qərarla").
+  - T-15a's pull requests are the last work pull requests to `main`. Everything after them goes to
+    `develop`.
+  - T-15d's extent is decided when it is planned.
+- **Measured afterwards (the owner asked how a permanent flagged scan would work):**
+  - The agent explained the change: the two gitleaks calls in `secret-scan.sh history` would take
+    `--ignore-gitleaks-allow`, so CI's required `secret scan` reads every `gitleaks:allow` line on
+    every push. `.gitleaks.toml`'s allowlists are untouched by the flag.
+  - The precondition is that the history passes with the flag today. The agent could not measure it:
+    this session's harness refused `gitleaks git` inside the worktree.
+  - The owner's own `!` run failed without detail. It ran in the worktree, which has no
+    `node_modules`, and `gitleaks.sh` had not created its cache folder, so gitleaks never started.
+    That run is no evidence either way.
+  - The owner then ran the commit-diff scan in the main checkout (09:36 UTC): "518 commits scanned",
+    "no leaks found". `git rev-list --all --count` read 521 minutes later in the same repository.
+    The difference is not explained here.
+  - The pass over commit and tag messages with the flag was not reported.
+  - Recorded in T-15a's row as a baseline, not as T-15a's final scan.
+- **Disagreements:** none. The agent's recommendation to make the flagged scan permanent in CI was not
+  taken up. The owner answered the problem behind it: the branch that later work lands on. The
+  recommendation is recorded in T-15a's row as open for its plan gate, not as a decision.
+- **Lessons for the process:** labels given in an answer become names the owner reuses. When the owner
+  may turn a grouping into tasks, number it rather than lettering it.
+- **Next:**
+  - The owner reviews and merges PR #68.
+  - T-15a's plan gate comes next. The home-directory paths may be its first, small pull request.
+  - A question for T-15b's plan gate: the head-branch check's workflow reaches `main` only with the
+    first `develop` → `main` release pull request, because T-15b's own pull requests target
+    `develop`. When `main`'s ruleset starts requiring it (before, with or after that pull request) is
+    that plan's first question.
