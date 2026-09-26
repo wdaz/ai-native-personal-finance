@@ -33,6 +33,8 @@ PATHS='/overview
 /transactions.segments/_tree.segment.rsc
 /api/overview
 /api/overview.json
+/overview.foo
+/budgets.x.y
 /avatars/bytewise.jpg
 /login'
 

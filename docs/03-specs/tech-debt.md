@@ -807,6 +807,9 @@ of protected pages on Vercel
     (326 for `/transactions`), now **with** the proxy's headers; `/overview.rsc` → 200, 22 546 bytes,
     the size TD-14's positive control measured; `/api/overview.json` → 404 (no such route); `/login`
     → 302 to `/overview`.
+  - *Repeated on commit `1577557`* (the review's fail-closed step; the script gained two paths): every
+    row above unchanged; cookie-less `/overview.foo` and `/budgets.x.y` → 302 to `/login?next=%2Foverview`
+    with both headers; signed in → 404 with both headers (the proxy ran and let the session through).
   - Not measured, and not needed for TD-19: the root's forms (`/index.rsc`, `/index.segments/*`). They
     reach the proxy now and are not mapped to `/`; the root redirects and holds no data.
 - **Closed:** on the owner's merge of PR #63 — written here then, not before.
