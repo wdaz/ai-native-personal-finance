@@ -5687,6 +5687,20 @@ them too").
   - T-15a's pull requests are the last work pull requests to `main`. Everything after them goes to
     `develop`.
   - T-15d's extent is decided when it is planned.
+- **Measured afterwards (the owner asked how a permanent flagged scan would work):**
+  - The agent explained the change: the two gitleaks calls in `secret-scan.sh history` would take
+    `--ignore-gitleaks-allow`, so CI's required `secret scan` reads every `gitleaks:allow` line on
+    every push. `.gitleaks.toml`'s allowlists are untouched by the flag.
+  - The precondition is that the history passes with the flag today. The agent could not measure it:
+    this session's harness refused `gitleaks git` inside the worktree.
+  - The owner's own `!` run failed without detail. It ran in the worktree, which has no
+    `node_modules`, and `gitleaks.sh` had not created its cache folder, so gitleaks never started.
+    That run is no evidence either way.
+  - The owner then ran the commit-diff scan in the main checkout (09:36 UTC): "518 commits scanned",
+    "no leaks found". `git rev-list --all --count` read 521 minutes later in the same repository.
+    The difference is not explained here.
+  - The pass over commit and tag messages with the flag was not reported.
+  - Recorded in T-15a's row as a baseline, not as T-15a's final scan.
 - **Disagreements:** none. The agent's recommendation to make the flagged scan permanent in CI was not
   taken up. The owner answered the problem behind it: the branch that later work lands on. The
   recommendation is recorded in T-15a's row as open for its plan gate, not as a decision.
