@@ -277,6 +277,33 @@ the commands are:
   definition lives on the latest production deployment (`vercel api /v9/projects/<project>`,
   `.crons.definitions[].host`), so run this test after each deployment. The 03:00 UTC schedule
   itself had not been observed when T-14 closed (the first window was over before anyone looked).
+- **Cold start** (NFR-D4: "cold start ≤ 10 s documented if the host sleeps"; the plan named it only
+  as a suspect for a Lighthouse miss, so T-14 closed without it and this note was added after).
+  Two things can be asleep and the first request after idle pays for both. **Neon's compute** scales
+  to zero: its operations list shows `suspend_compute` about five minutes after the last request and
+  `start_compute` within two seconds of the next request that reads the database, the operation
+  itself taking 0.38–0.44 s. **The Vercel function's instance** may be cold too; Fluid compute is on
+  (`vercel api /v9/projects/<project>`, `.resourceConfig.fluid`), and whether an instance is really
+  cold cannot be seen from outside, so the round is judged by the database side. A first visitor
+  meets `/login`, which reads no database (control: in a measured round Neon's `start_compute` came
+  after the `/login` request, at the `/api/meta` one), and then pages that do; `/api/meta` stands for
+  those. **To measure:** leave production alone for ten minutes, then `GET` `/login`, `/api/meta`
+  and `/login` again with `curl -w '%{time_starttransfer}'` —
+  `prompts/2026-09-26-NFR-D4-cold-start/scripts/cold-rounds.sh` does three rounds — and confirm in
+  the Neon console's operations (or the MCP's `list_operations`) that each round has a
+  `start_compute` on the production endpoint. **Any other request to production inside the idle
+  window spoils a round**: round 1 of 2026-09-26 was one (a request that did not come from the
+  script had started the compute at 07:57:44 UTC), so it is recorded and not counted. **Result**
+  (2026-09-26, from Baku to `fra1`; `x-vercel-id` reads `fra1::fra1::…`): the first request to a route
+  after idle took 1.07–1.71 s on `/login` and 1.91–2.96 s on `/api/meta`, against 0.30–0.44 s warm
+  (the first request of a whole round, which meets both sleepers, took 1.71–2.96 s); **the worst
+  was 2.96 s, so NFR-D4's 10 s holds with about 7 s to spare** (every number is in the Record
+  table). The database's own start is 0.4 s of that; the rest is the function and the first
+  connection, not split further. **Not covered:** the paint after a cold first byte (Lighthouse runs
+  warm by design, TD-21), a cold sign-in (`POST /api/auth/login` writes a row), a requester far from
+  Frankfurt, and an idle much longer than the ten minutes of these rounds (the first measurement's
+  database had slept 45 minutes and came in at 2.96 s). Repeat after a change of region, of Neon's
+  plan or autosuspend setting, or of anything that grows the server bundle.
 - **A preview's secret does not open production** (plan Review Focus 3): the preview's
   `RESET_SECRET` against production's `/api/admin/reset` → 401.
 - **Login lockout** (TD-17): after ten failed logins from one address the eleventh is 429. Any
@@ -365,4 +392,5 @@ See also vercel.com/docs/environment-variables/rotating-secrets (linked from the
 | 2026-09-26 | Cron: the dashboard's "Run" on PR #61's deployment (05:01:58 UTC) | `GET /api/admin/reset` → 200; log `reset skipped reason=scheduled dueAt=2026-10-05T20:27:20.051Z`; host = the per-deployment URL (SSO-protected), no user agent | Vercel's cron call passes Deployment Protection and carries `CRON_SECRET` (Review Focus 5's open question). |
 |            | The first scheduled cron run (03:00 UTC, Hobby: any time in that hour) |        | not observed by T-14: logs last one hour — read at 03:00–04:00 UTC, or infer from `lastResetAt` (it moves only when a reset happens, so "not due" leaves no trace) |
 | 2026-09-26 | Origin-trial token registered and set (plan 8.5) | origin `https://personal-finance-cyan-kappa.vercel.app:443`, feature `WebMCP`, `isSubdomain: true`, token expiry **2026-11-17T00:00:00Z** (Chrome: "Up to Chrome 156 …, no later than Nov 17, 2026"); `/api/meta` → `originTrial: true`; one `<meta http-equiv="origin-trial">` on the signed-in `/overview` with the configured token, none on `/login` (outside the `(app)` layout) | set by the owner with `set-ot.sh` (Config, Production); the step-6 check said `/login` until now |
+| 2026-09-26 | Cold start of production (NFR-D4): the first request to each route after ten minutes without traffic, three rounds, and the measurement that came before them | Seconds to the last byte (bodies are small; the first byte is within 5 ms of it), the first request to each route in a round in bold. First measurement 07:44:51Z, Neon asleep since 06:59Z: `/api/meta` **2.96**, then 0.44. Round 2, 08:10:24Z: `/api/meta` **2.62**, `/login` **1.07**, `/api/meta` 0.44. Round 3, 08:20:28Z: `/login` **1.71**, `/api/meta` **1.91**, `/login` 0.30. Round 1, 08:00:22Z, **not counted**: `/login` 0.79, `/api/meta` 0.80, `/login` 0.43 — a request that did not come from the script had started production's compute at 07:57:44Z. Neon operations on the production endpoint: `start_compute` 07:44:51Z, 08:10:26Z and 08:20:31Z (0.38–0.39 s each), `suspend_compute` 07:50:01Z, 08:05:31Z and 08:15:31Z (each about five minutes after the last request) | Worst cold first request **2.96 s**, limit 10 s: NFR-D4 holds. Warm 0.30–0.44 s, from Baku; `x-vercel-id: fra1::fra1::…`; Fluid compute on. Whether the function's instance was cold in each round was not observable, the database's side was confirmed; the origin of the 07:57:44Z request is not known. Script and brief: `prompts/2026-09-26-NFR-D4-cold-start.md` |
 |            | Relay demo — exact steps and what was seen                |        |       |

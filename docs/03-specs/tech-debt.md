@@ -1,6 +1,10 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.25 — 2026-09-26: TD-19 and TD-20 closed, on the owner's word ("Hər ikisi
+Status: **Approved** (v1.26 — 2026-09-26: NFR-D4's cold-start note is written, on the owner's word
+("bitmiş olaraq qeyd et" — "record it as done"): `deploy.md` step 5 and its Record table hold the
+method and three cold measurements of production — the first byte of the first request to a route after idle came
+in at 1.07–2.96 s (worst 2.96 s, NFR-D4's limit is 10 s); TD-21's "not measured" and "fix" lines are
+updated to say so, and nothing else in the file changes; v1.25 — 2026-09-26: TD-19 and TD-20 closed, on the owner's word ("Hər ikisi
 üçün et"): TD-19 by PR #63, which the owner merged (`dd81c44`, 2026-09-26 06:41 UTC), TD-20 by PR
 #64 (`fix/td-20-pg-sslmode`), this one, on its merge. TD-20: `createDb` gives `pg` a URL whose
 `sslmode=prefer|require|verify-ca` is written `verify-full` (and refuses one it cannot rewrite as
@@ -936,9 +940,11 @@ of protected pages on Vercel
   time 0 and **render delay 1950 ms**. So the wait is neither the network, nor the database (the
   server answers in 20 ms), nor an image or font download: the text is in the HTML and is painted late
   — a render-blocking stylesheet or script, or hydration on a throttled CPU. Not measured: which of
-  those, whether the banner text is client-rendered after hydration, whether Neon's scale-to-zero
-  cold start ever adds to it (the runs were warm, after a sign-in and a warm-up request), and the
-  spread between runs from a runner outside Europe.
+  those, whether the banner text is client-rendered after hydration, whether a cold first request
+  changes the LCP (the Lighthouse runs were warm, after a sign-in and a warm-up request; the cold
+  server time itself is measured — 1.07–2.96 s to the first byte, NFR-D4's note in `deploy.md`
+  step 5 — but not the paint that follows it), and the spread between runs from a runner outside
+  Europe.
 - **Owner decision:** 2026-09-26, after the second measurement ("b"): accepted as a **documented
   exception** — NFR-P2's LCP ≤ 2.5 s is not met on `/overview` (about 2.6 s, lab, mobile preset,
   production) and the owner keeps it for now. Options the owner did not take: fix the page in a
@@ -953,5 +959,5 @@ of protected pages on Vercel
 - **Fix:** if the owner reopens it: the banner's render delay first — check the stylesheet and script
   order on the `(app)` layout and whether the banner is server-rendered (its text is dated, "last
   reset 25 Sep 2026"); then the same run's TBT (62–252 ms, one run over 200). NFR-D4's cold-start
-  note still has to be written.
+  note is written (2026-09-26, `deploy.md` step 5 and the Record table).
 - **Picked up by:** nobody; kept by the owner's decision (2026-09-26).
