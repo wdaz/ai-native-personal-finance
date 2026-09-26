@@ -9,6 +9,11 @@
 # The repository scanned is the working directory's; the config is always this
 # repository's .gitleaks.toml. Output is redacted: CI logs are public once the repository
 # is (T-16), and a log line must never be the leak.
+#
+# Every gitleaks call below passes --ignore-gitleaks-allow (T-15a, owner decision
+# 2026-09-26): an inline `gitleaks:allow` comment would silence a finding from any file
+# and could pass review unnoticed. The one way to exempt a line is an allowlist in
+# .gitleaks.toml, which is reviewed and which tests/unit/secret-guard.test.ts makes fire.
 set -eu
 
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -50,7 +55,7 @@ case "${1:-}" in
     status=0
     echo "secret-scan: commit diffs" >&2
     "$here/gitleaks.sh" git --config "$config" --log-opts="--all --diff-merges=separate" \
-      --redact --no-banner --verbose . || status=$?
+      --ignore-gitleaks-allow --redact --no-banner --verbose . || status=$?
     # T-13: commit and annotated-tag messages are text the scan above never reads, and a
     # connection string pasted into one is as public as one in a file (T-02a's documented
     # limitation; the pass measured clean on this repository and failing on a leaky message,
@@ -60,14 +65,15 @@ case "${1:-}" in
     git log --all --format='%B' >"$messages"
     git for-each-ref refs/tags --format='%(contents)' >>"$messages"
     echo "secret-scan: commit and tag messages" >&2
-    "$here/gitleaks.sh" stdin --config "$config" --redact --no-banner --verbose \
-      <"$messages" || { rc=$?; [ "$status" -ne 0 ] || status=$rc; }
+    "$here/gitleaks.sh" stdin --config "$config" --ignore-gitleaks-allow --redact \
+      --no-banner --verbose <"$messages" || { rc=$?; [ "$status" -ne 0 ] || status=$rc; }
     exit "$status"
     ;;
   staged)
     # `--log-level warn` keeps a clean commit silent; a finding is still printed (--verbose).
+    # The flag here too: a commit the hook let through would only fail CI's history scan.
     exec "$here/gitleaks.sh" git --pre-commit --staged --config "$config" \
-      --log-level warn --redact --no-banner --verbose .
+      --ignore-gitleaks-allow --log-level warn --redact --no-banner --verbose .
     ;;
   *)
     echo "usage: secret-scan.sh history|staged" >&2

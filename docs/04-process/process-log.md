@@ -5713,3 +5713,61 @@ them too").
     first `develop` → `main` release pull request, because T-15b's own pull requests target
     `develop`. When `main`'s ruleset starts requiring it (before, with or after that pull request) is
     that plan's first question.
+
+## 2026-09-26 — Phase 5: T-15a, first piece — the secret scan ignores inline `gitleaks:allow` comments
+
+- **Phase:** 5 (Build the slice), Release 1 — T-15a work done ahead of its plan gate, at the owner's
+  request.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:**
+  - The owner's baseline had just shown that the commit diffs pass a flagged history scan (518
+    commits, "no leaks found").
+  - The owner asked: "Bunu daimi necə etmək olar? Hazırda edə bilərik?" ("How can this be made
+    permanent? Can we do it now?").
+- **Prompt(s):** `prompts/2026-09-26-T-15a-secret-scan-flag.md`.
+- **Produced:**
+  - `scripts/secret-scan.sh`: `--ignore-gitleaks-allow` on all three gitleaks calls. These are the
+    history scan's commit diffs, its commit and tag messages, and the staged scan the pre-commit hook
+    runs. A header comment says why.
+  - `tests/unit/secret-guard.test.ts`:
+    - A control test: gitleaks alone skips a line that carries the comment, in both `git` and `stdin`
+      modes.
+    - Three tests: a committed file, a commit message, and a staged file, each with the comment.
+      They assert the rule id, not only the exit status.
+  - `scripts/git-hooks/pre-commit`: the refusal message no longer suggests `--no-verify` for a false
+    positive. A false positive is exempted by an allowlist in `.gitleaks.toml`, and `--no-verify` is
+    offered only for when gitleaks cannot run.
+  - Documentation: `README.md` (the secret-guard paragraph and the `secrets:scan` row),
+    `scripts/README.md` and a comment in `ci.yml`.
+  - Backlog v1.49: the T-15a row and the Notes.
+  - This entry and the prompt record.
+- **Measured (local, macOS, gitleaks 8.30.1 through `scripts/gitleaks.sh`):**
+  - Before the script change: `npx vitest run tests/unit/secret-guard.test.ts` → 3 failed, 31
+    passed. The failures were the three new tests. The control passed.
+  - After the change: 34 passed.
+  - The existing clean-path tests ("lets a clean commit through", "passes messages that hold no
+    secret") still pass, so the flag does not make a clean scan fail.
+  - The CI `secret scan` job of this pull request is the first flagged pass over the commit and tag
+    messages of the real history. The owner's baseline covered commit diffs only.
+- **What the agent got right:**
+  - It wrote the tests first and showed them red.
+  - It added a control, so the tests cannot pass because gitleaks never honoured the comment.
+  - It asserted the rule id, because the hook's fail-closed refusal would otherwise hide a mistyped
+    flag.
+  - It found and corrected the hook's advice to use `--no-verify` for a false positive, which the
+    change made wrong.
+- **What the agent got wrong or missed:** its own commits in this worktree still ran the main
+  checkout's hook. `core.hooksPath` is shared and absolute, so those commits say nothing about the new
+  staged scan. The unit test is that evidence.
+- **Owner changes and reasoning:** the owner chose to do this now rather than at T-15a's plan gate.
+  PR #68 had recorded it as "offered and not taken up".
+- **Disagreements:** none.
+- **Lessons for the process:** a one-off check before a milestone ("scan the final tip") is weaker
+  than the same check made a gate. When the baseline is clean, turning the check into a gate costs
+  three flags and a test.
+- **Next:**
+  - The owner reviews and merges this pull request after reading its `secret scan` job.
+  - If that job is red, the finding goes to the owner. A `.gitleaksignore` is not added without the
+    owner.
+  - The rest of T-15a: the home-directory paths, the licence and notices, the README attribution,
+    TD-22, and the six comments that name T-16.

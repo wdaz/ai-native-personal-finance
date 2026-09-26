@@ -198,7 +198,7 @@ jobs:
           persist-credentials: false
 
       # Gitleaks 8.30.1 through scripts/gitleaks.sh (SHA-256 pinned): every ref, merge
-      # commits included, output redacted. A finding exits 1 and fails the job; the failed job
+      # commits included, inline `gitleaks:allow` comments ignored (T-15a), output redacted. A finding exits 1 and fails the job; the failed job
       # is the signal. No SARIF is uploaded to code scanning. That is a choice, no longer a
       # limit: the repository is public and code scanning accepts CodeQL uploads here. An
       # upload would need `security-events: write` on this job and would list leak locations
