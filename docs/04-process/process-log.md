@@ -5557,3 +5557,87 @@ them too").
 - **Next:** the owner reviews and merges this pull request. Left as they were: the 03:00 UTC cron's
   first scheduled run (2026-09-27, 03:00–04:00 UTC), the origin-trial renewal before 2026-11-17, and
   TD-21.
+
+## 2026-09-26 — Phase 5: T-16 closed — the order reversed, its open items moved to T-15
+
+- **Phase:** 5 (Build the slice), Release 1 — T-16's close, before T-15. No code.
+- **Participants:** Owner / Agent (Claude Code, background session — Sonnet 5, then Opus 5.5).
+- **Trigger:** after PR #66 the owner asked which five decisions were waiting ("hansı 5 qərar məni
+  gözləyir?"), answered four of them, asked for item 4 to be explained and for research on the licence
+  holder's name, and then said that T-16 must close, that `develop` must not be an obstacle, that T-15
+  closes Release 1 with T-16 finished before it, and that the five remaining parts can finish as part
+  of T-15.
+- **Prompt(s):** `prompts/2026-09-26-T-16-close.md`.
+- **Produced:**
+  - `03-specs/backlog.md` v1.48:
+    - The T-16 row is marked Closed and its Depends cell is `T-14`. Its approval item and its guard-files
+      item are struck through as replaced by the owner's branch rule.
+    - T-15's row gains a "from T-16 (v1.48)" hand-off: the licence, the notices, the README attribution,
+      the flagged scan, the rotation question, the `overrides` entry, the home-directory paths and the
+      six comments that name T-16. Its Depends cell is now `T-14, T-16`.
+    - The Notes: the order line is rewritten, and v1.46's sentence that T-16 "waits for T-15" is
+      corrected.
+    - The `concurrency` item is measured and moved to the done list.
+  - `04-process/governance.md` v1.5 — "Branches and releases":
+    - `develop` takes changes only through a pull request.
+    - `main` takes pull requests from `develop` and from hotfix branches only. This replaces the line
+      that said a separate hotfix route needed its own decision.
+    - Copilot's review gates nothing.
+    - T-16 closes without waiting for the switch.
+    - The hotfix branch pattern and how a hotfix returns to `develop` are left to the switch's plan.
+  - This entry and the prompt record.
+- **Measured (2026-09-26, `gh`, `origin/main` `a7bd4f3`):**
+  - *Consecutive pushes to `main`.* Four pairs or triples of runs overlapped in time. Each finished
+    with its own verdict, one of them a `failure`, and none was cancelled.
+  - *Cancelled `main` runs.* Of the 70 `main` push runs on record, one is cancelled: `a15fe68`, PR #4's
+    merge on 2026-09-22. It was superseded by `bbf4606` 14 s later, which is the bug T-13 fixed.
+  - *Pull requests.* On `fix/td-20-pg-sslmode`, two runs were cancelled by the next push to the pull
+    request.
+  - *Home-directory paths.* 86 lines in 48 files, all under `docs/04-process/`, none outside it.
+  - *Comments naming T-16.* Six comments name T-16 as the owner of a step (in `ci.yml`, `secret-scan.sh`,
+    `AgentToolsStatus.tsx`, two READMEs and `package.json`). No test pins the text.
+- **Research (the licence holder's name):**
+  - The MIT template's placeholder is "Copyright (c) [year] [fullname]"
+    ([choosealicense.com/licenses/mit](https://choosealicense.com/licenses/mit/), read 2026-09-26).
+  - Using a real name is the common practice. A pseudonym is lawful: the U.S. Copyright Office does not
+    require the author's real name, and a nickname or short form of a legal name is not a pseudonym.
+    Its help pages were found through a search on 2026-09-26; the FAQ page the agent opened did not
+    cover the point.
+  - The repository says "Ruslan Haqverdi" (README "Owner", `research/frontend-mentor-license.md`'s
+    footer). The GitHub profile says "Ruslan". The agent recommends the full name, for one name across
+    the licence, the footer and the portfolio. The choice is the owner's and is written into T-15 as
+    open.
+- **What the agent got right:**
+  - It read the last two owner lines as one instruction (close the row, move the open items) instead of
+    asking again.
+  - It measured the `concurrency` item and closed it, so it did not carry it into T-15.
+  - It checked its own claim that no `main` run had been cancelled, found one, and wrote down which run
+    it was and why.
+  - It kept the new text free of the home-directory prefix. In the prompt record it replaced only that
+    prefix and said so.
+- **What the agent got wrong or missed:**
+  - In PR #66 and in its answers it said T-16 "waits for T-15", reading the backlog's Depends column.
+    The backlog said both "T-15 closes Release 1" (T-15's row) and "T-16 is the last task of Release 1"
+    (Notes), and PR #65's body had pointed at that conflict. The agent picked one side instead of asking.
+  - Its first explanation of the rotation item, as one line in a list, did not reach the owner ("heç nə
+    anlamadım").
+  - Its first draft of the done list said no `main` run had ever been cancelled, before it counted.
+- **Owner changes and reasoning:**
+  - T-16 closes before T-15, and `develop` blocks neither.
+  - Item 1: Copilot is not stable enough to gate a merge. `main` and `develop` take pull requests only,
+    and `main` takes them only from `develop` and hotfix branches.
+  - Item 2 (licence) and item 5 (`overrides`): option a.
+  - Item 3: the home-directory paths leave the tree, even though history keeps them.
+  - Item 4: open.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. When two documents disagree about order, put the disagreement in front of the owner. Do not
+     answer from whichever document was read first.
+  2. A security item explained as one line of a list is a label, not an explanation. Say what the thing
+     is, why it was asked for and what changed since then.
+  3. Before calling a record clean ("none cancelled"), count it.
+- **Next:**
+  - The owner reviews and merges this pull request, answers item 4 and gives the licence holder's name.
+  - T-15's plan gate orders the work of the "from T-16" hand-off. The owner asked that the home paths
+    not show "after the next pull request", so that item may come first, as a small pull request of its
+    own.
