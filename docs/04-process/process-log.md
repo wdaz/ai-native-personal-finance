@@ -5242,3 +5242,60 @@ them too").
 - **Next:** TD-19 and TD-20 as their own small pull requests when the owner schedules them; renew the
   origin-trial token before 2026-11-17; observe the 03:00 UTC cron's first scheduled run on 2026-09-27
   (03:00–04:00 UTC, or infer from `lastResetAt`) if the owner wants it recorded.
+
+## 2026-09-26 — Phase 5: TD-19 — the proxy for Next's `.segments/*` and `.json` forms
+
+- **Phase:** 5 (Build the slice), Release 1 — tech debt outside any backlog task. The owner had kept
+  TD-19 for its own small pull request at PR #60's merge gate ("2 ayrıca").
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, background session; one Opus 5.5 review
+  subagent, read-only, per governance v1.3).
+- **Trigger:** the owner asked what work was left ("Növbəti hansı işlər qalib?"); the agent listed
+  TD-19, TD-20, T-15, the `develop` switch and T-16 from `backlog.md` v1.43 and recommended the two
+  debt entries first; the owner answered "TD-19 və TD-20 hazırla." ("Prepare TD-19 and TD-20").
+- **Prompt(s):** `prompts/2026-09-26-TD-19.md`; the measurement script
+  `prompts/2026-09-26-TD-19/scripts/preview-probe.sh`.
+- **Produced:** PR #63 (`fix/td-19-proxy-transport-forms`, draft until the owner reads it) — `proxy.ts`'s
+  matcher, `src/server/transport-path.ts`, `tests/unit/server/proxy-matcher.test.ts`,
+  `tests/unit/server/transport-path.test.ts`, `tests/fixtures/proxy-matcher.ts`, two API tests in
+  `tests/api/proxy.spec.ts`; `tech-debt.md` v1.24, `backlog.md` v1.44, this entry.
+- **Measured:**
+  - The old matcher, compiled with Next's own `getMiddlewareMatchers`, skipped `/overview.rsc`,
+    `/overview.segments/*` and `/api/overview.json` (the unit test's first, red run: six paths).
+  - With only the matcher changed, `next start` answered a cookie-less
+    `/overview.segments/_tree.segment.rsc` with **404 and the proxy's headers** — the proxy ran, and
+    still asked for no session. A temporary `console.log` in `proxy.ts` (removed before the commit)
+    showed why: Next hands the proxy the path without the final `.rsc`
+    (`/overview.segments/_tree.segment`), which the route matrix did not know.
+  - After `stripTransportSuffix`: unit 1093 passed, API project green (two new tests), Chromium E2E
+    109 passed / 8 skipped.
+  - On the Vercel preview of the PR (commit `167b498`): cookie-less `.rsc` and `.segments/*` forms 302
+    to `/login?next=…`, `/api/overview.json` 401, all with `X-Request-Id` and the CSP; the avatar still
+    skips the proxy; signed in, `.segments/*` answers 200 with the proxy's headers and `/overview.rsc`
+    22 546 bytes, as at T-14.
+- **What the agent got right:** compiled the matcher with Next's own function, so the regression test
+  failed first offline — the entry had said it could only fail on a deployment; would not stop at the
+  matcher change, because the request-level test stayed red and a log line explained why; measured the
+  preview with the T-14 bypass technique instead of predicting Vercel's behaviour from `next start`.
+- **What the agent got wrong or missed:**
+  - The first `stripTransportSuffix` and its comment assumed `next start` passes the whole
+    `.segment.rsc` to the proxy, and claimed Vercel "normalises `.rsc`" for the segment form as well;
+    neither was measured. The API test, not the agent, found it.
+  - `proxy-matcher.test.ts` imported `getMiddlewareMatchers`, which Next's `.d.ts` does not declare.
+    Vitest does not type-check, so five tests passed while `next build` (whose `tsconfig` includes the
+    tests) failed on the type check — found by the build the agent ran to start a server, not by the
+    test run.
+  - A server the agent had started by hand on port 3000 would have been reused by Playwright's
+    `reuseExistingServer` without `APP_ENV=test`, and every API test would then have failed at its
+    reset call for a reason unrelated to the change; the agent noticed before the run and stopped it.
+- **Owner changes and reasoning:** none yet.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A tech-debt entry that says a test "can only fail on a deployment" is a claim to challenge:
+     for a framework-derived rule (a matcher, a config) the framework's own compiler can usually run
+     offline.
+  2. Green Vitest is not type-green: run `npm run typecheck` right after writing a test that imports
+     a framework internal.
+  3. Where `next start` and the host differ, measure both — here they differ in what the proxy sees
+     (`.rsc` stripped locally), so the code handles both shapes rather than either.
+- **Next:** the owner reviews and merges PR #63 (CI, then the preview is already measured); TD-19
+  gets its **Closed** line in `tech-debt.md` on the merge; TD-20 is prepared as its own pull request.
