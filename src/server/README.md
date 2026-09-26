@@ -32,3 +32,7 @@ separate bundles and a module-level buffer would not be shared between them (the
 kept. The log round-trip is proven under `next start` (one process); under `next dev` the proxy
 may run in a different worker where `globalThis` is not shared, so a local dev check of the marker
 can 404 for a reason unrelated to the code.
+
+TD-20: `db-url.ts` — `withVerifiedSsl`, applied by `db.ts`'s `createDb` to the connection string:
+`sslmode=prefer|require|verify-ca` is written `verify-full` (`pg` 8 already reads them so, `pg` 9 will
+not), and one that cannot be rewritten as text is refused with an error.

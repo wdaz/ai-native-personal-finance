@@ -1,10 +1,11 @@
 # Tech debt — Release 1
 
 Status: **Approved** (v1.24 — 2026-09-26: TD-20 fixed in PR #64 (`fix/td-20-pg-sslmode`, in review):
-`createDb` gives `pg` a URL whose `sslmode=prefer|require|verify-ca` is written `verify-full`, so the
-certificate check on the path to Neon no longer depends on `pg` 8's reading of `require`; `pg` 9's
-libpq reading is simulated in a test; the entry's first option, an `overrides` pin below 9, is not
-needed; v1.23 — 2026-09-26: TD-21 gets the second Lighthouse measurement (`/overview`
+`createDb` gives `pg` a URL whose `sslmode=prefer|require|verify-ca` is written `verify-full` (and
+refuses one it cannot rewrite as text), so the certificate check on the path to Neon no longer depends
+on `pg` 8's reading of `require`; `pg` 9's libpq reading is simulated in a test, not run; the entry's
+first option, an `overrides` pin below 9, is not needed; the review noticed, outside TD-20, that `pg`
+ignores the URL's `channel_binding=require`; v1.23 — 2026-09-26: TD-21 gets the second Lighthouse measurement (`/overview`
 LCP 2594 ms again, the LCP element is the reset banner's text with a 1950 ms render delay) and the
 owner's decision: kept as a documented exception; v1.22 — 2026-09-26: T-14's production half — TD-14 and TD-17's closing lines
 carry PR #60's merge (`44ff1b6`); TD-21 opened — the first real Lighthouse run measured
@@ -802,12 +803,24 @@ of protected pages on Vercel
 - **Fixed in:** 2026-09-26, PR #64 (`fix/td-20-pg-sslmode`; in review — the owner merges). The
   entry's second option, the agent's recommendation at the merge gate: `createDb` hands the adapter
   the URL with `sslmode=prefer|require|verify-ca` written `verify-full` (`src/server/db-url.ts`,
-  `withVerifiedSsl`). Only those three values change, as text — the userinfo, the host and the other
-  parameters stay byte for byte; a URL with `uselibpqcompat` is left as written, since its owner chose
-  libpq semantics; the local database's URL (no `sslmode`, or `disable`) is untouched.
-  - The first option, an `overrides` pin of `pg` below 9, is not taken: the rewrite is correct on
-    every `pg` version, and a pin would have added an entry for `package.json`'s `"//"` note and a
-    removal task. Neither of the options this entry lists as not working is used.
+  `withVerifiedSsl`). Only those three values change, as text in the query — the userinfo, the host,
+  the other parameters and the fragment stay byte for byte; a URL with `uselibpqcompat=true` (the only
+  value `pg` honours) is left as written, since its owner chose libpq semantics; the local database's
+  URL (no `sslmode`, or `disable`) is untouched.
+  - After the rewrite the URL is read the way `pg` reads it — percent-decoded, tabs and newlines
+    stripped, the last occurrence winning — and one that still names a weak mode (`sslmode=re%71uire`,
+    `ssl%6Dode=require`, a trailing newline: the raw-text rewrite cannot see them) makes `createDb`
+    throw, with no part of the URL in the message, instead of passing it on. From the Opus 5.5 review
+    of the pull request; none of these shapes is what the integration writes.
+  - The first option, an `overrides` pin of `pg` below 9, is not taken: the rewrite does not depend
+    on which `pg` reads it, and a pin would have added an entry for `package.json`'s `"//"` note and a
+    removal task. `pg` is a devDependency here; the runtime copy comes through `@prisma/adapter-pg`'s
+    own `pg` (`^8.16.3`), so `pg` 9 reaches the app through an adapter release or an override, not
+    through a bump of the devDependency alone. Neither of the options this entry lists as not working
+    is used.
+  - *Inferred, not run:* that a `pg` 9 keeps the check. No `pg` 9 exists to run; the reading is the one
+    `pg-connection-string` 2.14.0's `useLibpqCompat` option emulates, which is what its own warning
+    names as the future default.
 - **Measured:** `parse` from the installed `pg-connection-string` 2.14.0, on a Neon-shaped URL —
   `sslmode=require`: `ssl = {}` today (verified, and the warning), `{ rejectUnauthorized: false }`
   under `useLibpqCompat` (what `pg` 9 will do); `sslmode=verify-full`: `{}` under both, no warning.
@@ -816,14 +829,22 @@ of protected pages on Vercel
   prints it at "Generating static pages"; signed in as the demo account, `/overview` (200) and
   `/api/overview` (200) answer — the pool connects to Neon under `verify-full`, as it did under
   `require`.
-- **Guarded now by:** `tests/unit/server/db-url.test.ts` (what `withVerifiedSsl` changes and leaves
-  alone; the reading of `pg` 9 simulated with `useLibpqCompat`, with a fixture showing the
-  integration's URL stop verifying the certificate and the rewritten one keep it) and
-  `tests/unit/server/db.test.ts` (`createDb`'s options, with the adapter and the client mocked).
+- **Guarded now by:** `tests/unit/server/db-url.test.ts` (what `withVerifiedSsl` changes, leaves alone
+  and refuses; the reading of `pg` 9 simulated with `useLibpqCompat`, with a fixture showing the
+  integration's URL stop verifying the certificate and the rewritten one keep it; and a sentinel that
+  the imported `pg-connection-string` is still the 2.x reading — it warns for `require`, the rewritten
+  URL does not — so the day the hoisted copy is version 3 the test fails and the simulation is
+  re-derived) and `tests/unit/server/db.test.ts` (what `createDb` hands the adapter, with the adapter
+  and the client mocked — not what `pg` does with it).
 - **Not covered, as before:** the schema engine that `prisma migrate deploy` runs at build time
   reads the URL itself (`prisma.config.ts`); whether it verifies the certificate under
   `sslmode=require` was not checked. Whether the integration's URL can be edited by hand was not
   checked either; rewriting it in code needs no edit.
+- **Found by the review, outside TD-20 (not fixed here):** `pg` 8.23 ignores `channel_binding=require`
+  in the URL — its client reads only the `enableChannelBinding` option (`pg/lib/client.js:87`) — so
+  the parameter the Neon URL carries does not turn channel binding on. Unmeasured beyond that reading
+  of the code; low impact (TLS with certificate verification is on). Whether it becomes an entry of its
+  own is the owner's decision.
 - **Closed:** on the owner's merge of PR #64 — written here then, not before.
 
 ## TD-21 — The Overview page's LCP misses NFR-P2's 2.5 s on production

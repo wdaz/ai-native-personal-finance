@@ -12,8 +12,8 @@ const NEON =
 
 /**
  * TD-20: the pool's connection string is the one `createDb` was given with `sslmode=require` named
- * `verify-full` (`src/server/db-url.ts`) — the choice pinned here, so a change of `pg` or of the
- * adapter cannot drop certificate verification on the way to Neon without a test failing.
+ * `verify-full` (`src/server/db-url.ts`). With the adapter mocked, this pins what `createDb` hands
+ * it — not what `pg` then does with the string; that reading is what `db-url.test.ts` simulates.
  */
 describe("createDb", () => {
   beforeEach(() => {
