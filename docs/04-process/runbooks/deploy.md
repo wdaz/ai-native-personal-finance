@@ -140,7 +140,9 @@ the deployment fails (and a Secret cannot be read back to notice).
   said `false` afterwards, so switch it on (Settings → Environments → Production, or `vercel api
   /v9/projects/<project> -X PATCH -F autoAssignCustomDomains=true`) and **check after every
   production deployment** that the domain answers from the new one (the same `/login` 200 check as
-  in step 5, or the deployment's `alias` list from `vercel api /v13/deployments/<id>`).
+  in step 5, or the deployment's `alias` list from `vercel api /v13/deployments/<id>`). Confirmed
+  2026-09-26: with the setting on (the owner switched it on in the dashboard; the API then said
+  `true`), PR #61's production deployment carried the project domain in its `alias` list on its own.
 - **Under Claude Code's auto mode the agent may not write to the secret store or deploy to
   production**: `vercel env add`/`rm` and `vercel deploy --prod` were refused as agent commands
   ("Secret-Store Writes", "Production Deploy") and are run by the owner with `!` — for the
@@ -249,7 +251,14 @@ the commands are:
   skips hidden files unless `include-hidden-files: true`; fixed in the close-out pull request), so
   read TBT from the next run's artifact. `gh workflow run lighthouse.yml --ref main` starts it
   from a terminal. Its first real run (2026-09-26, GitHub's runner, mobile preset): `/overview`
-  median-run LCP 2623.9 ms failed the 2500 ms assertion (TD-21); `/transactions` passed.
+  median-run LCP 2623.9 ms failed the 2500 ms assertion (TD-21); `/transactions` passed. The second
+  run (the automatic one after PR #61's deployment, its artifact now uploaded and free of the cookie)
+  gave `/overview` 2593.8 ms again, so the miss repeats; **the owner accepted it as a documented
+  exception (2026-09-26, TD-21)** and the assertion stays at 2500 ms, which means **the workflow is
+  red after every production deployment** until TD-21 is fixed or the limit is changed — a red run
+  is not a fault (it is not a required check). Read the reports from the run's artifact
+  (`gh run download <id> -n lighthouse -D <dir>`; the per-run LCP, TBT and the LCP element are in
+  the `*.report.json` files).
 - **Cron** (plan 8.4): `GET /api/admin/reset` with `Authorization: Bearer $CRON_SECRET` and no body
   answers 200 `{ "reset": false, "dueAt": … }` when the interval has not passed, 204 when it has
   (SPEC-reset-and-test-support §2.2); it must not redirect (`curl -sS -o /dev/null -w
@@ -259,7 +268,15 @@ the commands are:
   `last_updated` 2026-09-16), so "the day after" reads nothing: read the line within the hour after
   03:00 UTC (`vercel logs`, or the dashboard), or infer the run from `GET /api/meta` — `lastResetAt`
   moves only when a reset happened. The same limit applies to step 4's `reset reason=manual` line.
-  Vercel does not retry a failed run (plan F11).
+  Vercel does not retry a failed run (plan F11). **To test the cron right after a deployment**,
+  Settings → Cron Jobs → **Run** in the dashboard starts the same call: on 2026-09-26 (05:01:58 UTC,
+  PR #61's deployment) it reached the deployment's own host — the per-deployment URL, which Vercel
+  Authentication protects — with the `CRON_SECRET` header and got 200 with `reset skipped
+  reason=scheduled dueAt=…` in the log, so Deployment Protection does not block Vercel's cron call
+  (`vercel logs -d <deployment-url> --since 30m --json`, inside the one-hour window). The cron
+  definition lives on the latest production deployment (`vercel api /v9/projects/<project>`,
+  `.crons.definitions[].host`), so run this test after each deployment. The 03:00 UTC schedule
+  itself had not been observed when T-14 closed (the first window was over before anyone looked).
 - **A preview's secret does not open production** (plan Review Focus 3): the preview's
   `RESET_SECRET` against production's `/api/admin/reset` → 401.
 - **Login lockout** (TD-17): after ten failed logins from one address the eleventh is 429. Any
@@ -270,15 +287,27 @@ the commands are:
 
 1. In Chrome's origin-trial console (developer.chrome.com/origintrials), register the WebMCP
    trial for the exact origin `https://personal-finance-cyan-kappa.vercel.app` — the project's own
-   production domain, as in the platform map and the record table. A token is bound to one origin, and `vercel.app` is on the Public Suffix List, so there
-   are no subdomain tokens: every preview URL is another origin and gets none (plan F14).
-2. Set `WEBMCP_ORIGIN_TRIAL_TOKEN` for **Production** only (step 2, `--no-sensitive`), then
-   **redeploy** production (step 2's rule).
-3. Check: the production page's HTML holds `<meta http-equiv="origin-trial" content="…">`, and a
-   preview's does not (`curl -sS <url>/login | grep -c 'http-equiv="origin-trial"'` → 1 and 0).
-4. **Renew before Chrome 156** (ADR-0007). The trial runs in Chrome 149–156 (plan F14); the exact
-   expiry date is not on Chrome's pages, so read it in the console when registering and write it
-   in the record table. Renewal is the same registration, the same variable, a redeploy.
+   production domain, as in the platform map and the record table. A token is bound to one origin,
+   and `vercel.app` is on the Public Suffix List, so there are no subdomain tokens for `vercel.app`
+   itself: every preview URL is another origin and gets none (plan F14).
+2. Add the token to `~/.config/personal-finance-deploy/production.env` with an editor, then set
+   `WEBMCP_ORIGIN_TRIAL_TOKEN` for **Production** only, `--no-sensitive` (step 2; the CLI warns
+   "This name or value looks like a credential. Config values can be revealed after saving" — expected:
+   the token is printed into every page). It reaches production with the **next production
+   deployment** (step 2's rule); redeploy if none is coming.
+3. Check, signed in: `GET /api/meta` says `webmcp.originTrial: true`, and the HTML of `/overview`
+   holds exactly one `<meta http-equiv="origin-trial" content="…">` whose content is the token. The
+   tag is rendered by the `(app)` layout (SPEC-app-shell §2.1), so **`/login` has none, by design**
+   — this page said `/login` until 2026-09-26, and that check was wrong. A preview has none
+   (`/api/meta` → `originTrial: false`). `prompts/2026-09-25-T-14/scripts/t8-ot.sh` does the check
+   with the demo account and prints counts and booleans only.
+4. **Renew before Chrome 156 and before 2026-11-17** (ADR-0007). Chrome's console (2026-09-26): "Up to
+   Chrome 156 (ends with the rollout of next Chrome release), no later than Nov 17, 2026". The
+   token itself decodes to origin `https://personal-finance-cyan-kappa.vercel.app:443`, feature
+   `WebMCP`, `isSubdomain: true` and expiry **2026-11-17T00:00:00Z** (its payload starts after a
+   one-byte version, a 64-byte signature and a four-byte length — `prompts/…/scripts/ot-expiry.sh`
+   prints only those fields). Renewal is the same registration, the same variable (remove and add,
+   or `--force`), and a production deployment.
 
 ### 7. The headed native check and the relay demo
 
@@ -331,6 +360,9 @@ See also vercel.com/docs/environment-variables/rotating-secrets (linked from the
 | 2026-09-26 | First Git production deployment (PR #60's merge, `44ff1b6`): migrations applied, seed 204 | `prisma migrate deploy` applied both migrations to the production Neon host (`ep-patient-shadow-…`); `POST /api/admin/reset` → 204, `/api/meta` → `lastResetAt`; the function log had `reset reason=manual rows=59` (read within the hour) | the project domain still pointed at the old CLI deployment until the owner ran `vercel promote <deployment-url> --scope <team> --yes` from a scratch directory; `autoAssignCustomDomains` was `false` (step 1) |
 | 2026-09-26 | Production checks after the seed (plan 8.3, 8.4)          | smoke on the public domain all as expected (headers, HSTS `preload`, `Secure` cookie, the seed's balance in `/overview`); the preview's `RESET_SECRET` → 401; `GET /api/admin/reset` with `CRON_SECRET` → 200 `{"reset":false,"dueAt":"2026-10-05T…"}`, no redirect | run through `prompts/2026-09-25-T-14/scripts/` (`task8-secrets.sh` by the owner, `t8-smoke.sh` by the agent) |
 | 2026-09-26 | Lighthouse (plan 8.6): the first automatic run, then `workflow_dispatch` after the seed | the automatic run started on the production `deployment_status` (environment `Production`, as predicted) and stopped at "The deployment must be seeded", as designed; the dispatched run's Chrome started on the GitHub runner without `--no-sandbox`; `/overview` median-run LCP **2623.9 ms** (> 2500, NFR-P2) failed the assertion, `/transactions` passed every assertion | the reports were not uploaded (`.lighthouseci` is hidden; fixed by `include-hidden-files: true`, `docs/T-14-close-out`); TD-21 |
-|            | The first scheduled cron run (03:00 UTC, Hobby: any time in that hour) |        | logs last one hour: read at 03:00–04:00 UTC, or infer from `lastResetAt` |
-|            | Origin-trial token registered — expiry date read          |        |       |
+| 2026-09-26 | Lighthouse, second run (automatic, after PR #61's deployment; seeded database) | `/overview`: performance 0.92 / 0.97 / 0.97, LCP 2325 / 2593 / 2594 ms (median-run 2593.8 — over 2500), CLS 0, TBT 252 / 86 / 62 ms, server response 20 ms; `/transactions`: performance 0.99 / 0.99 / 0.98, LCP 1986 / 1990 / 2291 ms, CLS 0, TBT 108 / 92 / 87 ms. The `/overview` LCP element is the reset banner's text; its phases (median run): TTFB 644 ms (simulated), load delay 0, load time 0, **render delay 1950 ms**. The artifact uploaded, 26 files, none with the session cookie (24 with `[redacted]`) | run 36219369143; the assertion failed on `/overview` LCP only — accepted as an exception by the owner (TD-21, 2026-09-26); the workflow stays red after each production deployment |
+| 2026-09-26 | The project domain after the next production deployment | PR #61's deployment carried `personal-finance-cyan-kappa.vercel.app` in its `alias` list and served it (`/login` 200, `/api/meta` 200) | `autoAssignCustomDomains` had been switched on by the owner first (step 1) |
+| 2026-09-26 | Cron: the dashboard's "Run" on PR #61's deployment (05:01:58 UTC) | `GET /api/admin/reset` → 200; log `reset skipped reason=scheduled dueAt=2026-10-05T20:27:20.051Z`; host = the per-deployment URL (SSO-protected), no user agent | Vercel's cron call passes Deployment Protection and carries `CRON_SECRET` (Review Focus 5's open question). |
+|            | The first scheduled cron run (03:00 UTC, Hobby: any time in that hour) |        | not observed by T-14: logs last one hour — read at 03:00–04:00 UTC, or infer from `lastResetAt` (it moves only when a reset happens, so "not due" leaves no trace) |
+| 2026-09-26 | Origin-trial token registered and set (plan 8.5) | origin `https://personal-finance-cyan-kappa.vercel.app:443`, feature `WebMCP`, `isSubdomain: true`, token expiry **2026-11-17T00:00:00Z** (Chrome: "Up to Chrome 156 …, no later than Nov 17, 2026"); `/api/meta` → `originTrial: true`; one `<meta http-equiv="origin-trial">` on the signed-in `/overview` with the configured token, none on `/login` (outside the `(app)` layout) | set by the owner with `set-ot.sh` (Config, Production); the step-6 check said `/login` until now |
 |            | Relay demo — exact steps and what was seen                |        |       |

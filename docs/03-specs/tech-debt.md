@@ -1,6 +1,8 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.22 — 2026-09-26: T-14's production half — TD-14 and TD-17's closing lines
+Status: **Approved** (v1.23 — 2026-09-26: TD-21 gets the second Lighthouse measurement (`/overview`
+LCP 2594 ms again, the LCP element is the reset banner's text with a 1950 ms render delay) and the
+owner's decision: kept as a documented exception; v1.22 — 2026-09-26: T-14's production half — TD-14 and TD-17's closing lines
 carry PR #60's merge (`44ff1b6`); TD-21 opened — the first real Lighthouse run measured
 `/overview`'s LCP at 2624 ms on production, over NFR-P2's 2.5 s; v1.21 — 2026-09-26: T-14 measured the Vercel-related entries on the task's own
 preview (PR #60, in review): TD-14 closed — no data reachable without a session; TD-17 closed —
@@ -47,7 +49,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Closed** | T-13d (PR #47; F-07) |
 | TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Open** — harmless while every route is dynamic; a separate small PR after T-14 (owner, 2026-09-26) | T-14 (6.5; residual of TD-14) |
 | TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Open** — a separate small PR after T-14 (owner, 2026-09-26) | T-14 (6.2, the Vercel build log) |
-| TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — owner decides | T-14 (8.6) |
+| TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — kept as a documented exception (owner, 2026-09-26) | T-14 (8.6) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -804,18 +806,35 @@ of protected pages on Vercel
   The log reports failures only: the scores themselves are not in it, and the reports were not
   uploaded (`.lighthouseci` is hidden and `upload-artifact` skips hidden files — fixed in the same
   close-out pull request, so the next run's artifact has them).
-- **Owner decision:** pending.
-- **What:** one measurement, the median of three runs, from a runner in the United States against
-  functions in `fra1`; its variance is not known. Before the deployment, local dry runs had read
-  3.1–3.5 s on `/overview` and 2.7 s on `/transactions` under Lighthouse's simulated throttling —
-  not NFR evidence, and higher than production's figure. Not diagnosed: the LCP element and what
-  delays it, whether Neon's scale-to-zero cold start is in the first request, how much of it is the
-  runner's distance.
-- **Risk:** NFR-P2 is not met on the first page a visitor sees, by 124 ms on one measurement. Low
-  for a demo; it is also a Lighthouse assertion that now fails on every production deployment (the
-  workflow is not a required check).
-- **Guarded meanwhile by:** the Lighthouse workflow itself, which fails on it.
-- **Fix:** read the next run's uploaded report (LCP element, its breakdown, `total-blocking-time`),
-  repeat the run to see the spread, then decide: fix the page, or document an exception with the
-  owner's approval (NFR-D4 asks for the cold-start behaviour to be documented in any case).
-- **Picked up by:** the owner decides.
+- **Second measurement** (2026-09-26, the automatic run after PR #61's production deployment, GitHub
+  Actions run 36219369143, the same workflow, the artifact now uploaded and readable): `/overview`
+  performance 0.92 / 0.97 / 0.97, LCP **2325 / 2593 / 2594 ms** (median-run 2593.8 ms — over the limit
+  again, by 94 ms), FCP 0.94–1.05 s, CLS 0, total-blocking-time 252 / 86 / 62 ms, server response
+  20 ms; `/transactions` performance 0.99 / 0.99 / 0.98, LCP 1986 / 1990 / 2291 ms, CLS 0, TBT 108 /
+  92 / 87 ms. NFR-P1 (performance ≥ 0.9) and CLS hold on both pages; NFR-P2's LCP is missed on
+  `/overview` only, and the miss repeats.
+- **Diagnosis** (the report of the median `/overview` run): the LCP element is the reset banner's text
+  paragraph (`p.ResetBanner-module__…__text`, "Demo data resets every 10 days · last reset 25 Sep
+  2026"), and its phases are TTFB 644 ms (Lighthouse's simulated mobile latency), load delay 0, load
+  time 0 and **render delay 1950 ms**. So the wait is neither the network, nor the database (the
+  server answers in 20 ms), nor an image or font download: the text is in the HTML and is painted late
+  — a render-blocking stylesheet or script, or hydration on a throttled CPU. Not measured: which of
+  those, whether the banner text is client-rendered after hydration, whether Neon's scale-to-zero
+  cold start ever adds to it (the runs were warm, after a sign-in and a warm-up request), and the
+  spread between runs from a runner outside Europe.
+- **Owner decision:** 2026-09-26, after the second measurement ("b"): accepted as a **documented
+  exception** — NFR-P2's LCP ≤ 2.5 s is not met on `/overview` (about 2.6 s, lab, mobile preset,
+  production) and the owner keeps it for now. Options the owner did not take: fix the page in a
+  separate task (the recommendation), or relax the assertion to about 2.7 s.
+- **Risk:** low for a demo — 94 ms over on a lab measurement, the first page after the login. The
+  visible cost is in the repository: the Lighthouse assertion stays at 2500 ms, so **the Lighthouse
+  workflow is red after every production deployment** (it is not a required check) and a red run
+  no longer signals a new problem — a regression on `/transactions`, CLS or the performance score
+  would fail the same run and be easy to miss.
+- **Guarded meanwhile by:** the Lighthouse workflow itself, which fails on it — and reads the same
+  three assertions on `/transactions`, where nothing is excepted.
+- **Fix:** if the owner reopens it: the banner's render delay first — check the stylesheet and script
+  order on the `(app)` layout and whether the banner is server-rendered (its text is dated, "last
+  reset 25 Sep 2026"); then the same run's TBT (62–252 ms, one run over 200). NFR-D4's cold-start
+  note still has to be written.
+- **Picked up by:** nobody; kept by the owner's decision (2026-09-26).

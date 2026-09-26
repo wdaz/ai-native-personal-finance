@@ -5184,3 +5184,61 @@ them too").
   that shows whether the domain follows on its own; the first scheduled cron run is read at
   03:00–04:00 UTC; TD-19 and TD-20 have their own pull requests when the owner schedules them; TD-21
   needs the owner's decision after the next Lighthouse run's report can be read.
+
+## 2026-09-26 — Phase 5: T-14 — the last checks, and what the runbook had wrong
+
+- **Phase:** 5 (Build the slice), Release 1 — T-14, the end of plan Task 8: 8.5 (the origin trial), the
+  domain's follow-up, the cron and Lighthouse once more, after PR #61 (`73a12ea`).
+- **Participants:** Owner (the auto-assign switch, the origin-trial registration and `set-ot.sh`, the
+  merge of PR #61, the cron's "Run" button, the decision on TD-21) / Agent (Claude Code, Sonnet 5,
+  background session).
+- **Trigger:** the owner's answers to the agent's list of three ("1. hazırdı. 2. … no later than Nov
+  17, 2026. 3. İndi edim?" — "1. ready. 2. … 3. Shall I do it now?"), then "Deploy bitdi" ("The deploy
+  is done"), then "1. done 2. b" (the cron button pressed; TD-21 kept as an exception).
+- **Prompt(s):** `prompts/2026-09-25-T-14-execution.md` (the owner's messages), the scripts
+  `t8-ot.sh`, `ot-expiry.sh` and `set-ot.sh` in `prompts/2026-09-25-T-14/scripts/`.
+- **Produced:** the final-record pull request — the runbook's step 6 corrected and its record table
+  completed, `tech-debt.md` v1.23 (TD-21's second measurement, its diagnosis and the owner's decision),
+  `backlog.md` v1.43 (T-14 done, with what it leaves), and this entry.
+- **Measured:**
+  - With the owner's switch on, PR #61's production deployment carried the project domain in its
+    `alias` list by itself; before it, only `vercel promote` had moved it.
+  - The origin-trial token decodes to the project domain, `WebMCP`, `isSubdomain: true` and expiry
+    2026-11-17 00:00 UTC (Chrome's text: "Up to Chrome 156 …, no later than Nov 17, 2026"); the page
+    carries one `<meta>` tag — on the signed-in `/overview`, none on `/login`.
+  - The Lighthouse run after the deployment ran on a seeded database, uploaded its artifact (26 files, no
+    session cookie, 24 with `[redacted]`) and repeated the miss: `/overview` LCP 2325 / 2593 / 2594 ms,
+    the LCP element the reset banner's text, its phases TTFB 644 ms (simulated), load 0, **render delay
+    1950 ms**; performance 0.92–0.99 and CLS 0 everywhere; `/transactions` clean.
+  - The cron, called by the dashboard's "Run" at 05:01:58 UTC, reached the deployment's own
+    SSO-protected host with the `CRON_SECRET` header and answered 200 (`reset skipped
+    reason=scheduled dueAt=…`): Vercel's cron call passes Deployment Protection.
+- **What the agent got right:** measured the tag on the page instead of trusting the runbook; decoded
+  the token's payload for its expiry (the payload only, never the token) rather than asking; chose
+  the dashboard's "Run" as a way to observe the cron inside the one-hour log window; took the LCP
+  element and its phases from the artifact so that TD-21 says *why*, not only *how much*.
+- **What the agent got wrong or missed:**
+  - The runbook's step 6 told the reader to look for the origin-trial tag on `/login`; the tag is
+    rendered by the `(app)` layout (SPEC-app-shell §2.1) and `/login` is outside it — the agent had
+    written the check without reading where the tag comes from, and every reviewer missed it.
+  - The 03:00 UTC cron window passed unobserved: the agent knew Hobby's logs last one hour and
+    that the first scheduled run fell in the small hours, and did not schedule a check for it
+    (a background session can set one) nor ask the owner to be present.
+  - TD-21's "Found" text said nothing about why until the second run's artifact could be read; the
+    first run's reports had been lost to a hidden-directory default (fixed in PR #61).
+- **Owner changes and reasoning:** TD-21 decision "b": keep `/overview`'s LCP miss as a documented
+  exception. The agent had recommended a separate task to fix the banner's render delay; it stated the
+  consequence — the Lighthouse workflow stays red after every production deployment — and the
+  owner's choice stands.
+- **Disagreements:** none; the owner took a different option than the agent's recommendation.
+- **Lessons for the process:**
+  1. A check in a runbook is a claim about the page; write it from the code that renders the thing,
+     and run it once before it is written down.
+  2. An observation that needs a time window (one hour of logs, a 03:00 UTC schedule) needs an owner
+     for that window: schedule it or hand it over when the deploy lands, not after.
+  3. A permanently red CI check trains people to ignore it. If the owner keeps an exception, the
+     assertion it excepts should be visible as the only red one — a follow-up could split
+     `/overview`'s LCP from the other assertions.
+- **Next:** TD-19 and TD-20 as their own small pull requests when the owner schedules them; renew the
+  origin-trial token before 2026-11-17; observe the 03:00 UTC cron's first scheduled run on 2026-09-27
+  (03:00–04:00 UTC, or infer from `lastResetAt`) if the owner wants it recorded.
