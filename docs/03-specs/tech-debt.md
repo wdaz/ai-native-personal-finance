@@ -824,11 +824,11 @@ of protected pages on Vercel
 - **Measured:** `parse` from the installed `pg-connection-string` 2.14.0, on a Neon-shaped URL —
   `sslmode=require`: `ssl = {}` today (verified, and the warning), `{ rejectUnauthorized: false }`
   under `useLibpqCompat` (what `pg` 9 will do); `sslmode=verify-full`: `{}` under both, no warning.
-  On the Vercel preview of PR #64 (2026-09-26, commit `e34bb79`): the build log has no `SECURITY
-  WARNING` line, where the preview of PR #63's build log (the control, the same day, before the fix)
-  prints it at "Generating static pages"; signed in as the demo account, `/overview` (200) and
-  `/api/overview` (200) answer — the pool connects to Neon under `verify-full`, as it did under
-  `require`.
+  On the Vercel preview of PR #64 (2026-09-26, commit `e34bb79`, and again on `0de1025`, the head
+  after the review's changes): the build log has no `SECURITY WARNING` line, where the preview of
+  PR #63's build log (the control, the same day, before the fix) prints it at "Generating static
+  pages"; signed in as the demo account, `/overview` (200) and `/api/overview` (200) answer — the pool
+  connects to Neon under `verify-full`, as it did under `require`.
 - **Guarded now by:** `tests/unit/server/db-url.test.ts` (what `withVerifiedSsl` changes, leaves alone
   and refuses; the reading of `pg` 9 simulated with `useLibpqCompat`, with a fixture showing the
   integration's URL stop verifying the certificate and the rewritten one keep it; and a sentinel that

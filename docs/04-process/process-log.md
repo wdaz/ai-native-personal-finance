@@ -5263,7 +5263,8 @@ them too").
     gives `{}` under both, with no warning.
   - Unit 1100 passed (31 new, after the review's additions), API project 107 passed; `db.test.ts`
     failed first (the adapter was given `require`), and so did the review's eight new cases.
-  - On the Vercel preview of the PR (commit `e34bb79`): the build log has no `SECURITY WARNING` line;
+  - On the Vercel preview of the PR (commit `e34bb79`, and again on `0de1025` after the review's
+    changes): the build log has no `SECURITY WARNING` line;
     the log of PR #63's preview build, taken the same morning as a control, prints it at "Generating
     static pages". Signed in as the demo account, `/overview` and `/api/overview` answer 200, so the
     pool connects to Neon under `verify-full` as it did under `require`.
