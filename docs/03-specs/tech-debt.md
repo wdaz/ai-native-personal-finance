@@ -1,6 +1,14 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.24 — 2026-09-26: TD-19 fixed in PR #63 (`fix/td-19-proxy-transport-forms`, in
+Status: **Approved** (v1.25 — 2026-09-26: TD-19 and TD-20 closed, on the owner's word ("Hər ikisi
+üçün et"): TD-19 by PR #63, which the owner merged (`dd81c44`, 2026-09-26 06:41 UTC), TD-20 by PR
+#64 (`fix/td-20-pg-sslmode`), this one, on its merge. TD-20: `createDb` gives `pg` a URL whose
+`sslmode=prefer|require|verify-ca` is written `verify-full` (and refuses one it cannot rewrite as
+text), so the certificate check on the path to Neon no longer depends on `pg` 8's reading of
+`require`; `pg` 9's libpq reading is simulated in a test, not run; the entry's first option, an
+`overrides` pin below 9, is not needed; the review noticed, outside TD-20, that `pg` ignores the
+URL's `channel_binding=require`, and the owner declined ("Xeyr") an entry of its own for it — it
+stays recorded in TD-20's entry; v1.24 — 2026-09-26: TD-19 fixed in PR #63 (`fix/td-19-proxy-transport-forms`, in
 review): the matcher excludes static assets by extension instead of any dotted path, so Next's
 `.segments/*` and `.json` forms reach the proxy (the `.rsc` form already did), the route matrix reads
 a page's path with that suffix taken off, and a protected name followed by a dot asks for a session
@@ -53,8 +61,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-16 | `X-Powered-By: Next.js` is sent on every response | **Closed** | T-13d (PR #47; F-05) |
 | TD-17 | The login rate-limit key is client-controlled `X-Forwarded-For` unless the host overwrites it | **Closed** (PR #60, `44ff1b6` — Vercel overwrites the header, measured) | T-13d (F-06); T-14 (6.7) |
 | TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Closed** | T-13d (PR #47; F-07) |
-| TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Fixed, in review** (PR #63) — closes when the owner merges it | `fix/td-19-proxy-transport-forms` (PR #63; T-14 6.5, residual of TD-14) |
-| TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Open** — a separate small PR after T-14 (owner, 2026-09-26) | T-14 (6.2, the Vercel build log) |
+| TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Closed** (PR #63, `dd81c44`, 2026-09-26) | `fix/td-19-proxy-transport-forms` (PR #63; T-14 6.5, residual of TD-14) |
+| TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Closed** (PR #64, on its merge) | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
 | TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — kept as a documented exception (owner, 2026-09-26) | T-14 (8.6) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
@@ -812,7 +820,9 @@ of protected pages on Vercel
     with both headers; signed in → 404 with both headers (the proxy ran and let the session through).
   - Not measured, and not needed for TD-19: the root's forms (`/index.rsc`, `/index.segments/*`). They
     reach the proxy now and are not mapped to `/`; the root redirects and holds no data.
-- **Closed:** on the owner's merge of PR #63 — written here then, not before.
+- **Closed:** 2026-09-26, PR #63 (`fix/td-19-proxy-transport-forms`, merge `dd81c44`) — the owner merged
+  it (2026-09-26, 06:41 UTC); CI on the PR's last head (`43bc479`) was green: API tests, lint ·
+  typecheck · unit, the four E2E legs, CodeQL, secret scan, npm audit and the Vercel deployment.
 
 ## TD-20 — `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not
 
@@ -852,6 +862,56 @@ of protected pages on Vercel
   would pin the choice either way.
 - **Picked up by:** a separate small pull request after T-14 merges (owner, 2026-09-26); no backlog
   task exists for it yet.
+- **Fixed in:** 2026-09-26, PR #64 (`fix/td-20-pg-sslmode`; in review — the owner merges). The
+  entry's second option, the agent's recommendation at the merge gate: `createDb` hands the adapter
+  the URL with `sslmode=prefer|require|verify-ca` written `verify-full` (`src/server/db-url.ts`,
+  `withVerifiedSsl`). Only those three values change, as text in the query — the userinfo, the host,
+  the other parameters and the fragment stay byte for byte; a URL with `uselibpqcompat=true` (the only
+  value `pg` honours) is left as written, since its owner chose libpq semantics; the local database's
+  URL (no `sslmode`, or `disable`) is untouched.
+  - After the rewrite the URL is read the way `pg` reads it — percent-decoded, tabs and newlines
+    stripped, the last occurrence winning — and one that still names a weak mode (`sslmode=re%71uire`,
+    `ssl%6Dode=require`, a trailing newline: the raw-text rewrite cannot see them) makes `createDb`
+    throw, with no part of the URL in the message, instead of passing it on. From the Opus 5.5 review
+    of the pull request; none of these shapes is what the integration writes.
+  - The first option, an `overrides` pin of `pg` below 9, is not taken: the rewrite does not depend
+    on which `pg` reads it, and a pin would have added an entry for `package.json`'s `"//"` note and a
+    removal task. `pg` is a devDependency here; the runtime copy comes through `@prisma/adapter-pg`'s
+    own `pg` (`^8.16.3`), so `pg` 9 reaches the app through an adapter release or an override, not
+    through a bump of the devDependency alone. Neither of the options this entry lists as not working
+    is used.
+  - *Inferred, not run:* that a `pg` 9 keeps the check. No `pg` 9 exists to run; the reading is the one
+    `pg-connection-string` 2.14.0's `useLibpqCompat` option emulates, which is what its own warning
+    names as the future default.
+- **Measured:** `parse` from the installed `pg-connection-string` 2.14.0, on a Neon-shaped URL —
+  `sslmode=require`: `ssl = {}` today (verified, and the warning), `{ rejectUnauthorized: false }`
+  under `useLibpqCompat` (what `pg` 9 will do); `sslmode=verify-full`: `{}` under both, no warning.
+  On the Vercel preview of PR #64 (2026-09-26, commit `e34bb79`, and again on `0de1025`, the head
+  after the review's changes): the build log has no `SECURITY WARNING` line, where the preview of
+  PR #63's build log (the control, the same day, before the fix) prints it at "Generating static
+  pages"; signed in as the demo account, `/overview` (200) and `/api/overview` (200) answer — the pool
+  connects to Neon under `verify-full`, as it did under `require`.
+- **Guarded now by:** `tests/unit/server/db-url.test.ts` (what `withVerifiedSsl` changes, leaves alone
+  and refuses; the reading of `pg` 9 simulated with `useLibpqCompat`, with a fixture showing the
+  integration's URL stop verifying the certificate and the rewritten one keep it; and a sentinel that
+  the imported `pg-connection-string` is still the 2.x reading — it warns for `require`, the rewritten
+  URL does not — so the day the hoisted copy is version 3 the test fails and the simulation is
+  re-derived) and `tests/unit/server/db.test.ts` (what `createDb` hands the adapter, with the adapter
+  and the client mocked — not what `pg` does with it).
+- **Not covered, as before:** the schema engine that `prisma migrate deploy` runs at build time
+  reads the URL itself (`prisma.config.ts`); whether it verifies the certificate under
+  `sslmode=require` was not checked. Whether the integration's URL can be edited by hand was not
+  checked either; rewriting it in code needs no edit.
+- **Found by the review, outside TD-20 (not fixed here):** `pg` 8.23 ignores `channel_binding=require`
+  in the URL — its client reads only the `enableChannelBinding` option (`pg/lib/client.js:87`) — so
+  the parameter the Neon URL carries does not turn channel binding on. Unmeasured beyond that reading
+  of the code; low impact (TLS with certificate verification is on). **Owner decision** (2026-09-26,
+  "Xeyr"): not an entry of its own; it stays recorded here.
+- **Closed:** 2026-09-26, PR #64 (`fix/td-20-pg-sslmode`) — closed by the owner's merge of that pull
+  request, on the owner's word ("Hər ikisi üçün et", after PR #63's merge) that the closing line be
+  written with the fix, not after it. The merge commit and time are not written here: they do not
+  exist yet. CI on the last head before this line (`5b2fc93`) was green: API tests, lint · typecheck ·
+  unit, the four E2E legs, CodeQL, secret scan, npm audit and the Vercel deployment.
 
 ## TD-21 — The Overview page's LCP misses NFR-P2's 2.5 s on production
 

@@ -5313,3 +5313,91 @@ them too").
      (`.rsc` stripped locally), so the code handles both shapes rather than either.
 - **Next:** the owner reviews and merges PR #63 (CI, then the preview is already measured); TD-19
   gets its **Closed** line in `tech-debt.md` on the merge; TD-20 is prepared as its own pull request.
+
+## 2026-09-26 — Phase 5: TD-20 — `sslmode` named for `pg`, not inherited from `pg` 8
+
+- **Phase:** 5 (Build the slice), Release 1 — tech debt outside any backlog task. The owner had kept
+  TD-20 for its own small pull request at PR #60's merge gate ("3 ayrıca").
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, background session; one Opus 5.5 review
+  subagent, read-only, per governance v1.3).
+- **Trigger:** the owner's "TD-19 və TD-20 hazırla." ("Prepare TD-19 and TD-20"), after the agent's
+  list of what was left (`backlog.md` v1.43).
+- **Prompt(s):** `prompts/2026-09-26-TD-20.md`.
+- **Produced:** PR #64 (`fix/td-20-pg-sslmode`, draft until the owner reads it) —
+  `src/server/db-url.ts` (`withVerifiedSsl`), `src/server/db.ts` (`createDb` uses it),
+  `tests/unit/server/db-url.test.ts`, `tests/unit/server/db.test.ts`, one line in
+  `src/server/README.md`; `tech-debt.md` v1.24, `backlog.md` v1.44, this entry.
+- **Measured:**
+  - `pg-connection-string` 2.14.0's `parse` on a Neon-shaped URL: `sslmode=require` gives `ssl = {}`
+    today (verified, with the deprecation warning) and `{ rejectUnauthorized: false }` under its
+    `useLibpqCompat` option, which is the reading `pg` 9 will make the default; `sslmode=verify-full`
+    gives `{}` under both, with no warning.
+  - Unit 1100 passed (31 new, after the review's additions), API project 107 passed; `db.test.ts`
+    failed first (the adapter was given `require`), and so did the review's eight new cases.
+  - On the Vercel preview of the PR (commit `e34bb79`, and again on `0de1025` after the review's
+    changes): the build log has no `SECURITY WARNING` line;
+    the log of PR #63's preview build, taken the same morning as a control, prints it at "Generating
+    static pages". Signed in as the demo account, `/overview` and `/api/overview` answer 200, so the
+    pool connects to Neon under `verify-full` as it did under `require`.
+- **Review (Opus 5.5, read-only, governance v1.3):** no Critical finding — the integration's URL is
+  rewritten correctly and `verify-full` gives `pg` 8.23 exactly the TLS options `require` did (the
+  hostname check is unchanged, so the preview result carries over). Three Important, all applied,
+  red first (eight new cases): (1) the `uselibpqcompat` bail-out was broader than `pg`'s, which
+  honours only the exact `true` — `uselibpqcompat=false&sslmode=require` was left weak; (2) the regex
+  read raw text while `pg` reads decoded parameters — `sslmode=re%71uire`, `ssl%6Dode=require`, a
+  trailing newline were missed — so a decoded post-check now makes `createDb` throw (no URL in the
+  message) on a weak mode the rewrite could not see; (3) the `pg` 9 simulation imports a hoisted copy
+  of `pg-connection-string` that may not be the adapter's, so a sentinel test pins the 2.x reading and
+  fails the day the imported copy is version 3. Minor, applied: the rewrite is confined to the query
+  (a password containing `&sslmode=require&` was rewritten, contradicting "byte for byte"); the "no
+  deprecation warning" test title is now asserted, with a control; `db.test.ts`'s comment no longer
+  says it proves what `pg` does; the docs say pg 9's behaviour is inferred, not run; a README line.
+  Recorded outside TD-20: `pg` ignores the URL's `channel_binding=require` (its client reads only
+  `enableChannelBinding`) — for the owner to decide whether it becomes an entry.
+- **What the agent got right:** used the library's own compatibility switch to simulate `pg` 9 in a
+  test, so the test states the regression (a fixture shows the integration's URL stop verifying the
+  certificate) instead of comparing two strings; changed the URL as text, not through `new URL`,
+  after reading in `src/shared/env.ts` how node-postgres re-encodes some URLs; compared the preview's
+  build log with a control log rather than reading it alone; left the `overrides` pin out and said why.
+- **What the agent got wrong or missed:**
+  - It ran `npm ci` in the second worktree with a `cd` from the first. That moved the shell's working
+    directory, and the harness then refused every command until the session re-entered its own
+    worktree — several steps lost, and the pull request the session was still working on (#63) was
+    left waiting for a commit.
+  - Whether the schema engine that `prisma migrate deploy` runs at build time verifies the
+    certificate under `sslmode=require` is still unchecked; the entry said so and this change does not
+    settle it.
+  - The first version's guard read the raw text of a value that `pg` reads decoded, its
+    `uselibpqcompat` bail-out was wider than `pg`'s own, and its docs promised "byte for byte" where a
+    password could contain the text it matched — three things a reader of `pg-connection-string`'s
+    `parse` alone would have caught, found by the review instead. The agent's brief to the reviewer
+    also called `pg` a direct dependency; it is a devDependency, and the reviewer corrected it.
+  - Two new test fixtures put a password with `&` in a URL on a non-local host
+    (`neon.example.com`), which the repository's own pre-commit `gitleaks` rule
+    (`postgres_connection_string`) refused; the fixtures now use `localhost`, as the neighbouring
+    ones do. The hook's `--no-verify` escape and a `.gitleaksignore` (none has ever existed) were
+    not used.
+- **Owner changes and reasoning:** on the code, none. After the summary of both pull requests the
+  owner merged PR #63 (2026-09-26, 06:41 UTC, `dd81c44`), asked that the **Closed** lines be written
+  for both entries ("2. Hər ikisi üçün et" — "do it for both"), and declined an entry of its own for
+  the `channel_binding` finding ("3. Xeyr"). The agent followed: TD-19's line records the merge;
+  TD-20's is written with the fix, so it is true on the merge of this pull request and carries no merge
+  commit (the agent had said the lines would be written only after a merge; the owner chose otherwise).
+  The `channel_binding` finding stays in TD-20's entry with the decision.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A library's compatibility switch can stand in for a major upgrade in a test; a guard against a
+     future default is only a guard if the test can read that default today.
+  2. A build-log claim ("the warning is gone") needs a control log from a build that had it.
+  3. Work in two worktrees means `EnterWorktree` with `path`, never `cd` — the isolation check reads
+     the shell's directory.
+  4. A text-level guard over a value the library reads *decoded* needs a decoded post-condition, or
+     it protects only against the spellings its author thought of.
+- **After PR #63's merge:** PR #64's description had promised a rebase as v1.25. A rebase of a branch
+  already on the remote needs a force-push, which the agent does not do, so `origin/main` was merged
+  into the branch instead (a merge commit, no history rewritten). The three predicted docs conflicts
+  came, and no code conflict: the header lines (v1.25 now carries the closings, v1.24 stays TD-19's as
+  merged), the two process-log entries (TD-19's first, as merged), and the backlog Notes sentence.
+  `tech-debt.md` v1.25 and `backlog.md` v1.45 also close TD-19 and TD-20.
+- **Next:** the owner reviews and merges PR #64; that merge closes TD-20 (its line is already
+  written). Open in the tech-debt file after it: TD-3, TD-13 and TD-21.
