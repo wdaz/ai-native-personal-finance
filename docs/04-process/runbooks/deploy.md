@@ -1,6 +1,6 @@
 # Runbook — deploy (Vercel, Neon, secrets, first seed, rotation, origin trial)
 
-Status: **Draft — written before the first deployment** (T-14, 2026-09-25) · Author(s): Agent ·
+Status: **Draft — executed by T-14 (2026-09-25/26) and corrected by that run, see the Record; the headed native check and the relay demo (step 7) have not been run** (written before the first deployment, 2026-09-25) · Author(s): Agent ·
 Executed by: the agent for every command that needs no dashboard, the owner for the rest (the
 Vercel import, Deployment Protection, the Neon integration, the origin-trial registration).
 Plan: `docs/04-process/plans/2026-09-25-T-14.md` (findings F1–F17 are cited below). ADR-0007

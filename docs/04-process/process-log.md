@@ -5401,3 +5401,49 @@ them too").
   `tech-debt.md` v1.25 and `backlog.md` v1.45 also close TD-19 and TD-20.
 - **Next:** the owner reviews and merges PR #64; that merge closes TD-20 (its line is already
   written). Open in the tech-debt file after it: TD-3, TD-13 and TD-21.
+
+## 2026-09-26 — Phase 5: Release 1 housekeeping — Status lines that had stopped saying where the work is
+
+- **Phase:** 5 (Build the slice), Release 1 — the step before T-15, no backlog task of its own.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, background session).
+- **Trigger:** after PR #64's merge the owner asked whether T-14 was closed, then what unfinished work
+  stood in front of T-15 ("T-15 keçidi bloklayan başqa nə yarımcıq işlər qalıb?"). The agent's list
+  named stale Status lines; the owner agreed to a pull request for them ("a. bəli") after seeing the
+  list.
+- **Prompt(s):** `prompts/2026-09-26-plan-status-closeout.md`.
+- **Produced:** one docs-only pull request that changes Status lines and nothing else (plus this
+  entry and the prompt record): the 16 plan files of T-01, T-02a, T-02 to T-13, T-13b and T-14 (T-13a,
+  T-13c and T-13d already read *Done*) read **Done — executed as T-xx and merged (PR #n, date UTC,
+  merge `sha`)**, keeping the old status and the rest of the line; `runbooks/deploy.md`'s Status says it was executed by T-14 and corrected by that run and
+  that step 7 (the headed native check and the relay demo) has not been run; the Status line and the
+  Q3/Q4 status cells of `00-discovery/assumptions-and-questions.md` (closed by NFR-W2/B2 and
+  ADR-0001). This entry and the prompt record.
+- **Measured:** each merge was matched to its task from `git log --first-parent --merges` and, where the
+  branch name did not say (T-10 → PR #22, T-13b → PR #46, T-08 → #20, T-09 → #21), from what the merge
+  brought in (`git diff --stat <merge>^1 <merge>`) and from the process log. The first repository's
+  PR #1 (T-01) and the second's (T-02a) share a number; both are named by merge commit.
+- **What the agent got right:** checked every plan's Status line instead of only the one the owner's
+  question named — sixteen of nineteen said the wrong thing; matched merges to tasks by content, not by
+  branch name; left `deploy.md` at *Draft* (only the owner approves) and wrote what was not run.
+- **What the agent got wrong or missed:**
+  - Its first answer named `03-specs/README.md` as stale; it is not (Release 2 specs are still to be
+    written) — corrected before any change was made.
+  - It first counted one stale plan (T-14's), then sixteen; and its first list of unfinished work
+    left out the headed native check (NFR-B2), which `deploy.md` itself says nobody has run.
+  - It proposed a cold-start measurement for NFR-D4 and a note in the runbook; the owner declined
+    both (below), so neither is in this pull request.
+- **Owner changes and reasoning:** (1) *The cold-start measurement (NFR-D4) is not run:* "the project
+  is a demo, so it is not needed; another session ran it and the numbers were normal, so it can be
+  bypassed" — and then "I am closing item B in the other session; you only fix the Statuses". No
+  figure and no waiver text is written in this pull request; the other session records it. (2) The scope
+  is Status lines only — the assumptions' and the questions' *content* (A2's evidence, A6) is left as it
+  was. (3) The "Owner changes: none yet" fields of earlier entries are left for the owner to fill at
+  the general retrospective ("Ümumi retroda danışacam").
+- **Disagreements:** none.
+- **Lessons for the process:** a plan's Status line is the one live document nothing tests: only three of
+  nineteen plans were closed when their task merged, and the Definition of Done has no line that
+  closes it. A line in the DoD ("the plan's Status reads Done with the PR and merge") would have kept
+  the drift from starting; it is a template question for T-15's retrospective.
+- **Next:** the owner reviews and merges this pull request; T-15's plan gate decides the order of T-15,
+  the `develop` switch and T-16, and the PRD's Release 2 `Stories:` sentence that the traceability
+  script needs.
