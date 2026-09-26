@@ -5447,3 +5447,50 @@ them too").
 - **Next:** the owner reviews and merges this pull request; T-15's plan gate decides the order of T-15,
   the `develop` switch and T-16, and the PRD's Release 2 `Stories:` sentence that the traceability
   script needs.
+
+## 2026-09-26 — Phase 5: T-16 — what is already done, written down
+
+- **Phase:** 5 (Build the slice), Release 1 — before T-15; T-16 itself is not started.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5, background session).
+- **Trigger:** the owner asked what remains for T-16 ("T-16-nın done olması üçün nələr qalıb?"). The
+  agent's answer found the row describing finished work as future work, because it was written before
+  the owner made the repository public on 2026-09-20. The owner then asked what the "public flip" is
+  and asked for what counts as done to be recorded in the task "so that we do not check it again".
+- **Prompt(s):** `prompts/2026-09-26-T-16-verified-state.md`.
+- **Produced:** `03-specs/backlog.md` v1.46 — the Status line; in the T-16 row, the finished items
+  struck through with a pointer (nothing removed, no scope change); and a Notes bullet, "T-16 — what
+  is already done", that lists each finished item with the source it was read from and the date. This
+  entry and the prompt record. No code.
+- **Measured (2026-09-26, `origin/main` `d058cce`, `gh` and the checkout):** visibility `PUBLIC`;
+  `secret_scanning`, push protection and Dependabot security updates `enabled`, alerts on (204); open
+  alerts 0 in code scanning, Dependabot and secret scanning; `code-scanning/default-setup`
+  `not-configured`; CodeQL and CI green on `main` at `d058cce`; two rulesets on `main`, the required
+  checks one holding seven checks and no bypass actors; `required_approving_review_count` is `0`; no
+  `.gitleaksignore`; one `gitleaks:allow` line outside the prompt records, quoting the check itself.
+  Not written into the backlog because the item stays open: without the two `overrides`, a scratch
+  copy of `package.json` and the lockfile audits at **4 high** (`npm audit --audit-level=high`, run
+  under the job's temporary directory), stable Prisma is still `7.10.0` and `latest` is
+  `8.0.0-rc.17`, a release candidate.
+- **What the agent got right:** read GitHub's live state instead of trusting the row; kept "what is
+  finished" apart from "T-16 is done"; wrote that the T-13d closing entry says "passed" and does not
+  name `--ignore-gitleaks-allow`, instead of counting that scan as the flagged one; left the open
+  items out of the record except where a finished item is only partly finished (CODEOWNERS, the
+  scan, the first-CI-run list).
+- **What the agent got wrong or missed:** its first answer did not check whether the T-13d scan used
+  the flag, ran `npm audit` with the overrides still in place (which cannot show whether they can go),
+  and left the seven first-CI-run items unread; a review of its own draft caught all three before it
+  answered. It also took the backlog to be at v1.44 while the file said v1.45, and corrected that
+  before editing.
+- **Owner changes and reasoning:** none yet — the owner has not reviewed this pull request.
+- **Disagreements:** none.
+- **Lessons for the process:** a backlog row is a plan written before the work, and it keeps its
+  tense when the order changes (here, the early flip). A row of many sub-items gets its done-marker
+  cheaply in the pull request that finishes each one, and expensively — GitHub's API plus the log —
+  a week later. It is a template and Definition-of-Done question for T-15's retrospective, next to
+  the plan Status lines of the previous entry.
+- **Next:** the owner reviews and merges this pull request. T-16 stays open behind T-15. What waits
+  for the owner: the licence, the ruleset's approval item (the owner is the only collaborator, so
+  one required approval would block every merge), the absolute home-directory paths (86 lines under
+  `docs/` and `README.md`; 48 files in the repository hold one), the
+  wording of the rotation item after the answer recorded in "2026-09-24 — four tasks before T-14", and
+  where the blocked `overrides` removal is carried.
