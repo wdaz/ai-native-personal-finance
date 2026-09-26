@@ -5256,11 +5256,12 @@ them too").
   `prompts/2026-09-26-TD-19/scripts/preview-probe.sh`.
 - **Produced:** PR #63 (`fix/td-19-proxy-transport-forms`, draft until the owner reads it) — `proxy.ts`'s
   matcher, `src/server/transport-path.ts`, `tests/unit/server/proxy-matcher.test.ts`,
-  `tests/unit/server/transport-path.test.ts`, `tests/fixtures/proxy-matcher.ts`, two API tests in
+  `tests/unit/server/transport-path.test.ts`, `tests/fixtures/proxy-matcher.ts`, three API tests in
   `tests/api/proxy.spec.ts`; `tech-debt.md` v1.24, `backlog.md` v1.44, this entry.
 - **Measured:**
   - The old matcher, compiled with Next's own `getMiddlewareMatchers`, skipped `/overview.rsc`,
-    `/overview.segments/*` and `/api/overview.json` (the unit test's first, red run: six paths).
+    `/overview.segments/*` and `/api/overview.json` (the unit test's first, red run: six paths — of
+    which the two `.rsc` ones were the raw-path model only, see the review below).
   - With only the matcher changed, `next start` answered a cookie-less
     `/overview.segments/_tree.segment.rsc` with **404 and the proxy's headers** — the proxy ran, and
     still asked for no session. A temporary `console.log` in `proxy.ts` (removed before the commit)
@@ -5272,6 +5273,19 @@ them too").
     to `/login?next=…`, `/api/overview.json` 401, all with `X-Request-Id` and the CSP; the avatar still
     skips the proxy; signed in, `.segments/*` answers 200 with the proxy's headers and `/overview.rsc`
     22 546 bytes, as at T-14.
+- **Review (Opus 5.5, read-only, governance v1.3):** no Critical or Important finding — nothing that
+  used to get a 401 or 302 now gets through, and the strip cannot cut into a protected name. Four
+  Minor findings, all applied in the follow-up commit: (1) the M6 API test's title and comment still
+  said "any path with a file extension"; (2) hardening — `PROTECTED` now accepts a dot after a protected
+  name, so a dotted form the strip does not know fails closed (a new API test, red first: three paths
+  answered 404); (3) two comments contradicted the measurement (`next start` "hands the path as
+  requested"; "the proxy never ran for `.rsc`"); (4) "judged the way Next judges it" overstated — Next
+  tests its compiled matcher against a normalised path (`next-server.js`, read and confirmed), so the
+  `.rsc` rows pin the raw-path model, not a gap that was live; the test's comment, the entry, and
+  `backlog.md` now say so, and the form `next start` actually matches
+  (`/overview.segments/_tree.segment`) joined the list. The reviewer's remark that a real client
+  prefetches in header form on the plain URL (TD-14, measured) also corrected the PR description,
+  which had said signed-in prefetches now cost a `latestResetAt` read.
 - **What the agent got right:** compiled the matcher with Next's own function, so the regression test
   failed first offline — the entry had said it could only fail on a deployment; would not stop at the
   matcher change, because the request-level test stayed red and a log line explained why; measured the

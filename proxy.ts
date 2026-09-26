@@ -37,7 +37,11 @@ export const config = {
   ],
 };
 
-const PROTECTED = /^\/(overview|transactions|budgets|pots|recurring-bills)(\/|$)/;
+// A protected name followed by `/`, a dot or the end of the path. The dot is the fail-closed part
+// (TD-19, review): it means a suffix of some kind — one of Next's transport forms, or one a later
+// Next adds that `stripTransportSuffix` does not know — and no page of this app has a dot in its
+// path, so anything dotted asks for a session instead of reaching Next unchecked.
+const PROTECTED = /^\/(overview|transactions|budgets|pots|recurring-bills)(\/|\.|$)/;
 const AUTH_PAGES = /^\/(login|signup)$/;
 const PUBLIC_API = /^\/api\/(auth\/(login|signup|session)|meta)$/;
 const TEST_API = /^\/api\/test\//;

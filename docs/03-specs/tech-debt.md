@@ -2,8 +2,9 @@
 
 Status: **Approved** (v1.24 — 2026-09-26: TD-19 fixed in PR #63 (`fix/td-19-proxy-transport-forms`, in
 review): the matcher excludes static assets by extension instead of any dotted path, so Next's
-`.json`, `.rsc` and `.segments/*` forms reach the proxy, and the route matrix reads a page's path with
-that suffix taken off; the entry's claim that its regression test could only fail on a deployment is
+`.segments/*` and `.json` forms reach the proxy (the `.rsc` form already did), the route matrix reads
+a page's path with that suffix taken off, and a protected name followed by a dot asks for a session
+whatever the suffix is; the entry's claim that its regression test could only fail on a deployment is
 corrected — Next's own matcher compiler fails it offline — and the Vercel preview of the PR measured
 the forms (302 to `/login`, 401, with the proxy's headers); v1.23 — 2026-09-26: TD-21 gets the second Lighthouse measurement (`/overview`
 LCP 2594 ms again, the LCP element is the reset banner's text with a 1950 ms render delay) and the
@@ -770,12 +771,19 @@ of protected pages on Vercel
     (`src/server/transport-path.ts`), so `/overview.segments/…` asks for a session like `/overview`.
     An API path is matched as requested: `/api/overview.json` is a protected API (401), and a
     hypothetical `/api/meta.json` is not the public `/api/meta`.
+  - From the Opus 5.5 review of the pull request: the route matrix's `PROTECTED` pattern accepts a dot
+    after a protected name (`^/(overview|…)(/|\.|$)`), so a dotted form the suffix step does not know —
+    one a later Next adds, a doubled suffix, a probe — asks for a session too, instead of reaching Next
+    unchecked. No page of this app has a dot in its path, so nothing legitimate is caught.
 - **Corrections to this entry:**
   - The Fix line said the regression test "can only fail first on a deployment: `next start` answers
     404 for them". True of a request test, not of the matcher: `tests/unit/server/proxy-matcher.test.ts`
     compiles the matcher with Next's own `getMiddlewareMatchers` and lists the paths the proxy runs
-    for; it failed first offline on exactly six paths (`.rsc`, three `.segments/*`, `/transactions.rsc`,
-    `/api/overview.json`).
+    for; it failed first offline on six paths (`.rsc` twice, three `.segments/*`, `/api/overview.json`).
+    Its model is the raw path: Next tests the compiled expression against a normalised one with the
+    final `.rsc` already off, and `/overview.rsc` reached the proxy under the first matcher (TD-14), so
+    the two `.rsc` rows pin the model, not a gap that was live — the `.segments/*` and `.json` rows are
+    the gap.
   - The matcher change alone was not enough locally. On `next start` the proxy then ran for
     `/overview.segments/_tree.segment.rsc`, but Next had already taken the final `.rsc` off, so the
     proxy's `pathname` was `/overview.segments/_tree.segment` (a temporary log line, removed), the
@@ -784,9 +792,9 @@ of protected pages on Vercel
 - **Guarded now by:** `tests/unit/server/proxy-matcher.test.ts` (what the proxy runs for and skips,
   through Next's compiler; every file under `public/`; two fixtures that break it),
   `tests/unit/server/transport-path.test.ts` (the suffix step, and a check that its list is what the
-  installed `next` appends), and two tests in `tests/api/proxy.spec.ts` (signed out: 302 to
-  `/login?next=…` or 401, with `X-Request-Id`, the CSP and `nosniff`; signed in: the proxy runs and
-  does not bounce the session).
+  installed `next` appends), and three tests in `tests/api/proxy.spec.ts` (signed out: 302 to
+  `/login?next=…` or 401, with `X-Request-Id`, the CSP and `nosniff`; any dotted continuation of a
+  protected name: 302; signed in: the proxy runs and does not bounce the session).
 - **Measured on the Vercel preview of PR #63** (2026-09-26, commit `167b498`; Deployment Protection's
   bypass header on every request; `docs/04-process/prompts/2026-09-26-TD-19/scripts/preview-probe.sh`):
   - *Cookie-less:* `/overview.rsc`, `/overview.segments/_tree.segment.rsc`, `/overview.segments/_full.segment.rsc`,

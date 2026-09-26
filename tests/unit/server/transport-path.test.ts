@@ -3,10 +3,11 @@ import { stripTransportSuffix, TRANSPORT_SUFFIXES } from "@/src/server/transport
 import { compileMatcher } from "../../fixtures/proxy-matcher";
 
 /**
- * TD-19: `next start` hands the proxy the path as requested, so `/overview.segments/_tree.segment.rsc`
- * is not `/overview` to the route matrix unless the suffix Next appends is taken off first — the
- * matcher lets the request in (tests/unit/server/proxy-matcher.test.ts), this is what lets the
- * session check recognise it.
+ * TD-19: `next start` takes the final `.rsc` off before the proxy runs, so a request for
+ * `/overview.segments/_tree.segment.rsc` arrives as `/overview.segments/_tree.segment` — which is
+ * not `/overview` to the route matrix unless the suffix is taken off first. The matcher lets the
+ * request in (tests/unit/server/proxy-matcher.test.ts); this is what lets the session check
+ * recognise it.
  */
 describe("stripTransportSuffix", () => {
   it.each([

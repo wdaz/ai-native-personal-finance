@@ -1,8 +1,9 @@
 # Backlog — Release 1 (vertical slice: Auth + Overview)
 
 Status: **Approved** (v1.44 — 2026-09-26: TD-19 is fixed in its own pull request, #63 (in review;
-`tech-debt.md` v1.24) — no task row changes: the proxy's matcher no longer swallows Next's `.rsc`,
-`.segments/*` and `.json` suffix, and the route matrix reads a page's path without it; Release 2's
+`tech-debt.md` v1.24) — no task row changes: the proxy's matcher no longer swallows Next's
+`.segments/*` and `.json` suffix, the route matrix reads a page's path without it, and a protected
+name followed by a dot asks for a session; Release 2's
 pages inherit the fix, and T-15 needs nothing from it; v1.43 — 2026-09-26: **T-14 is done** — PR #60 (`44ff1b6`) and its close-out PR
 #61 (`73a12ea`) are merged, production runs from Git on a seeded Neon branch at
 `https://personal-finance-cyan-kappa.vercel.app`, and every hand-off in its row is answered; what it
