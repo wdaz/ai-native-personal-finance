@@ -5494,3 +5494,66 @@ them too").
   `docs/` and `README.md`; 48 files in the repository hold one), the
   wording of the rotation item after the answer recorded in "2026-09-24 — four tasks before T-14", and
   where the blocked `overrides` removal is carried.
+
+## 2026-09-26 — Phase 5: NFR-D4's cold-start note, missed by T-14
+
+- **Phase:** 5 (Build the slice), Release 1 — after T-14 (done: PRs #60, #61, #62), the runbook
+  verification NFR-D4 names.
+- **Participants:** Owner (the question, the go-ahead, "record it as done") / Agent (Claude Code,
+  Sonnet 5, background session).
+- **Trigger:** after the agent had explained what the cron is, the owner asked "Cold start
+  yoxlanılıb?" ("Has cold start been checked?"). It had not been: NFR-D4 says "cold start ≤ 10 s
+  documented if the host sleeps", verified by "Runbook", and the runbook had no such note.
+- **Prompt(s):** `prompts/2026-09-26-NFR-D4-cold-start.md`; the script is
+  `prompts/2026-09-26-NFR-D4-cold-start/scripts/cold-rounds.sh`.
+- **Produced:** `deploy.md` — a "Cold start" check in step 5 (method, control, limits, result) and a
+  row in the Record table with every number; `tech-debt.md` v1.26 (TD-21's "not measured" and "fix"
+  lines no longer say the note is missing); `backlog.md` v1.46 (a clause in T-14's row); this entry;
+  the prompt record and the script. No application code.
+- **Measured:**
+  - The first request to a route after idle took **1.07–1.71 s** on `/login` and **1.91–2.96 s** on
+    `/api/meta`, against 0.30–0.44 s warm (from Baku to `fra1`; `x-vercel-id` reads `fra1::fra1::…`).
+    The first request of a whole round, which meets both sleepers, took 1.71–2.96 s. The worst,
+    **2.96 s**, leaves about 7 s under NFR-D4's 10 s.
+  - Neon's operations list on the production endpoint confirms the database side: a `suspend_compute`
+    about five minutes after each last request and a `start_compute` within two seconds of each cold
+    `/api/meta`, the operation itself taking 0.38–0.39 s. In round 3 the `start_compute` came *after*
+    the `/login` request, at the `/api/meta` one — the control that `/login` reads no database.
+  - Fluid compute is on (`vercel api /v9/projects/personal-finance`, `.resourceConfig.fluid`); whether
+    the function's instance was cold in a given round cannot be seen from outside and is not claimed.
+  - Round 1 was **not counted**: the operations list shows production's compute started at 07:57:44Z,
+    two and a half minutes before the script's first request, by a request that did not come from the
+    agent's script (its origin is not known), so `/login` 0.79 s and `/api/meta` 0.80 s are warm.
+- **What the agent got right:** answered "no" from the documents before it measured; took one read-only
+  request to say where things stood and labelled it a single data point; judged coldness from
+  the platform's own log instead of from the idle time; dropped a round it could show was spoiled
+  and said the spoiler's origin is unknown, rather than averaging it in; used the operations
+  timeline as a control for which route reads the database.
+- **What the agent got wrong or missed:**
+  - T-14's plan named NFR-D4's cold-start note only as a suspect for a Lighthouse miss (plan line
+    890), never as a deliverable, and no step of the plan compared the runbook with the text of the
+    NFR rows its Goal cites. TD-21 even recorded "the note still has to be written" and T-14 was
+    closed all the same.
+  - The measurement plan took "ten minutes idle" for "cold". One round in three was warm, and only
+    the operations list read afterwards showed it; a check of the endpoint's state before each round
+    (the shell script cannot call the Neon API) would have saved the round.
+- **Owner changes and reasoning:** "Yaz və pr yarat" ("Write it and create a PR"), then, mid-work,
+  "bitmiş olaraq qeyd et" ("record it as done"). The agent read the second as: the note is written
+  as done (closed, not left as a follow-up), and rested "done" on three measured rounds rather than
+  the single first request. If the owner meant the Status lines instead, `main` had already rewritten
+  them (the housekeeping pull request, #65, the entry above), so nothing was left to change for it.
+  A third message, "main öndədir" ("main is ahead"), arrived before the push: the agent fetched and
+  rebased onto `origin/main` (PRs #65 and #66) and resolved the two conflicts — the backlog's header
+  (this change is v1.47, on top of T-16's v1.46) and the process log (both entries kept).
+- **Disagreements:** none.
+- **Lessons for the process:**
+  1. A task whose Goal cites an NFR row should end with a check, row by row, that the artefact the
+     row names as its verification exists — NFR-D4 was in T-14's Goal and its runbook lacked the
+     note.
+  2. "Idle for N minutes" is not "cold": read the platform's own log for the start event and drop the
+     rounds anything else touched. A project with several sessions working on it has stray requests.
+  3. A measurement taken to answer a question is a lead, not a record; write the method and the
+     controls down before the number.
+- **Next:** the owner reviews and merges this pull request. Left as they were: the 03:00 UTC cron's
+  first scheduled run (2026-09-27, 03:00–04:00 UTC), the origin-trial renewal before 2026-11-17, and
+  TD-21.
