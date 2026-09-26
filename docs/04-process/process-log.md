@@ -5645,4 +5645,57 @@ them too").
   - The owner reviews and merges this pull request. No decision of the five is left open.
   - T-15's plan gate orders the work of the "from T-16" hand-off. The owner asked that the home paths
     not show "after the next pull request", so that item may come first, as a small pull request of its
-    own.
+    own. (Superseded by the next entry: that hand-off is now T-15a.)
+
+## 2026-09-26 — Phase 5: T-15 split into four subtasks, the `develop` switch moved inside it
+
+- **Phase:** 5 (Build the slice), Release 1 — planning the order of T-15. No code.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:**
+  - The owner asked what "home path" meant and what T-15 now held. The agent grouped T-15's row into
+    four parts: the retrospective, the Release 2 spec work, the branch model, and the items from T-16.
+  - The owner asked for four subtasks, run in the order go-public → branch model → retrospective →
+    Release 2, told the agent to ask its questions, and asked for the change inside PR #68.
+- **Prompt(s):** `prompts/2026-09-26-T-16-close.md` (the same record, continued).
+- **Produced (in PR #68, backlog still v1.48, `governance.md` still v1.5 — neither is merged yet):**
+  - Backlog: four rows, each depending on the one before it.
+    - **T-15a**, the go-public finish: T-16's hand-off, with the flagged history scan last.
+    - **T-15b**, the full `develop` switch.
+    - **T-15c**, the retrospective, with the lessons the log has sent to it.
+    - **T-15d**, Release 2 spec work opened.
+  - Backlog: T-15's row is now an umbrella. It maps each of its hand-offs to a subtask and keeps its
+    old text. Its branch-model hand-off is struck through where the owner changed it. The Notes order
+    line is extended.
+  - `governance.md`, "Branches and releases": the switch is T-15b, after T-15a and before the
+    retrospective. The old wording ("from the close of Release 1", "a task of its own, run after T-15")
+    is quoted where it changed. The plan's list gains the bootstrap question below.
+  - This entry and the continued prompt record.
+- **What the agent got right:**
+  - It asked only what changes the work. T-15b's scope reverses a written governance line; the scan's
+    place depends on which branch later work lands on; T-15d's extent decides whether it is a small
+    task or several sessions.
+  - It took the subtask naming (T-15a–T-15d, as T-13a–T-13d) from precedent instead of asking.
+  - It noticed that T-15a may be more than one pull request, and wrote "T-15a's pull requests are the
+    last work pull requests to `main`".
+- **What the agent got wrong or missed:**
+  - Its first grouping of T-15 used the letters A–D for different parts than the owner's subtasks.
+    The owner's remapping ("A - D, B - C …") was needed to undo that. Numbered groups would not have
+    collided with the subtask letters.
+- **Owner changes and reasoning:**
+  - The `develop` switch is no longer a task after Release 1. It is T-15b, before the retrospective,
+    and governance is updated to say so ("Əlavə olaraq governance yenilənir bu qərarla").
+  - T-15a's pull requests are the last work pull requests to `main`. Everything after them goes to
+    `develop`.
+  - T-15d's extent is decided when it is planned.
+- **Disagreements:** none. The agent's recommendation to make the flagged scan permanent in CI was not
+  taken up. The owner answered the problem behind it: the branch that later work lands on. The
+  recommendation is recorded in T-15a's row as open for its plan gate, not as a decision.
+- **Lessons for the process:** labels given in an answer become names the owner reuses. When the owner
+  may turn a grouping into tasks, number it rather than lettering it.
+- **Next:**
+  - The owner reviews and merges PR #68.
+  - T-15a's plan gate comes next. The home-directory paths may be its first, small pull request.
+  - A question for T-15b's plan gate: the head-branch check's workflow reaches `main` only with the
+    first `develop` → `main` release pull request, because T-15b's own pull requests target
+    `develop`. When `main`'s ruleset starts requiring it (before, with or after that pull request) is
+    that plan's first question.

@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch (owner decisions)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions)
 
 ## Roles
 
@@ -68,9 +68,12 @@ Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run 
 
 ## Branches and releases
 
-**Decision (owner, 2026-09-25):** from the close of Release 1, work moves to a second
-long-lived branch, `develop`, and `main` is closed to everything except a release. Until then
-nothing changes: working branches start from `origin/main` and their pull requests target
+**Decision (owner, 2026-09-25):** work moves to a second long-lived branch, `develop`, and
+`main` is closed to everything except a release. **When (owner decision, 2026-09-26):** the
+switch is T-15b, inside Release 1's closing task — after T-15a's pull requests, the last work
+pull requests to `main` ("A-bitdikdən sonra növbəti PR-lar yalnız develop brachinə olacaq"), and
+before the retrospective (T-15c); until 2026-09-26 this said "from the close of Release 1". Until
+T-15b nothing changes: working branches start from `origin/main` and their pull requests target
 `main` (AGENTS.md §2).
 
 Once it applies:
@@ -102,12 +105,15 @@ Once it applies:
 
 Open at the switch (settled when the switch is planned, not here):
 
-- **The switch is a task of its own**, run after T-15 closes Release 1 (backlog). Its plan
-  covers: creating `develop` from `main`; adding `develop` to `ci.yml`'s push trigger and to
+- **The switch is T-15b** (backlog v1.48; until 2026-09-26 it was "a task of its own, run after
+  T-15 closes Release 1"). Its plan covers: creating `develop` from `main`; adding `develop` to `ci.yml`'s push trigger and to
   both triggers of `codeql.yml` (CodeQL runs only for `main` today, so a `develop` ruleset's
   CodeQL gate would have nothing to read); a ruleset for `develop` that mirrors `main`'s; the
   check workflow and its place in `main`'s ruleset; AGENTS.md §2 ("start from `origin/main`");
-  the pull-request template; the base branches of T-14's Neon preview workflow.
+  the pull-request template; the base branches of T-14's Neon preview workflow; and when
+  `main`'s ruleset starts requiring the head-branch check, whose workflow reaches `main` only with
+  the first `develop` → `main` release pull request, since T-15b's own pull requests target
+  `develop`.
 - **Default branch:** stays `main` or moves to `develop`. Dependabot's security-update pull
   requests are opened against the default branch (GitHub's documented behaviour, not checked
   here), and they are on today; the check above would block them on `main`.
