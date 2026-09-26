@@ -5604,9 +5604,9 @@ them too").
     Its help pages were found through a search on 2026-09-26; the FAQ page the agent opened did not
     cover the point.
   - The repository says "Ruslan Haqverdi" (README "Owner", `research/frontend-mentor-license.md`'s
-    footer). The GitHub profile says "Ruslan". The agent recommends the full name, for one name across
-    the licence, the footer and the portfolio. The choice is the owner's and is written into T-15 as
-    open.
+    footer). The GitHub profile says "Ruslan". The agent recommended the full name, for one name across
+    the licence, the footer and the portfolio. The owner chose it: "Copyright (c) 2026 Ruslan Haqverdi -
+    bu olsun".
 - **What the agent got right:**
   - It read the last two owner lines as one instruction (close the row, move the open items) instead of
     asking again.
@@ -5628,7 +5628,12 @@ them too").
     and `main` takes them only from `develop` and hotfix branches.
   - Item 2 (licence) and item 5 (`overrides`): option a.
   - Item 3: the home-directory paths leave the tree, even though history keeps them.
-  - Item 4: open.
+  - Item 4, after the agent explained it in full (what a secret and a rotation are, why T-16 asked for
+    one before the flip, and why nothing needed rotating at the flip): option a ("4. a"). The rotation
+    item is N/A, and only a secret that T-15's flagged scan finds is rotated (`deploy.md` step 8).
+  - The licence holder: "Copyright (c) 2026 Ruslan Haqverdi".
+  - These two answers came while this pull request was open, so they are in it and not in a new
+    version: the backlog stays at v1.48.
 - **Disagreements:** none.
 - **Lessons for the process:**
   1. When two documents disagree about order, put the disagreement in front of the owner. Do not
@@ -5637,7 +5642,7 @@ them too").
      is, why it was asked for and what changed since then.
   3. Before calling a record clean ("none cancelled"), count it.
 - **Next:**
-  - The owner reviews and merges this pull request, answers item 4 and gives the licence holder's name.
+  - The owner reviews and merges this pull request. No decision of the five is left open.
   - T-15's plan gate orders the work of the "from T-16" hand-off. The owner asked that the home paths
     not show "after the next pull request", so that item may come first, as a small pull request of its
     own.
