@@ -107,10 +107,14 @@ jobs:
             PF_COOKIE="$cookie" perl -pi -e 's/\Q$ENV{PF_COOKIE}\E/[redacted]/g' .lighthouseci/*
           fi
 
+      # `.lighthouseci` is a hidden directory and upload-artifact skips hidden files by default
+      # (`include-hidden-files` defaults to 'false' in action.yml at this pin): the first real run,
+      # 2026-09-26, wrote six reports and uploaded none ("No files were found with the provided path").
       - name: Upload the Lighthouse reports
         if: always() && steps.redact.outcome == 'success'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: lighthouse
           path: .lighthouseci
+          include-hidden-files: true
           retention-days: 7

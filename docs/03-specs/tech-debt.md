@@ -1,6 +1,8 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.21 — 2026-09-26: T-14 measured the Vercel-related entries on the task's own
+Status: **Approved** (v1.22 — 2026-09-26: T-14's production half — TD-14 and TD-17's closing lines
+carry PR #60's merge (`44ff1b6`); TD-21 opened — the first real Lighthouse run measured
+`/overview`'s LCP at 2624 ms on production, over NFR-P2's 2.5 s; v1.21 — 2026-09-26: T-14 measured the Vercel-related entries on the task's own
 preview (PR #60, in review): TD-14 closed — no data reachable without a session; TD-17 closed —
 Vercel overwrites `X-Forwarded-For`; TD-3 gains the measured cache headers; TD-19 opened — the proxy
 does not run for Next's `.segments/*` URLs on Vercel (harmless today); TD-20 opened — `pg`'s
@@ -38,13 +40,14 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-11 | Every `next build` downloads Public Sans from Google Fonts, so a network hiccup fails the build | **Closed** | T-13c (PR #39; v1.11) |
 | TD-12 | Duplicate `pf_session` cookies are read inconsistently between the proxy and the session-probe route | **Closed** | T-13d (PR #47; F-01) |
 | TD-13 | `TRACE` bypasses the proxy entirely on every route: a bare 500 with none of the app's security headers | **Open — no fix possible (Fetch-spec forbidden method, undici/Next)** | T-13d (investigated; F-02) |
-| TD-14 | The proxy's dotted-path exclusion may also skip Next's `.rsc`/`.json` transport forms of protected pages on Vercel | **Closed** (PR #60, in review — measured on Vercel: no data reachable without a session; the residual gap is TD-19) | T-13d (F-03); T-14 (6.5) |
+| TD-14 | The proxy's dotted-path exclusion may also skip Next's `.rsc`/`.json` transport forms of protected pages on Vercel | **Closed** (PR #60, `44ff1b6` — measured on Vercel: no data reachable without a session; the residual gap is TD-19) | T-13d (F-03); T-14 (6.5) |
 | TD-15 | `POST /api/auth/logout` has no CSRF check of its own beyond `SameSite=Lax` | **Closed** | T-13d (PR #47; F-04) |
 | TD-16 | `X-Powered-By: Next.js` is sent on every response | **Closed** | T-13d (PR #47; F-05) |
-| TD-17 | The login rate-limit key is client-controlled `X-Forwarded-For` unless the host overwrites it | **Closed** (PR #60, in review — Vercel overwrites the header, measured) | T-13d (F-06); T-14 (6.7) |
+| TD-17 | The login rate-limit key is client-controlled `X-Forwarded-For` unless the host overwrites it | **Closed** (PR #60, `44ff1b6` — Vercel overwrites the header, measured) | T-13d (F-06); T-14 (6.7) |
 | TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Closed** | T-13d (PR #47; F-07) |
 | TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Open** — harmless while every route is dynamic; a separate small PR after T-14 (owner, 2026-09-26) | T-14 (6.5; residual of TD-14) |
 | TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Open** — a separate small PR after T-14 (owner, 2026-09-26) | T-14 (6.2, the Vercel build log) |
+| TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — owner decides | T-14 (8.6) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -594,8 +597,9 @@ of protected pages on Vercel
   Vercel, and neither response carries any of the proxy's headers (2026-09-26, `td19-headers.sh`:
   no `Content-Security-Policy`, `Referrer-Policy`, `X-Content-Type-Options` or `X-Request-Id`) —
   recorded as TD-19.
-- **Closed:** 2026-09-26, by the T-14 measurement above, in review on PR #60 (`task/T-14-deploy`);
-  the merge and its date are added when the owner merges (as for TD-12).
+- **Closed:** 2026-09-26, by the T-14 measurement above — PR #60 (`task/T-14-deploy`, merge
+  `44ff1b6`), which the owner merged on 2026-09-25 at 21:22 UTC (2026-09-26, 01:22 +04); CI on the
+  PR's last head (`9d40224`) was green.
 
 ## TD-15 — `POST /api/auth/logout` has no CSRF check of its own beyond `SameSite=Lax`
 
@@ -682,8 +686,9 @@ of protected pages on Vercel
     (`203.0.113.9`) → **429** with `Retry-After: 896` — the key is the real client address, not a
     value the client chooses. A preview reset (204, which clears `LoginAttempt`) then a correct
     login (200) left no lasting lockout.
-- **Closed:** 2026-09-26, by the source and the measurement above, in review on PR #60
-  (`task/T-14-deploy`); the merge and its date are added when the owner merges. The code comment
+- **Closed:** 2026-09-26, by the source and the measurement above — PR #60 (`task/T-14-deploy`,
+  merge `44ff1b6`, merged by the owner on 2026-09-25 at 21:22 UTC, 2026-09-26 01:22 +04; CI on its
+  last head `9d40224` green). The code comment
   at `auth.ts:20-22` may now cite the Vercel page. **Not changed:** the app still trusts the first
   `X-Forwarded-For` entry, so on any other host (`next start` behind no proxy, a local run) the key
   remains client-chosen — true of the demo deployment only.
@@ -788,3 +793,29 @@ of protected pages on Vercel
   would pin the choice either way.
 - **Picked up by:** a separate small pull request after T-14 merges (owner, 2026-09-26); no backlog
   task exists for it yet.
+
+## TD-21 — The Overview page's LCP misses NFR-P2's 2.5 s on production
+
+- **Found:** 2026-09-26, T-14 plan 8.6 — the first real Lighthouse CI run against production (started
+  by `workflow_dispatch` after the first seed: GitHub Actions run 36191757485, `ubuntu-latest`,
+  `@lhci/cli` 0.15.1, mobile preset, three runs per page, assertions on the median run). `/overview`:
+  largest-contentful-paint **2623.9 ms**, over the 2500 ms limit (NFR-P2: LCP ≤ 2.5 s). `/transactions`
+  passed every assertion, and the performance score (≥ 0.9, NFR-P1) and CLS (≤ 0.1) held on both.
+  The log reports failures only: the scores themselves are not in it, and the reports were not
+  uploaded (`.lighthouseci` is hidden and `upload-artifact` skips hidden files — fixed in the same
+  close-out pull request, so the next run's artifact has them).
+- **Owner decision:** pending.
+- **What:** one measurement, the median of three runs, from a runner in the United States against
+  functions in `fra1`; its variance is not known. Before the deployment, local dry runs had read
+  3.1–3.5 s on `/overview` and 2.7 s on `/transactions` under Lighthouse's simulated throttling —
+  not NFR evidence, and higher than production's figure. Not diagnosed: the LCP element and what
+  delays it, whether Neon's scale-to-zero cold start is in the first request, how much of it is the
+  runner's distance.
+- **Risk:** NFR-P2 is not met on the first page a visitor sees, by 124 ms on one measurement. Low
+  for a demo; it is also a Lighthouse assertion that now fails on every production deployment (the
+  workflow is not a required check).
+- **Guarded meanwhile by:** the Lighthouse workflow itself, which fails on it.
+- **Fix:** read the next run's uploaded report (LCP element, its breakdown, `total-blocking-time`),
+  repeat the run to see the spread, then decide: fix the page, or document an exception with the
+  owner's approval (NFR-D4 asks for the cold-start behaviour to be documented in any case).
+- **Picked up by:** the owner decides.

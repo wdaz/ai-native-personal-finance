@@ -5132,3 +5132,55 @@ them too").
 - **Next:** CI on the final head; then the agent tells the owner PR #60 may be merged (it is made
   ready first). After the merge: Task 8, and the two small pull requests (TD-19, TD-20) as the owner
   schedules them.
+
+## 2026-09-26 — Phase 5: T-14 — production, after the merge
+
+- **Phase:** 5 (Build the slice), Release 1 — T-14, plan Task 8 (8.1–8.4, 8.6, 8.7) after the owner
+  merged PR #60 (`44ff1b6`, 2026-09-25 21:22 UTC). 8.5, the origin-trial token, waits for the owner.
+- **Participants:** Owner (`vercel promote`, the seed and secret checks through a script, the
+  origin-trial registration still to come) / Agent (Claude Code, Sonnet 5, background session).
+- **Trigger:** "PR merged".
+- **Prompt(s):** `prompts/2026-09-25-T-14-execution.md` (the owner's messages), the scripts in
+  `prompts/2026-09-25-T-14/scripts/` (`t8-newdep.sh`, `t8-smoke.sh`, `task8-secrets.sh`).
+- **Produced:** this close-out pull request — `lighthouse.yml`'s upload fixed, the README's live URL,
+  the runbook's record table and a paragraph on the project domain, `tech-debt.md` v1.22 (TD-14 and
+  TD-17's merge lines, TD-21), `backlog.md` v1.42.
+- **Measured on production:**
+  - The Git deployment (`main@44ff1b6`, `fra1`) ran `prisma migrate deploy` against the `production`
+    Neon host — the other host than the preview's — and applied both migrations; through its team
+    alias `/login` was 200, `/api/meta` 500 (unseeded), the proxy's headers and HSTS present, and
+    `x-vercel-id` said `fra1::fra1` (the Atlantic hop of the CLI deployment is gone).
+  - **The project domain kept serving the old data-free CLI deployment** (`/login` 500 for the
+    public) until the owner ran `vercel promote`: the project's `autoAssignCustomDomains` was
+    `false`, and stayed `false` afterwards. This is the failure the advisor had told the agent to
+    look for at 8.1, and the first thing the runbook now says about production deployments.
+  - The seed (owner's script): `POST /api/admin/reset` → 204; the function log — read inside
+    Hobby's one-hour window with `vercel logs -d … --since 1h --json` — had `reset reason=manual
+    rows=59`, the preview secret's 401 and the cron call's `reset skipped reason=scheduled
+    dueAt=2026-10-05T20:27:20…`; the preview's `RESET_SECRET` → 401 on production; the cron's `GET`
+    with `CRON_SECRET` → 200 without a redirect. The smoke checks on the public domain all passed.
+  - **Lighthouse:** the first automatic run started on `main`'s `deployment_status` (so
+    `environment == 'Production'` was right) and failed on its new "deployment must be seeded" step,
+    as designed. The run started by hand after the seed measured on GitHub's runner — Chrome opened
+    without `--no-sandbox` — and `/overview`'s LCP was 2624 ms against NFR-P2's 2.5 s (TD-21);
+    `/transactions` passed everything. **Its reports were never uploaded**: `.lighthouseci` is
+    hidden and `upload-artifact` skips hidden files by default; the fix is in this pull request.
+- **What the agent got right:** the invariant held through the merge (the seed came after the
+  migration, from the owner's script); it looked for the domain before anything else at 8.1 and
+  found the cause, not just the symptom; it read the seed's log line inside the one-hour window.
+- **What the agent got wrong or missed:** the Lighthouse workflow's artifact step was tested only by
+  reading the action's documentation, never by an upload; the review, the advisor and the local dry
+  runs all missed a hidden-directory default that the first real run exposed. `--no-sandbox` had been
+  ruled unnecessary without a runner to test on; the run showed the ruling right.
+- **Owner changes and reasoning:** none; the owner ran the promote and the script as asked.
+- **Disagreements:** none.
+- **Lessons for the process:** (1) a platform default that silently changes where a *public* URL
+  points (`autoAssignCustomDomains: false`) is visible only by looking at the public URL after
+  every production deployment — put that check in the runbook, not in memory. (2) A CI step that
+  publishes an artifact has to be run once on the CI to be believed; reading its action.yml is what
+  found the fix, not the flaw.
+- **Next:** the owner registers the origin trial for `https://personal-finance-cyan-kappa.vercel.app`
+  (8.5) and switches on auto-assignment; this pull request's merge is the first production deployment
+  that shows whether the domain follows on its own; the first scheduled cron run is read at
+  03:00–04:00 UTC; TD-19 and TD-20 have their own pull requests when the owner schedules them; TD-21
+  needs the owner's decision after the next Lighthouse run's report can be read.
