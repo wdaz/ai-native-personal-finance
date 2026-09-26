@@ -1,9 +1,16 @@
 # Backlog — Release 1 (vertical slice: Auth + Overview)
 
-Status: **Approved** (v1.44 — 2026-09-26: TD-20 is fixed in its own pull request, #64 (in review;
-`tech-debt.md` v1.24) — no task row changes: `createDb` names `sslmode=verify-full` for `pg`, so the
-certificate check on the path to Neon does not depend on `pg` 8's reading of `require`, and a later
-`pg` 9 (simulated in a test) keeps it; v1.43 — 2026-09-26: **T-14 is done** — PR #60 (`44ff1b6`) and its close-out PR
+Status: **Approved** (v1.45 — 2026-09-26: TD-19 and TD-20 are closed, on the owner's word ("Hər ikisi
+üçün et", asked for both closing lines after PR #63's merge) — TD-19 by PR #63 (merge `dd81c44`,
+2026-09-26 06:41 UTC), TD-20 by PR #64, this one, on its merge (`tech-debt.md` v1.25); no task row
+changes: `createDb` names `sslmode=verify-full` for `pg`, so the certificate check on the path to
+Neon does not depend on `pg` 8's reading of `require`, and a later `pg` 9 (simulated in a test) keeps
+it; the owner declined ("Xeyr") an entry of its own for the review's `channel_binding` finding, which
+stays recorded in TD-20's entry; v1.44 — 2026-09-26: TD-19 is fixed in its own pull request, #63 (in
+review; `tech-debt.md` v1.24) — no task row changes: the proxy's matcher no longer swallows Next's
+`.segments/*` and `.json` suffix, the route matrix reads a page's path without it, and a protected
+name followed by a dot asks for a session; Release 2's
+pages inherit the fix, and T-15 needs nothing from it; v1.43 — 2026-09-26: **T-14 is done** — PR #60 (`44ff1b6`) and its close-out PR
 #61 (`73a12ea`) are merged, production runs from Git on a seeded Neon branch at
 `https://personal-finance-cyan-kappa.vercel.app`, and every hand-off in its row is answered; what it
 leaves is named in the row and in `tech-debt.md` v1.23 — TD-19 and TD-20 (their own pull requests),
@@ -266,6 +273,7 @@ Notes
   every route is dynamic) and **TD-20** (`pg`'s `sslmode=require` warning); TD-14 and TD-17 were
   closed by T-14's measurements on its preview (PR #60, merged; `tech-debt.md` v1.21–v1.22). Open at
   v1.42 also: **TD-21** (`/overview`'s LCP on production, 2624 ms and then 2594 ms against
-  NFR-P2's 2.5 s — kept by the owner as a documented exception at v1.43). At v1.44 **TD-20** is
-  fixed and in review (PR #64); it closes when the owner merges.
+  NFR-P2's 2.5 s — kept by the owner as a documented exception at v1.43). At v1.44 **TD-19** was
+  fixed and in review (PR #63); at v1.45 **TD-19** is closed (merged) and **TD-20** closes with
+  PR #64. Open after v1.45: **TD-3**, **TD-13** and **TD-21**.
 - Every PR follows `definition-of-done.md`; the owner merges. `release-1-stories.txt` = US-01, 02, 03, 04, 05, 06, 07, 08, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41.

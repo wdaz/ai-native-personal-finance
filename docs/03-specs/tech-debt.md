@@ -1,11 +1,20 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.24 — 2026-09-26: TD-20 fixed in PR #64 (`fix/td-20-pg-sslmode`, in review):
-`createDb` gives `pg` a URL whose `sslmode=prefer|require|verify-ca` is written `verify-full` (and
-refuses one it cannot rewrite as text), so the certificate check on the path to Neon no longer depends
-on `pg` 8's reading of `require`; `pg` 9's libpq reading is simulated in a test, not run; the entry's
-first option, an `overrides` pin below 9, is not needed; the review noticed, outside TD-20, that `pg`
-ignores the URL's `channel_binding=require`; v1.23 — 2026-09-26: TD-21 gets the second Lighthouse measurement (`/overview`
+Status: **Approved** (v1.25 — 2026-09-26: TD-19 and TD-20 closed, on the owner's word ("Hər ikisi
+üçün et"): TD-19 by PR #63, which the owner merged (`dd81c44`, 2026-09-26 06:41 UTC), TD-20 by PR
+#64 (`fix/td-20-pg-sslmode`), this one, on its merge. TD-20: `createDb` gives `pg` a URL whose
+`sslmode=prefer|require|verify-ca` is written `verify-full` (and refuses one it cannot rewrite as
+text), so the certificate check on the path to Neon no longer depends on `pg` 8's reading of
+`require`; `pg` 9's libpq reading is simulated in a test, not run; the entry's first option, an
+`overrides` pin below 9, is not needed; the review noticed, outside TD-20, that `pg` ignores the
+URL's `channel_binding=require`, and the owner declined ("Xeyr") an entry of its own for it — it
+stays recorded in TD-20's entry; v1.24 — 2026-09-26: TD-19 fixed in PR #63 (`fix/td-19-proxy-transport-forms`, in
+review): the matcher excludes static assets by extension instead of any dotted path, so Next's
+`.segments/*` and `.json` forms reach the proxy (the `.rsc` form already did), the route matrix reads
+a page's path with that suffix taken off, and a protected name followed by a dot asks for a session
+whatever the suffix is; the entry's claim that its regression test could only fail on a deployment is
+corrected — Next's own matcher compiler fails it offline — and the Vercel preview of the PR measured
+the forms (302 to `/login`, 401, with the proxy's headers); v1.23 — 2026-09-26: TD-21 gets the second Lighthouse measurement (`/overview`
 LCP 2594 ms again, the LCP element is the reset banner's text with a 1950 ms render delay) and the
 owner's decision: kept as a documented exception; v1.22 — 2026-09-26: T-14's production half — TD-14 and TD-17's closing lines
 carry PR #60's merge (`44ff1b6`); TD-21 opened — the first real Lighthouse run measured
@@ -52,8 +61,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-16 | `X-Powered-By: Next.js` is sent on every response | **Closed** | T-13d (PR #47; F-05) |
 | TD-17 | The login rate-limit key is client-controlled `X-Forwarded-For` unless the host overwrites it | **Closed** (PR #60, `44ff1b6` — Vercel overwrites the header, measured) | T-13d (F-06); T-14 (6.7) |
 | TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Closed** | T-13d (PR #47; F-07) |
-| TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Open** — harmless while every route is dynamic; a separate small PR after T-14 (owner, 2026-09-26) | T-14 (6.5; residual of TD-14) |
-| TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Fixed, in review** (PR #64) — closes when the owner merges it | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
+| TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Closed** (PR #63, `dd81c44`, 2026-09-26) | `fix/td-19-proxy-transport-forms` (PR #63; T-14 6.5, residual of TD-14) |
+| TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Closed** (PR #64, on its merge) | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
 | TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — kept as a documented exception (owner, 2026-09-26) | T-14 (8.6) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
@@ -761,6 +770,59 @@ of protected pages on Vercel
   request, per the owner's out-of-scope rule.
 - **Picked up by:** a separate small pull request after T-14 merges (owner, 2026-09-26); no backlog
   task exists for it yet.
+- **Fixed in:** 2026-09-26, PR #63 (`fix/td-19-proxy-transport-forms`; in review — the owner merges).
+  The entry's first option, plus one step it did not foresee:
+  - `proxy.ts`'s matcher excludes `_next/static`, `_next/image`, `favicon.ico` and a path that *ends*
+    in `svg|png|jpg|jpeg|gif|webp|ico|woff2?|txt|xml`, no longer any path with a dot; Next's appended
+    suffix reaches the proxy.
+  - The route matrix reads a page's path with Next's transport suffix taken off
+    (`src/server/transport-path.ts`), so `/overview.segments/…` asks for a session like `/overview`.
+    An API path is matched as requested: `/api/overview.json` is a protected API (401), and a
+    hypothetical `/api/meta.json` is not the public `/api/meta`.
+  - From the Opus 5.5 review of the pull request: the route matrix's `PROTECTED` pattern accepts a dot
+    after a protected name (`^/(overview|…)(/|\.|$)`), so a dotted form the suffix step does not know —
+    one a later Next adds, a doubled suffix, a probe — asks for a session too, instead of reaching Next
+    unchecked. No page of this app has a dot in its path, so nothing legitimate is caught.
+- **Corrections to this entry:**
+  - The Fix line said the regression test "can only fail first on a deployment: `next start` answers
+    404 for them". True of a request test, not of the matcher: `tests/unit/server/proxy-matcher.test.ts`
+    compiles the matcher with Next's own `getMiddlewareMatchers` and lists the paths the proxy runs
+    for; it failed first offline on six paths (`.rsc` twice, three `.segments/*`, `/api/overview.json`).
+    Its model is the raw path: Next tests the compiled expression against a normalised one with the
+    final `.rsc` already off, and `/overview.rsc` reached the proxy under the first matcher (TD-14), so
+    the two `.rsc` rows pin the model, not a gap that was live — the `.segments/*` and `.json` rows are
+    the gap.
+  - The matcher change alone was not enough locally. On `next start` the proxy then ran for
+    `/overview.segments/_tree.segment.rsc`, but Next had already taken the final `.rsc` off, so the
+    proxy's `pathname` was `/overview.segments/_tree.segment` (a temporary log line, removed), the
+    route matrix did not know it, and the answer was a 404 without a session check. The API test for
+    the forms failed on that, and `stripTransportSuffix` matches both shapes of the segment form.
+- **Guarded now by:** `tests/unit/server/proxy-matcher.test.ts` (what the proxy runs for and skips,
+  through Next's compiler; every file under `public/`; two fixtures that break it),
+  `tests/unit/server/transport-path.test.ts` (the suffix step, and a check that its list is what the
+  installed `next` appends), and three tests in `tests/api/proxy.spec.ts` (signed out: 302 to
+  `/login?next=…` or 401, with `X-Request-Id`, the CSP and `nosniff`; any dotted continuation of a
+  protected name: 302; signed in: the proxy runs and does not bounce the session).
+- **Measured on the Vercel preview of PR #63** (2026-09-26, commit `167b498`; Deployment Protection's
+  bypass header on every request; `docs/04-process/prompts/2026-09-26-TD-19/scripts/preview-probe.sh`):
+  - *Cookie-less:* `/overview.rsc`, `/overview.segments/_tree.segment.rsc`, `/overview.segments/_full.segment.rsc`,
+    `/overview.segments/(app)/overview/__PAGE__.segment.rsc` and `/transactions.segments/_tree.segment.rsc`
+    → **302** to `/login?next=%2Foverview` (`%2Ftransactions` for the last), **with** `X-Request-Id` and
+    the CSP — before: 200, a 322-byte skeleton, no proxy header; `/api/overview.json` → **401**
+    (`application/json`), with both headers — before: 404, none. `/avatars/bytewise.jpg` → 200 with
+    neither header, so assets still skip the proxy.
+  - *Signed in as the demo account:* the same `.segments/*` URLs → 200, `text/x-component`, 322 bytes
+    (326 for `/transactions`), now **with** the proxy's headers; `/overview.rsc` → 200, 22 546 bytes,
+    the size TD-14's positive control measured; `/api/overview.json` → 404 (no such route); `/login`
+    → 302 to `/overview`.
+  - *Repeated on commit `1577557`* (the review's fail-closed step; the script gained two paths): every
+    row above unchanged; cookie-less `/overview.foo` and `/budgets.x.y` → 302 to `/login?next=%2Foverview`
+    with both headers; signed in → 404 with both headers (the proxy ran and let the session through).
+  - Not measured, and not needed for TD-19: the root's forms (`/index.rsc`, `/index.segments/*`). They
+    reach the proxy now and are not mapped to `/`; the root redirects and holds no data.
+- **Closed:** 2026-09-26, PR #63 (`fix/td-19-proxy-transport-forms`, merge `dd81c44`) — the owner merged
+  it (2026-09-26, 06:41 UTC); CI on the PR's last head (`43bc479`) was green: API tests, lint ·
+  typecheck · unit, the four E2E legs, CodeQL, secret scan, npm audit and the Vercel deployment.
 
 ## TD-20 — `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not
 
@@ -843,9 +905,13 @@ of protected pages on Vercel
 - **Found by the review, outside TD-20 (not fixed here):** `pg` 8.23 ignores `channel_binding=require`
   in the URL — its client reads only the `enableChannelBinding` option (`pg/lib/client.js:87`) — so
   the parameter the Neon URL carries does not turn channel binding on. Unmeasured beyond that reading
-  of the code; low impact (TLS with certificate verification is on). Whether it becomes an entry of its
-  own is the owner's decision.
-- **Closed:** on the owner's merge of PR #64 — written here then, not before.
+  of the code; low impact (TLS with certificate verification is on). **Owner decision** (2026-09-26,
+  "Xeyr"): not an entry of its own; it stays recorded here.
+- **Closed:** 2026-09-26, PR #64 (`fix/td-20-pg-sslmode`) — closed by the owner's merge of that pull
+  request, on the owner's word ("Hər ikisi üçün et", after PR #63's merge) that the closing line be
+  written with the fix, not after it. The merge commit and time are not written here: they do not
+  exist yet. CI on the last head before this line (`5b2fc93`) was green: API tests, lint · typecheck ·
+  unit, the four E2E legs, CodeQL, secret scan, npm audit and the Vercel deployment.
 
 ## TD-21 — The Overview page's LCP misses NFR-P2's 2.5 s on production
 

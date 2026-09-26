@@ -241,10 +241,11 @@ test("T-13d F-05: no response carries X-Powered-By", async ({ request }) => {
   }
 });
 
-// Review finding M6: the matcher excludes any path with a file extension. A logged-in visitor's
-// image request must not meet the session check, the reset-epoch query, `no-store` or the
-// proxy's headers.
-test("review finding M6: a logged-in request for a file with an extension never reaches the proxy", async ({
+// Review finding M6: the matcher excludes a `public/` asset — a path that ends in an image, font or
+// text extension (TD-19 narrowed it from "any path with a dot"). A logged-in visitor's image
+// request must not meet the session check, the reset-epoch query, `no-store` or the proxy's
+// headers.
+test("review finding M6: a logged-in request for a public/ asset never reaches the proxy", async ({
   request,
 }) => {
   await logInAsDemo(request);
@@ -261,6 +262,68 @@ test("review finding M6: a logged-in request for a file with an extension never 
   expect(avatar.headers()["x-request-id"], "the avatar: X-Request-Id").toBeUndefined();
   expect(avatar.headers()["content-security-policy"], "the avatar: CSP").toBeUndefined();
   expect(avatar.headers()["cache-control"], "the avatar: Cache-Control").not.toBe("no-store");
+});
+
+// TD-19: the first matcher skipped every path with a dot, and Next appends `.json`, `.rsc` and
+// `.segments/<segment>.segment.rsc` to the path it matches — so on Vercel the proxy never ran for
+// the `.segments/*` and `.json` forms (the `.rsc` form did reach it, TD-14). Locally the header
+// assertions below are what catch the first matcher (its 404 came without the proxy's headers).
+// The second half is what `next start` shows: with the matcher fixed the proxy ran for
+// `.segments/*`, but Next had taken the final `.rsc` off, so the path it saw
+// (`/overview.segments/_tree.segment`) was not `/overview` to the route matrix, and no session
+// was asked for.
+const TRANSPORT_FORMS: [path: string, status: number, location: string | null][] = [
+  ["/overview.rsc", 302, "/login?next=%2Foverview"],
+  ["/overview.segments/_tree.segment.rsc", 302, "/login?next=%2Foverview"],
+  ["/overview.segments/(app)/overview/__PAGE__.segment.rsc", 302, "/login?next=%2Foverview"],
+  ["/transactions.segments/_tree.segment.rsc", 302, "/login?next=%2Ftransactions"],
+  ["/api/overview.json", 401, null],
+];
+
+test("TD-19: the `.rsc`, `.segments/*` and `.json` forms of a protected page or API need a session and carry the proxy's headers", async ({
+  request,
+}) => {
+  for (const [path, status, location] of TRANSPORT_FORMS) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect.soft(response.status(), `${path}: status`).toBe(status);
+    if (location)
+      expect.soft(response.headers()["location"], `${path}: Location`).toContain(location);
+    // Each of these is set by the proxy and by nothing else.
+    expect.soft(response.headers()["x-request-id"], `${path}: X-Request-Id`).toBeTruthy();
+    expect.soft(response.headers()["content-security-policy"], `${path}: CSP`).toBeTruthy();
+    expect.soft(response.headers()["x-content-type-options"], `${path}: nosniff`).toBe("nosniff");
+  }
+});
+
+// Fail closed: a protected name followed by a dot is asked about like the page itself, whatever the
+// suffix is — one the strip does not know (a future Next, a typo, a probe) included. No page of this
+// app has a dot in its path, so nothing legitimate is caught.
+const DOTTED_PROTECTED = ["/overview.foo", "/budgets.x.y", "/recurring-bills.segments/x"];
+
+test("TD-19: any dotted continuation of a protected page's name asks for a session", async ({
+  request,
+}) => {
+  for (const path of DOTTED_PROTECTED) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect.soft(response.status(), `${path}: status`).toBe(302);
+    expect.soft(response.headers()["location"], `${path}: Location`).toContain("/login?next=");
+    expect.soft(response.headers()["x-request-id"], `${path}: X-Request-Id`).toBeTruthy();
+  }
+});
+
+test("TD-19: a signed-in request for those forms is let through, not sent back to /login", async ({
+  request,
+}) => {
+  await logInAsDemo(request);
+  for (const [path] of TRANSPORT_FORMS) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    // What a route answers for a form it does not serve depends on the host (`next start`: 404;
+    // Vercel: a static skeleton), so only the proxy's part is asserted: it ran, and it did not
+    // redirect a valid session.
+    expect.soft(response.headers()["x-request-id"], `${path}: X-Request-Id`).toBeTruthy();
+    expect.soft(response.headers()["location"], `${path}: Location`).toBeUndefined();
+    expect.soft(response.status(), `${path}: status`).not.toBe(401);
+  }
 });
 
 test("ADR-0006 (5): every response asks for its own agent cluster, so Firefox and Safari can run the WebMCP polyfill", async ({
