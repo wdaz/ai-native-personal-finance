@@ -263,6 +263,50 @@ test("review finding M6: a logged-in request for a file with an extension never 
   expect(avatar.headers()["cache-control"], "the avatar: Cache-Control").not.toBe("no-store");
 });
 
+// TD-19: the first matcher skipped every path with a dot, and Next appends `.json`, `.rsc` and
+// `.segments/<segment>.segment.rsc` to the path it matches — so on Vercel the proxy never ran for
+// the last two of these. `next start` cannot show that (its 404 came without the proxy's headers
+// before the fix, which is what the header assertions below catch), but it does show the second
+// half: the proxy ran for `.segments/*` and, given the path as requested, did not know it was
+// `/overview` and asked for no session.
+const TRANSPORT_FORMS: [path: string, status: number, location: string | null][] = [
+  ["/overview.rsc", 302, "/login?next=%2Foverview"],
+  ["/overview.segments/_tree.segment.rsc", 302, "/login?next=%2Foverview"],
+  ["/overview.segments/(app)/overview/__PAGE__.segment.rsc", 302, "/login?next=%2Foverview"],
+  ["/transactions.segments/_tree.segment.rsc", 302, "/login?next=%2Ftransactions"],
+  ["/api/overview.json", 401, null],
+];
+
+test("TD-19: the `.rsc`, `.segments/*` and `.json` forms of a protected page or API need a session and carry the proxy's headers", async ({
+  request,
+}) => {
+  for (const [path, status, location] of TRANSPORT_FORMS) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect.soft(response.status(), `${path}: status`).toBe(status);
+    if (location)
+      expect.soft(response.headers()["location"], `${path}: Location`).toContain(location);
+    // Each of these is set by the proxy and by nothing else.
+    expect.soft(response.headers()["x-request-id"], `${path}: X-Request-Id`).toBeTruthy();
+    expect.soft(response.headers()["content-security-policy"], `${path}: CSP`).toBeTruthy();
+    expect.soft(response.headers()["x-content-type-options"], `${path}: nosniff`).toBe("nosniff");
+  }
+});
+
+test("TD-19: a signed-in request for those forms is let through, not sent back to /login", async ({
+  request,
+}) => {
+  await logInAsDemo(request);
+  for (const [path] of TRANSPORT_FORMS) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    // What a route answers for a form it does not serve depends on the host (`next start`: 404;
+    // Vercel: a static skeleton), so only the proxy's part is asserted: it ran, and it did not
+    // redirect a valid session.
+    expect.soft(response.headers()["x-request-id"], `${path}: X-Request-Id`).toBeTruthy();
+    expect.soft(response.headers()["location"], `${path}: Location`).toBeUndefined();
+    expect.soft(response.status(), `${path}: status`).not.toBe(401);
+  }
+});
+
 test("ADR-0006 (5): every response asks for its own agent cluster, so Firefox and Safari can run the WebMCP polyfill", async ({
   request,
 }) => {

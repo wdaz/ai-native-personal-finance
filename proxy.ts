@@ -4,6 +4,7 @@ import { getDb } from "@/src/server/db";
 import { LAST_RESET_AT_HEADER } from "@/src/server/meta";
 import { recordViaRequest } from "@/src/server/request-log";
 import { latestResetAt } from "@/src/server/reset";
+import { stripTransportSuffix } from "@/src/server/transport-path";
 import {
   SESSION_COOKIE_NAME,
   SESSION_TTL_SECONDS,
@@ -20,12 +21,20 @@ import { VIA_HEADER } from "@/src/shared/via";
 // on the Node.js runtime and Next refuses a `runtime` option in this file, so `config` holds the
 // matcher only. Node.js is what the reset-epoch check needs: the same Prisma/pg client
 // src/server/db.ts uses elsewhere (T-05 plan gate Q2 chose it over the Edge default). The matcher
-// excludes any path with a file extension (avatars and other `public/` assets, favicon) as
-// well as `_next/*` — none of these need a session check, and running the resetEpoch DB
-// query and setting `Cache-Control: no-store` on every image request for a logged-in visitor
-// was needless cost and defeated the browser's own asset caching (review finding M6).
+// excludes static assets — `_next/static`, `_next/image`, the favicon and a path that ends in an
+// image, font or text extension (avatars and the other `public/` files) — none of which needs a
+// session check: running the resetEpoch DB query and setting `Cache-Control: no-store` on every
+// image request for a logged-in visitor was needless cost and defeated the browser's own asset
+// caching (review finding M6).
+// It must not exclude "any path with a dot": Next appends `(\.json|\.rsc|\.segments/.+\.segment\.rsc)?`
+// to a matcher so that the proxy also covers those transport forms of a page or API, and a dot
+// exclusion swallows that suffix — on Vercel the proxy then never ran for `/overview.segments/*` or
+// `/api/overview.json` (TD-19). `tests/unit/server/proxy-matcher.test.ts` compiles this pattern
+// with Next's own function and pins both halves.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|.*\\..*).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|txt|xml)$).*)",
+  ],
 };
 
 const PROTECTED = /^\/(overview|transactions|budgets|pots|recurring-bills)(\/|$)/;
@@ -74,13 +83,17 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // SPEC-webmcp-tools §2.8: an API request a WebMCP tool made is recorded under this
   // response's request id — before the auth branch below, so a 401 is on record too.
   if (isApi) recordViaRequest(request.headers.get(VIA_HEADER), requestId, pathname);
-  const isRoot = pathname === "/";
+  // TD-19: a page's `.rsc`, `.segments/*` and `.json` forms are the page, for the route matrix.
+  // An API path is matched as requested — `/api/meta.json` is not the public `/api/meta`, so it
+  // meets the session check and fails closed.
+  const routePath = isApi ? pathname : stripTransportSuffix(pathname);
+  const isRoot = routePath === "/";
   const needsSession = isApi
     ? !PUBLIC_API.test(pathname) &&
       !TEST_API.test(pathname) &&
       !ADMIN_API.test(pathname) &&
       pathname !== "/api/auth/logout"
-    : isRoot || PROTECTED.test(pathname);
+    : isRoot || PROTECTED.test(routePath);
 
   const cookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const payload = await readSession(cookie);
@@ -114,12 +127,12 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
         { status: 401 },
       );
     } else {
-      const next = sanitizeNextPath(`${pathname}${search}`);
+      const next = sanitizeNextPath(`${routePath}${search}`);
       const loginUrl = new URL(resetInvalidated ? "/login?reason=reset" : "/login", request.url);
       loginUrl.searchParams.set("next", next);
       response = NextResponse.redirect(loginUrl, 302);
     }
-  } else if (!isApi && AUTH_PAGES.test(pathname) && authenticated && !logoutFallback) {
+  } else if (!isApi && AUTH_PAGES.test(routePath) && authenticated && !logoutFallback) {
     response = NextResponse.redirect(new URL("/overview", request.url), 302);
   } else if (crossSiteLogout) {
     // T-13d finding F-04/TD-15: POST /api/auth/logout needs no session (SPEC-auth §2.10), by
