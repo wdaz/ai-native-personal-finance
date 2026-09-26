@@ -50,6 +50,12 @@ const violations = readFixture("postgres-violations.txt.fixture");
 const controls = readFixture("postgres-controls.txt.fixture");
 /** One real-looking leak: the Neon pooled URL on the first line of the violations fixture. */
 const leakLine = materialise(violations.split("\n")[0] ?? "");
+/**
+ * The same leak behind gitleaks' inline opt-out. Built at runtime, like `leakLine`: both scans
+ * of scripts/secret-scan.sh ignore the comment (T-15a), so no line of this file may pair it
+ * with a detectable string.
+ */
+const allowCommentedLeak = `${leakLine} # gitleaks:allow`;
 
 type Finding = { RuleID: string; StartLine: number; File: string };
 
@@ -269,6 +275,35 @@ describe("T-02a secret guard", () => {
       expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
     });
 
+    // T-15a (owner decision 2026-09-26): an inline `gitleaks:allow` comment is a bypass that
+    // any file can carry and a review can miss, so neither scan honours it. The control shows
+    // that gitleaks does honour it when not told otherwise, in both of the modes the scan
+    // uses — without it, the two tests after it could pass for another reason.
+    it("control: gitleaks alone skips a line that carries gitleaks:allow, in git and stdin modes", () => {
+      expect(scanText(`${allowCommentedLeak}\n`)).toEqual([]);
+      const repo = newRepo();
+      commitFile(repo, "src/config.ts", `${allowCommentedLeak}\n`, "add");
+      expect(parseReport(run(gitleaks, ["git", ...report, "--log-opts=--all", repo]))).toEqual([]);
+    });
+
+    it("finds a committed secret whose line carries gitleaks:allow (T-15a)", () => {
+      const repo = newRepo();
+      commitFile(repo, "src/config.ts", `${allowCommentedLeak}\n`, "add");
+      const result = scanHistory(repo);
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("postgres_connection_string");
+      expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
+    });
+
+    it("finds a secret in a commit message that carries gitleaks:allow (T-15a)", () => {
+      const repo = newRepo();
+      commitFile(repo, "a.txt", "a\n", `note\n\n${allowCommentedLeak}`);
+      const result = scanHistory(repo);
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("postgres_connection_string");
+      expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
+    });
+
     it("passes a message that quotes the .env.example default, as it passes the file", () => {
       const repo = newRepo();
       const exampleUrl = readFileSync(join(repoRoot, ".env.example"), "utf8")
@@ -387,6 +422,20 @@ describe("T-02a secret guard", () => {
       expect(result.status).not.toBe(0);
       expect(result.stderr).toContain("commit blocked");
       expect(result.stderr).toContain("git commit --no-verify");
+      expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
+      expect(git(repo, "rev-list", "--count", "HEAD")).toBe("1");
+    });
+
+    it("blocks a staged secret whose line carries gitleaks:allow (T-15a)", () => {
+      const repo = hookedRepo();
+      commitFile(repo, "README.md", "clean\n", "clean");
+      writeInto(repo, ".env", `${allowCommentedLeak}\n`);
+      git(repo, "add", ".env");
+      const result = run("git", ["commit", "-q", "-m", "leak"], { cwd: repo });
+      expect(result.status).not.toBe(0);
+      // The rule id, not only the refusal: the hook also refuses when gitleaks cannot run
+      // (D10), and a mistyped flag would be refused that way.
+      expect(result.stdout + result.stderr).toContain("postgres_connection_string");
       expect(result.stdout + result.stderr).not.toContain(FAKE_PASSWORD);
       expect(git(repo, "rev-list", "--count", "HEAD")).toBe("1");
     });

@@ -91,7 +91,9 @@ downloads the pinned gitleaks release into `node_modules/.cache/` and checks its
 so it needs `curl` and a network connection once per `npm ci`. Commits that
 `git rebase` or `git cherry-pick` write themselves skip the hook, and
 `git commit --no-verify` skips it on purpose; the CI `secret scan` job reads every
-commit either way.
+commit either way. Both scans ignore an inline `gitleaks:allow` comment (T-15a): a false
+positive is exempted by an allowlist in `.gitleaks.toml`, which is reviewed and which
+`tests/unit/secret-guard.test.ts` makes fire.
 
 `npm run test:all` builds the app and starts it before the browser tests
 (ADR-0003: E2E never runs against `next dev`). The individual commands are:
@@ -102,7 +104,7 @@ commit either way.
 | `npm run lint:css`            | Stylelint over `app/` and `src/`: a bare `fr` column track fails (TD-9)                                          |
 | `npm run format:check`        | Prettier                                                                                                         |
 | `npm run typecheck`           | `tsc --noEmit`, strict                                                                                           |
-| `npm run secrets:scan`        | Gitleaks on all commit diffs and messages — first in `test:all`                                                  |
+| `npm run secrets:scan`        | Gitleaks on all commit diffs and messages, inline `gitleaks:allow` ignored — first in `test:all`                 |
 | `npm test`                    | Vitest — `tests/unit`                                                                                            |
 | `npm run test:coverage`       | `npm test` with the coverage gate: at least 90 % of statements in `src/domain` (`vitest.thresholds.json`)        |
 | `npm run traceability`        | Every Release 1 story id (`docs/03-specs/release-1-stories.txt`) is named in a test title (NFR-T2)               |
