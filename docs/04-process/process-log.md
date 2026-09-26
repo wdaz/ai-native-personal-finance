@@ -5749,6 +5749,13 @@ them too").
     secret") still pass, so the flag does not make a clean scan fail.
   - The CI `secret scan` job of this pull request is the first flagged pass over the commit and tag
     messages of the real history. The owner's baseline covered commit diffs only.
+  - That job (run 36233787630, job 108381746745, 2026-09-26 09:46 UTC) ran on the pull request's merge
+    commit `5a8fd2c` (`0a6567c` into `4197cbc`), so with the new script:
+    - "secret-scan: commit diffs" — "519 commits scanned", "scanned ~15842809 bytes (15.84 MB) in
+      1.17s", "no leaks found";
+    - "secret-scan: commit and tag messages" — "scanned ~259290 bytes (259.29 KB) in 219ms", "no leaks
+      found".
+  - The history passes both flagged scans. The check stays green on `main` after the merge.
 - **What the agent got right:**
   - It wrote the tests first and showed them red.
   - It added a control, so the tests cannot pass because gitleaks never honoured the comment.
