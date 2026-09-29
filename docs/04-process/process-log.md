@@ -6204,3 +6204,39 @@ them too").
     until the next release).
   - T-15c, the Release 1 retrospective. The first release after T-15b is where the check's green and
     `develop`'s survival are read.
+
+## 2026-09-29 — Phase 5: T-15b follow-up — merge commits only on `main` and `develop`
+
+- **Phase:** 5 (Build the slice), Release 1. A follow-up to T-15b, which closed with PR #77
+  (`e65cfb4`); its plan's Q5 was still open.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:** the owner asked "merge commit deyəndə nə nəzərdə tutulur?" ("what is meant by a merge
+  commit?"). The agent explained GitHub's three methods (a merge commit keeps the branch's commits and
+  their SHAs; squash and rebase write new ones) and why a squashed or rebased release leaves
+  `develop` without `main`'s commit, then offered Q5 again. The owner: "b. heç birinə bir başa push
+  mümkün olmasın." ("b. No direct push to either.")
+- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Settings applied** (plan Q6a), each with its state before (kept in the session's job directory),
+  the call and the read-back:
+  - PUT 23907266 ("main: pull request, Copilot, CodeQL") and 24155781 ("develop: pull request,
+    Copilot, CodeQL") with the pull-request rule's `allowed_merge_methods` set from `["merge",
+    "squash", "rebase"]` to `["merge"]`, everything else as read. Read-back: both
+    `["merge"]`, six rule types each, `bypass_actors: []`, `current_user_can_bypass: never`.
+  - `rules/branches/main` and `rules/branches/develop` both list `deletion`, `non_fast_forward` and
+    `pull_request` (`["merge"]`).
+  - Undo: PUT the two saved bodies back.
+- **"No direct push":** already enforced — the `pull_request` rule takes a change to either branch only
+  through a pull request, `non_fast_forward` refuses a force-push, `deletion` a deletion, and neither
+  ruleset has a bypass actor. Shown by the read-back, not by a push attempt: a push that the rules
+  failed to refuse would leave a commit on a protected branch.
+- **Produced:** `governance.md` v1.7 (the "Merge methods" line of "Settled at the switch" replaced,
+  with the owner's words); the deploy runbook's step 10 says the merge commit is the only method
+  allowed; backlog v1.55; this entry.
+- **What the agent got wrong or missed:** Q5 as first written asked about merge methods in terms the
+  owner had not met; the owner answered a different question twice before asking what it meant. A
+  gate question that needs a term explained should explain it in the question.
+- **Owner changes and reasoning:** (b) instead of the recommended (a) — merge commits on `develop` too,
+  so both long-lived branches keep one history shape.
+- **Disagreements:** none.
+- **Next:** the owner merges this pull request into `develop`. T-15c, the retrospective, when the owner
+  starts it.

@@ -1,6 +1,9 @@
 # Backlog — Release 1 (vertical slice: Auth + Overview)
 
-Status: **Approved** (v1.54 — 2026-09-29: **T-15b is done** with its pull request B (AGENTS.md §2
+Status: **Approved** (v1.55 — 2026-09-29: T-15b's open question Q5 answered by the owner after its
+close — **merge commits only on `main` and `develop`** (both pull-request rulesets allow `merge` alone),
+and no direct push to either, which the same rulesets already refuse (`governance.md` v1.7); v1.54 —
+2026-09-29: **T-15b is done** with its pull request B (AGENTS.md §2
 starts from `origin/develop`; `governance.md` v1.6 "Settled at the switch"; the PR template's base line;
 README and the deploy runbook's step 10, "Releases and hotfixes"). The settings after A: `code_scanning`
 on `develop`'s ruleset; **the default branch is `develop`** (Vercel's production branch still reads
