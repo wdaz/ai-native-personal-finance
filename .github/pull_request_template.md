@@ -2,8 +2,8 @@
   Task id and title · spec sections · story ids (DoD, "Scope and traceability").
   Tick every box (an agent never ticks "Owner reviewed and merged"), and paste commands and their
   output from the run, not from memory (governance.md).
-  Base: `develop`. Only a release (`develop`) or a `hotfix/<name>-main` branch opens a pull request
-  to `main` (governance.md, "Branches and releases").
+  Base: `develop` for work. Base `main` only for a release (head `develop`) or a hotfix (head
+  `hotfix/<name>-main`) (governance.md, "Branches and releases").
 -->
 
 ## What and why
