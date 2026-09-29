@@ -24,7 +24,7 @@ describe("LICENSE and THIRD-PARTY-NOTICES.md (T-15a, backlog T-15 items 1 and 2)
   });
 
   it("every source that draws a challenge asset is listed", () => {
-    const files = sourcesCiting(/The challenge asset `/);
+    const files = sourcesCiting(/the challenge asset `/i);
     expect(files.length).toBeGreaterThanOrEqual(9);
     const notices = read("THIRD-PARTY-NOTICES.md");
     for (const file of files) expect(notices).toContain(file);

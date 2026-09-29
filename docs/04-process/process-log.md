@@ -5868,3 +5868,73 @@ them too").
   - PR #70 then gets v0.2: the answers, the licence change in Task B (the PolyForm Strict text read
     from its source, B1's assertions changed), and `origin/main` merged in so A's guard reads the plan.
   - Then the owner merges #70, and B follows, then C.
+
+## 2026-09-29 — Phase 5: T-15a pull request B — the licence, the notices, the README attribution
+
+- **Phase:** 5 (Build the slice), Release 1 — T-15a, the plan's Tasks B1–B3.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:**
+  - The owner merged A ("71 merged"; PR #71, `85392a6`).
+  - The plan's v0.2 went to PR #70, with `origin/main` merged in.
+  - B does not depend on #70, so it was started from `origin/main` while #70's checks ran.
+- **Prompt(s):** `prompts/2026-09-29-T-15a-licence.md`.
+- **Produced:**
+  - `LICENSE`, laid out in three parts:
+    - a `Required Notice:` line: `Copyright (c) 2026 Ruslan Haqverdi (https://github.com/wdaz)`;
+    - a scope paragraph: the whole repository, code and documents, except the third-party material,
+      which keeps its own terms; any use the terms do not permit, commercial use included, needs the
+      licensor's permission;
+    - then the PolyForm Strict License 1.0.0, unchanged.
+  - `THIRD-PARTY-NOTICES.md`, in three sections:
+    - Frontend Mentor material: 16 rows;
+    - Phosphor Icons, with its MIT text, and Public Sans;
+    - `CloseCircleIcon.tsx`, a recorded source with no third-party licence.
+  - `tests/unit/licence.test.ts`: four tests.
+  - README:
+    - the challenge attribution under the title;
+    - a "Licence" section that says "source-available, not open source";
+    - the GitHub and Frontend Mentor profiles in "Owner";
+    - the "Challenge by Frontend Mentor. Coded by Ruslan Haqverdi" footer.
+  - `app/fonts/README.md` no longer names T-16.
+  - Backlog v1.51, this entry and the prompt record.
+- **Measured:**
+  - **The PolyForm text:** `gh api` read `PolyForm-Strict-1.0.0.md` from
+    `polyformproject/polyform-licenses`. The file's last commit is `9c032bc` (2020-05-14) and its blob
+    is `90abd0e`. SHA-256 of the downloaded file and of `LICENSE` after its 14-line header: both
+    `9eb48619…c56e`. So the terms are byte-identical to the source.
+  - **Phosphor's `LICENSE`:** read from `phosphor-icons/core` (`main`; last commit `6cb9423`,
+    2023-01-08). It reads "MIT License" / "Copyright (c) 2023 Phosphor Icons". The string the backlog
+    had carried since v1.19 is now checked against its source, not copied.
+  - **Frontend Mentor's licence page,** re-read through WebFetch: the same allowed and forbidden lists
+    as research note F1/F2 (2026-09-20), with no change.
+  - **`tests/unit/licence.test.ts` before the files:** "4 failed", `ENOENT` on `LICENSE` and
+    `THIRD-PARTY-NOTICES.md`.
+  - **The test after the files:** one still failed, "expected 8 to be greater than or equal to 9".
+    - The cause was the test. `src/ui/Logo.tsx` says "the challenge asset `logo-large.svg`" in
+      mid-sentence, lowercase, and the pattern was `/The challenge asset \`/`.
+    - The plan's F3 had described all nine files as saying "The challenge asset", which was not true.
+    - The pattern is now case-insensitive, and the result is "4 passed".
+    - The catch shows the test does bite: a file the notices list but the test did not find would
+      have gone unguarded.
+  - **The rest of the suite:** `npm test` 89 files, 1137 passed; `format:check`, `lint` and
+    `typecheck` clean.
+- **What the agent got right:**
+  - It took the licence text from the source and proved it byte-identical, rather than retyping it.
+  - It read Phosphor's notice from Phosphor.
+  - It kept "source-available, not open source" in the README, so the page promises no more than the
+    licence grants (the plan's Review Focus 6).
+- **What the agent got wrong or missed:** F3's wording ("each saying so in its header comment 'The
+  challenge asset …'") was loose. `Logo.tsx`'s header says it in lowercase, mid-sentence. The test
+  written from that wording missed the file until the count check caught it.
+- **Owner changes and reasoning:** none in B yet. The licence choice itself is v1.50's.
+- **Disagreements:** none.
+- **Lessons for the process:**
+  - A test that scans comments for a marker should say how many files it expects. The
+    `toBeGreaterThanOrEqual(9)` is what caught the case mismatch.
+  - When a plan quotes a marker, quote it from a `grep`, not from memory.
+- **Next:**
+  - The owner reviews B.
+  - B merges after #70.
+  - Then C: TD-22, the four remaining comments, the rotation verdict and the final flagged
+    `secret scan`.
+  - After B merges, the repository page's licence label is read (plan Task B4) and recorded in C.

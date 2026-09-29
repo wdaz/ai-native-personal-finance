@@ -1,5 +1,8 @@
 # AI-Native Personal Finance
 
+This is a solution to the [Personal finance app challenge on Frontend Mentor](https://www.frontendmentor.io/challenges/personal-finance-app-JfjtZgyMt1).
+The challenge's design files are not included in this repository.
+
 A portfolio project with two deliverables:
 
 1. **The product** — a full-stack implementation of the Frontend Mentor
@@ -168,8 +171,25 @@ says why and where to run them instead).
 - Challenge avatars: copied into `public/avatars/` at T-01 from the Frontend Mentor
   starter; the basename is the key used by the seed (SPEC-overview §4.5).
 
+## Licence
+
+The whole repository, its code and its documents, is under the
+[PolyForm Strict License 1.0.0](LICENSE). Personal and other noncommercial use is permitted.
+Distributing it, changing it or building new works on it, and any commercial use, are not
+permitted without the owner's permission. It is source-available, not open source.
+
+The Frontend Mentor challenge material and the open-source components it uses keep their own terms;
+each is listed in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).
+
 ## Owner
 
 Ruslan Haqverdi — product, engineering and process. AI agents (Claude and
 others) act as collaborators under the rules in `AGENTS.md`; the process log
 records what they did and what the owner changed.
+
+- GitHub: [@wdaz](https://github.com/wdaz)
+- Frontend Mentor: [@wdaz](https://www.frontendmentor.io/profile/wdaz)
+
+---
+
+Challenge by [Frontend Mentor](https://www.frontendmentor.io). Coded by [Ruslan Haqverdi](https://github.com/wdaz).
