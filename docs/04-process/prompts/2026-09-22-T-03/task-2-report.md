@@ -241,7 +241,7 @@ Exactly the 6 brief paths, nothing else.
 
 ```
 $ git add src/domain/calendar.ts src/domain/money.ts src/server/seed.ts tests/unit/seed.test.ts tests/unit/domain/calendar.test.ts tests/unit/domain/money.test.ts
-$ GITLEAKS_CACHE_DIR="~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/node_modules/.cache/gitleaks" git commit \
+$ GITLEAKS_CACHE_DIR="$HOME/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/node_modules/.cache/gitleaks" git commit \
     -m "refactor(domain): move toCents and shiftYears into src/domain; add sumCents and the UTC month (T-03)" \
     -m "Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01BQp5Lv2Sruz5RCgSMYmHWa"
@@ -428,7 +428,7 @@ Exactly the two files the ruling named, nothing else.
 
 ```
 $ git add src/domain/money.ts tests/unit/domain/money.test.ts
-$ GITLEAKS_CACHE_DIR="~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/node_modules/.cache/gitleaks" git commit \
+$ GITLEAKS_CACHE_DIR="$HOME/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/node_modules/.cache/gitleaks" git commit \
     -m "fix(domain): sumCents refuses a partial sum beyond the exact range (T-03)" \
     -m "Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01BQp5Lv2Sruz5RCgSMYmHWa"

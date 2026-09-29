@@ -5847,6 +5847,18 @@ them too").
     letter of the user name, and the suite reads "5 passed". `git grep` finds no `/home/` followed by
     a lowercase letter anywhere in the tree, so the wider pattern adds no hit today. It widens Review
     Focus 2 (URL paths), which the owner already knows about.
+  - Copilot's second pass on PR #71 found five command lines in two T-03 reports
+    (`task-2-report.md:244,431`, `task-3-report.md:141,346,457`) where the substitution had produced
+    `GITLEAKS_CACHE_DIR="~/…"`. That is right, and it is taken: a shell does not expand `~` inside
+    double quotes, so the recorded command would no longer run as written. The reason is the quotes, not
+    the assignment, since an unquoted `VAR=~/x` does expand. The five lines take `$HOME`, which still
+    changes only the prefix.
+  - `git grep '"~/'` now finds one line, `T-13c/task-7-report.md:102`, which quotes an error message
+    and not a command. It stays `~`.
+  - The same kind of risk sits in `T-02a/sdd-task-workflow.js:13` (`'~/.claude/…'`). That string is
+    pasted unquoted into a shell command at the start of a word, where `~` does expand, so it stays.
+  - Lesson: a blanket "prose takes `~`" rule misses commands quoted inside prose. A quoted or
+    embedded path in a recorded command should take `$HOME`.
 - **Lessons for the process:**
   - A decision recorded in the owner's words ("MIT for the project's own code") is not widened by the
     agent, even in the direction the licence text itself suggests. Asking surfaced a different intent.
