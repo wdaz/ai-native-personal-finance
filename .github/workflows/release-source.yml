@@ -1,0 +1,34 @@
+name: Release source
+
+# governance.md, "Branches and releases" (T-15b): main takes pull requests only from develop (a release)
+# or a hotfix/<name>-main branch (a production fix). The job's name, `release source`, is a required status
+# check in main's ruleset; renaming it leaves every pull request to main waiting.
+#
+# pull_request_target, not pull_request: GitHub runs this event's workflow file, and checks out, the
+# repository's default branch, never the pull request's files (GitHub changelog 2025-11-07, in effect
+# 2025-12-08), so a pull request cannot edit the rule it is judged by. Nothing from the pull request is
+# checked out or run; its branch name reaches the script only through env, never inside `run:`.
+on:
+  pull_request_target:
+    branches: [main]
+    # `edited` also fires when a pull request's base is changed to main after it was opened.
+    types: [opened, reopened, synchronize, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  release-source:
+    name: release source
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: The head branch is develop or hotfix/<name>-main, in this repository
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPO: ${{ github.repository }}
+        run: sh scripts/check-release-source.sh
