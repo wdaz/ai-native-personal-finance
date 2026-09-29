@@ -1,6 +1,9 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.26 — 2026-09-26: NFR-D4's cold-start note is written, on the owner's word
+Status: **Approved** (v1.27 — 2026-09-29: **TD-22** opened by T-15a, the owner's decision of
+2026-09-26 (backlog v1.48, T-15's hand-off item 5): the `deepmerge-ts`/`mysql2` `overrides` stay until
+a stable Prisma release no longer pins the vulnerable versions; re-measured the same day, without them
+`npm audit` reads 4 high; nothing else in the file changes; v1.26 — 2026-09-26: NFR-D4's cold-start note is written, on the owner's word
 ("bitmiş olaraq qeyd et" — "record it as done"): `deploy.md` step 5 and its Record table hold the
 method and three cold measurements of production — the first byte of the first request to a route after idle came
 in at 1.07–2.96 s (worst 2.96 s, NFR-D4's limit is 10 s); TD-21's "not measured" and "fix" lines are
@@ -68,6 +71,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Closed** (PR #63, `dd81c44`, 2026-09-26) | `fix/td-19-proxy-transport-forms` (PR #63; T-14 6.5, residual of TD-14) |
 | TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Closed** (PR #64, on its merge) | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
 | TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — kept as a documented exception (owner, 2026-09-26) | T-14 (8.6) |
+| TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | nobody yet; moved from T-16 (backlog v1.48) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -961,3 +965,42 @@ of protected pages on Vercel
   reset 25 Sep 2026"); then the same run's TBT (62–252 ms, one run over 200). NFR-D4's cold-start
   note is written (2026-09-26, `deploy.md` step 5 and the Record table).
 - **Picked up by:** nobody; kept by the owner's decision (2026-09-26).
+
+## TD-22 — `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases
+
+- **Found:** 2026-09-22, the T-02a `npm audit` gate. `prisma@7.10.0`, the newest stable 7.x, pins
+  `deepmerge-ts` 7.1.5 through `@prisma/config` (GHSA-ggr8-5vv4-36mx, stack exhaustion) and
+  `mysql2` 3.15.3 (the advisories cover ≤ 3.23.0: GHSA-3f6p-5ww8-9rcr, plaintext credentials on an auth-plugin downgrade;
+  GHSA-rgwj-5xj2-c3m3, decompression-bomb DoS). `package.json`'s `overrides` force `deepmerge-ts`
+  8.0.2 and `mysql2` 3.24.4, so `npm audit` reads 0.
+- **History:**
+  - The owner decided on the overrides on 2026-09-22.
+  - They were re-measured on 2026-09-24 (T-13) and on 2026-09-26 (backlog v1.48); both times the
+    overrides were still needed.
+  - Their removal was a T-16 item. It moved to T-15a when T-16 closed (backlog v1.48, owner: "option
+    a" — a tech-debt entry), and this entry is that item.
+- **Re-measured:** 2026-09-29, T-15a, at `origin/main` `d493f3b`, in a scratch copy outside the
+  repository.
+  - The copy was `package.json`, `package-lock.json` and `.npmrc`, with `overrides` and their two
+    `"//"` lines removed.
+  - `npm install --package-lock-only --ignore-scripts`, then `npm audit --audit-level=high`: **"4 high
+    severity vulnerabilities"** — the same three advisories through `deepmerge-ts` and `mysql2`.
+  - The advisory ranges end at `@prisma/config` "6.13.0-dev.1 - 8.1.0-dev.4" and `prisma`
+    "6.13.0-dev.1 - 8.1.0-dev.6". So a fix exists only in development builds of 8.1.
+  - `npm view prisma dist-tags`: `latest` `8.0.0-rc.17` (a release candidate), `prev` `7.10.0`.
+  - `npm view prisma@7 version`: the newest 7.x is `7.10.0`.
+- **Owner decision:** keep the overrides until a stable Prisma release no longer needs them (backlog
+  v1.48, T-15's hand-off item 5).
+- **Risk:** low. The overrides replace a transitive dependency's minor version under Prisma's CLI and
+  config loader, which run at build and migration time, not in the request path; `mysql2` is not used
+  (the app's database is Postgres). The cost is maintenance: the overrides and their `"//"` note must
+  be removed by hand, or they will pin old releases after Prisma moves on.
+- **Guarded meanwhile by:** `npm audit` in CI (the non-blocking `npm audit` job) and the T-02a gate,
+  which read 0 with the overrides in place; the owner's rule that `npm audit` stays at 0.
+- **Trigger:** a **stable** Prisma release (not an `-rc` or `-dev`) that no longer pins `deepmerge-ts`
+  7.1.5 or `mysql2` ≤ 3.23.0. `npm view prisma dist-tags` shows it as `latest`.
+- **Fix:**
+  - Upgrade Prisma to that release in its own pull request.
+  - Repeat the scratch check above: without the overrides, the audit must read 0.
+  - Then remove both `overrides` and the two `"//"` lines that explain them, in the same pull request.
+- **Picked up by:** nobody yet.

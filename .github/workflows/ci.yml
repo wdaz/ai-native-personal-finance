@@ -123,7 +123,7 @@ jobs:
         # build time (next.config.ts), so `off` cannot be a runtime switch. ADR-0003: E2E runs on
         # Chromium, Firefox and WebKit. `off` is built once, on Chromium: it registers no tools,
         # and it was measured green on Firefox locally (T-13 plan Q3-A).
-        # All four leg names are T-16's required checks; keep them.
+        # All four leg names are required checks in main's ruleset (backlog v1.38); keep them.
         include:
           - { label: Chromium, browser: chromium, webmcp-mode: polyfill }
           - { label: Chromium, browser: chromium, webmcp-mode: "off" }

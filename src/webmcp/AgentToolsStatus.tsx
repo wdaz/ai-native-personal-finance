@@ -27,7 +27,7 @@ function statusText(status: WebMcpStatus): string {
  * itself never imports this module). `compact` (tablet/mobile, the page header) is a dot whose
  * only state-carrying content is its accessible name — no per-state colour, since neither the
  * spec nor design-tokens.md names one and the design HTML exports this task would otherwise
- * check are gone from the checkout (plan D5, T-16).
+ * check are gone from the repository (plan D5; removed 2026-09-20).
  *
  * Both variants set `aria-label` explicitly rather than relying on visible content: the ARIA
  * `status` role does not compute its accessible name from content (unlike, say, a `button`), so
