@@ -6014,7 +6014,11 @@ them too").
     are gone". This is the sentence Copilot misread on PR #70 as "check are gone". It was grammatical,
     but the misread showed it was hard to parse.
   - The fixture README reads "not **a** guarantee".
-  - Both are comment and prose changes. They start one more required run, and that run is the gate.
+  - A third point came on the next push: `package.json`'s note gave the scratch re-check as
+    `npm install --package-lock-only`, without the `--ignore-scripts` that TD-22 and this entry use. The
+    note now matches.
+  - All three are comment and prose changes. Each starts one more required run, and the last one is
+    the gate.
 - **Lessons for the process:** for T-15c's retrospective:
   - a go-public close-out that was one backlog row became a plan and four pull requests (#70–#73);
   - Copilot's reviews found real defects in all three work pull requests: the `/home/` pattern, the
