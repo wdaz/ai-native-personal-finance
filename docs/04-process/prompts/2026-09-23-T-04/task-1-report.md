@@ -26,7 +26,7 @@ $ npx vitest run tests/unit/shared/enums.test.ts
 **Output:**
 ```
 FAIL  tests/unit/shared/enums.test.ts [ tests/unit/shared/enums.test.ts ]
-Error: Cannot find package '@/src/shared/enums' imported from /Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-04-shared/tests/unit/shared/enums.test.ts
+Error: Cannot find package '@/src/shared/enums' imported from ~/Own/ai-native-personal-finance/.claude/worktrees/T-04-shared/tests/unit/shared/enums.test.ts
 ```
 
 **Expected:** FAIL with "Cannot find package '@/src/shared/enums'" ✓

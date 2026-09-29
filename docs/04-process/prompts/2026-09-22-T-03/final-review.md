@@ -2,7 +2,7 @@
 
 The branch is sound. I found no bugs and no Critical or Important issues. Six Minor documentation and test-title items should land before the process-record commit, so the verdict is **With fixes**.
 
-**How I reviewed.** I read the whole diff package (`/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/.superpowers/sdd/2026-09-22-T-03/review-9039dd0..412cb4c.diff`) in four passes:
+**How I reviewed.** I read the whole diff package (`~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/.superpowers/sdd/2026-09-22-T-03/review-9039dd0..412cb4c.diff`) in four passes:
 1. docs and config;
 2. `src/domain` and `src/server/seed.ts`;
 3. `src/shared`, the fixtures and `boundaries.test.ts`;
@@ -24,7 +24,7 @@ I then checked the head files against:
 - the latest five transactions, in order.
 
 ## Strengths
-- **Domain design.** `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/src/domain/overview.ts` is pure and generic over the caller's rows, and takes the clock as a parameter. It sorts by `seq` itself, totals over all rows and only then slices four or five. That matches §2.3, §2.5 and §6, and US-05 and US-07's "totals include all".
+- **Domain design.** `~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/src/domain/overview.ts` is pure and generic over the caller's rows, and takes the clock as a parameter. It sorts by `seq` itself, totals over all rows and only then slices four or five. That matches §2.3, §2.5 and §6, and US-05 and US-07's "totals include all".
 - **`sumCents` after R9 (`src/domain/money.ts:21-33`) is exact.** Two safe integers whose true sum is within the safe range add exactly. Any sum that leaves the range rounds to at least 2^53 and is refused. So every partial sum is either exact or rejected.
 - **`formatMoney` (`src/shared/money.ts`) cannot lose a dollar.**
   - Within the safe-integer range, `abs/100` stays below 2^47, where the float step is at most 2^-6.
@@ -62,7 +62,7 @@ None.
 Each of these is a false statement in something this PR merges, or a hazard for a named later task, and each sits in a file the branch already changes. All six are doc, comment or test-title edits.
 
 **M1 — `seedFigures()` rows are not shaped like the database's rows, and the JSDoc overclaims.**
-- **Where:** `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/scripts/seed-figures.ts:15-18`. The raw fields are at :29 (avatar), :30 and :37 (category), :39 and :46 (theme).
+- **Where:** `~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/scripts/seed-figures.ts:15-18`. The raw fields are at :29 (avatar), :30 and :37 (category), :39 and :46 (theme).
 - **What:** the rows keep data.json's avatar path, hex theme and display category ("Dining Out"). `src/server/seed.ts` stores the avatar key, the `Theme` enum and `DiningOut`. The comment "tests/unit/seed-figures.test.ts checks the two agree" is true for names, money, dates, categories (after mapping) and recurring flags, but not for avatar or theme.
 - **Why it matters:** the backlog makes T-09 and T-10 consumers of `seedFigures()`. A test comparing the DTO to it directly will mismatch on those three fields.
 - **Fix:**
@@ -71,7 +71,7 @@ Each of these is a false statement in something this PR merges, or a hazard for 
   - Hand the structural fix to T-04: once the enum and theme maps live in `src/shared`, `seedOverviewInput` can emit database-shaped rows.
 
 **M2 — Backlog T-09 row gives two conflicting `BigInt` instructions.**
-- **Where:** `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/docs/03-specs/backlog.md:18`.
+- **Where:** `~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/docs/03-specs/backlog.md:18`.
 - **What:** T-02's clause says "`BigInt` money becomes `Number` at the DTO edge". T-03's clause says "`BigInt` converted to `Number` first (`sumCents` refuses anything else)".
 - **Why it matters:** only the second works. `overviewSummary` runs between the repository and the DTO, so converting at the DTO edge is too late and `sumCents` throws. The failure is loud, which keeps this Minor, but it is the clearest inaccuracy v1.8 introduced.
 - **Fix:** replace both with one instruction: convert at the repository edge, before `overviewSummary`.
@@ -101,7 +101,7 @@ Each of these is a false statement in something this PR merges, or a hazard for 
 - **Fix:** "on every coverage run".
 
 **M6 — Two seed-figures test titles claim more than they check.**
-- **Where:** `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/tests/unit/seed-figures.test.ts`.
+- **Where:** `~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/tests/unit/seed-figures.test.ts`.
 - **What:**
   - At :96 ("seq in the order the database assigns it"), lines 103-106 build the expected values with the same `i + 1` formula as `seed-figures.ts:36,42`. Nothing consults the database.
   - At :109-113 ("computes the Overview on the business day"), the assertions (5 transactions, pot seqs [1..4]) hold for any clock.

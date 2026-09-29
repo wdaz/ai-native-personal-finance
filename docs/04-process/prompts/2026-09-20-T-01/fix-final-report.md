@@ -371,7 +371,7 @@ clean-room `npm ci` result in full.
 
 `git worktree list` shows the branch lives only here
 (`.claude/worktrees/T-01-scaffold`, tip `d90dacf`); the main checkout at
-`/Users/ruslan/Own/ai-native-personal-finance` is on `master` at `088be5e`, which has no
+`~/Own/ai-native-personal-finance` is on `master` at `088be5e`, which has no
 `package.json` at all. Nothing is pushed — the branch has an `origin` but I left pushing
 to the owner.
 

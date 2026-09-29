@@ -1,7 +1,7 @@
 #!/bin/sh
 # T-14 step 5.6 — run by the OWNER, once per scope:
-#   ! sh /Users/ruslan/.claude/jobs/73df9ce2/tmp/set-env.sh production
-#   ! sh /Users/ruslan/.claude/jobs/73df9ce2/tmp/set-env.sh preview
+#   ! sh $HOME/.claude/jobs/73df9ce2/tmp/set-env.sh production
+#   ! sh $HOME/.claude/jobs/73df9ce2/tmp/set-env.sh preview
 # Reads ~/.config/personal-finance-deploy/<scope>.env by SOURCING it (the runbook's rule), pipes each
 # value to `vercel env add` through stdin (never on a command line), and prints names and CLI status
 # only. Stops at the first failure. Nothing is written inside the repository.
@@ -16,7 +16,7 @@ case "$SCOPE" in
     ;;
 esac
 
-W=/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24
+W=$HOME/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24
 F="$HOME/.config/personal-finance-deploy/$SCOPE.env"
 P=personal-finance
 ERR=$(mktemp)

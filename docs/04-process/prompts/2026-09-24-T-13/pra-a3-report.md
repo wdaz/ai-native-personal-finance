@@ -1,6 +1,6 @@
 # PR-A Task A3 report — ADR-0006 amendment (5), SPEC v1.0.5, process-log
 
-Worktree: `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/pr-a-origin-agent-cluster`, branch `fix/origin-agent-cluster`. Not pushed, no PR.
+Worktree: `~/Own/ai-native-personal-finance/.claude/worktrees/pr-a-origin-agent-cluster`, branch `fix/origin-agent-cluster`. Not pushed, no PR.
 Commit: `3cf996f` docs(adr): propose ADR-0006 amendment (5), Origin-Agent-Cluster (one commit for ADR + spec + process-log; both attribution lines present).
 
 ## Files changed (3 files, +124 -5)

@@ -9,7 +9,7 @@ umask 077
 BASE=${1:?usage: td14.sh https://<preview-host> control|probes [marker]}
 MODE=${2:?control|probes}
 MARKER=${3:-}
-T=/Users/ruslan/.claude/jobs/73df9ce2/tmp/td14
+T=$HOME/.claude/jobs/73df9ce2/tmp/td14
 mkdir -p "$T"
 D="$HOME/.config/personal-finance-deploy"
 set -a; . "$D/preview.env"; set +a

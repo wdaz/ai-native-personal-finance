@@ -51,7 +51,7 @@ Output (relevant lines):
 
  FAIL  tests/unit/test-support.test.ts [ tests/unit/test-support.test.ts ]
 Error: Cannot find package '@/app/api/test/[...path]/route' imported from
-/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-02-persistence-reset/tests/unit/test-support.test.ts
+~/Own/ai-native-personal-finance/.claude/worktrees/T-02-persistence-reset/tests/unit/test-support.test.ts
  ❯ tests/unit/test-support.test.ts:2:1
     1| import { afterEach, describe, expect, it, vi } from "vitest";
     2| import { GET, POST } from "@/app/api/test/[...path]/route";

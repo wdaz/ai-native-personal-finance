@@ -1,9 +1,9 @@
 # T-03 — Copilot review fixes on PR #8 — implementation report
 
-Working directory: `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
+Working directory: `~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
 Branch: `task/T-03-domain`. Starting HEAD: `94daedb3ec7632b2bef37c9f58c8ec06f0783aca` (clean working
 tree, confirmed with `git status`). Brief:
-`/Users/ruslan/.claude/jobs/c1c2d60c/tmp/copilot-fix-brief.md`.
+`~/.claude/jobs/c1c2d60c/tmp/copilot-fix-brief.md`.
 
 The brief's four numbered items map to five touched files, since item 2 names both the source
 file (`src/shared/dates.ts`) and its test (`tests/unit/shared/dates.test.ts`) and explicitly
@@ -156,7 +156,7 @@ Full gate sequence, chained with `&&` so the reported exit code covers all four 
 the last command run):
 
 ```
-$ cd /Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain && { npm run format:check && npm run lint && npm run typecheck && npm test; } > /Users/ruslan/.claude/jobs/c1c2d60c/tmp/gates.log 2>&1; echo "exit=$?"; cat /Users/ruslan/.claude/jobs/c1c2d60c/tmp/gates.log
+$ cd ~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain && { npm run format:check && npm run lint && npm run typecheck && npm test; } > ~/.claude/jobs/c1c2d60c/tmp/gates.log 2>&1; echo "exit=$?"; cat ~/.claude/jobs/c1c2d60c/tmp/gates.log
 exit=0
 
 > ai-native-personal-finance@0.1.0 format:check

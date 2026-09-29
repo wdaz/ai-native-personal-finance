@@ -5778,3 +5778,93 @@ them too").
     owner.
   - The rest of T-15a: the home-directory paths, the licence and notices, the README attribution,
     TD-22, and the six comments that name T-16.
+
+## 2026-09-29 — Phase 5: T-15a planned and answered; pull request A — the home-directory paths leave the tree
+
+- **Phase:** 5 (Build the slice), Release 1 — T-15a's plan gate, then its first work pull request.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:** the owner: "T15a planlamaasına başla" ("Start T-15a's planning"), 2026-09-28.
+- **Prompt(s):** `prompts/2026-09-28-T-15a.md` (the plan), `prompts/2026-09-29-T-15a-home-paths.md`
+  (the answers and this pull request).
+- **Produced:**
+  - The plan, `plans/2026-09-28-T-15a.md` (draft PR #70, v0.1). It has three work pull requests (A, B
+    and C) and seven plan-gate questions. Its findings were measured at `37640b4`.
+    - F3: the backlog's licence scope missed `JarIcon.tsx` (a second Phosphor icon), ten challenge SVGs
+      drawn inline in nine files, the login illustration, `prisma/data.json` and `src/ui/tokens.css`.
+  - Pull request A (`task/T-15a-home-paths`):
+    - `tests/unit/home-paths.test.ts` — three fixture cases and a scan of `git ls-files` at the tip.
+      The pattern is built at runtime, so the file never matches itself. `/Users/<name>/` stays allowed
+      as a placeholder.
+    - The 48 files hold only the prefix change: the eleven T-14 scripts take `$HOME`, and the prose takes
+      `~`.
+    - Backlog v1.50.
+    - This entry and the prompt record.
+- **Measured (local, macOS, this pull request's worktree):**
+  - The guard before the substitution: 3 passed, 1 failed. The failure lists 86 hits in 48 files, all
+    under `docs/04-process/`. That is the count the backlog recorded and the plan's scratch scan
+    predicted.
+  - The guard after the substitution: 4 passed.
+  - `git diff --stat`: "48 files changed, 86 insertions(+), 86 deletions(-)".
+  - A word-level diff was compared span by span, with the removed prefix and `~/` or `$HOME/` both
+    normalised: "88 changed spans, 0 not prefix-only". There are 88 matches on 86 lines, because some
+    lines hold two.
+  - `sh -n` on all 18 scripts in `prompts/2026-09-25-T-14/scripts/` (11 of them changed): 18 `ok`.
+    Every changed script line is an unquoted assignment (`W=$HOME/…`, `T=$HOME/…`) or a comment.
+  - `npm test`: 88 files, 1132 passed. `npm run format:check`, `npm run lint` and `npm run typecheck`
+    are clean.
+- **What the agent got right:**
+  - It measured before planning. The six comments, the 86/48 count and the licence gaps are all
+    findings, not the backlog's claims repeated.
+  - It caught its own plan adding a path. The first draft wrote an example URL beginning `/home/` with
+    a lowercase segment, and the scratch scan counted it (87/49). That is Review Focus 2, measured.
+  - `git ls-files` does not list an untracked file, so the plan says to stage before scanning.
+  - It turned the "which pull request is next" ambiguity into Q1 instead of choosing an order.
+- **What the agent got wrong or missed:**
+  - The plan's v0.1 went out with a C3 order that could not produce its own evidence: the log entry was
+    written before any push. The advisor caught it, and it was fixed in the second commit.
+  - It first treated "code and documentation" as its own decision (D1). The recorded decision said
+    "code", so this became Q7. The owner's answer to Q7 then changed the licence altogether.
+  - The harness refused `xargs perl` and a shell `for` loop over `sh -n` in the worktree. Both steps
+    ran as small Node scripts in the job directory, outside the repository, with the same regex.
+- **Owner changes and reasoning:**
+  - Q1–Q4 and Q6 were answered as recommended.
+  - Q5: "Coded by" links GitHub (`github.com/wdaz`). The owner gave the Frontend Mentor profile,
+    `frontendmentor.io/profile/wdaz`.
+  - **Q7 reversed the v1.48 licence decision.** The owner asked what MIT covers and why it is needed,
+    then decided: "Bu tam proyekt tam olaraq qorunsun. Həm kod, həm də sənədlər. Ançaq şəxsi istifadə
+    üçün azaddır." ("The whole project is to be fully protected, code and documents both, but free for
+    personal use.") From four options the owner chose "Variant A": the PolyForm Strict License 1.0.0 for
+    the whole repository. It allows noncommercial and personal use, and no distribution and no changes.
+  - The owner asked whether PR #70 could be merged. The answer was no, not before A (Q1a).
+- **Disagreements:**
+  - Copilot's review of PR #70 raised three points. The prompt record in a plan pull request "violates
+    the plan gate": not taken, because T-14's plan pull request did the same (`9fae561`) and the gate
+    stops execution, not the plan's own files. "check are gone" is a typo: not taken, because the
+    subject is "exports". Read each file as a buffer before decoding: taken, and it is in A's test.
+  - Copilot's review of PR #71 found that the `/home/` half of the pattern required a trailing `/`, so
+    a bare `/home/<user>` went unflagged while the `/Users/` half flags one. That is right, and it is
+    taken. A fixture case failed first ("1 failed | 4 passed"). The pattern now needs only the first
+    letter of the user name, and the suite reads "5 passed". `git grep` finds no `/home/` followed by
+    a lowercase letter anywhere in the tree, so the wider pattern adds no hit today. It widens Review
+    Focus 2 (URL paths), which the owner already knows about.
+  - Copilot's second pass on PR #71 found five command lines in two T-03 reports
+    (`task-2-report.md:244,431`, `task-3-report.md:141,346,457`) where the substitution had produced
+    `GITLEAKS_CACHE_DIR="~/…"`. That is right, and it is taken: a shell does not expand `~` inside
+    double quotes, so the recorded command would no longer run as written. The reason is the quotes, not
+    the assignment, since an unquoted `VAR=~/x` does expand. The five lines take `$HOME`, which still
+    changes only the prefix.
+  - `git grep '"~/'` now finds one line, `T-13c/task-7-report.md:102`, which quotes an error message
+    and not a command. It stays `~`.
+  - The same kind of risk sits in `T-02a/sdd-task-workflow.js:13` (`'~/.claude/…'`). That string is
+    pasted unquoted into a shell command at the start of a word, where `~` does expand, so it stays.
+  - Lesson: a blanket "prose takes `~`" rule misses commands quoted inside prose. A quoted or
+    embedded path in a recorded command should take `$HOME`.
+- **Lessons for the process:**
+  - A decision recorded in the owner's words ("MIT for the project's own code") is not widened by the
+    agent, even in the direction the licence text itself suggests. Asking surfaced a different intent.
+  - A check that reads `git ls-files` sees only staged work. Stage first, then scan.
+- **Next:**
+  - The owner reviews and merges A.
+  - PR #70 then gets v0.2: the answers, the licence change in Task B (the PolyForm Strict text read
+    from its source, B1's assertions changed), and `origin/main` merged in so A's guard reads the plan.
+  - Then the owner merges #70, and B follows, then C.

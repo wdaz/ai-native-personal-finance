@@ -5,7 +5,7 @@ set -eu
 umask 077
 BASE=${1:?usage: preview-checks.sh https://<preview-host>}
 HOST=${BASE#https://}
-T=/Users/ruslan/.claude/jobs/73df9ce2/tmp/pc
+T=$HOME/.claude/jobs/73df9ce2/tmp/pc
 mkdir -p "$T"
 D="$HOME/.config/personal-finance-deploy"
 set -a; . "$D/preview.env"; set +a

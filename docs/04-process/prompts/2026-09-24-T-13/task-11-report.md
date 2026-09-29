@@ -44,7 +44,7 @@ Documents task: nothing marked Approved/Accepted by me; the ADR-0003 clarificati
 
 ## Overrides re-measurement (real)
 
-Scratch copy in `/Users/ruslan/.claude/jobs/fbf96237/tmp/overrides/` (package.json, package-lock.json,
+Scratch copy in `~/.claude/jobs/fbf96237/tmp/overrides/` (package.json, package-lock.json,
 .npmrc; nothing in the repo touched): both overrides removed, then
 `npm --prefix <scratch> install --package-lock-only --ignore-scripts` ("up to date, audited 618
 packages … 4 high severity vulnerabilities"), then `npm audit --audit-level=high` (exit 1):

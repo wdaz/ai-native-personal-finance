@@ -4,7 +4,7 @@
 set -eu
 BASE=${1:?base url}
 SIGNED=${2:-}
-T=/Users/ruslan/.claude/jobs/73df9ce2/tmp
+T=$HOME/.claude/jobs/73df9ce2/tmp
 for p in \
   /overview.segments/_full.segment.rsc \
   /overview.segments/_head.segment.rsc \

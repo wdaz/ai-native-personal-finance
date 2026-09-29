@@ -55,7 +55,7 @@ from its working tree — fixed by the main session merging the plan branch in i
 - `_clientMiddlewareManifest.js` publishes the compiled matcher regex to any visitor — by
   framework design; the repository is already public, so this discloses nothing `proxy.ts` itself
   does not.
-- **33 committed files under `docs/`, `.claude/` and `.github/` contain `/Users/ruslan/` (64
+- **33 committed files under `docs/`, `.claude/` and `.github/` contain `~/` (64
   occurrences, the owner's local macOS username).** Confirmed by the main session with a direct
   grep (`33` files, `64` occurrences). This is a minor information-disclosure item now that the
   repository is public; it matches a "go-public" redaction item the T-16 backlog row already owns

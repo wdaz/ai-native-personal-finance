@@ -20,7 +20,7 @@ Commit: `5abd440e02a104a6ea95279c669d43905d47d73c`
   `--color-grey-900` / `--text-preset-4`; added a `:focus-visible` rule using the
   `--focus-ring-*` tokens.
 - **Created** `public/avatars/*.jpg` (30 files, 664 KB) — copied unchanged from
-  `/Users/ruslan/Own/finance-app/assets/images/avatars/`. `ls public/avatars` contains
+  `~/Own/finance-app/assets/images/avatars/`. `ls public/avatars` contains
   exactly the 30 basenames and nothing else (no `.DS_Store` or similar picked up by the
   copy).
 - **Modified** `tests/unit/scaffold.test.ts` — replaced the placeholder assertions with

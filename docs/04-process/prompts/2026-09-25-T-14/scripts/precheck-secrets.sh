@@ -1,7 +1,7 @@
 #!/bin/sh
 # T-14 step 5.6 pre-check: booleans only, no value printed. Sources the files the way the runbook says.
 set -eu
-W=/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24
+W=$HOME/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24
 D="$HOME/.config/personal-finance-deploy"
 cd "$W"
 
