@@ -57,7 +57,7 @@ one that reported everything would pass every violation.
 
 Key–value DSNs (`host=… password=…`), JDBC `?password=` parameters and bare `PGPASSWORD=`
 lines are outside the URI form this project uses (Prisma reads `DATABASE_URL`). No scanner
-covers generic high-entropy strings either, so a green scan alone was not the guarantee when the
+covers generic high-entropy strings either, so a green scan alone was not a guarantee when the
 repository went public. The go-public plan was to rotate every secret that was ever real.
 T-15a recorded that rotation as not needed, for three reasons:
 

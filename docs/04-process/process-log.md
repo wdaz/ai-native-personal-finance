@@ -6009,7 +6009,12 @@ them too").
 - **What the agent got wrong or missed:** its first `sleep 60; gh pr checks` wait was refused by the
   harness. It became a background wait on the job's status.
 - **Owner changes and reasoning:** none in C.
-- **Disagreements:** none.
+- **Disagreements:** none. Copilot's review of PR #73 found two wording points, both taken:
+  - `AgentToolsStatus.tsx` now reads "the design HTML exports **that** this task would otherwise check
+    are gone". This is the sentence Copilot misread on PR #70 as "check are gone". It was grammatical,
+    but the misread showed it was hard to parse.
+  - The fixture README reads "not **a** guarantee".
+  - Both are comment and prose changes. They start one more required run, and that run is the gate.
 - **Lessons for the process:** for T-15c's retrospective:
   - a go-public close-out that was one backlog row became a plan and four pull requests (#70–#73);
   - Copilot's reviews found real defects in all three work pull requests: the `/home/` pattern, the
