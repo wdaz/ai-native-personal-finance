@@ -154,9 +154,10 @@ the login page shows (public by design, NFR-S1); the demo data resets every 10 d
 The app deploys to Vercel (Hobby, region `fra1`) with its database on Neon in Frankfurt. Work
 merges into `develop`; a release (`develop` → `main`) or a hotfix merges into `main`, and that
 merge deploys production. Every pushed branch gets a preview on its own Neon branch (ADR-0007;
-the branch model is in `docs/04-process/governance.md`, "Branches and releases"). Migrations run in the Vercel build through Neon's direct connection
-(`DATABASE_URL_UNPOOLED`, `vercel.json`). Setting up, seeding, rotating secrets, the origin-trial
-token and rolling back are in the runbook, `docs/04-process/runbooks/deploy.md`.
+the branch model is in `docs/04-process/governance.md`, "Branches and releases").
+Migrations run in the Vercel build through Neon's direct connection (`DATABASE_URL_UNPOOLED`,
+`vercel.json`). Setting up, seeding, rotating secrets, the origin-trial token, rolling back,
+releases and hotfixes are in the runbook, `docs/04-process/runbooks/deploy.md`.
 
 Never run `vercel env pull`, `neon link` or `neon env pull` inside this checkout: a production
 `DATABASE_URL` in `.env.local` would make `npm run dev` use the production database (the runbook
