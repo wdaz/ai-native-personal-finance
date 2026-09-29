@@ -6,8 +6,14 @@ name: Release source
 #
 # pull_request_target, not pull_request: GitHub runs this event's workflow file, and checks out, the
 # repository's default branch, never the pull request's files (GitHub changelog 2025-11-07, in effect
-# 2025-12-08), so a pull request cannot edit the rule it is judged by. Nothing from the pull request is
+# 2025-12-08), so a pull request cannot edit this job or the script. Nothing from the pull request is
 # checked out or run; its branch name reaches the script only through env, never inside `run:`.
+#
+# Limit (T-15b review): a ruleset matches a required check by its name and app, not by workflow file,
+# so a pull request that adds a workflow with its own job named `release source` could post a passing
+# check under that name. The check guards against a pull request opened from the wrong branch, not
+# against its author; such a workflow would show in the pull request's diff, which the owner reads
+# before merging.
 on:
   pull_request_target:
     branches: [main]

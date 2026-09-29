@@ -27,13 +27,17 @@ function branchesOf(workflow: string, event: string): string[] | undefined {
   return list?.split(",").map((branch) => branch.trim().replace(/^"|"$/g, ""));
 }
 
-/** Lines that put the pull request's head into a shell command or a checkout ref. */
+/**
+ * Lines that read the pull request's head anywhere but as a whole `env:` value
+ * (`NAME: ${{ github.event.pull_request.head.… }}`): a `run:` line, a `run: |` block's body, a
+ * checkout `ref:`. The head's branch name is text anyone can choose.
+ */
 function unsafe(workflow: string): string[] {
+  const envValue = /^\s+[A-Z][A-Z0-9_]*: \$\{\{ github\.event\.pull_request\.head\.[a-z_.]+ \}\}$/;
   return workflow
     .split("\n")
-    .filter((line) =>
-      /^\s*(-\s*)?(run|ref):.*github\.(event\.pull_request\.head|head_ref)/.test(line),
-    );
+    .filter((line) => /github\.(event\.pull_request\.head|head_ref)/.test(line))
+    .filter((line) => !envValue.test(line));
 }
 
 const read = (path: string) => readFileSync(path, "utf8");
@@ -95,19 +99,28 @@ describe(".github/workflows/release-source.yml", () => {
     expect(workflow).toMatch(/HEAD_REF: \$\{\{ github\.event\.pull_request\.head\.ref \}\}/);
   });
 
-  it("(fixture) reports a run line and a checkout ref that read the head", () => {
+  it("(fixture) reports a run line, a checkout ref and a block-scalar line that read the head", () => {
     const bad = [
       "      - run: echo ${{ github.event.pull_request.head.ref }}",
       "          ref: ${{ github.event.pull_request.head.sha }}",
+      "        run: |",
+      '          echo "${{ github.head_ref }}"',
       "          HEAD_REF: ${{ github.event.pull_request.head.ref }}",
+      "          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}",
     ].join("\n");
-    expect(unsafe(bad)).toHaveLength(2);
+    expect(unsafe(bad)).toEqual([
+      "      - run: echo ${{ github.event.pull_request.head.ref }}",
+      "          ref: ${{ github.event.pull_request.head.sha }}",
+      '          echo "${{ github.head_ref }}"',
+    ]);
   });
 });
 
 describe("the workflows run on develop as on main", () => {
   it("CI runs on every pull request and on pushes to both branches", () => {
     const ci = read(".github/workflows/ci.yml");
+    // `branchesOf` also returns undefined for a trigger that is not there at all.
+    expect(ci).toMatch(/^  pull_request:$/m);
     expect(branchesOf(ci, "pull_request")).toBeUndefined();
     expect(branchesOf(ci, "push")).toEqual(["main", "develop"]);
   });

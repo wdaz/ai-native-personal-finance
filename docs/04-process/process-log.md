@@ -6116,7 +6116,22 @@ them too").
   `develop` — which carries unreleased work — cannot open a pull request to `main`.
 - **Disagreements:** none. Copilot's five findings on PR #74 were all taken (F4's grammar; the gate
   note and two "does not exist yet" lines scoped to v0.1; B1's partial date; the self-review's
-  placeholder list).
+  placeholder list). Copilot's review of A reported no findings.
+- **Review of A** (a read-only Opus 5.5 subagent, as the plan's handoff asks; its first run was stopped
+  at the owner's request to save usage, and re-run with a narrower brief). No critical finding; three
+  taken:
+  - A ruleset matches a required check by name and app, not by workflow file, so a pull request that
+    adds its own job named `release source` could post a passing check. `release-source.yml`'s comment
+    had claimed "a pull request cannot edit the rule it is judged by"; it now says what is protected
+    (this job and the script) and records the limit: the check guards against the wrong source branch,
+    not against the author, and such a workflow shows in the diff. A ruleset rule that pins a workflow
+    was not checked for a user-owned repository and is not proposed here.
+  - The test's `unsafe()` only read `run:` and `ref:` lines, so a `run: |` block's body could have put
+    the head's name into the shell unseen. It now allows the head only as a whole upper-case `env:`
+    value and flags every other line; a block-scalar case was added to the fixture, which failed with
+    the old helper (2 found, 3 expected) and passes with the new one.
+  - The CI trigger test read "no branch filter" from `undefined`, which a deleted `pull_request:`
+    trigger also gives; it now also asserts the trigger line.
 - **Next:**
   - The owner merges A into `develop`.
   - S5: after CodeQL's first push run on `develop`, `code_scanning` joins `develop`'s ruleset.
