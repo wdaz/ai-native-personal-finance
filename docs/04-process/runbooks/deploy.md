@@ -9,7 +9,8 @@ names this runbook: "env setup, first seed, rotating secrets, renewing the OT to
 
 ## Why this exists
 
-Merging to `main` deploys production (ADR-0007). Anything that is not code — the accounts, the
+Merging to `main` deploys production (ADR-0007); since T-15b only a release from `develop` or a
+hotfix merges there (step 10). Anything that is not code — the accounts, the
 variables, the first seed, the origin-trial token, a secret's rotation — is done by hand, once, and
 then forgotten. This page keeps what was learned the first time, with its source, so the second
 time is a checklist.
@@ -377,6 +378,28 @@ See also vercel.com/docs/environment-variables/rotating-secrets (linked from the
   (step 3). If a bad migration is the cause, a rollback alone does not fix it; a forward fix
   migration does.
 - A rollback is a way to stop bleeding, not a step of a normal release. Record it in the process log.
+
+### 10. Releases and hotfixes
+
+Since T-15b (2026-09-29) `main` takes pull requests only from `develop` or `hotfix/<name>-main`; the
+required check `release source` refuses any other head branch (`governance.md`, "Branches and
+releases"). The owner merges both kinds; the merge is the production deploy.
+
+- **A release.** When the owner asks for one: `gh pr create --base main --head develop`, the body
+  listing what the release carries. It needs the same eight checks as any pull request to `main` —
+  the seven of CI and `release source` — and CodeQL. Merge it **with a merge commit**: a squash or a
+  rebase would leave `develop` without `main`'s new commit, so the next release would show old
+  changes again. Then steps 3–5 as for any deploy. After the merge, `git ls-remote origin develop`
+  should still list `develop` (its ruleset's `deletion` rule should stop GitHub's automatic branch
+  deletion — not yet observed at the time of writing).
+- **A hotfix.**
+  1. `git switch -c hotfix/<name> origin/develop`; fix; pull request to `develop`; the owner merges
+     it after its checks, and the fix is checked on `develop`'s preview.
+  2. `git switch -c hotfix/<name>-main origin/main`; `git cherry-pick -x <sha>` for each commit of
+     the fix (the commits of step 1's branch, not its merge commit); push; pull request to `main`.
+  3. The owner merges it with a merge commit; production deploys. `develop` already has the fix, so
+     nothing merges back; the next release carries the same change again, which git merges cleanly
+     unless later work edited the same lines — then keep `develop`'s side.
 
 ## Record (fill in after each run)
 

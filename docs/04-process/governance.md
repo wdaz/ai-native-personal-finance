@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch"
 
 ## Roles
 
@@ -72,11 +72,11 @@ Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run 
 `main` is closed to everything except a release. **When (owner decision, 2026-09-26):** the
 switch is T-15b, inside Release 1's closing task — after T-15a's pull requests, the last work
 pull requests to `main` ("A-bitdikdən sonra növbəti PR-lar yalnız develop brachinə olacaq"), and
-before the retrospective (T-15c); until 2026-09-26 this said "from the close of Release 1". Until
+before the retrospective (T-15c); until 2026-09-26 this said "from the close of Release 1". ~~Until
 T-15b nothing changes: working branches start from `origin/main` and their pull requests target
-`main` (AGENTS.md §2).
+`main` (AGENTS.md §2).~~ (v1.6: T-15b has switched; AGENTS.md §2 starts from `origin/develop`.)
 
-Once it applies:
+Since T-15b (2026-09-29; plan `plans/2026-09-29-T-15b.md`):
 
 - **`develop` is the integration branch.** Working branches start from `origin/develop` and
   their pull requests target `develop`; the reviews, tests and previews that run on a pull
@@ -88,22 +88,68 @@ Once it applies:
   hotfix branch → `main` for a production fix (owner decision, 2026-09-26: "Main brachnə yalnız
   developdan və hotfix branchlərindən merge mümkün olmalıdır"). Merging either is the deploy.
   No work pull request and no push goes to `main` in between.
+- **A hotfix is fixed on `develop` first** (owner decision, 2026-09-29, T-15b plan Q3: "Hotfix
+  developa merge. yoxlanılır. Sonra main yeni eyni adlı hotfix/...-main adlı branch yaranır və
+  həmin hotfix ora cherry-pick olur. Sonra pr açılıb merge olunur."): the fix is made on
+  `hotfix/<name>` from `origin/develop`, merged into `develop` and checked there; then
+  `hotfix/<name>-main` is started from `origin/main`, the fix is cherry-picked onto it (`git
+  cherry-pick -x`), and that branch's pull request goes to `main`. `develop` already has the fix,
+  so nothing needs merging back. The next release carries the same change a second time, as its
+  original commit; git merges an identical change cleanly unless later work on `develop` edited
+  the same lines, and then `develop`'s side is kept.
 - **The owner merges the release and the hotfix pull requests** (Decision rights: merging is
   the owner's).
-- **Copilot's review gates nothing.** Its review runs on every pull request (the ruleset "Copilot
-  review for default branch") but is not reliable enough to hold a merge (owner, 2026-09-26: "Copilot
+- **Copilot's review gates nothing.** Its review runs on every pull request (the rulesets "main:
+  pull request, Copilot, CodeQL" and "develop: pull request, Copilot, CodeQL"; until T-15b the one
+  "Copilot review for default branch") but is not reliable enough to hold a merge (owner, 2026-09-26: "Copilot
   review qoşulsada stabil deyil"), and no rule requires an approval: the owner is the only
   collaborator and author of every pull request, so a required approval would block every merge
   (`.github/CODEOWNERS` says why). What gates a merge is the pull request itself and the required
   checks.
 - **Enforcement:** a required status check in `main`'s ruleset fails unless the pull request's
-  head branch is `develop` or a hotfix branch, and the ruleset has no bypass actor. The agent pushes with the
-  owner's GitHub account, so a bypass right for the owner would be one for the agent too. The
-  check enforces the source, not the moment; that a release pull request is opened only when a
-  release is due is this rule. Direct pushes, force-pushes and deletion of `main` are already
-  refused by the ruleset (read 2026-09-25).
+  head branch is `develop` or `hotfix/<name>-main` in this repository, and the ruleset has no
+  bypass actor. The agent pushes with the owner's GitHub account, so a bypass right for the owner
+  would be one for the agent too. The check enforces the source, not the moment; that a release
+  pull request is opened only when a release is due is this rule. Direct pushes, force-pushes and
+  deletion of `main` and of `develop` are refused by their rulesets. The check is
+  `.github/workflows/release-source.yml` (job `release source`, a `pull_request_target` workflow,
+  which GitHub runs from the default branch) and `scripts/check-release-source.sh`, tested by
+  `tests/unit/release-source.test.ts`. Its limit: a ruleset matches a required check by name, so
+  a pull request that added its own job named `release source` could pass it; the check guards
+  against the wrong source branch, not against the author, and such a workflow shows in the diff.
 
-Open at the switch (settled when the switch is planned, not here):
+Settled at the switch (T-15b, 2026-09-29 — the plan, its answers and the process-log entries of
+that day have the evidence):
+
+- **The rulesets.** `main`'s two were pinned from "the default branch" to `refs/heads/main` before
+  the default changed — otherwise they would have followed it to `develop` — and one was renamed:
+  "main: pull request, Copilot, CodeQL" (id 23907266; deletion, non-fast-forward, Copilot review,
+  pull request, code quality, CodeQL) and "main: required CI checks" (24007893; the seven checks and
+  `release source`). `develop` has copies: "develop: pull request, Copilot, CodeQL" (24155781) and
+  "develop: required CI checks" (24155784; the seven). No bypass actor in any. Compared on
+  2026-09-29: the rules are identical except `release source`.
+- **`develop`** was created from `main` at `cb6f845` (T-15a's last merge). CI runs on pushes to
+  both branches and on every pull request; CodeQL on pushes and pull requests of both.
+- **The default branch is `develop`** (plan Q2): so the check's workflow runs from `develop`,
+  `gh pr create` and GitHub's "Compare & pull request" default to `develop`, and Dependabot's pull
+  requests open against `develop` (version updates, which set no `target-branch`; security updates
+  too, as GitHub's `target-branch` reference implies — not yet observed here).
+  CodeQL's weekly schedule scans `develop`. Vercel's production branch is a separate, stored setting
+  and still reads `main` (read after the change).
+- **The check was probed**: a draft pull request to `main` from a branch named otherwise (#76)
+  read `release source` failed and `BLOCKED`, and was closed unmerged.
+- **Merge methods** on `main` are not restricted (the question was asked at T-15b's gate and not
+  answered). A release or a hotfix merged by squash would leave `develop` without `main`'s commit;
+  merge with a merge commit.
+- **Previews** are unchanged: the Neon–Vercel integration makes a Neon branch per pushed Git
+  branch, whatever a pull request's base. There is no "Neon preview workflow" (the line below that
+  named one was written before T-14 replaced it with the integration). `develop`, once pushed, holds
+  one of Neon's ten branch slots.
+- **Not yet observed:** a `develop` → `main` release under these rules — the check's green on it,
+  and `develop` kept after its merge (the `deletion` rule should stop the automatic branch deletion).
+  The first release after T-15b is where they are read.
+
+Open at the switch (as written before T-15b; settled above):
 
 - **The switch is T-15b** (backlog v1.48; until 2026-09-26 it was "a task of its own, run after
   T-15 closes Release 1"). Its plan covers: creating `develop` from `main`; adding `develop` to `ci.yml`'s push trigger and to
