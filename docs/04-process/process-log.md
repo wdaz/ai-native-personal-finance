@@ -6215,7 +6215,7 @@ them too").
   their SHAs; squash and rebase write new ones) and why a squashed or rebased release leaves
   `develop` without `main`'s commit, then offered Q5 again. The owner: "b. heç birinə bir başa push
   mümkün olmasın." ("b. No direct push to either.")
-- **Prompt(s):** the conversation itself; no separate prompt file.
+- **Prompt(s):** `prompts/2026-09-29-T-15b-merge-commits.md` (the owner's two messages, verbatim).
 - **Settings applied** (plan Q6a), each with its state before (kept in the session's job directory),
   the call and the read-back:
   - PUT 23907266 ("main: pull request, Copilot, CodeQL") and 24155781 ("develop: pull request,
