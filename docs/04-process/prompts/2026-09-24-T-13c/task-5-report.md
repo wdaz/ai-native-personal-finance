@@ -51,7 +51,7 @@ The file sizes (14 632, 14 600) also match what the README states. The scratch d
 
 ## Step 11: secret scan and checks
 
-- `git add app/fonts` then `sh scripts/secret-scan.sh staged`: no output, exit 0. The final commit was made with the repo's pre-commit hook active (`git config core.hooksPath` = `/Users/ruslan/Own/ai-native-personal-finance/scripts/git-hooks`, which holds `pre-commit`) and without `--no-verify`; the hook printed nothing and the commit succeeded. I did not read the hook's own output beyond that, so "passed" is inferred from the successful commit.
+- `git add app/fonts` then `sh scripts/secret-scan.sh staged`: no output, exit 0. The final commit was made with the repo's pre-commit hook active (`git config core.hooksPath` = `~/Own/ai-native-personal-finance/scripts/git-hooks`, which holds `pre-commit`) and without `--no-verify`; the hook printed nothing and the commit succeeded. I did not read the hook's own output beyond that, so "passed" is inferred from the successful commit.
 - `npx prettier --check .`: clean.
 - `npx tsc --noEmit`: clean.
 - `npm run lint` (ESLint `--max-warnings 0`, then Stylelint): clean.
@@ -78,12 +78,12 @@ Cleanup: `tests/e2e/zz-scratch-font.spec.ts`, `tests/e2e/zz-scratch-shot.spec.ts
 
 These are the `-actual.png` files of the second run (committed local-font layout):
 
-- `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/login-1440.png`
-- `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/login-768.png`
-- `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/login-375.png`
-- `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/overview-1440.png`
-- `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/overview-768.png`
-- `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/overview-375.png`
+- `~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/login-1440.png`
+- `~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/login-768.png`
+- `~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/login-375.png`
+- `~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/overview-1440.png`
+- `~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/overview-768.png`
+- `~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/.superpowers/sdd/2026-09-24-T-13c/screenshots/overview-375.png`
 
 ## Files changed (in the commit)
 
@@ -111,7 +111,7 @@ Also written, outside the commit: `.superpowers/sdd/2026-09-24-T-13c/commit-msg-
 
 Commit: `5d015bf` — `docs(fonts): say which layers the next/font/google restriction covers (TD-11)`, a new commit on top of `3c57648` (not amended), not pushed. It resolves concern 2 above.
 
-**What changed:** one line pair in `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/app/fonts/README.md` (1 insertion, 1 deletion). The sentence now reads: "`eslint.config.mjs` forbids importing `next/font/google` in `app/` and in every `src/` layer except `server` (fixture: `tests/fixtures/boundaries/app-imports-next-font-google.tsx.fixture`)." The rest of the paragraph, the table and the hashes are untouched.
+**What changed:** one line pair in `~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/app/fonts/README.md` (1 insertion, 1 deletion). The sentence now reads: "`eslint.config.mjs` forbids importing `next/font/google` in `app/` and in every `src/` layer except `server` (fixture: `tests/fixtures/boundaries/app-imports-next-font-google.tsx.fixture`)." The rest of the paragraph, the table and the hashes are untouched.
 
 **Search for the same claim elsewhere in the commit's files:** the brief's `grep -rn "app/ and src"` returned nothing, because the README wraps the words in backticks (`` `app/` and `src/` ``), so the literal string never occurs. A broader regex over `app/fonts`, `app/layout.tsx`, `eslint.config.mjs`, `tests/unit/boundaries.test.ts`, `tests/unit/fonts.test.ts`, `tests/fixtures/fonts.ts`, `tests/fixtures/boundaries/README.md`, the two new fixtures and `docs/02-architecture/design-tokens.md` found only `app/fonts/README.md:7` stating the scope. The other hits were unrelated (the Prisma, clock and test-id rows of the boundaries README, a `src/shared/enums.ts` path in design-tokens). `tests/fixtures/boundaries/README.md`'s new row says "imported in `app`", which is accurate; the eslint comment says "over `app/**`", also accurate; design-tokens v1.4 makes no scope claim. Nothing else changed.
 

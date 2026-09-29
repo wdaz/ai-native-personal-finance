@@ -10,7 +10,7 @@ with each finding is in `process-log.md` ("Phase 5: before T-14 — the deploy a
 ## Brief (verbatim)
 
 Adversarial, read-only review of a small change in the repository at
-/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24 (branch
+~/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24 (branch
 `chore/node-24`, base `59e7a68` = origin/main). You have read-only tools; do not attempt to write
 anything or run git. Read `AGENTS.md` first for the project's rules.
 
@@ -74,11 +74,11 @@ written and git was not run.
 checks has never been seen to fail. (confidence 85)**
 
 - Rule:
-  `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/docs/03-specs/definition-of-done.md:18`
+  `~/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/docs/03-specs/definition-of-done.md:18`
   says: "Any new lint rule, config guard or document-mirror test ships with a fixture that
   deliberately violates it and a test asserting the violation is reported — a rule is not verified
   until it has failed on purpose."
-- `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/tests/unit/node-version.test.ts:24-38`
+- `~/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/tests/unit/node-version.test.ts:24-38`
   has only positive assertions. Its sibling guards each ship a failing case:
   - `next-config.test.ts:43,76,93,153` ("violation fixture, DoD v1.1")
   - `pr-template.test.ts:35-57` ("(fixture) …")
@@ -100,7 +100,7 @@ checks has never been seen to fail. (confidence 85)**
 **2. The process log says the npm floor "holds", but nothing shows that for Vercel.**
 
 - Where:
-  `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/docs/04-process/process-log.md:4845-4847`,
+  `~/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/docs/04-process/process-log.md:4845-4847`,
   "Node 24.21.0 bundles npm 11.19.0 (nodejs.org/dist/index.json), so `engines.npm >=11.19` and
   `strict-allow-scripts` hold". The backlog T-14 row (`backlog.md:226`) adds "(v1.40; Node 24.21.0
   bundles npm 11.19.0, exactly that floor)".
@@ -119,7 +119,7 @@ checks has never been seen to fail. (confidence 85)**
 
 **3. CI now takes the runner's cached 24.x instead of the newest release. It is fine today.**
 
-- `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/.github/workflows/ci.yml:37-40,101-104,164-167,217-219`
+- `~/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/.github/workflows/ci.yml:37-40,101-104,164-167,217-219`
   use `node-version-file: .nvmrc` without `check-latest`. setup-node therefore uses a matching
   toolcache version first.
 - Node 26 was never in the Ubuntu toolcache, so CI used to download the newest 26.x. Node 24 is
@@ -133,7 +133,7 @@ checks has never been seen to fail. (confidence 85)**
 to block.**
 
 - Where:
-  `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/tests/unit/node-version.test.ts:14`.
+  `~/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/tests/unit/node-version.test.ts:14`.
 - Dependency evidence from package-lock.json:
   - `iron-session` (prod) needs `"node": ">=22.13.0"` (line 7272).
   - `jsdom` and `@asamuzakjp/*` need `^22.22.2 || ^24.15.0 || >=26.0.0` (lines 66, 92, 7850).

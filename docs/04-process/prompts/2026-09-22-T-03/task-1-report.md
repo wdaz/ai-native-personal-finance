@@ -1,6 +1,6 @@
 # Task 1 report — The Clock, and an ADR-0005 rule it can be written under
 
-Worktree: `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
+Worktree: `~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
 (`task/T-03-domain`). Baseline before any change, `npx vitest run`: **229/229 passed (8 files)**
 (matches the dispatch's stated baseline).
 

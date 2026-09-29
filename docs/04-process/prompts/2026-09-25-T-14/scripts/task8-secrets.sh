@@ -1,7 +1,7 @@
 #!/bin/sh
 # T-14 Task 8.2–8.4 — the secret-using production checks. Run by the OWNER, after PR #60 has merged and
 # plan step 8.1 (production built from Git, the project domain serves it) is confirmed:
-#   ! sh /Users/ruslan/.claude/jobs/73df9ce2/tmp/task8-secrets.sh
+#   ! sh $HOME/.claude/jobs/73df9ce2/tmp/task8-secrets.sh
 # Reads ~/.config/personal-finance-deploy/*.env by SOURCING them; each secret reaches curl through a config on
 # stdin, never on a command line; prints status codes and non-secret bodies only. It SEEDS production (8.2).
 set -eu

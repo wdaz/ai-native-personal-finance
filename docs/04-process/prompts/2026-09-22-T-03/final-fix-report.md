@@ -1,6 +1,6 @@
 # T-03 final fix wave — report
 
-Working directory: `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
+Working directory: `~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
 (worktree, branch `task/T-03-domain`). Head before this wave: `412cb4c`.
 
 Source of requirements: `final-fix-findings.md` (this folder), with background from

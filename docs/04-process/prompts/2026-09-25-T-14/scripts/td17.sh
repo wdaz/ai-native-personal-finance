@@ -5,7 +5,7 @@
 set -eu
 umask 077
 BASE=${1:?usage: td17.sh https://<preview-host>}
-T=/Users/ruslan/.claude/jobs/73df9ce2/tmp/td17
+T=$HOME/.claude/jobs/73df9ce2/tmp/td17
 mkdir -p "$T"
 D="$HOME/.config/personal-finance-deploy"
 set -a; . "$D/preview.env"; set +a

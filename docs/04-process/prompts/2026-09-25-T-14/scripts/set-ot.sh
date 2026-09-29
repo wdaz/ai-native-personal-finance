@@ -1,7 +1,7 @@
 #!/bin/sh
 # T-14 step 8.5 — run by the OWNER after registering the origin trial for the project domain and adding the token to
 # ~/.config/personal-finance-deploy/production.env with an editor (a line WEBMCP_ORIGIN_TRIAL_TOKEN='<token>'):
-#   ! sh /Users/ruslan/.claude/jobs/73df9ce2/tmp/set-ot.sh
+#   ! sh $HOME/.claude/jobs/73df9ce2/tmp/set-ot.sh
 # Sets it for PRODUCTION only, as a Config variable (the token is printed into every page as a <meta> tag, so it is not
 # a secret). It reaches production with the next production deployment. Prints names only.
 set -eu

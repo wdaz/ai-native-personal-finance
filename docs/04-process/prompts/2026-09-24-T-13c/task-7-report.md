@@ -1,6 +1,6 @@
 # Task 7 report — `npm run db:reset` refuses another machine's database before it applies a migration
 
-Worktree `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt`, branch
+Worktree `~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt`, branch
 `task/T-13c-tech-debt`, cut from `0f0931d`. Date of the run: 2026-09-25. macOS, Node 26.7.0,
 npm 11.19.0, the local Postgres of `compose.yaml` (healthy, `127.0.0.1:5432`), nothing else
 running. Status: DONE_WITH_CONCERNS (the concerns are at the end; none blocks).
@@ -99,7 +99,7 @@ Refusing to run: DATABASE_URL does not name this machine (localhost, 127.0.0.1 o
 `throw new Error(refusal)` (exit 1, dropped):
 
 ```
-Failed to load config file "/Users/ruslan/Own/.../t-13c-tech-debt" as a TypeScript/JavaScript module. Error: Error: Refusing to run: DATABASE_URL does not name this machine ...
+Failed to load config file "~/Own/.../t-13c-tech-debt" as a TypeScript/JavaScript module. Error: Error: Refusing to run: DATABASE_URL does not name this machine ...
 ```
 
 Why: the throw is wrapped by Prisma in "Failed to load config file <absolute path> as a

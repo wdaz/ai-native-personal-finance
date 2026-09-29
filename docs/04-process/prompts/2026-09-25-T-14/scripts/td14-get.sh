@@ -8,7 +8,7 @@ BASE=${1:?usage: td14-get.sh https://<preview-host> </path> [signed]}
 P=${2:?path}
 SIGNED=${3:-}
 MARKER=${MARKER:-}
-T=/Users/ruslan/.claude/jobs/73df9ce2/tmp/td14
+T=$HOME/.claude/jobs/73df9ce2/tmp/td14
 mkdir -p "$T"
 D="$HOME/.config/personal-finance-deploy"
 set -a; . "$D/preview.env"; set +a

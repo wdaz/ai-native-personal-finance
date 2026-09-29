@@ -1,7 +1,7 @@
 # Task 1 report — Prisma 7 toolchain, schema and generated client
 
 Branch `task/T-02-persistence-reset`, worktree
-`/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-02-persistence-reset`.
+`~/Own/ai-native-personal-finance/.claude/worktrees/T-02-persistence-reset`.
 Started from HEAD `0eec801` (clean tree). Result committed as `b15e61c`.
 
 ## What I implemented, step by step

@@ -28,15 +28,15 @@ Focus, Findings F1–F17, Tasks 1–8), under the repository path below.
 
 ## Where things are (absolute paths)
 
-- Repository (read files here): `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24`
+- Repository (read files here): `~/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24`
 - The whole diff, `origin/main..HEAD` (175 KB; read it in chunks with offset/limit):
-  `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/.superpowers/sdd/2026-09-25-T-14/review-47a5625..9b34dda.diff`
+  `~/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24/.superpowers/sdd/2026-09-25-T-14/review-47a5625..9b34dda.diff`
 - The agent's ledger — every task's result, its measurements and its `Ruling:` lines (grep `Ruling:`):
   `…/chore-node-24/.superpowers/sdd/2026-09-25-T-14/progress.md`
 - The Vercel build log of the preview (evidence for the migration and `Unknown project config` claims):
   `…/chore-node-24/.superpowers/sdd/2026-09-25-T-14/t6-preview-build.log`
 - The process-log entry that will be appended AFTER this review (review it too, as text):
-  `/Users/ruslan/.claude/jobs/73df9ce2/tmp/pl-entry.md`
+  `~/.claude/jobs/73df9ce2/tmp/pl-entry.md`
 - Project rules: `AGENTS.md`, `docs/04-process/governance.md`, `docs/03-specs/definition-of-done.md`.
 
 ## Review focus (verbatim from the plan; each has a check in the task named — decide whether it is real)

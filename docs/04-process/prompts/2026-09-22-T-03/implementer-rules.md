@@ -1,6 +1,6 @@
 # Rules for every T-03 implementer (binding — read before any command)
 
-Working directory: `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
+Working directory: `~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
 (a git worktree on branch `task/T-03-domain`). Run every command from there. Never `cd` to the
 main checkout.
 
