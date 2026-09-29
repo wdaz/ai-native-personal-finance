@@ -3,7 +3,9 @@
 # comment, opens a pull request when a newer release exists, and rewrites both together.
 #
 # One grouped pull request per week, so a solo maintainer reviews one change, not one per
-# action. Its pull requests target the default branch (no `target-branch` set).
+# action. Its pull requests target the default branch (no `target-branch` set), which is `develop`
+# from T-15b (plan Q2); they reach `main` with a release. Security updates, which cover npm too, go
+# to the default branch as well (GitHub's `target-branch` reference implies it; T-15b plan F5).
 version: 2
 updates:
   - package-ecosystem: github-actions
