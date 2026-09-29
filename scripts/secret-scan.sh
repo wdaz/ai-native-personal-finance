@@ -7,8 +7,8 @@
 #   secret-scan.sh staged    the staged changes only: the pre-commit hook
 #
 # The repository scanned is the working directory's; the config is always this
-# repository's .gitleaks.toml. Output is redacted: CI logs are public once the repository
-# is (T-16), and a log line must never be the leak.
+# repository's .gitleaks.toml. Output is redacted: CI logs are public, as the repository has
+# been since 2026-09-20, and a log line must never be the leak.
 #
 # Every gitleaks call below passes --ignore-gitleaks-allow (T-15a, owner decision
 # 2026-09-26): an inline `gitleaks:allow` comment would silence a finding from any file

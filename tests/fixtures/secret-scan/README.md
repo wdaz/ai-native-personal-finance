@@ -57,8 +57,15 @@ one that reported everything would pass every violation.
 
 Key–value DSNs (`host=… password=…`), JDBC `?password=` parameters and bare `PGPASSWORD=`
 lines are outside the URI form this project uses (Prisma reads `DATABASE_URL`). No scanner
-covers generic high-entropy strings either; that is why T-16 rotates every secret that was
-ever real before the repository goes public, rather than trusting a green scan.
+covers generic high-entropy strings either, so a green scan alone was not a guarantee when the
+repository went public. The go-public plan was to rotate every secret that was ever real.
+T-15a recorded that rotation as not needed, for three reasons:
+
+- none of those secrets was real when the repository went public on 2026-09-20;
+- T-14 wrote its secrets to files outside the repository and sent them straight to Vercel;
+- the origin-trial token is printed into every signed-in page, so it is not a secret.
+
+That verdict holds only while the flagged full-history `secret scan` finds nothing (backlog T-15a).
 
 `gitleaks git` reads diffs only (measured on 2026-09-22 in the T-02a final review), so a
 secret typed only into a commit or annotated tag message was outside both the hook and CI.

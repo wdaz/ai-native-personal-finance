@@ -5950,3 +5950,81 @@ them too").
   - Then C: TD-22, the four remaining comments, the rotation verdict and the final flagged
     `secret scan`.
   - After B merges, the repository page's licence label is read (plan Task B4) and recorded in C.
+
+## 2026-09-29 — Phase 5: T-15a closed — TD-22, the last T-16 comments, the final flagged scan
+
+- **Phase:** 5 (Build the slice), Release 1. This is T-15a's pull request C, the last work pull request
+  to `main`.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:** the owner merged PR #70 (the plan, `f952fd5`) and PR #72 (B, `d493f3b`). The owner's
+  message was "ьукпув", which is "merged" typed on a Russian keyboard layout. The agent checked it
+  against `gh pr view`.
+- **Prompt(s):** `prompts/2026-09-29-T-15a-close.md`.
+- **Produced:**
+  - **TD-22** (`tech-debt.md` v1.27): the table row and the entry.
+  - The `"//"` note in `package.json` names TD-22.
+  - Four comments re-pointed:
+    - `ci.yml` (the leg names are required in `main`'s ruleset, backlog v1.38);
+    - `secret-scan.sh` (CI logs are public, since 2026-09-20);
+    - `AgentToolsStatus.tsx` (the exports were removed 2026-09-20);
+    - the secret-scan fixture README, which states the rotation verdict and its three reasons.
+  - Backlog v1.52: T-15a done; T-15's items (3), (4), (5) and (7) marked; the Notes line on the final
+    scan.
+  - The plan's Status is Done.
+  - This entry and the prompt record.
+- **Measured:**
+  - **B4, the repository's licence label.** `gh api repos/wdaz/ai-native-personal-finance` reads
+    `"key":"other","name":"Other","spdx_id":"NOASSERTION"`, and `…/license` names `LICENSE`. The plan's
+    Review Focus 4 predicted that GitHub would not recognise PolyForm Strict, and it does not. README's
+    "Licence" section is what a reader is pointed to.
+  - **C1, TD-22's re-measure** (scratch copy outside the repository, at `d493f3b`). The overrides and
+    their two `"//"` lines were removed, then `npm install --package-lock-only --ignore-scripts` and
+    `npm audit --audit-level=high`.
+    - Result: "4 high severity vulnerabilities", from GHSA-ggr8-5vv4-36mx, GHSA-3f6p-5ww8-9rcr and
+      GHSA-rgwj-5xj2-c3m3.
+    - The advisory ranges run to `@prisma/config` 8.1.0-dev.4 and `prisma` 8.1.0-dev.6.
+    - `npm view prisma dist-tags`: `latest` `8.0.0-rc.17`, `prev` `7.10.0`.
+    - The newest stable 7.x is `7.10.0`. The prediction held.
+  - **C2 checks:**
+    - `git grep T-16 -- . ':!docs/'` finds nothing (exit 1).
+    - `sh -n scripts/secret-scan.sh` is ok.
+    - `npm test`: 89 files, 1139 passed. `format:check`, `lint` and `typecheck` all exit 0.
+  - **The flagged full-history `secret scan` of C's first push.** This is the run of the push before
+    this entry (plan D2): run 36517244583, job 109242177130, on the merge commit `4f19cb5` (`1bc10c7`
+    into `d493f3b`), 2026-09-29 03:28 UTC.
+    - "secret-scan: commit diffs": "538 commits scanned", "scanned ~16192273 bytes (16.19 MB) in
+      1.27s", "no leaks found".
+    - "secret-scan: commit and tag messages": "scanned ~267133 bytes (267.13 KB) in 201ms", "no leaks
+      found".
+    - So rotation stays N/A.
+    - The push that carries this entry runs the same required check again, and that run is the gate the
+      owner reads before merging.
+    - The run on `main` after the merge is quoted in T-15b's first entry.
+- **What the agent got right:**
+  - It pushed before writing the log, so the entry quotes a run that exists (the v0.1 C3 order would
+    not have).
+  - It kept `T-16` out of the fixture README's new text, so the plan's `git grep` check reads empty.
+  - It read the job log through `gh api --allow-escape-sequences`, because the plain call refused the
+    terminal colour codes gitleaks writes.
+- **What the agent got wrong or missed:** its first `sleep 60; gh pr checks` wait was refused by the
+  harness. It became a background wait on the job's status.
+- **Owner changes and reasoning:** none in C.
+- **Disagreements:** none. Copilot's review of PR #73 found two wording points, both taken:
+  - `AgentToolsStatus.tsx` now reads "the design HTML exports **that** this task would otherwise check
+    are gone". This is the sentence Copilot misread on PR #70 as "check are gone". It was grammatical,
+    but the misread showed it was hard to parse.
+  - The fixture README reads "not **a** guarantee".
+  - A third point came on the next push: `package.json`'s note gave the scratch re-check as
+    `npm install --package-lock-only`, without the `--ignore-scripts` that TD-22 and this entry use. The
+    note now matches.
+  - All three are comment and prose changes. Each starts one more required run, and the last one is
+    the gate.
+- **Lessons for the process:** for T-15c's retrospective:
+  - a go-public close-out that was one backlog row became a plan and four pull requests (#70–#73);
+  - Copilot's reviews found real defects in all three work pull requests: the `/home/` pattern, the
+    quoted `~`, the missing DoD fixture;
+  - the owner's answer to a licence question changed the licence itself. The question was asked, not
+    assumed, and that is why the change surfaced.
+- **Next:**
+  - The owner merges C after its final `secret scan`.
+  - Then T-15b, the `develop` switch. From then on work pull requests target `develop`.
