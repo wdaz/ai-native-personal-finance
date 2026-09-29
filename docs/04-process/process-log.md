@@ -6028,3 +6028,100 @@ them too").
 - **Next:**
   - The owner merges C after its final `secret scan`.
   - Then T-15b, the `develop` switch. From then on work pull requests target `develop`.
+
+## 2026-09-29 — Phase 5: T-15b planned and answered; `develop` created and protected; pull request A — CI, CodeQL and the head-branch check
+
+- **Phase:** 5 (Build the slice), Release 1. T-15b, the `develop` switch: the plan (PR #74, the first
+  pull request `develop` took), settings steps S1–S3, and work pull request A, the first work pull
+  request to `develop`.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session — the one that executed
+  T-15a).
+- **Trigger:** "T-15b planlamasına başla" ("Start T-15b's planning"), after PR #73 merged.
+- **Prompt(s):** `prompts/2026-09-29-T-15b.md` (the plan, with the owner's gate answers verbatim) and
+  `prompts/2026-09-29-T-15b-checks.md` (this pull request).
+- **T-15a's last `main` run (plan D2 of T-15a, quoted here as that plan said):** run 36518265278 on
+  `cb6f845` (PR #73's merge), 2026-09-29 03:41 UTC, all 8 jobs `success`. Its flagged `secret scan`
+  (job 109245314562): "secret-scan: commit diffs" — "541 commits scanned", "scanned ~16232053 bytes
+  (16.23 MB) in 1.16s", "no leaks found"; "secret-scan: commit and tag messages" — "scanned ~268366
+  bytes (268.37 KB) in 223ms", "no leaks found".
+- **Planned** (`plans/2026-09-29-T-15b.md`, v0.1 then v0.2):
+  - Findings measured with GET calls only. **F1:** both rulesets targeted `~DEFAULT_BRANCH`, so a
+    default-branch switch would have moved all of `main`'s protection to `develop`. **F2:** Vercel stores
+    `link.productionBranch: "main"`. **F4:** there is no Neon preview workflow — the Neon–Vercel
+    integration makes a branch per pushed Git branch, so `governance.md:113`'s line is stale. **F6:**
+    `pull_request_target` runs the default branch's workflow (GitHub changelog 2025-11-07).
+  - Scratch verification, outside the repository and not kept: the check script under `sh`, `bash`
+    and `dash`, and the test's two helpers against the real workflows.
+  - An Explore subagent (Opus, read-only) mapped the preview wiring and every text that names `main` as
+    the working base.
+- **The owner's answers** (verbatim in the prompt record): Q1 — `develop` to be created and the plan's
+  pull request opened to it; Q2 (a) — `develop` becomes the default branch; Q3 — **the owner's own
+  hotfix route**: a fix on `hotfix/<name>` from `develop`, merged into `develop` and checked there,
+  then cherry-picked onto `hotfix/<name>-main`, a branch from `main`, whose pull request goes to `main`;
+  Q4 — no release in T-15b ("release artıq baş verib və Verceldə artıq işləyir"); Q5 — answered about
+  the source ("yalnız hotfix və develop branchlərində main merge etmek olar"), not about merge methods,
+  so none is restricted; Q6 (a) — the agent applies the settings.
+- **Settings applied** (Q6a), each with its state before, the call, the read-back and the undo; the
+  before and after JSON is kept outside the repository, in the session's job directory:
+  - **S1** — `main`'s rulesets pinned. Before: 23907266 "Copilot review for default branch" and
+    24007893 "main: required CI checks", both `include: ["~DEFAULT_BRANCH"]`. Call: `gh api -X PUT
+    …/rulesets/<id> --input <body>`, the body built with `jq` from the GET (name, target, enforcement,
+    bypass_actors, rules kept; `include: ["refs/heads/main"]`; 23907266 renamed "main: pull request,
+    Copilot, CodeQL"). Read-back: both `include: ["refs/heads/main"]`, `enforcement: active`,
+    `bypass_actors: []`, `current_user_can_bypass: never`; each ruleset's `rules` byte-identical before
+    and after (`jq -S .rules` and `cmp`); `rules/branches/main` lists the same seven rule types. Undo:
+    PUT the two GET bodies back.
+  - **S2** — `develop` created: `gh api -X POST …/git/refs -f ref=refs/heads/develop -f
+    sha=cb6f845e…` → `refs/heads/develop` at `cb6f845`. Undo: DELETE the ref (only while nothing has
+    merged into it).
+  - **S3** — `develop`'s rulesets, copied from S1's read-back: **24155781** "develop: pull request,
+    Copilot, CodeQL" (`deletion`, `non_fast_forward`, `copilot_code_review`, `pull_request`,
+    `code_quality` — the `code_scanning` rule waits for CodeQL's first run on `develop`, plan D3) and
+    **24155784** "develop: required CI checks" (the seven contexts). Read-back: `rules/branches/develop`
+    lists six rule types; `bypass_actors: []`, `current_user_can_bypass: never`. Undo: DELETE each.
+  - **Evidence that `develop`'s rules hold:** PR #74, re-targeted to `develop`, read `BLOCKED` until
+    the seven checks passed, then `CLEAN`.
+- **Produced in A** (`task/T-15b-checks`):
+  - `ci.yml`: `push` takes `[main, develop]`; `pull_request` stays unfiltered; two comments.
+    `codeql.yml`: both triggers `["main", "develop"]`.
+  - `.github/workflows/release-source.yml` (`pull_request_target` on `main`, types opened, reopened,
+    synchronize, edited; job `release source`) and `scripts/check-release-source.sh`: `develop` and
+    `hotfix/?*-main` pass; anything else, a fork's branch of any name, or an unset variable fails.
+  - `tests/unit/release-source.test.ts`, 27 tests — failed first (the missing workflow, then the two
+    `develop` trigger tests with `["main"]`), then passed.
+  - Comments in `dependabot.yml` (the default branch is `develop`) and `CODEOWNERS` (the new ruleset
+    names).
+  - Backlog v1.53; this entry; the prompt record.
+- **Measured:** `npm run lint`, `format:check`, `typecheck` exit 0; `npm run test:coverage`: 90 files,
+  1166 passed; `npm run traceability`: 18 of 18 stories. The four workflows and `dependabot.yml` parse
+  with js-yaml, with the triggers and job names above.
+- **What the agent got right:**
+  - It read the rulesets' conditions before planning the default switch (F1). Switching the default
+    first — the order `governance.md`'s list suggests — would have left `main` unprotected.
+  - It found that `pull_request_target` now reads the default branch, which made Q2 decide when the
+    check can first run.
+- **What the agent got wrong or missed:**
+  - Its first reading of the answers took "Develop yaranıb" as "`develop` has been created"; `git
+    ls-remote` showed it had not, so the agent created it (Q6a).
+  - It took Q5's first answer as the merge-method question until the owner's correction showed it was
+    about the source.
+  - It tried to edit `CODEOWNERS` through the shared checkout's path; the harness refused, nothing
+    changed.
+  - v0.2 left v0.1's present-tense lines ("`develop` does not exist yet", "nothing has been changed")
+    beside a Status line that said otherwise; Copilot found them one push at a time.
+- **Owner changes and reasoning:** the hotfix route. The plan offered a hotfix branch from `main` with
+  a back merge; the owner chose fix-on-`develop` first, then a cherry-pick onto `hotfix/<name>-main`,
+  so a fix is checked on `develop` before it reaches production and `develop` never needs a back merge.
+  The agent narrowed the check's pattern to `hotfix/?*-main` (plan D8) so a `hotfix/<name>` branch from
+  `develop` — which carries unreleased work — cannot open a pull request to `main`.
+- **Disagreements:** none. Copilot's five findings on PR #74 were all taken (F4's grammar; the gate
+  note and two "does not exist yet" lines scoped to v0.1; B1's partial date; the self-review's
+  placeholder list).
+- **Next:**
+  - The owner merges A into `develop`.
+  - S5: after CodeQL's first push run on `develop`, `code_scanning` joins `develop`'s ruleset.
+  - S6: the default branch becomes `develop`; Vercel's `productionBranch` is read again (stop if it is
+    not `main`); the owner switches the main checkout to `develop`.
+  - S7: `release source` becomes a required check on `main`. S8: a draft probe pull request to `main`
+    must show it failing.
+  - B: AGENTS.md §2, `governance.md` v1.6, the PR template, README, the runbook; T-15b closed.
