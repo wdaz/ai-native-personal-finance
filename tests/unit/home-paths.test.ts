@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 // Built from pieces so this file never matches itself; `<` keeps `/Users/<name>/` usable as a placeholder.
 const U = "/Us" + "ers/";
 const H = "/ho" + "me/";
-const HOME_PATH = new RegExp(`${U}(?!<)[A-Za-z0-9._-]+|${H}(?!<)[a-z_][a-z0-9_-]*/`);
+const HOME_PATH = new RegExp(`${U}(?!<)[A-Za-z0-9._-]+|${H}(?!<)[a-z_]`);
 
 function homePathLines(text: string): number[] {
   return text.split("\n").flatMap((line, i) => (HOME_PATH.test(line) ? [i + 1] : []));
@@ -14,6 +14,10 @@ function homePathLines(text: string): number[] {
 describe("no absolute home-directory path at the tip (T-15a, backlog T-15 item 6)", () => {
   it("(fixture) flags the macOS and Linux forms", () => {
     expect(homePathLines(`cd ${U}alice/Own/repo\nok\nT=${H}bob/tmp`)).toEqual([1, 3]);
+  });
+
+  it("(fixture) flags a bare home directory, with no trailing slash", () => {
+    expect(homePathLines(`cd ${U}alice\nls ${H}bob\n"${H}bob"`)).toEqual([1, 2, 3]);
   });
 
   it("(fixture) allows the placeholders, ~ and $HOME", () => {

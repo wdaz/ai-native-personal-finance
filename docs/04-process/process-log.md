@@ -5841,6 +5841,12 @@ them too").
     the plan gate": not taken, because T-14's plan pull request did the same (`9fae561`) and the gate
     stops execution, not the plan's own files. "check are gone" is a typo: not taken, because the
     subject is "exports". Read each file as a buffer before decoding: taken, and it is in A's test.
+  - Copilot's review of PR #71 found that the `/home/` half of the pattern required a trailing `/`, so
+    a bare `/home/<user>` went unflagged while the `/Users/` half flags one. That is right, and it is
+    taken. A fixture case failed first ("1 failed | 4 passed"). The pattern now needs only the first
+    letter of the user name, and the suite reads "5 passed". `git grep` finds no `/home/` followed by
+    a lowercase letter anywhere in the tree, so the wider pattern adds no hit today. It widens Review
+    Focus 2 (URL paths), which the owner already knows about.
 - **Lessons for the process:**
   - A decision recorded in the owner's words ("MIT for the project's own code") is not widened by the
     agent, even in the direction the licence text itself suggests. Asking surfaced a different intent.
