@@ -387,9 +387,9 @@ releases"). The owner merges both kinds; the merge is the production deploy.
 
 - **A release.** When the owner asks for one: `gh pr create --base main --head develop`, the body
   listing what the release carries. It needs the same eight checks as any pull request to `main` —
-  the seven of CI and `release source` — and CodeQL. Merge it **with a merge commit**: a squash or a
-  rebase would leave `develop` without `main`'s new commit, so the next release would show old
-  changes again. Then steps 3–5 as for any deploy. After the merge, `git ls-remote origin develop`
+  the seven of CI and `release source` — and CodeQL. It merges **with a merge commit**, the only
+  method both branches' rulesets allow (`governance.md` v1.7): a squash or a rebase would leave
+  `develop` without `main`'s new commit, so the next release would show old changes again. Then steps 3–5 as for any deploy. After the merge, `git ls-remote origin develop`
   should still list `develop` (its ruleset's `deletion` rule should stop GitHub's automatic branch
   deletion — not yet observed at the time of writing).
 - **A hotfix.**

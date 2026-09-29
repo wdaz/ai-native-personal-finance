@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch"
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision)
 
 ## Roles
 
@@ -138,9 +138,15 @@ that day have the evidence):
   and still reads `main` (read after the change).
 - **The check was probed**: a draft pull request to `main` from a branch named otherwise (#76)
   read `release source` failed and `BLOCKED`, and was closed unmerged.
-- **Merge methods** on `main` are not restricted (the question was asked at T-15b's gate and not
-  answered). A release or a hotfix merged by squash would leave `develop` without `main`'s commit;
-  merge with a merge commit.
+- **Merge commits only, on both branches** (v1.7, owner decision 2026-09-29, T-15b plan Q5 option
+  (b); until then "not restricted"): the pull-request rule of "main: pull request, Copilot, CodeQL"
+  and of "develop: pull request, Copilot, CodeQL" allows `merge` alone, so GitHub offers neither
+  squash nor rebase. A release or a hotfix merged by squash or rebase would leave `develop` without
+  `main`'s commit, and the next release would show old changes again. The owner, asked what a merge
+  commit is, chose it for both branches and added: "heç birinə bir başa push mümkün olmasın" ("no
+  direct push to either") — which the same rule already enforces (a change reaches either branch
+  only through a pull request; `non_fast_forward` refuses a force-push, `deletion` a deletion; no
+  bypass actor, read back 2026-09-29).
 - **Previews** are unchanged: the Neon–Vercel integration makes a Neon branch per pushed Git
   branch, whatever a pull request's base. There is no "Neon preview workflow" (the line below that
   named one was written before T-14 replaced it with the integration). `develop`, once pushed, holds
