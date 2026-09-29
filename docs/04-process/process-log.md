@@ -6140,3 +6140,67 @@ them too").
   - S7: `release source` becomes a required check on `main`. S8: a draft probe pull request to `main`
     must show it failing.
   - B: AGENTS.md §2, `governance.md` v1.6, the PR template, README, the runbook; T-15b closed.
+
+## 2026-09-29 — Phase 5: T-15b closed — the settings after A, the probe, and the documents (pull request B)
+
+- **Phase:** 5 (Build the slice), Release 1. T-15b's pull request B, the last of the `develop`
+  switch.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:** the owner merged PR #75 (A, `b3f0a95`): "merged". Earlier the owner had paused the
+  session to save usage ("can you pause subagent now my limits will end"), then "davam et".
+- **Prompt(s):** `prompts/2026-09-29-T-15b-close.md`.
+- **Settings applied** (Q6a; state before, call, read-back, undo — the JSON kept in the session's job
+  directory):
+  - **S5** — CodeQL's first push run on `develop` (36536382679, on `b3f0a95`) ended `success`; then
+    PUT 24155781 with `main`'s `code_scanning` rule added (CodeQL, `high_or_higher`, `errors`).
+    Read-back: `rules/branches/develop` and `…/main` both list the same seven rule types. Undo: PUT
+    the saved `24155781` body back.
+  - **S6** — both `main` rulesets re-read (`include: ["refs/heads/main"]`); `gh api -X PATCH
+    repos/wdaz/ai-native-personal-finance -f default_branch=develop` → `develop`. Vercel re-read at
+    once: `link.productionBranch` still `"main"` (the stop condition did not fire). Both branches'
+    rules unchanged; the licence label still `NOASSERTION`. Undo: PATCH `default_branch=main`.
+  - **S7** — PUT 24007893 with an eighth context, `release source` (`integration_id` 15368).
+    Read-back: eight contexts, `include: ["refs/heads/main"]`, no bypass actor,
+    `current_user_can_bypass: never`. Undo: PUT the saved S7-before body.
+  - **S8** — `probe/T-15b-release-source`, one empty commit `5b35345` on `origin/develop`, draft pull
+    request #76 to `main`. The `pull_request_target` run 36536690722 carried `headSha` `5b35345` (the
+    probe's head — plan Review Focus 1 measured) and failed in 4 s: "release-source:
+    'probe/T-15b-release-source' may not open a pull request to main; only develop (a release) or a
+    hotfix/<name>-main branch (a fix from develop, cherry-picked onto main) may (governance.md,
+    Branches and releases)", exit 1. The pull request read `BLOCKED`. Closed unmerged with a comment;
+    the branch deleted (`git ls-remote` lists only `develop` and `main`).
+  - **Drift read** (plan D1): `main`'s and `develop`'s pull-request rulesets have identical `rules`
+    (`jq -S`, `diff` empty); the required checks differ only by `release source`, on `main`.
+- **Produced in B** (`task/T-15b-docs`):
+  - AGENTS.md §2: sessions start from `origin/develop`; work pull requests target `develop`; the release
+    and the owner's hotfix route.
+  - `governance.md` v1.6: "Since T-15b"; the hotfix route with the owner's words; the enforcement names
+    the check, its files, its limit; "Settled at the switch" (rulesets and ids, `develop`, the default
+    branch, the probe, merge methods left open, previews unchanged, what is not yet observed). The
+    "until T-15b" sentence is struck through, not deleted; "Open at the switch" is kept as written.
+  - The PR template's opening comment names the base; README's deploy paragraph and the runbook's
+    opening line say where work and releases merge; the runbook's new step 10, "Releases and hotfixes".
+  - Backlog v1.54 (T-15b Done; T-15's branch-model hand-off marked); the plan's Status is Done; this
+    entry and the prompt record.
+- **Measured:** `tests/unit/pr-template.test.ts` and `tests/unit/home-paths.test.ts` pass with the new
+  comment line and texts; `npm run format:check` exits 0.
+- **What the agent got right:** it read Vercel's production branch in the same minute as the default
+  switch, with a stop-and-revert condition written in the plan beforehand.
+- **What the agent got wrong or missed:** its first S5 wait was a compound `gh` command the harness
+  refused; plain commands worked.
+- **Owner changes and reasoning:** none in B. Q5 (merge commits only on `main`) is still unanswered, so
+  no merge method is restricted; the runbook asks for a merge commit instead.
+- **Disagreements:** none.
+- **Lessons for the process** (for T-15c's retrospective):
+  - A ruleset that targets "the default branch" follows the default when it changes. Before any default
+    switch, read every ruleset's `conditions`.
+  - `pull_request_target` now reads the default branch. So the default branch decides when a check of
+    that kind can first run, and where it can be edited.
+  - A plan that is answered in place keeps its v0.1 sentences. Copilot found the stale ones one push at
+    a time (five findings on #74). Read the whole plan for tense once, when writing v0.2.
+- **Next:**
+  - The owner reviews and merges B into `develop`.
+  - The owner's main checkout: `git switch develop` (AGENTS.md on `main` still says `origin/main`
+    until the next release).
+  - T-15c, the Release 1 retrospective. The first release after T-15b is where the check's green and
+    `develop`'s survival are read.

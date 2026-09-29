@@ -151,9 +151,10 @@ characters. Use a throwaway password, never one you use anywhere else: the login
 **Live demo:** <https://personal-finance-cyan-kappa.vercel.app> — log in with the demo credentials
 the login page shows (public by design, NFR-S1); the demo data resets every 10 days.
 
-The app deploys to Vercel (Hobby, region `fra1`) with its database on Neon in Frankfurt; a merge
-to `main` deploys production, and every pull request gets a preview on its own Neon branch
-(ADR-0007). Migrations run in the Vercel build through Neon's direct connection
+The app deploys to Vercel (Hobby, region `fra1`) with its database on Neon in Frankfurt. Work
+merges into `develop`; a release (`develop` → `main`) or a hotfix merges into `main`, and that
+merge deploys production. Every pushed branch gets a preview on its own Neon branch (ADR-0007;
+the branch model is in `docs/04-process/governance.md`, "Branches and releases"). Migrations run in the Vercel build through Neon's direct connection
 (`DATABASE_URL_UNPOOLED`, `vercel.json`). Setting up, seeding, rotating secrets, the origin-trial
 token and rolling back are in the runbook, `docs/04-process/runbooks/deploy.md`.
 
