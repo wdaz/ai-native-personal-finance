@@ -200,7 +200,7 @@ body {
 
 ```bash
 mkdir -p public/avatars
-cp /Users/ruslan/Own/finance-app/assets/images/avatars/*.jpg public/avatars/
+cp ~/Own/finance-app/assets/images/avatars/*.jpg public/avatars/
 ls public/avatars | wc -l   # expect 30
 ```
 

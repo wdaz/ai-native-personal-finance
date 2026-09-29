@@ -24,7 +24,7 @@ The implementation includes comprehensive test coverage and passes all project g
 ### Step 2: Run test to confirm failure
 ✅ Test failed as expected with:
 ```
-Error: Cannot find package '@/src/shared/tool-schema' imported from /Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-04-shared/tests/unit/shared/tool-schema.test.ts
+Error: Cannot find package '@/src/shared/tool-schema' imported from ~/Own/ai-native-personal-finance/.claude/worktrees/T-04-shared/tests/unit/shared/tool-schema.test.ts
 ```
 
 ### Step 3: Write `src/shared/tool-schema.ts`

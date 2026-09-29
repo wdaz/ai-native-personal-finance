@@ -1,7 +1,7 @@
 # Task 5 report — CI job, run instructions, document amendments, process record
 
 Branch `task/T-02-persistence-reset`, worked from
-`/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-02-persistence-reset`.
+`~/Own/ai-native-personal-finance/.claude/worktrees/T-02-persistence-reset`.
 Postgres container `ai-native-personal-finance-postgres-1` was up and healthy throughout;
 never stopped. No application code was changed.
 

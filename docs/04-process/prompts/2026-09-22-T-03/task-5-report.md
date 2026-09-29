@@ -39,7 +39,7 @@ $ npx vitest run tests/unit/seed-figures.test.ts
  ❯ tests/unit/seed-figures.test.ts (0 test)
 FAIL tests/unit/seed-figures.test.ts [ tests/unit/seed-figures.test.ts ]
 Error: Cannot find package '@/scripts/seed-figures' imported from
-/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/tests/unit/seed-figures.test.ts
+~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/tests/unit/seed-figures.test.ts
 
  Test Files  1 failed (1)
       Tests  no tests

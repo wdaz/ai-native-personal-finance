@@ -1,6 +1,6 @@
 # Task 3 report: The Overview's arithmetic
 
-Working directory: `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
+Working directory: `~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
 (branch `task/T-03-domain`).
 
 ## What was implemented
@@ -138,7 +138,7 @@ Vitest total: **292/292** across **15 files** — matches the R9-adjusted target
 
 ```
 git add src/domain tests/fixtures/domain.ts tests/unit/domain
-GITLEAKS_CACHE_DIR="/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/node_modules/.cache/gitleaks" git commit \
+GITLEAKS_CACHE_DIR="~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/node_modules/.cache/gitleaks" git commit \
   -m "feat(domain): budgetSpent, latestTransactions, recurringBills and overviewSummary (T-03)" \
   -m "Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01BQp5Lv2Sruz5RCgSMYmHWa"
@@ -343,7 +343,7 @@ Counts: new tests per file = 0 (values and titles only, no test added or removed
 
 ```
 git add tests/fixtures/domain.ts tests/unit/domain/budgets.test.ts tests/unit/domain/bills.test.ts tests/unit/domain/overview.test.ts tests/unit/domain/money.test.ts
-GITLEAKS_CACHE_DIR="/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/node_modules/.cache/gitleaks" git commit \
+GITLEAKS_CACHE_DIR="~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/node_modules/.cache/gitleaks" git commit \
   -m "test(domain): hand-built amounts no longer equal seed amounts (T-03, D12)" \
   -m "Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01BQp5Lv2Sruz5RCgSMYmHWa"
@@ -454,7 +454,7 @@ Counts: new tests per file = 0. Total 292 → 292, 15 → 15 files — unchanged
 
 ```
 git add tests/unit/domain/bills.test.ts
-GITLEAKS_CACHE_DIR="/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/node_modules/.cache/gitleaks" git commit \
+GITLEAKS_CACHE_DIR="~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/node_modules/.cache/gitleaks" git commit \
   -m "test(domain): billsSummary title names US-28 AC1's rule, not its seed figures (T-03)" \
   -m "Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01BQp5Lv2Sruz5RCgSMYmHWa"

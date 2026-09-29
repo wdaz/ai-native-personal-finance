@@ -51,8 +51,8 @@ The pre-commit hook (gitleaks) ran on the staged diff and the commit succeeded w
 
 ## Files changed
 
-- `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/src/webmcp/adapter.ts` (+5 lines, -0; the `clearFailure()` line stays, with 4 new lines and a comment around it)
-- `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/tests/unit/webmcp/adapter.test.ts` (+57 lines, two tests)
+- `~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/src/webmcp/adapter.ts` (+5 lines, -0; the `clearFailure()` line stays, with 4 new lines and a comment around it)
+- `~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/tests/unit/webmcp/adapter.test.ts` (+57 lines, two tests)
 
 Commit stat: 2 files changed, 62 insertions. Working tree is clean after the commit.
 

@@ -5,7 +5,7 @@ set -eu
 umask 077
 BASE=${1:?usage: td14-prefetch.sh https://<preview-host>}
 MARKER='$4,836.00'
-T=/Users/ruslan/.claude/jobs/73df9ce2/tmp/td14
+T=$HOME/.claude/jobs/73df9ce2/tmp/td14
 mkdir -p "$T"
 D="$HOME/.config/personal-finance-deploy"
 set -a; . "$D/preview.env"; set +a

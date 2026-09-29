@@ -10,7 +10,7 @@ export const meta = {
 }
 
 const A = args
-const SKILL = '/Users/ruslan/.claude/plugins/cache/claude-plugins-official/superpowers/6.3.0/skills/subagent-driven-development'
+const SKILL = '~/.claude/plugins/cache/claude-plugins-official/superpowers/6.3.0/skills/subagent-driven-development'
 const WS = A.workspace
 const BRIEF = `${WS}/task-${A.task}-brief.md`
 const REPORT = `${WS}/task-${A.task}-report.md`

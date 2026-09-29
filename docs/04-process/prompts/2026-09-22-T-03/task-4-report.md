@@ -1,6 +1,6 @@
 # Task 4 report: The §4.2 formatters
 
-Working directory: `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
+Working directory: `~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain`
 (branch `task/T-03-domain`).
 
 ## What was implemented
@@ -49,11 +49,11 @@ Real output (relevant lines):
 
  FAIL  tests/unit/shared/dates.test.ts [ tests/unit/shared/dates.test.ts ]
 Error: Cannot find package '@/src/shared/dates' imported from
-/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/tests/unit/shared/dates.test.ts
+~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/tests/unit/shared/dates.test.ts
 
  FAIL  tests/unit/shared/money.test.ts [ tests/unit/shared/money.test.ts ]
 Error: Cannot find package '@/src/shared/money' imported from
-/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/tests/unit/shared/money.test.ts
+~/Own/ai-native-personal-finance/.claude/worktrees/T-03-domain/tests/unit/shared/money.test.ts
 
  Test Files  2 failed (2)
       Tests  no tests

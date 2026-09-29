@@ -1,7 +1,7 @@
 # Task 7 (follow-up to T-13c, the owner's choice "B"): `npm run db:reset` refuses another machine's database BEFORE it applies any migration
 
 Repository: `ai-native-personal-finance`; worktree = your working directory
-`/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt`, branch `task/T-13c-tech-debt` (PR #39, open, unmerged; HEAD `0f0931d`). Date today: 2026-09-25.
+`~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt`, branch `task/T-13c-tech-debt` (PR #39, open, unmerged; HEAD `0f0931d`). Date today: 2026-09-25.
 
 ## Why (the owner's decision — do not re-litigate)
 
@@ -67,7 +67,7 @@ COMMIT 2 — subject `docs: record the owner's B on db:reset — tech-debt, back
 
 - English for code, comments, docs, commits. Never fabricate: numbers are those you measured. Do not touch `middleware.ts` or the CSP path. Do NOT edit the plan file (it is on another branch).
 - `git add` explicit paths only; two NEW commits (no amend); NO push; NO `--no-verify` (the pre-commit hook runs gitleaks; the child-process tests' URLs follow the placeholder rule: password `password` or a `${SECRET}` variable).
-- Commit messages: subject, blank line, a short body, then exactly these two trailer lines, in message files you write with the Write tool at `/Users/ruslan/.claude/jobs/cbb8a1ac/tmp/commit-msg-7a.txt` and `commit-msg-7b.txt`, committed with `git commit -F <file>`:
+- Commit messages: subject, blank line, a short body, then exactly these two trailer lines, in message files you write with the Write tool at `~/.claude/jobs/cbb8a1ac/tmp/commit-msg-7a.txt` and `commit-msg-7b.txt`, committed with `git commit -F <file>`:
   Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
   Claude-Session: https://claude.ai/code/session_016K8d5a2xFgzdsy4ejTt1AN
 - Shell quirks in this harness: one simple Bash command per call, literal paths; no compound commands, no `$VAR` in command position, no `sh -c '…git…'`; `printf` with `%` fails — use the Write tool or a python3 heredoc for text. If a tool refuses a path or a git command because of worktree isolation, call EnterWorktree with the worktree path above (never ExitWorktree). Before committing check `git branch --show-current` prints `task/T-13c-tech-debt`. `next-env.d.ts` may show as modified after a build/test run — `git checkout -- next-env.d.ts`, never commit it.
@@ -76,4 +76,4 @@ COMMIT 2 — subject `docs: record the owner's B on db:reset — tech-debt, back
 
 ## Report
 
-Write your full report to `/Users/ruslan/.claude/jobs/cbb8a1ac/tmp/task-7-report.md`: what you changed per file; TDD evidence (RED command and output with why that failure is the expected one; GREEN); the mutation check; which of `console.error`+`process.exit(1)` or `throw` you chose and the output of each you saw; the local `npm run db:reset` result; the API run; the full-suite totals; every text place you updated; anything you could not verify; concerns. Then reply with ONLY (under 12 lines): Status (DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT), the two commits (short SHA + subject), one-line test summary, concerns, the report path.
+Write your full report to `~/.claude/jobs/cbb8a1ac/tmp/task-7-report.md`: what you changed per file; TDD evidence (RED command and output with why that failure is the expected one; GREEN); the mutation check; which of `console.error`+`process.exit(1)` or `throw` you chose and the output of each you saw; the local `npm run db:reset` result; the API run; the full-suite totals; every text place you updated; anything you could not verify; concerns. Then reply with ONLY (under 12 lines): Status (DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT), the two commits (short SHA + subject), one-line test summary, concerns, the report path.

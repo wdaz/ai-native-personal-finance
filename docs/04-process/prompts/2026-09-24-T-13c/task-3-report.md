@@ -103,7 +103,7 @@ caught, since the same lookbehind (`[\d.]`) protects both. Lookbehind put back; 
   exactly the expected 77 -> 78 files and 960 -> 963 tests.
 - `git commit -F .../commit-msg-3.txt` succeeded without `--no-verify`; message is the brief's
   subject, a blank line, then the two trailer lines. `git status` clean afterwards. The commit
-  printed no hook output; `core.hooksPath` is `/Users/ruslan/Own/ai-native-personal-finance/scripts/git-hooks`
+  printed no hook output; `core.hooksPath` is `~/Own/ai-native-personal-finance/scripts/git-hooks`
   and an executable `pre-commit` exists there, so it presumably ran silently (I did not observe it).
 
 ## Files changed (commit bb6e2fe, 7 files, +1227/-37)

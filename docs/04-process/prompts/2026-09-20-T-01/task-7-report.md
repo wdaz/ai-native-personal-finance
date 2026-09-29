@@ -40,9 +40,9 @@ Not touched, as instructed: `.env.example`, `tests/unit/scaffold.test.ts`.
 ### 1. `npx playwright install --with-deps chromium firefox webkit`
 Ran in the background (large download). Tail of output:
 ```
-Chrome Headless Shell 153.0.8010.12 (playwright chromium-headless-shell v1243) downloaded to /Users/ruslan/Library/Caches/ms-playwright/chromium_headless_shell-1243
-Firefox 155.0 (playwright firefox v1543) downloaded to /Users/ruslan/Library/Caches/ms-playwright/firefox-1543
-WebKit 26.6 (playwright webkit v2359) downloaded to /Users/ruslan/Library/Caches/ms-playwright/webkit-2359
+Chrome Headless Shell 153.0.8010.12 (playwright chromium-headless-shell v1243) downloaded to ~/Library/Caches/ms-playwright/chromium_headless_shell-1243
+Firefox 155.0 (playwright firefox v1543) downloaded to ~/Library/Caches/ms-playwright/firefox-1543
+WebKit 26.6 (playwright webkit v2359) downloaded to ~/Library/Caches/ms-playwright/webkit-2359
 [exited with code 0]
 ```
 (`--with-deps` is a no-op on macOS, as the brief notes.)

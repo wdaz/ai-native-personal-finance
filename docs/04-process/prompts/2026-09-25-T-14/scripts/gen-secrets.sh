@@ -3,7 +3,7 @@
 # Prints names, modes and nothing else. Refuses to overwrite an existing file.
 set -eu
 umask 077
-W=/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24
+W=$HOME/Own/ai-native-personal-finance/.claude/worktrees/chore-node-24
 D="$HOME/.config/personal-finance-deploy"
 mkdir -p "$D"
 chmod 700 "$D"

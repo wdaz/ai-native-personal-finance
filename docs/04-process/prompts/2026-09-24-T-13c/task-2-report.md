@@ -8,7 +8,7 @@ Commit: `b9805e4` — `test(e2e): the login walkthrough's comment says what the 
 ## What changed
 
 Only the doc comment above `test.describe("keyboard-only login"` in
-`/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/tests/e2e/auth-accessibility.spec.ts`
+`~/Own/ai-native-personal-finance/.claude/worktrees/t-13c-tech-debt/tests/e2e/auth-accessibility.spec.ts`
 (3 insertions, 2 deletions), applied exactly as the brief's diff:
 
 - Removed the claim "Shift+Tab back to the fields, type the demo credentials, Enter submits" (the test never presses Shift+Tab).

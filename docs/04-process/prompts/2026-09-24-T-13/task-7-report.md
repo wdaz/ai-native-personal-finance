@@ -30,7 +30,7 @@ Commit: 80af2e4 `build: fail the install on an unreviewed install script (strict
 - Prettier's output did not list README.md (likely in `.prettierignore`); `format:check` passes.
 
 ## Step 7: Linux check (docker run, node:26, linux/amd64) — run 2026-09-24
-Scratch dirs outside the repo: /Users/ruslan/.claude/jobs/fbf96237/tmp/task7-linux (as committed), ...-nofsevents, ...-noesbuild (each: package.json, package-lock.json, .npmrc, prisma/, prisma.config.ts, scripts/, run.sh). run.sh copies /src to /w, prints versions, runs `npm ci --strict-allow-scripts=true > log 2>&1`, prints `tail -15`, then `npm ci exit=$?` and grep counts for `Unknown project config` and `ESTRICTALLOWSCRIPTS`. (The trailing shell exit 1 of the docker command is the `grep -c` returning 0 matches, not npm.)
+Scratch dirs outside the repo: ~/.claude/jobs/fbf96237/tmp/task7-linux (as committed), ...-nofsevents, ...-noesbuild (each: package.json, package-lock.json, .npmrc, prisma/, prisma.config.ts, scripts/, run.sh). run.sh copies /src to /w, prints versions, runs `npm ci --strict-allow-scripts=true > log 2>&1`, prints `tail -15`, then `npm ci exit=$?` and grep counts for `Unknown project config` and `ESTRICTALLOWSCRIPTS`. (The trailing shell exit 1 of the docker command is the `grep -c` returning 0 matches, not npm.)
 
 1. As committed (fsevents denied):
    node v26.10.0, npm 11.19.1

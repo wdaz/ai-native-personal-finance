@@ -1,6 +1,6 @@
 # PR-A Task A2 report — a failed WebMCP registration is reported
 
-Worktree: `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/pr-a-origin-agent-cluster`
+Worktree: `~/Own/ai-native-personal-finance/.claude/worktrees/pr-a-origin-agent-cluster`
 Branch: `fix/origin-agent-cluster`, base `3b3d9d8`. Commit: `8be64a0` fix(webmcp): report a failed tool registration — indicator, data-webmcp-error, console warning
 
 ## Files changed
