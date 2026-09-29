@@ -44,7 +44,7 @@ fetched 2026-09-24. That repository's `LICENSE.md` says GSA's modifications are 
 of this Modified Version (Public Sans) should use Public Sans according to the terms of the SIL
 Open Font License, Version 1.1".
 Condition 2 of the OFL — every copy carries the copyright notice and the licence — is what
-`OFL.txt` beside the files is for. T-16's third-party notices list the font.
+`OFL.txt` beside the files is for. The root `THIRD-PARTY-NOTICES.md` lists the font.
 
 ## Replacing a file
 
