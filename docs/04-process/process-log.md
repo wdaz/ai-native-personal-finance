@@ -5927,7 +5927,19 @@ them too").
   challenge asset …'") was loose. `Logo.tsx`'s header says it in lowercase, mid-sentence. The test
   written from that wording missed the file until the count check caught it.
 - **Owner changes and reasoning:** none in B yet. The licence choice itself is v1.50's.
-- **Disagreements:** none.
+- **Disagreements:** none. Copilot's review of PR #72 raised three points, all taken:
+  - **No failing fixture** (`definition-of-done.md` line 18: a document-mirror test "ships with a
+    fixture that deliberately violates it").
+    - That was a miss by the agent: A's guard had fixtures, and B's licence test did not.
+    - Two fixture cases now exist. `unlisted()` reports a file the notices lack. The two markers match a
+      header that opens with the phrase and one that has it mid-sentence (the `Logo.tsx` case), and
+      miss one that only mentions it.
+    - Both failed first, "ReferenceError: unlisted is not defined", 2 failed | 4 passed. After the
+      helpers were written: 6 passed.
+  - **Windows separators:** `sourcesCiting()` now joins with `/`, the repository's existing pattern
+    (`tests/fixtures/a11y-routes.ts` splits on `sep`).
+  - **The notices' opening line** overstated the test's reach. It now says `.tsx` files under `src/`,
+    plus the named paths, and that anything else is listed by hand.
 - **Lessons for the process:**
   - A test that scans comments for a marker should say how many files it expects. The
     `toBeGreaterThanOrEqual(9)` is what caught the case mismatch.

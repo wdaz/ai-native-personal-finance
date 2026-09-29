@@ -1,8 +1,9 @@
 # Third-party notices
 
 `LICENSE` covers this repository's own code and documents. The material below is not the licensor's
-and keeps its own terms. `tests/unit/licence.test.ts` fails if a source file that says it draws a
-challenge asset or a Phosphor icon is missing from this list.
+and keeps its own terms. `tests/unit/licence.test.ts` fails if a `.tsx` file under `src/` whose header
+says it draws a challenge asset or a Phosphor icon is missing from this list, and if any other path
+named in that test is missing. A third-party file anywhere else is listed here by hand.
 
 ## Frontend Mentor challenge material
 
