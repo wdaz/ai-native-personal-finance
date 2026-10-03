@@ -1,6 +1,6 @@
 # Build workflow (Phase 5–6) — working with Claude Code
 
-Status: Approved (owner, 2026-09-20; v1.1 same day after T-01; v1.2 — 2026-09-24, owner decisions after T-13: scratch verification is allowed before the plan gate, and the worktree bootstrap is a rule of thumb; v1.3 — 2026-10-03, owner decision at the T-15c retrospective: two rules of thumb — `gh pr view --json state` before a push to an existing branch, and a plan answered in place is read once for tense)
+Status: Approved (owner, 2026-09-20; v1.1 same day after T-01; v1.2 — 2026-09-24, owner decisions after T-13: scratch verification is allowed before the plan gate, and the worktree bootstrap is a rule of thumb; v1.3 — 2026-10-03, owner decision at the T-15c retrospective: two rules of thumb — `gh pr view --json state` before a push to a branch that has or had a pull request, and a plan answered in place is read once for tense)
 
 Claude Code reads `CLAUDE.md` → `AGENTS.md` automatically when started in the repo root, so every session begins with the same context as this document set. The loop below is one task from `docs/03-specs/backlog.md` per session.
 
@@ -32,8 +32,10 @@ Claude Code reads `CLAUDE.md` → `AGENTS.md` automatically when started in the 
   `.Provider` included — directly off a context object imported from one. jsdom unit tests
   cannot catch the resulting crash, since they never cross the real RSC boundary — only a
   `next dev`/`next build` run in an actual browser does (T-11 lesson).
-- Before any push to an existing branch, run `gh pr view --json state` on that branch (it reads the
-  branch's own pull request; pass `<number>` to read another one). If the pull request
+- Before any push to a branch that already has, or had, a pull request, run `gh pr view --json state`
+  on that branch (it reads the branch's own pull request; pass `<number>` to read another one). A branch
+  that has never had a pull request needs no check: `gh pr view` then says there is none, and the push
+  is the first. If the pull request
   has merged or closed, do not push: with the repository's `delete_branch_on_merge` setting on, a
   merged pull request's branch is deleted, and a push to its name re-creates it outside any pull
   request; a closed one may still exist, but no pull request reads it. Open a new branch from
