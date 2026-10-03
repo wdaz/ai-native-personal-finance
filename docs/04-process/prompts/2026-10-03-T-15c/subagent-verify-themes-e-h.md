@@ -60,7 +60,7 @@ Strongest 3: 466 (.git/config), 3067 and 4597 (push re-creating a merged PR's br
 
 | line | verdict | quote |
 |---|---|---|
-| 968 | CONFIRMED | 1062-1063: the reviewer "actually exercised the running app (forged iron-session cookies, real Chromium/Firefox...)". Also 1037-1038: "A plan's own unit tests can encode the same off-by-one the code has" (the log spells it "off-box-one") |
+| 968 | CONFIRMED | 1062-1063: the reviewer "actually exercised the running app (forged iron-session cookies, real Chromium/Firefox...)". Also 1037-1038: "A plan's own unit tests can encode the same off-box-one (sic) the code has" (the subagent's quote read "off-by-one"; the log's line 1037 reads "off-box-one", restored here after Copilot's review) |
 | 1147 | CONFIRMED | 1166: "the tab read "Personal Finance". The browser check caught it" |
 | 1180 | CONFIRMED | 1210-1211: "No review of the code would have found this; only running it under the real policy did." |
 | 1902 | CONFIRMED | 1947-1948: "Caught only because the agent took screenshots for the DoD and looked at them, rather than trusting "all tests green"" |
