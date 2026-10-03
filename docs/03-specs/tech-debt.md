@@ -1,6 +1,9 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.27 — 2026-09-29: **TD-22** opened by T-15a, the owner's decision of
+Status: **Approved** (v1.28 — 2026-10-03: **TD-23** opened, the owner's decision at the T-15c plan's Q7:
+`npm audit` read 10 on `develop` — 1 critical in `next`, fixed by PR #80, and 9 high that are one `braces`
+advisory with no patched release; recorded as a debt fixed with the others at the end, sooner if the same
+case repeats; nothing else in the file changes; v1.27 — 2026-09-29: **TD-22** opened by T-15a, the owner's decision of
 2026-09-26 (backlog v1.48, T-15's hand-off item 5): the `deepmerge-ts`/`mysql2` `overrides` stay until
 a stable Prisma release no longer pins the vulnerable versions; re-measured the same day, without them
 `npm audit` reads 4 high; nothing else in the file changes; v1.26 — 2026-09-26: NFR-D4's cold-start note is written, on the owner's word
@@ -72,6 +75,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Closed** (PR #64, on its merge) | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
 | TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — kept as a documented exception (owner, 2026-09-26) | T-14 (8.6) |
 | TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | nobody yet; moved from T-16 (backlog v1.48) |
+| TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) | nobody yet |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -1004,3 +1008,46 @@ of protected pages on Vercel
   - Repeat the scratch check above: without the overrides, the audit must read 0.
   - Then remove both `overrides` and the two `"//"` lines that explain them, in the same pull request.
 - **Picked up by:** nobody yet.
+
+## TD-23 — `braces` ≤ 3.0.3 has an advisory and no patched release; three dev tools pull it in
+
+- **Found:** 2026-10-03, by the T-15c planning session: `npm ci --ignore-scripts`, then `npm audit`, on
+  `origin/develop` `110c9bc` read 10 vulnerabilities, 1 critical and 9 high. The critical one, in `next`,
+  was fixed by PR #80 (`next` 16.3.8, merged as `0f07f31`). The nine high are **one advisory**,
+  GHSA-vfj7-8cjw-p6xm: `braces` ≤ 3.0.3, stack exhaustion on deeply nested brace patterns. `npm audit`
+  lists it once on each package that depends on `braces`: `braces`, `micromatch`, `fast-glob`, `globby`,
+  `@boundaries/elements`, `eslint-plugin-boundaries`, `@next/eslint-plugin-next`, `eslint-config-next`
+  and `stylelint`. TD-22's re-measure of 2026-09-29 read only the three Prisma advisories, so this one is
+  newer than that; its publication date was not looked up.
+- **Path:** `micromatch` 4.0.8 depends on `braces` `^3.0.3` (`npm view micromatch@latest`, which is 4.0.8).
+  `npm ls braces` shows `eslint-plugin-boundaries` → `micromatch` → `braces`; `npm audit` reports
+  `eslint-config-next` through `@next/eslint-plugin-next` and `fast-glob`, and `stylelint` through
+  `fast-glob` and `globby`.
+- **Why there is no fix:** `npm view braces dist-tags` reads `latest` `3.0.3` (the package was last modified
+  2024-09-18), and the advisory's range covers it. `npm audit fix --force` would install
+  `eslint-plugin-boundaries@1.1.1`, a downgrade from 7.2.0, which is not a patched release. An `overrides`
+  entry, as TD-22 uses, has no unaffected `braces` to name.
+- **Owner decision:** 2026-10-03, T-15c plan Q7 (a): record it as tech debt. In the owner's words: "bütün
+  tech-deptlər sonra fix olur. istisna o vaxt yaranır ki, eyni hal təkrarlansın. Onda fix edirik." ("All
+  tech debts are fixed later. An exception arises when the same case repeats. Then we fix it.") So this
+  entry is fixed with the other debts when the project is finished, and sooner if the same case repeats.
+- **Risk:** low. It is development tooling only: `npm ls braces --omit=dev` prints `(empty)`, and the three
+  tools are in `devDependencies`. The patterns they pass to `braces` come from this repository's own
+  configuration and files, not from a request. The effect would be a lint or format run that exhausts the
+  stack, not a data exposure.
+- **Guarded meanwhile by:** the CI job `npm audit`, whose step "npm audit (high and critical, reported, not
+  blocking)" shows the advisory as a warning and does not fail the run. The owner's rule that `npm audit`
+  stays at 0 cannot hold while this entry is open; TD-22's overrides were the way to keep it at 0, and this
+  advisory has none.
+- **Trigger:** the same case repeating (the owner's rule above). The agent reads that as: a patched `braces`
+  (above 3.0.3) is published; or a second advisory arrives through the same chain; or one of the three
+  tools publishes a release that no longer needs `micromatch`. The agent's reading, not the owner's
+  definition. The check is `npm view braces version` and `npm audit`.
+- **Fix:**
+  - If a patched `braces` exists: `npm update braces micromatch` in its own pull request, then `npm audit`
+    must read 0.
+  - If not, and a tool's newer release drops `micromatch`: upgrade that tool, one tool per pull request.
+  - Otherwise: replace the tool that brings it in, or add an `overrides` entry if a patched release
+    appears.
+  - Mark this entry **Closed** with the date and the PR.
+- **Picked up by:** nobody yet; fixed with the other tech debts when the project is finished (owner).
