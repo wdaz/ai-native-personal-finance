@@ -1024,9 +1024,10 @@ of protected pages on Vercel
   `eslint-config-next` through `@next/eslint-plugin-next` and `fast-glob`, and `stylelint` through
   `fast-glob` and `globby`.
 - **Why there is no fix:** `npm view braces dist-tags` reads `latest` `3.0.3` (the package was last modified
-  2024-09-18), and the advisory's range covers it. `npm audit fix --force` would install
-  `eslint-plugin-boundaries@1.1.1`, a downgrade from 7.2.0, which is not a patched release. An `overrides`
-  entry, as TD-22 uses, has no unaffected `braces` to name.
+  2024-09-18), and the advisory's range covers it, so no unaffected `braces` release exists on the registry
+  today. An `overrides` entry, as TD-22 uses, has no version to name. `npm audit` itself offers only "fix
+  available via `npm audit fix --force`" with "Will install eslint-plugin-boundaries@1.1.1, which is a
+  breaking change" (its text on 2026-10-03; the command was not run).
 - **Owner decision:** 2026-10-03, T-15c plan Q7 (a): record it as tech debt. In the owner's words: "bütün
   tech-deptlər (sic) sonra fix olur. istisna o vaxt yaranır ki, eyni hal təkrarlansın. Onda fix edirik." ("All
   tech debts are fixed later. An exception arises when the same case repeats. Then we fix it.") So this
