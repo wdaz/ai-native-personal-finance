@@ -18,7 +18,7 @@ Phase: 5 (Build the slice), Release 1 · Evidence base: `docs/04-process/process
   lines dropped after that check are listed in section 4's last paragraph.
 - A line number in this document is a line of `process-log.md` at that commit. The verifiers' quotes are
   verbatim; where a claim sits a few lines below an entry's heading, the line given is the line of the quote.
-- The agent re-read the quotes it relies on most (log lines 2577, 5440–41 and the hand-off sentences of the
+- The agent re-read the quotes it relies on most (log lines 2577, 5440–5441 and the hand-off sentences of the
   T-15 row) itself; the rest rest on the verifiers' reading, which a reviewer can re-check by line.
 
 ## 1. What Release 1 was
@@ -48,17 +48,17 @@ Each item is something the log shows, not a feeling.
 
 1. **Review caught what the author and the advisor missed.** Line 5100–5101: "the review caught what the
    author's passes and the advisor's did not, in a command that sends a secret" (T-14). Copilot's review of
-   PR #71 "found that the `/home/` half of the pattern required a trailing `/`" (5844–45), and at the end of
-   T-15a: "Copilot's reviews found real defects in all three work pull requests" (6024–25).
+   PR #71 "found that the `/home/` half of the pattern required a trailing `/`" (5844–5845), and at the end of
+   T-15a: "Copilot's reviews found real defects in all three work pull requests" (6024–6025).
 2. **Running the real thing found bugs unit tests could not.** T-11: "Every one of this task's 38 unit tests
-   passed … It surfaced only when the app was actually run" (2156–58). T-10: "Caught only because the agent
-   took screenshots for the DoD and looked at them, rather than trusting 'all tests green'" (1947–48).
-   T-13 planning: "Running Firefox and WebKit found that `npm run test:all` is red today" (2517–18).
+   passed … It surfaced only when the app was actually run" (2156–2158). T-10: "Caught only because the agent
+   took screenshots for the DoD and looked at them, rather than trusting 'all tests green'" (1947–1948).
+   T-13 planning: "Running Firefox and WebKit found that `npm run test:all` is red today" (2517–2518).
 3. **A rule written after a failure became a Definition-of-Done line.** "A configuration is not verified until
    it has failed on purpose" (1332) is now `definition-of-done.md`'s "a rule is not verified until it has
    failed on purpose" line in the code section. See theme B for how often it still recurred.
 4. **Asking the owner changed the outcome.** T-15a: "the owner's answer to a licence question changed the
-   licence itself" (6022–27). The question was asked, not assumed.
+   licence itself" (6022–6027). The question was asked, not assumed.
 5. **A security review turned into a register.** T-13d's review became TD-12 to TD-18, one entry per finding
    (`tech-debt.md` v1.18). Four were closed by PR #47 (TD-12, TD-15, TD-16, TD-18), two by T-14's measurements
    (TD-14, TD-17), and TD-13 (`TRACE`) stays Open as a documented platform limit (`tech-debt.md` v1.19–v1.22).
@@ -76,9 +76,9 @@ are about claims in the tech-debt register and the backlog that were never check
 | 200 | A figure was copied from the prototype instead of computed from the seed | "the drafting agent copied a figure from the prototype rather than recomputing it from the seed" |
 | 281 | The same class of error came back one review later | "two design-vs-seed errors the drafting agent introduced *after* the previous review's lesson" |
 | 310 | An amendment to one ADR was not checked against the others | "an amendment to one ADR must be grepped across the others (T9 removal missed ADR-0007)" |
-| 5534–35 | T-14's Goal cited NFR-D4 and nothing compared the runbook with that NFR's text | "no step of the plan compared the runbook with the text of the NFR rows its Goal cites" |
-| 3985–86 | A tech-debt entry's "guarded by" claim stood unchecked | "a tech-debt entry's 'Guarded meanwhile by: … not reachable by a normal request' is itself a claim that needs checking" |
-| 4418–19 | A backlog row stated GitHub's state in the present tense with no date or command | "The backlog row stated GitHub's state in the present tense … with no date or command" |
+| 5534–5535 | T-14's Goal cited NFR-D4 and nothing compared the runbook with that NFR's text | "no step of the plan compared the runbook with the text of the NFR rows its Goal cites" |
+| 3985–3986 | A tech-debt entry's "guarded by" claim stood unchecked | "a tech-debt entry's 'Guarded meanwhile by: … not reachable by a normal request' is itself a claim that needs checking" |
+| 4418–4419 | A backlog row stated GitHub's state in the present tense with no date or command | "The backlog row stated GitHub's state in the present tense … with no date or command" |
 
 What these have in common is that the document said something that nobody was made to check against its
 source: the prototype, the seed, the other ADRs, the NFR row, the settings page.
@@ -89,7 +89,7 @@ Eight themes. A theme is here only if at least two entries confirm it (plan D4).
 verifiers' count of cited entries that held; the quotes are the three they chose as strongest.
 
 **A. Defects start in what the plan dictated** — 15 entries confirmed.
-The plan's own code or text was wrong, and the reviewers then found the defect in the plan's words. 2735–36:
+The plan's own code or text was wrong, and the reviewers then found the defect in the plan's words. 2735–2736:
 "Every Important finding of a first review round … was in code or text the plan dictated" (T-13). 3748:
 "Both Important findings of a first review round were in text or code the plan dictated" (T-13c). 1596:
 "The v0.1 plan's code had tests that could not fail" (T-08). A rule already exists for the symptom
@@ -97,42 +97,43 @@ The plan's own code or text was wrong, and the reviewers then found the defect i
 still recurs from T-02 to T-15a.
 
 **B. A guard or test that was never made to fail** — 12 confirmed; 1332 is where the rule starts, 1531 onward
-are repeats. 2830–31: "Every Important finding was a guard that could not fail" (T-13). 4871–72: "the new guard
+are repeats. 2830–2831: "Every Important finding was a guard that could not fail" (T-13). 4871–4872: "the new guard
 shipped without the violation fixture DoD v1.1 asks … had never been seen to fail" (T-14, Node guard).
-5933: "That was a miss by the agent: A's guard had fixtures, and B's licence test did not" (T-15a, two weeks after
-the rule was in the DoD, and cited against DoD line "a rule is not verified until it has failed on purpose").
-**A written rule did not stop this one.**
+5933: "That was a miss by the agent: A's guard had fixtures, and B's licence test did not" (T-15a, 2026-09-29;
+the fail-on-purpose line had been in the DoD since T-01, where it is marked "T-01 lesson"). **A written rule did
+not stop this one.**
 
-**C. A claim stated as fact before it was measured** — 19 confirmed. 2933–34: "The claim should have been
-measured before it was made." 1798–99: the log "claimed a run that had not happened". 2720: "Wrong predictions,
+**C. A claim stated as fact before it was measured** — 19 confirmed. 2933–2934: "The claim should have been
+measured before it was made." 1798–1799: the log "claimed a run that had not happened". 2720: "Wrong predictions,
 labelled 'Prediction' or not". Counts, summaries, "ready", a search summary taken as a source, a plan's expected
 pass total.
 
-**D. Questions and reports the owner could not act on** — 9 confirmed. 2870–73: the agent "asked for these
-decisions in shorthand … the owner could not act on them". 6235–36: "Q5 as first written asked about merge
-methods in terms the owner had not met" (T-15b). 3814–15: "Q1 was worded around the `runtime` option … the owner
+**D. Questions and reports the owner could not act on** — 9 confirmed. 2870–2873: the agent "asked for these
+decisions in shorthand … the owner could not act on them". 6235–6236: "Q5 as first written asked about merge
+methods in terms the owner had not met" (T-15b). 3814–3815: "Q1 was worded around the `runtime` option … the owner
 did not understand it". It recurred in the middle of this task: the owner answered "4 bunu anlamadım. izah et, 5 bunu izah et"
 to the T-15c plan's Q4 and Q5.
 
 **E. Stale state left in documents** — 7 confirmed. 5426: "sixteen of nineteen said the wrong thing" (plan Status
-lines). 5125–26: "two records still said 'owner decision: pending' on entries that were already closed".
+lines). 5125–5126: "two records still said 'owner decision: pending' on entries that were already closed".
 6110 and 6199: "v0.2 left v0.1's present-tense lines" / "A plan that is answered in place keeps its v0.1
 sentences."
 
-**F. Git and shared-state hazards** — 9 confirmed. 536: the agent's subagent wrote `user.name`/`user.email`
-into the repository's shared `.git/config`. 3086–87: "The push re-created the deleted branch instead of
-reaching the pull request"; 4620–21: the same, "outside any pull request". 5363: "It ran `npm ci` in the
-second worktree with a `cd` from the first." This session too: a shared Postgres container (the compose
-project name is fixed) was stopped by something outside the agent's commands during a test run.
+**F. Git and shared-state hazards** — 9 confirmed. 536 (T-02a): `user.name`/`user.email`
+("Scratch") were set in the repository's shared `.git/config`. 3086–3087: "The push re-created the deleted branch instead of
+reaching the pull request"; 4620–4621: the same, "outside any pull request". 5363: "It ran `npm ci` in the
+second worktree with a `cd` from the first." This session too: the shared Postgres container (`compose.yaml` fixes
+the project name, so every checkout and session uses one container) was found stopped, with exit code 0, during a
+test run; the agent's test commands do not call `docker`, and who stopped it is unconfirmed.
 
 **G. Only running the real thing found the bug** — 9 confirmed (this is both a failure of the plan and the
-reason theme 2 of section 2 exists). 2156–58: 38 unit tests green while every authenticated page was broken.
-1947–48: screenshots beat "all tests green". 2414–15: "every earlier run — all on Chromium — was green. **T-12
+reason theme 2 of section 2 exists). 2156–2158: 38 unit tests green while every authenticated page was broken.
+1947–1948: screenshots beat "all tests green". 2414–2415: "every earlier run — all on Chromium — was green. **T-12
 was merged with Firefox and WebKit red**".
 
 **H. Reviews catch what the author missed, and the review process itself slips** — 10 confirmed. 3535:
-"Governance v1.3 says code review subagents use Opus 5.5; most reviews here ran on Sonnet." 5222–23: "the agent
-had written the check without reading where the tag comes from, and every reviewer missed it". 4926–27: "count
+"Governance v1.3 says code review subagents use Opus 5.5; most reviews here ran on Sonnet." 5222–5223: "the agent
+had written the check without reading where the tag comes from, and every reviewer missed it". 4926–4927: "count
 the fixes and the deferrals against the report's own totals".
 
 **Lines dropped after verification** (WEAK or REJECTED; not cited above): A — 3993, 6032; B — 704; C — 818;
@@ -143,28 +144,32 @@ D — 2990 (rejected: the questions were structured; the miss was advice before 
 before something could contradict it.* Theme E is the same thing in documents that outlive the work. Theme D
 is the same thing at the owner's side: a question that cannot be answered is a statement the owner cannot
 contradict. The rules that exist for this (predictions labelled, fail-on-purpose) were written after the
-failure and recurred anyway (B); the ones that did not recur are the ones a check enforces
-(the head-branch check, the secret scan, the home-path guard).
+failure and recurred anyway (B, C). None of the proposals in section 6 is a check that fails by itself: they are
+lines a reviewer reads. The log does not say whether a mechanical form of any of them (for example a CI step that
+fails when a merged task's plan is not Done) would have stopped the recurrences; that would be a larger change and
+a decision of its own.
 
 ## 5. What the owner changed, and the owner's fields still empty
 
-**Where the owner and the agent disagreed** (the log's non-empty "Disagreements" fields, 13; five of them are
-disagreements with Copilot or a reviewer, not with the owner — 1141, 1255, 4167, 5839 and the open point at 2569).
-The owner decided each of the rest:
+**The log's 13 non-empty "Disagreements" fields** (`Disagreements` bullets whose text is not "none", Appendix A),
+sorted by who disagreed with whom. Quotes are the start of each field.
 
-| Line | The owner and the agent | The owner chose |
+| Kind | Lines | What the field says |
 |---|---|---|
-| 83 | The agent pushed for a single priority | the owner declined |
-| 672 | The agent recommended accepting four advisories | the owner chose the npm `overrides` ("npm audit stays 0") |
-| 3053 | The agent rated TD-9's CSS check low value | the owner wanted it |
-| 3295, 3714 | The plan recommended a unit test | the owner chose the linter |
-| 4880 | The agent recommended a US region | the owner chose Frankfurt |
-| 6208 | The agent recommended merge commits on `main` only | the owner chose both branches and no direct push |
-| 5782, 6022–27 | The agent widened a recorded decision (code became "code and documentation") | asking reversed the licence |
+| Owner and agent: the owner decided | 83 | "agent pushed for a single priority; owner declined" |
+| | 331 | "agent proposed deleting `apps/` and adding `scripts/` — owner accepted both" |
+| | 672 | "the owner chose the npm overrides where the agent had recommended accepting the four advisories" |
+| | 3053 | TD-9: "the agent rated a CSS check low-value … the owner wants it" |
+| | 3295 and 3714 | Q4: "The plan recommended the unit test … the owner chose the linter" (the planning entry and its execution entry) |
+| | 4880 | the region: "The agent recommended US East 1 …" (the owner chose Frankfurt, per the same entry) |
+| Agent and a reviewer or Copilot | 541, 1141, 1255, 4167, 5839 | a reviewer's or Copilot's finding the agent did not take, or took in part |
+| Not a disagreement with the owner | 2569 | "one open point, not a disagreement with the owner" |
 
-In T-15b the owner also gave the hotfix route in their own words (plan Q3); in this task they corrected the
-agent's first reading of Q7 ("bütün tech-deptlər sonra fix olur. istisna o vaxt yaranır ki, eyni hal təkrarlansın.
-Onda fix edirik.") and set the draft rule recorded in proposal P6.
+Outcomes the "Disagreements" field says "none" for, but where the owner chose differently from the agent's
+recommendation: T-15b follow-up, line 6208 — "(b) instead of the recommended (a)"; T-15b plan Q3, where the
+owner gave the hotfix route in their own words; T-15a — "the owner's answer to a licence question changed the licence
+itself" (6022–6027). In this task, the owner corrected the agent's first reading of Q7 ("bütün tech-deptlər (sic) sonra
+fix olur. istisna o vaxt yaranır ki, eyni hal təkrarlansın. Onda fix edirik.") and set the draft rule recorded in P6.
 
 **The 23 empty "Owner changes" fields** (Q2 (a)). The process log is append-only, so the answers are written
 here, one row per entry. The script (Appendix A) found 27 fields whose text matched an "unfilled" marker; four
@@ -207,15 +212,19 @@ rule ships with a test that fails on purpose. `definition-of-done.md` is mirrore
 unit test reads the mirror, so a DoD line is changed in both.
 
 Checked 2026-10-03 with `grep` across `AGENTS.md`, `definition-of-done.md`, `build-workflow.md`,
-`governance.md` and the PR template: **none of P1–P8 is in any of them already.**
+`governance.md` and the PR template, with patterns for each proposal (plan Status and done-marker, the three
+engines, `gh pr view`, question shape, draft, amendment, tense): **no match for any of P1–P8.** The nearest
+text is for P7: DoD line 9 and the PR template's matching line say "No Accepted ADR is contradicted; if a
+decision was needed, a new ADR or an amendment with a process-log entry exists", which does not mention
+grepping the other ADRs.
 
 | # | Change | Evidence | Owner |
 |---|---|---|---|
-| **P1** | DoD, Process: a line "the plan's Status reads Done in the pull request that merges the task" | 5443–46: "only three of nineteen plans were closed when their task merged"; today 21 of 21 read Done only because the housekeeping PR fixed them | ☐ accept ☐ reject ☐ change: |
-| **P2** | DoD, Process: a line "the backlog row's done-marker is in the same pull request" | 5487–90. Measured now: **3 of 25** backlog task rows carry `Done` or `Closed` in their first 200 characters (T-15a, T-15b, T-16); `grep -c -E "^\| T-[0-9]+[a-z]* \| .{0,200}(Done\|Closed)" docs/03-specs/backlog.md` → 3 | ☐ accept ☐ reject ☐ change: |
-| **P3** | DoD, Tests: the PR says the result of each of the three browser engines, and says which one could not run locally | T-15 row "from T-13 (v1.22, retro)"; 2414–15 (T-12 merged with Firefox and WebKit red); this task's PR #80, where Firefox did not launch locally and CI was the check | ☐ accept ☐ reject ☐ change: |
-| **P4** | `build-workflow.md`, rules of thumb: before any push to an existing branch run `gh pr view <n> --json state`; never push to a merged PR's branch, open a new branch | 1218 (four commits pushed to a merged PR's branch); 3086–87 and 4620–21 (the push re-created the deleted branch) | ☐ accept ☐ reject ☐ change: |
-| **P5** | `governance.md` (or AGENTS.md §2): a question to the owner says what is decided, why, the options and a recommendation, and explains any term the owner has not met | theme D (9 confirmed); 2870–73; 6235–36; and the owner's "bunu anlamadım" on this task's Q4 and Q5 | ☐ accept ☐ reject ☐ change: |
+| **P1** | DoD, Process: a line "the plan's Status reads Done in the pull request that merges the task" | 5443–5446: "only three of nineteen plans were closed when their task merged"; today 21 of 21 read Done only because the housekeeping PR fixed them | ☐ accept ☐ reject ☐ change: |
+| **P2** | DoD, Process: a line "the backlog row's done-marker is in the same pull request" | 5487–5490. Measured now: **3 of 25** backlog task rows carry `Done` or `Closed` in their first 200 characters (T-15a, T-15b, T-16); `grep -c -E "^\| T-[0-9]+[a-z]* \| .{0,200}(Done\|Closed)" docs/03-specs/backlog.md` → 3 | ☐ accept ☐ reject ☐ change: |
+| **P3** | DoD, Tests: the PR says the result of each of the three browser engines, and says which one could not run locally | T-15 row "from T-13 (v1.22, retro)"; 2414–2415 (T-12 merged with Firefox and WebKit red); this task's PR #80, where Firefox did not launch locally and CI was the check | ☐ accept ☐ reject ☐ change: |
+| **P4** | `build-workflow.md`, rules of thumb: before any push to an existing branch run `gh pr view <n> --json state`; never push to a merged PR's branch, open a new branch | 1218 (four commits pushed to a merged PR's branch); 3086–3087 and 4620–4621 (the push re-created the deleted branch) | ☐ accept ☐ reject ☐ change: |
+| **P5** | `governance.md` (or AGENTS.md §2): a question to the owner says what is decided, why, the options and a recommendation, and explains any term the owner has not met | theme D (9 confirmed); 2870–2873; 6235–6236; and the owner's "bunu anlamadım" on this task's Q4 and Q5 | ☐ accept ☐ reject ☐ change: |
 | **P6** | `governance.md`, "Branches and releases", and the PR template's comment: **a pull request that is not a draft is merge-ready and the owner merges it; unfinished work stays a draft; a ready PR gets no more pushes** | the owner's rule, 2026-10-03: "draftdan çıxmış branchlər merge hazır sayılır və mən merge edirəm" (prompt record) | ☐ accept ☐ reject ☐ change: |
 | **P7** | DoD, Scope: an amendment to one ADR is grepped across the other ADRs, with the result in the PR | 310 ("T9 removal missed ADR-0007"); the T-15c row of the backlog names it | ☐ accept ☐ reject ☐ change: |
 | **P8** | `build-workflow.md`, rules of thumb: when a plan is answered in place, read the whole text once for tense and mark any question text kept as asked | 6199 (T-15b), and this task's own plan v0.2 had to be re-read for it | ☐ accept ☐ reject ☐ change: |
@@ -265,5 +274,88 @@ runs through the new rules. No pull request with head `develop` has targeted `ma
 
 A scratch script, run once; it is not a file of the repository. Run it as `node count.mjs docs/04-process/process-log.md`.
 "Unfilled" is a regular expression on the field's text; its false positives (794, 3698, 3938, 5435) were read
-and removed by hand.
+and removed by hand. Its output at `origin/develop` `0f07f31`: `entries` 97, `ownerChangesFields` 73,
+`entriesWithoutOwnerChangesField` 24, `unfilledOwnerChanges` 27 (23 after the four removals),
+`lessonsFields` 67, `gotWrongFields` 72, `disagreementsNotNone` 13. Plain `grep -c` on the phrases gives slightly
+larger numbers (76, 70 and 75), because it also counts a phrase quoted in running text.
+
+```js
+// Scratch, not kept in the repository: counts the process log's entries and fields.
+import { readFileSync } from "node:fs";
+
+const file = process.argv[2];
+const lines = readFileSync(file, "utf8").split("\n");
+
+const heads = [];
+lines.forEach((l, i) => {
+  if (/^## 20\d\d-\d\d-\d\d/.test(l)) heads.push(i);
+});
+heads.push(lines.length);
+
+const fieldRe = (name) => new RegExp(`^- \\*\\*${name}[^:]*:\\*\\*`);
+const UNFILLED =
+  /none yet|left for the owner|owner to fill|_\(owner|awaiting (the owner'?s? )?review|has not reviewed|owner has not|awaiting review/i;
+
+let withField = 0;
+let withoutField = [];
+let unfilled = [];
+let lessons = 0;
+let wrong = 0;
+let disagreementsNonNone = 0;
+const disList = [];
+
+for (let h = 0; h < heads.length - 1; h++) {
+  const start = heads[h];
+  const end = heads[h + 1];
+  const block = lines.slice(start, end);
+  const idx = (re) => block.findIndex((l) => re.test(l));
+  const field = (name) => {
+    const i = idx(fieldRe(name));
+    if (i < 0) return null;
+    let j = i + 1;
+    while (j < block.length && !/^- \*\*/.test(block[j])) j++;
+    return { line: start + i + 1, text: block.slice(i, j).join("\n") };
+  };
+  const oc = field("Owner changes");
+  if (idx(fieldRe("Lessons for the process")) >= 0) lessons++;
+  if (idx(fieldRe("What the agent got wrong")) >= 0) wrong++;
+  const dis = field("Disagreements");
+  if (dis && !/:\*\*\s*none\b/i.test(dis.text.split("\n")[0])) {
+    disagreementsNonNone++;
+    disList.push(dis.line + " " + lines[start].slice(3, 60) + " >> " + dis.text.replace(/\s+/g, " ").slice(0, 170));
+  }
+  if (oc) {
+    withField++;
+    if (UNFILLED.test(oc.text))
+      unfilled.push({
+        line: oc.line,
+        head: lines[start].slice(0, 70) + " >> " + oc.text.replace(/\s+/g, " ").slice(0, 150),
+      });
+  } else {
+    withoutField.push({ line: start + 1, head: lines[start].slice(0, 90) });
+  }
+}
+
+console.log(
+  JSON.stringify(
+    {
+      entries: heads.length - 1,
+      ownerChangesFields: withField,
+      entriesWithoutOwnerChangesField: withoutField.length,
+      unfilledOwnerChanges: unfilled.length,
+      lessonsFields: lessons,
+      gotWrongFields: wrong,
+      disagreementsNotNone: disagreementsNonNone,
+    },
+    null,
+    1,
+  ),
+);
+console.log("UNFILLED:");
+for (const u of unfilled) console.log(u.line, u.head);
+console.log("NO FIELD:");
+for (const u of withoutField) console.log(u.line, u.head);
+console.log("DISAGREEMENTS:");
+for (const d of disList) console.log(d);
+```
 
