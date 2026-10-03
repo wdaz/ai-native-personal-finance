@@ -4,7 +4,8 @@ Status: **Final** (v1.0, 2026-10-03) — the owner has answered: Q2 (a) for sect
 all eight proposals of section 6 (Q3 (b)); the rule changes are in PR #83. The owner reviews and merges this
 pull request. · Author(s): Agent (Claude Code, Sonnet 5.5, background session) · Date: 2026-10-03
 Task: `docs/03-specs/backlog.md` → **T-15c** · Plan: `docs/04-process/plans/2026-10-03-T-15c.md` (Q1 (b): this
-is a document of its own; Phase 7's `retrospective.md` and the README narrative are not written here) ·
+is the Release 1 retrospective, written in Phase 5 as a document of its own; it is **not** Phase 7's
+`retrospective.md`, and the README narrative is not written here) ·
 Phase: 5 (Build the slice), Release 1 · Evidence base: `docs/04-process/process-log.md` as of
 `origin/develop` `88e839b` (the log is append-only and is not edited by this task)
 
