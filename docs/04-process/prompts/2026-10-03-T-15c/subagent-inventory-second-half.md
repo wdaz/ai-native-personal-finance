@@ -6,7 +6,7 @@ replaced by the placeholder `/Users/<name>` (the home-path guard, T-15a); nothin
 
 ## Brief
 
-Read-only task. File: /Users/<name>/Own/ai-native-personal-finance/.claude/worktrees/task-T-15c/docs/04-process/process-log.md — read lines 3150 to the end (about 6242) in chunks (entries start with "## YYYY-MM-DD —"). Do NOT edit anything.
+Read-only task. File: `/Users/<name>/Own/ai-native-personal-finance/.claude/worktrees/task-T-15c/docs/04-process/process-log.md` — read lines 3150 to the end (about 6242) in chunks (entries start with "## YYYY-MM-DD —"). Do NOT edit anything.
 
 Goal: an inventory for a Release 1 retrospective. For EVERY entry in that range, extract from its fields "What the agent got wrong or missed", "Lessons for the process", "Disagreements" (only if not 'none') and "Owner changes and reasoning" (note if it says 'none yet').
 
@@ -22,7 +22,7 @@ Output (English, max ~1400 words, compact):
 
 ### Release 1 retrospective inventory: process-log.md, lines 3126 to 6242
 
-File: /Users/<name>/Own/ai-native-personal-finance/.claude/worktrees/task-T-15c/docs/04-process/process-log.md. I started at 3126 because the entry that begins there runs past line 3150. "Owner flag" in the table means the "Owner changes and reasoning" field was never filled: it reads "none yet", "left for the owner" or "_(owner to fill…)_".
+File: `/Users/<name>/Own/ai-native-personal-finance/.claude/worktrees/task-T-15c/docs/04-process/process-log.md`. I started at 3126 because the entry that begins there runs past line 3150. "Owner flag" in the table means the "Owner changes and reasoning" field was never filled: it reads "none yet", "left for the owner" or "_(owner to fill…)_".
 
 #### 1. Entry table
 

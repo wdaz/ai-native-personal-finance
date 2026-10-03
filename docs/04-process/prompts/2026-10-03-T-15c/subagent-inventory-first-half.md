@@ -6,7 +6,7 @@ replaced by the placeholder `/Users/<name>` (the home-path guard, T-15a); nothin
 
 ## Brief
 
-Read-only task. File: /Users/<name>/Own/ai-native-personal-finance/.claude/worktrees/task-T-15c/docs/04-process/process-log.md — read lines 1 to 3150 in chunks (entries start with "## YYYY-MM-DD —"). Do NOT edit anything.
+Read-only task. File: `/Users/<name>/Own/ai-native-personal-finance/.claude/worktrees/task-T-15c/docs/04-process/process-log.md` — read lines 1 to 3150 in chunks (entries start with "## YYYY-MM-DD —"). Do NOT edit anything.
 
 Goal: an inventory for a Release 1 retrospective. For EVERY entry in that range, extract from its fields "What the agent got wrong or missed", "Lessons for the process", "Disagreements" (only if not 'none') and "Owner changes and reasoning" (note if it says 'none yet').
 
@@ -22,7 +22,7 @@ Output (English, max ~1400 words, compact):
 
 ### Release 1 retrospective inventory: process-log.md, lines 1–3150
 
-File: /Users/<name>/Own/ai-native-personal-finance/.claude/worktrees/task-T-15c/docs/04-process/process-log.md. Line 3150 falls inside the entry at 3126, so I read that entry to its end (3186). Nothing was edited.
+File: `/Users/<name>/Own/ai-native-personal-finance/.claude/worktrees/task-T-15c/docs/04-process/process-log.md`. Line 3150 falls inside the entry at 3126, so I read that entry to its end (3186). Nothing was edited.
 
 **"Owner changes" field never filled, or "none yet":** 31, 59, 111, 165, 330, 414, 455, 540, 671, 1171, 1771, 1896, 1957, 2040, 2207, 2362, 2974. Line 799 is only partly filled ("_(owner: the rest)_"). Line 2476 still awaits acceptance. Line 700 says the owner "fills 'Owner changes' in the T-02 entry", and it is still `_(owner)_` at 671. The "What the agent got wrong" field is also unfilled at 58, 133, 413 and 454.
 

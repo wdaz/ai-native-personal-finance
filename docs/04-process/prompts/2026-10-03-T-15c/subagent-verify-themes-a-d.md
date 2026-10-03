@@ -6,7 +6,7 @@ replaced by the placeholder `/Users/<name>` (the home-path guard, T-15a); nothin
 
 ## Brief
 
-Read-only verification task. Do NOT edit anything. File: /Users/<name>/Own/ai-native-personal-finance/.claude/worktrees/task-T-15c/docs/04-process/process-log.md (about 6240 lines; entries start with "## YYYY-MM-DD —"). The numbers below are line numbers INSIDE entries (not necessarily the heading); read the surrounding entry (±30 lines) to judge.
+Read-only verification task. Do NOT edit anything. File: `/Users/<name>/Own/ai-native-personal-finance/.claude/worktrees/task-T-15c/docs/04-process/process-log.md` (about 6240 lines; entries start with "## YYYY-MM-DD —"). The numbers below are line numbers INSIDE entries (not necessarily the heading); read the surrounding entry (±30 lines) to judge.
 
 For each THEME below, a retrospective claims that the cited lines show the pattern. For EACH cited line decide: CONFIRMED (the entry really shows it), WEAK (related but not clearly this pattern), or REJECTED (does not show it). For CONFIRMED give a SHORT exact quote (<=20 words) from the log with its line number. Then name the 3 strongest lines for the theme. Never invent a quote; if you cannot find the support, say REJECTED.
 
