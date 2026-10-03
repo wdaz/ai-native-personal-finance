@@ -1028,7 +1028,7 @@ of protected pages on Vercel
   `eslint-plugin-boundaries@1.1.1`, a downgrade from 7.2.0, which is not a patched release. An `overrides`
   entry, as TD-22 uses, has no unaffected `braces` to name.
 - **Owner decision:** 2026-10-03, T-15c plan Q7 (a): record it as tech debt. In the owner's words: "bütün
-  tech-deptlər sonra fix olur. istisna o vaxt yaranır ki, eyni hal təkrarlansın. Onda fix edirik." ("All
+  tech-deptlər (sic) sonra fix olur. istisna o vaxt yaranır ki, eyni hal təkrarlansın. Onda fix edirik." ("All
   tech debts are fixed later. An exception arises when the same case repeats. Then we fix it.") So this
   entry is fixed with the other debts when the project is finished, and sooner if the same case repeats.
 - **Risk:** low. It is development tooling only: `npm ls braces --omit=dev` prints `(empty)`, and the three

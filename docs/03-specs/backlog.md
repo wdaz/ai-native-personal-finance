@@ -3,7 +3,8 @@
 Status: **Approved** (v1.56 — 2026-10-03: **TD-23** opened (`tech-debt.md` v1.28, the owner's decision at
 the T-15c plan's Q7): `npm audit` on `develop` read 10 — 1 critical in `next`, fixed outside any task by
 PR #80 (`next` 16.3.8, `0f07f31`), and 9 high that are one `braces` advisory with no patched release; the
-T-15c plan (`plans/2026-10-03-T-15c.md`, PR #79) is answered; v1.55 — 2026-09-29: T-15b's open question Q5 answered by the owner after its
+owner answered the T-15c plan's questions (plan v0.2, `plans/2026-10-03-T-15c.md`, in PR #79, open at the time
+of writing); v1.55 — 2026-09-29: T-15b's open question Q5 answered by the owner after its
 close — **merge commits only on `main` and `develop`** (both pull-request rulesets allow `merge` alone),
 and no direct push to either, which the same rulesets already refuse (`governance.md` v1.7); v1.54 —
 2026-09-29: **T-15b is done** with its pull request B (AGENTS.md §2
