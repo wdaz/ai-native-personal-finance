@@ -6240,3 +6240,73 @@ them too").
 - **Disagreements:** none.
 - **Next:** the owner merges this pull request into `develop`. T-15c, the retrospective, when the owner
   starts it.
+
+## 2026-10-03 — Phase 5: T-15c — the Release 1 retrospective
+
+- **Phase:** 5 (Build the slice), Release 1. T-15c, planned, answered and executed in one background session.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5.5, background session) and five read-only subagents
+  (Opus 5.5, `Explore`): two read the log, two re-read every cited line, one proofread the Azerbaijani translation.
+- **Trigger:** "T-15c-yə başla" ("Start T-15c").
+- **Prompt(s):** `prompts/2026-10-03-T-15c.md` (the owner's messages verbatim, with translations) and
+  `prompts/2026-10-03-T-15c/` (the five subagent briefs and reports).
+- **Produced:**
+  - the plan `plans/2026-10-03-T-15c.md` (v0.1, v0.2, Done), PR #79 (`86b28af`);
+  - `docs/04-process/release-1-retrospective.md`, PR #82: the facts of Release 1, what worked, what the specs
+    missed (seven lessons), what the agents got wrong (eight themes, every cited line confirmed by a subagent),
+    the owner's disagreements, the 23 empty "Owner changes" fields answered, eight proposals, what is not yet
+    observed;
+  - the rule changes P1–P8, PR #83: `definition-of-done.md` v1.2, `build-workflow.md` v1.3, `governance.md`
+    v1.8 and the PR template (the mirror test failed with the DoD changed and the template not, and passed
+    after);
+  - two fixes outside the task: `next` 16.3.5 → 16.3.8 for GHSA-vcvr-r3jv-pc5j (critical), PR #80 (`0f07f31`);
+    TD-23, the `braces` advisory with no patched release, `tech-debt.md` v1.28, PR #81 (`88e839b`);
+  - backlog v1.56 and v1.57 (T-15c Done; a "from T-15c" hand-off on T-15d); an Azerbaijani translation of the
+    retrospective, kept outside the repository at the owner's request.
+- **What the agent got right:**
+  - It had every cited line re-read by a second set of subagents before citing it: eight of the lines were
+    weak or rejected and were dropped.
+  - It found `npm audit` at 10 vulnerabilities on `develop` while installing the worktree, kept it out of
+    T-15c, and put it to the owner (Q6).
+  - It counted with a script and corrected itself: the unfilled owner fields are 23, not 25.
+  - It measured "3 of 25 backlog rows carry a done-marker" before proposing P2.
+- **What the agent got wrong or missed:**
+  - The plan's Q4 and Q5, the retro's section 5 and the proposals P2, P7 and P8 were not written so that the owner
+    could answer them: "4 bunu anlamadım", "5ci hissədə nə edəcəyim aydın deyil", "Boş qalanlar aydın deyil".
+    That is theme D, again, in the retrospective that has theme D in it.
+  - A prediction in the plan was wrong: the unfilled count would grow to 27–30, and it fell to 23.
+  - The first reading of Q7 was backwards (an advisory accepted for good); the owner corrected it.
+  - The first retro draft had sentences that were not measured: "two weeks after the rule was in the DoD", that
+    the proposals P3 and P4 "would be mechanical" (they are prose), that the rules that did not recur were the ones
+    a check enforces, and a Postgres container "stopped by something outside the agent's commands". The agent
+    found them in its own re-read and removed or reworded them before the pull request.
+  - Pull requests #79 and #81 were opened ready, not as drafts. Copilot found valid defects in both: five fix
+    rounds on #79 (the subagent briefs folder that `build-workflow.md` step 7 asks for was missing; "five
+    questions" for six; a v0.1 title and description on a v0.2 plan; truncated line ranges; a command written
+    with a pipe; `<name>` outside a code span; a meta-note in a saved record) and two on #81 (a clause that
+    claimed a pull request merged before it had; a predicted `npm audit fix --force` result stated as a fact).
+    The owner's draft rule (P6) was set in the middle of this.
+  - A scratch script that filled the retro's 23 cells and eight ticks was blocked by the harness's auto-mode
+    classifier, without a reason. The agent did not repeat the result by another route, said so, and went on
+    only when the owner wrote "(a) Edit ilə et".
+- **Owner changes and reasoning:**
+  - Q1 (b) instead of the recommended (a): the retrospective is a document of its own, not a log entry.
+  - Q3 (b) instead of the recommended (a): all the accepted rule changes in one pull request.
+  - Q2 (a), Q4 (a), Q6 (a), Q7 (a). Q5: written now, the mechanism read at the end of Release 2; `develop`'s
+    protection was read from GitHub (already seven rules), not set.
+  - Q7, in the owner's words: "bütün tech-deptlər (sic) sonra fix olur. istisna o vaxt yaranır ki, eyni hal
+    təkrarlansın. Onda fix edirik." — every tech debt is fixed at the end; the exception is the same case
+    repeating.
+  - A new rule: "draftdan çıxmış branchlər merge hazır sayılır və mən merge edirəm" (P6).
+  - All eight proposals accepted; section 5's table answered by (a), no row named.
+- **Disagreements:** none. Where the owner chose differently from the recommendation (Q1, Q3) it is above.
+- **Lessons for the process:** the eight proposals are the lessons, and #83 carries them: the pull request that
+  finishes a task sets the plan's Status and the backlog row to Done (P1, P2); the PR lists the result of each
+  of the three browser engines (P3); `gh pr view` before a push to an existing branch (P4); a question to the
+  owner can be answered as written (P5); a pull request that is not a draft is merge-ready (P6); an ADR
+  amendment is searched across the other ADRs (P7); a plan answered in place is read once for tense (P8).
+  Two more for Release 2: open a pull request as a draft from the start (#79 and #81 cost seven review-fix
+  rounds), and write a question so that its first reading is the one the owner answers.
+- **Next:**
+  - The owner reviews and merges #83 (the rules) and #82 (the retrospective, with this entry and backlog v1.57).
+  - T-15d, Release 2 spec work, starts from the retrospective's section 3 and theme D (the hand-off in backlog
+    v1.57). The retrospective's section 7 is read at the end of Release 2.

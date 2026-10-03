@@ -1,8 +1,8 @@
 # Release 1 retrospective
 
-Status: **Draft — waits for the owner** (v0.1, 2026-10-03). Two things are the owner's to do before this
-document is final: correct the table in section 5 (Q2 (a)), and tick or reject each proposal in section 6
-(Q3 (b)). · Author(s): Agent (Claude Code, Sonnet 5.5, background session) · Date: 2026-10-03
+Status: **Final** (v1.0, 2026-10-03) — the owner has answered: Q2 (a) for section 5's table and "accept" for
+all eight proposals of section 6 (Q3 (b)); the rule changes are in PR #83. The owner reviews and merges this
+pull request. · Author(s): Agent (Claude Code, Sonnet 5.5, background session) · Date: 2026-10-03
 Task: `docs/03-specs/backlog.md` → **T-15c** · Plan: `docs/04-process/plans/2026-10-03-T-15c.md` (Q1 (b): this
 is a document of its own; Phase 7's `retrospective.md` and the README narrative are not written here) ·
 Phase: 5 (Build the slice), Release 1 · Evidence base: `docs/04-process/process-log.md` as of
@@ -178,38 +178,45 @@ afterwards" is what the log or the plan says happened to that entry's work — i
 merged or that the owner decided something later, **not what the owner changed**, which is for the owner to
 say. A row the owner does not remember is marked "not recalled" and not guessed.
 
+**The owner's answer (2026-10-03, Q2 (a)):** every row reads "No change recorded" unless the owner names a row
+where they changed something; the owner named none. The first version of this section did not say what the
+owner was to do, and the owner asked ("5ci hissədə nə edəcəyim aydın deyil"); the agent then explained it and
+offered (a), (b) and (c).
+
 | Field line | Date | Entry | Recorded afterwards | Owner's answer |
 |---|---|---|---|---|
-| 59 | 09-08 | Design exports analysed and added as inputs | "Phase 0 exit approved; Phase 1 interview started" (heading 70) | |
-| 111 | 09-08 | Problem statement v0.1 drafted | "Phase 1 exit approved" (143) | |
-| 165 | 09-08 | PRD, user stories and NFRs drafted | "open questions closed by owner" (170); "review findings applied → v0.3" (205); "Phase 2 exit approved" (214) | |
-| 330 | 09-20 | T-01 scaffold | T-01 plan Status: Done, merged (PR #1) | |
-| 414 | 09-20 | History rewrite: design exports purged | followed by "Migration to a fresh repository after the history rewrite" the same day | |
-| 455 | 09-20 | Migration to a fresh repository | no later record read | |
-| 540 | 09-22 | T-02a secret guard | "T-02a hand-off: owner dispositions" (566); PR #1, merge `b02fbd7` | |
-| 671 | 09-22 | T-02 persistence, seed and test support | "T-02 hand-off: owner dispositions" (696); PR #6, merge `23f6478` | |
-| 1171 | 09-23 | T-06 plan F1: 404 pages under the CSP | T-06 Status: Done, PR #17, merge `5d0877f` | |
-| 1771 | 09-24 | T-09 Overview server and API | PR #21, merge `a7b938a` | |
-| 1957 | 09-24 | T-10 Overview UI | PR #22, merge `099b91b` | |
-| 2207 | 09-24 | T-11 WebMCP adapter | PR #24, merge `49740cb` | |
-| 2362 | 09-24 | T-12 Release 1 WebMCP tools | PR #27, merge `838e0f5` | |
-| 2974 | 09-24 | The first two CodeQL alerts, both in tests | the field says the fix follows "the owner's preference for zero open advisories"; no later record read | |
-| 3215 | 09-24 | CodeQL alert #3, a stat-then-read race | same wording; no later record read | |
-| 3823 | 09-25 | T-13a middleware → proxy, planning | T-13a Status: Done, PR #44, merge `00e39e9`; "Owner accepts ADR-0006 amendment (6); T-13a closed" | |
-| 3891 | 09-25 | T-13a execution | same | |
-| 3983 | 09-25 | T-13b `/_global-error`, planning | T-13b Status: Done, PR #46, merge `aad1423` | |
-| 4067 | 09-25 | T-13b execution | same | |
-| 4166 | 09-25 | T-13b whole-branch review and fix pass | same | |
-| 4414 | 09-25 | T-13d, the GitHub-Settings check (plan Q3) | the field says "the decisions below are open"; later entries (branch model; seven required checks) record settings decisions — which open decision each answers was not checked | |
-| 5304 | 09-26 | TD-19, the proxy for `.segments/*` and `.json` | PR #63, `dd81c44`, "which the owner merged" (`tech-debt.md` v1.25) | |
-| 5484 | 09-26 | T-16 — what is already done, written down | "T-16 closed" entry (owner decision, backlog v1.48) | |
+| 59 | 09-08 | Design exports analysed and added as inputs | "Phase 0 exit approved; Phase 1 interview started" (heading 70) | No change recorded (Q2 (a)) |
+| 111 | 09-08 | Problem statement v0.1 drafted | "Phase 1 exit approved" (143) | No change recorded (Q2 (a)) |
+| 165 | 09-08 | PRD, user stories and NFRs drafted | "open questions closed by owner" (170); "review findings applied → v0.3" (205); "Phase 2 exit approved" (214) | No change recorded (Q2 (a)) |
+| 330 | 09-20 | T-01 scaffold | T-01 plan Status: Done, merged (PR #1) | No change recorded (Q2 (a)) |
+| 414 | 09-20 | History rewrite: design exports purged | followed by "Migration to a fresh repository after the history rewrite" the same day | No change recorded (Q2 (a)) |
+| 455 | 09-20 | Migration to a fresh repository | no later record read | No change recorded (Q2 (a)) |
+| 540 | 09-22 | T-02a secret guard | "T-02a hand-off: owner dispositions" (566); PR #1, merge `b02fbd7` | No change recorded (Q2 (a)) |
+| 671 | 09-22 | T-02 persistence, seed and test support | "T-02 hand-off: owner dispositions" (696); PR #6, merge `23f6478` | No change recorded (Q2 (a)) |
+| 1171 | 09-23 | T-06 plan F1: 404 pages under the CSP | T-06 Status: Done, PR #17, merge `5d0877f` | No change recorded (Q2 (a)) |
+| 1771 | 09-24 | T-09 Overview server and API | PR #21, merge `a7b938a` | No change recorded (Q2 (a)) |
+| 1957 | 09-24 | T-10 Overview UI | PR #22, merge `099b91b` | No change recorded (Q2 (a)) |
+| 2207 | 09-24 | T-11 WebMCP adapter | PR #24, merge `49740cb` | No change recorded (Q2 (a)) |
+| 2362 | 09-24 | T-12 Release 1 WebMCP tools | PR #27, merge `838e0f5` | No change recorded (Q2 (a)) |
+| 2974 | 09-24 | The first two CodeQL alerts, both in tests | the field says the fix follows "the owner's preference for zero open advisories"; no later record read | No change recorded (Q2 (a)) |
+| 3215 | 09-24 | CodeQL alert #3, a stat-then-read race | same wording; no later record read | No change recorded (Q2 (a)) |
+| 3823 | 09-25 | T-13a middleware → proxy, planning | T-13a Status: Done, PR #44, merge `00e39e9`; "Owner accepts ADR-0006 amendment (6); T-13a closed" | No change recorded (Q2 (a)) |
+| 3891 | 09-25 | T-13a execution | same | No change recorded (Q2 (a)) |
+| 3983 | 09-25 | T-13b `/_global-error`, planning | T-13b Status: Done, PR #46, merge `aad1423` | No change recorded (Q2 (a)) |
+| 4067 | 09-25 | T-13b execution | same | No change recorded (Q2 (a)) |
+| 4166 | 09-25 | T-13b whole-branch review and fix pass | same | No change recorded (Q2 (a)) |
+| 4414 | 09-25 | T-13d, the GitHub-Settings check (plan Q3) | the field says "the decisions below are open"; later entries (branch model; seven required checks) record settings decisions — which open decision each answers was not checked | No change recorded (Q2 (a)) |
+| 5304 | 09-26 | TD-19, the proxy for `.segments/*` and `.json` | PR #63, `dd81c44`, "which the owner merged" (`tech-debt.md` v1.25) | No change recorded (Q2 (a)) |
+| 5484 | 09-26 | T-16 — what is already done, written down | "T-16 closed" entry (owner decision, backlog v1.48) | No change recorded (Q2 (a)) |
 
 ## 6. Proposals — tick or reject each (Q3 (b))
 
-None of these is applied. Each names the document it would change, the wording, and the evidence. If the owner
-ticks it, it goes into **one** pull request (`task/T-15c-rules`) with the other ticked ones, and a mechanical
-rule ships with a test that fails on purpose. `definition-of-done.md` is mirrored in the PR template and a
-unit test reads the mirror, so a DoD line is changed in both.
+Each proposal names the document it changes, the wording, and the evidence. **The owner accepted all eight on
+2026-10-03** (P1, P3, P4, P5 and P6 first; P2, P7 and P8 after the agent explained them — the first draft did not),
+and all eight are in **one** pull request, #83 (`task/T-15c-rules`): `definition-of-done.md` v1.2,
+`build-workflow.md` v1.3, `governance.md` v1.8 and the PR template. `definition-of-done.md` is mirrored in the PR
+template and a unit test reads the mirror, so a DoD line is changed in both: in #83 that test failed with the DoD
+changed and the template not (`missing` listed the four new items) and passed after the template was updated.
 
 Checked 2026-10-03 with `grep` across `AGENTS.md`, `definition-of-done.md`, `build-workflow.md`,
 `governance.md` and the PR template, with patterns for each proposal (plan Status and done-marker, the three
@@ -220,14 +227,14 @@ grepping the other ADRs.
 
 | # | Change | Evidence | Owner |
 |---|---|---|---|
-| **P1** | DoD, Process: a line "the plan's Status reads Done in the pull request that merges the task" | 5443–5446: "only three of nineteen plans were closed when their task merged"; today 21 of 21 read Done only because the housekeeping PR fixed them | ☐ accept ☐ reject ☐ change: |
-| **P2** | DoD, Process: a line "the backlog row's done-marker is in the same pull request" | 5487–5490. Measured now: **3 of 25** backlog task rows carry `Done` or `Closed` in their first 200 characters (T-15a, T-15b, T-16); `grep -c -E "^\| T-[0-9]+[a-z]* \| .{0,200}(Done\|Closed)" docs/03-specs/backlog.md` → 3 | ☐ accept ☐ reject ☐ change: |
-| **P3** | DoD, Tests: the PR says the result of each of the three browser engines, and says which one could not run locally | T-15 row "from T-13 (v1.22, retro)"; 2414–2415 (T-12 merged with Firefox and WebKit red); this task's PR #80, where Firefox did not launch locally and CI was the check | ☐ accept ☐ reject ☐ change: |
-| **P4** | `build-workflow.md`, rules of thumb: before any push to an existing branch run `gh pr view <n> --json state`; never push to a merged PR's branch, open a new branch | 1218 (four commits pushed to a merged PR's branch); 3086–3087 and 4620–4621 (the push re-created the deleted branch) | ☐ accept ☐ reject ☐ change: |
-| **P5** | `governance.md` (or AGENTS.md §2): a question to the owner says what is decided, why, the options and a recommendation, and explains any term the owner has not met | theme D (9 confirmed); 2870–2873; 6235–6236; and the owner's "bunu anlamadım" on this task's Q4 and Q5 | ☐ accept ☐ reject ☐ change: |
-| **P6** | `governance.md`, "Branches and releases", and the PR template's comment: **a pull request that is not a draft is merge-ready and the owner merges it; unfinished work stays a draft; a ready PR gets no more pushes** | the owner's rule, 2026-10-03: "draftdan çıxmış branchlər merge hazır sayılır və mən merge edirəm" (prompt record) | ☐ accept ☐ reject ☐ change: |
-| **P7** | DoD, Scope: an amendment to one ADR is grepped across the other ADRs, with the result in the PR | 310 ("T9 removal missed ADR-0007"); the T-15c row of the backlog names it | ☐ accept ☐ reject ☐ change: |
-| **P8** | `build-workflow.md`, rules of thumb: when a plan is answered in place, read the whole text once for tense and mark any question text kept as asked | 6199 (T-15b), and this task's own plan v0.2 had to be re-read for it | ☐ accept ☐ reject ☐ change: |
+| **P1** | DoD, Process: a line "the plan's Status reads Done in the pull request that merges the task" | 5443–5446: "only three of nineteen plans were closed when their task merged"; today 21 of 21 read Done only because the housekeeping PR fixed them | ☑ accept ☐ reject ☐ change: |
+| **P2** | DoD, Process: a line "the backlog row's done-marker is in the same pull request" | 5487–5490. Measured now: **3 of 25** backlog task rows carry `Done` or `Closed` in their first 200 characters (T-15a, T-15b, T-16); `grep -c -E "^\| T-[0-9]+[a-z]* \| .{0,200}(Done\|Closed)" docs/03-specs/backlog.md` → 3 | ☑ accept ☐ reject ☐ change: |
+| **P3** | DoD, Tests: the PR says the result of each of the three browser engines, and says which one could not run locally | T-15 row "from T-13 (v1.22, retro)"; 2414–2415 (T-12 merged with Firefox and WebKit red); this task's PR #80, where Firefox did not launch locally and CI was the check | ☑ accept ☐ reject ☐ change: |
+| **P4** | `build-workflow.md`, rules of thumb: before any push to an existing branch run `gh pr view <n> --json state`; never push to a merged PR's branch, open a new branch | 1218 (four commits pushed to a merged PR's branch); 3086–3087 and 4620–4621 (the push re-created the deleted branch) | ☑ accept ☐ reject ☐ change: |
+| **P5** | `governance.md` (or AGENTS.md §2): a question to the owner says what is decided, why, the options and a recommendation, and explains any term the owner has not met | theme D (9 confirmed); 2870–2873; 6235–6236; and the owner's "bunu anlamadım" on this task's Q4 and Q5 | ☑ accept ☐ reject ☐ change: |
+| **P6** | `governance.md`, "Branches and releases", and the PR template's comment: **a pull request that is not a draft is merge-ready and the owner merges it; unfinished work stays a draft; a ready PR gets no more pushes** | the owner's rule, 2026-10-03: "draftdan çıxmış branchlər merge hazır sayılır və mən merge edirəm" (prompt record) | ☑ accept ☐ reject ☐ change: |
+| **P7** | DoD, Scope: an amendment to one ADR is grepped across the other ADRs, with the result in the PR | 310 ("T9 removal missed ADR-0007"); the T-15c row of the backlog names it | ☑ accept ☐ reject ☐ change: |
+| **P8** | `build-workflow.md`, rules of thumb: when a plan is answered in place, read the whole text once for tense and mark any question text kept as asked | 6199 (T-15b), and this task's own plan v0.2 had to be re-read for it | ☑ accept ☐ reject ☐ change: |
 
 **Rules that already exist and recurred** (not proposals; a rule that fails is a different problem):
 predictions labelled (`governance.md`, "Plans mark predictions") — theme C; fail-on-purpose (DoD) — theme B;
@@ -264,11 +271,13 @@ runs through the new rules. No pull request with head `develop` has targeted `ma
 
 ## 9. Next
 
-1. The owner corrects section 5's table and ticks section 6.
-2. The agent opens one pull request with the ticked rule changes, then closes T-15c: backlog v1.57 (T-15c done-marker,
-   a "from T-15c" hand-off on T-15d's row so Release 2's specs start from section 3 and theme D), the plan's
-   Status line Done, this document final, and the log entry that points to it.
-3. T-15d: Release 2 spec work; its depth is the owner's decision when it is planned.
+1. Done: the owner answered section 5 (Q2 (a)) and accepted section 6's eight proposals.
+2. Done in the same pull request as this document: backlog v1.57 (T-15c done-marker; a "from T-15c" hand-off on
+   T-15d's row so Release 2's specs start from section 3 and theme D), the plan's Status line Done, and the
+   process-log entry that points here. The rule changes are PR #83.
+3. The owner reviews and merges #83 and this pull request.
+4. T-15d: Release 2 spec work; its depth is the owner's decision when it is planned. The "not yet observed" list
+   of section 7 is read at the end of Release 2.
 
 ## Appendix A — the counting script
 
