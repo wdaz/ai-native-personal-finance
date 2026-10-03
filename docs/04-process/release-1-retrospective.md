@@ -6,7 +6,7 @@ document is final: correct the table in section 5 (Q2 (a)), and tick or reject e
 Task: `docs/03-specs/backlog.md` → **T-15c** · Plan: `docs/04-process/plans/2026-10-03-T-15c.md` (Q1 (b): this
 is a document of its own; Phase 7's `retrospective.md` and the README narrative are not written here) ·
 Phase: 5 (Build the slice), Release 1 · Evidence base: `docs/04-process/process-log.md` as of
-`origin/develop` `0f07f31` (the log is append-only and is not edited by this task)
+`origin/develop` `88e839b` (the log is append-only and is not edited by this task)
 
 ## How this was made, and how far to trust it
 
@@ -27,8 +27,8 @@ Phase: 5 (Build the slice), Release 1 · Evidence base: `docs/04-process/process
 |---|---|---|
 | First commit in the repository | 2026-09-03 | `git log origin/develop --reverse --format=%ad --date=short \| head -1` |
 | First and last process-log entry before T-15c | 2026-09-08 · 2026-09-29 | the log's headings |
-| Commits on `develop` | 555 | `git rev-list --count origin/develop` (taken at `0f07f31`) |
-| Pull requests merged · closed unmerged | 77 · 2 | `gh pr list --state merged --limit 300 --json number --jq length` · the same with `closed` and `mergedAt == null` (2, measured before #80) |
+| Commits on `develop` | 559 | `git rev-list --count origin/develop` (taken at `88e839b`) |
+| Pull requests merged · closed unmerged | 78 · 2 | `gh pr list --state merged --limit 300 --json number --jq length` (taken after #81 merged) · the same with `--state closed`, counting those whose `mergedAt` is null (2, taken before #80) |
 | Backlog task rows | 25 (T-01 … T-16, with the T-02a, T-13a–d and T-15a–d splits) | `grep -c -E "^\| T-[0-9]+[a-z]* \|" docs/03-specs/backlog.md` |
 | Implementation plans, every one with Status **Done** | 21 | `grep -m1 "^Status" docs/04-process/plans/*.md`, read 2026-10-03 (T-15c's own plan is the 22nd) |
 | Architecture decision records | 7 (ADR-0001 … 0007), some amended | `ls docs/02-architecture/adr` |
@@ -274,7 +274,7 @@ runs through the new rules. No pull request with head `develop` has targeted `ma
 
 A scratch script, run once; it is not a file of the repository. Run it as `node count.mjs docs/04-process/process-log.md`.
 "Unfilled" is a regular expression on the field's text; its false positives (794, 3698, 3938, 5435) were read
-and removed by hand. Its output at `origin/develop` `0f07f31`: `entries` 97, `ownerChangesFields` 73,
+and removed by hand. Its output at `origin/develop` `88e839b` (the same at `0f07f31`: the log did not change): `entries` 97, `ownerChangesFields` 73,
 `entriesWithoutOwnerChangesField` 24, `unfilledOwnerChanges` 27 (23 after the four removals),
 `lessonsFields` 67, `gotWrongFields` 72, `disagreementsNotNone` 13. Plain `grep -c` on the phrases gives slightly
 larger numbers (76, 70 and 75), because it also counts a phrase quoted in running text.
