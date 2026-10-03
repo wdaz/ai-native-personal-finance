@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6)
 
 ## Roles
 
@@ -65,6 +65,11 @@ Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run 
   decision, 2026-09-24). This does not reach the CI "Claude Code Review"
   GitHub App: no workflow file in this repository configures its model, since
   it is installed at the organisation level.
+- **A question to the owner can be answered as written** (owner decision, 2026-10-03, T-15c
+  retrospective P5). It says what is being decided, why it matters, the options and a
+  recommendation, in the owner's terms, and it explains any term the owner has not seen before — in the
+  question itself, not after the owner asks. (The owner asked what a question meant before
+  answering in T-02a, T-13a, T-15b and, again, in T-15c.)
 
 ## Branches and releases
 
@@ -154,6 +159,16 @@ that day have the evidence):
 - **Not yet observed:** a `develop` → `main` release under these rules — the check's green on it,
   and `develop` kept after its merge (the `deletion` rule should stop the automatic branch deletion).
   The first release after T-15b is where they are read.
+
+**Draft until ready** (v1.8, owner decision 2026-10-03, T-15c retrospective P6: "draftdan çıxmış
+branchlər merge hazır sayılır və mən merge edirəm" — "a branch that has come out of draft counts as
+ready to merge, and I merge it"). A pull request that is not a draft is merge-ready, and the owner
+merges it without a further check. Unfinished work — a plan waiting for answers, a pull request
+waiting for review fixes or CI, a document waiting for the owner — stays a draft
+(`gh pr create --draft`). The agent takes a pull request out of draft (`gh pr ready`) only when its
+content is finished, every required check is green, and the checklist items the agent can tick are
+ticked. A ready pull request gets no more pushes: further work goes in a new pull request, or the
+pull request is first put back into draft (`gh pr ready --undo`).
 
 Open at the switch (as written before T-15b; settled above):
 
