@@ -33,9 +33,10 @@ Claude Code reads `CLAUDE.md` → `AGENTS.md` automatically when started in the 
   cannot catch the resulting crash, since they never cross the real RSC boundary — only a
   `next dev`/`next build` run in an actual browser does (T-11 lesson).
 - Before any push to an existing branch, run `gh pr view <number> --json state`. If the pull request
-  has merged or closed, do not push: GitHub deletes a merged pull request's branch, and a push
-  re-creates it outside any pull request. Open a new branch from `origin/develop` instead (T-06,
-  ADR-0006's follow-up and T-13d's follow-up; T-15c retrospective, P4).
+  has merged or closed, do not push: with the repository's `delete_branch_on_merge` setting on, a
+  merged pull request's branch is deleted, and a push to its name re-creates it outside any pull
+  request; a closed one may still exist, but no pull request reads it. Open a new branch from
+  `origin/develop` instead (T-06, ADR-0006's follow-up and T-13d's follow-up; T-15c retrospective, P4).
 - When a plan is answered in place (v0.1 → v0.2), read the whole text once for sentences about the
   state before the answers — "waiting", "asks", "nothing has been changed" — and bring them up to
   date. A question's own text may stay as it was asked if the Status line says so (T-15b; T-15c

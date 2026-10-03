@@ -1,6 +1,6 @@
 # Definition of Done
 
-Status: **Approved** (v1.2 — 2026-10-03, the owner's decision at the T-15c retrospective (`release-1-retrospective.md`, P1, P2, P3, P7): four lines added — an ADR amendment is searched across the other ADRs; the PR lists the result of each of the three browser engines; the pull request that finishes a task sets the plan's Status to Done and the backlog row to Done; the PR template mirrors them; v1.1 — 2026-09-20 addition: rules ship with a failing fixture; v1.0 approved 2026-09-20) · Author(s): Agent · Date: 2026-09-20 · Constrained by: AGENTS.md, governance.md, ADR-0003, NFR-Q
+Status: **Approved** (v1.2 — 2026-10-03, the owner's decision at the T-15c retrospective (`docs/04-process/release-1-retrospective.md`, P1, P2, P3, P7): four lines added — an ADR amendment is searched across the other ADRs; the PR lists the result of each of the three browser engines; the pull request that finishes a task sets the plan's Status to Done and the backlog row to Done; the PR template mirrors them; v1.1 — 2026-09-20 addition: rules ship with a failing fixture; v1.0 approved 2026-09-20) · Author(s): Agent · Date: 2026-09-20 · Constrained by: AGENTS.md, governance.md, ADR-0003, NFR-Q
 
 A task from `backlog.md` is done only when every line below is true. The PR description quotes this list with each item checked.
 

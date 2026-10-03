@@ -67,7 +67,7 @@ Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run 
   it is installed at the organisation level.
 - **A question to the owner can be answered as written** (owner decision, 2026-10-03, T-15c
   retrospective P5). It says what is being decided, why it matters, the options and a
-  recommendation, in the owner's terms, and it explains any term the owner has not met — in the
+  recommendation, in the owner's terms, and it explains any term the owner has not seen before — in the
   question itself, not after the owner asks. (The owner asked what a question meant before
   answering in T-02a, T-13a, T-15b and, again, in T-15c.)
 
