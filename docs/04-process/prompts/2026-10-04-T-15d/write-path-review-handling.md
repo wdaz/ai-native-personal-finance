@@ -1,0 +1,17 @@
+# What the agent did with the write-path reviews (T-15d, S1, pull request #87)
+
+The agent's own summary (not a copy of anything): the two reviews of `write-path.md` v0.1 (`789135b`) — briefs `write-path-review-1-facts-brief.md` and `write-path-review-2-spec-brief.md`, reports `…-report.md` beside them, both verbatim — and what became of each finding in v0.2 (`656142e`).
+Copilot then asked for the briefs and reports to be copied verbatim (`build-workflow.md`, "Per task" step 7); the first version of these records condensed them, and this set replaces it.
+
+Everything in the reports that is a defect of the spec is fixed in v0.2; nothing was dismissed. In order of the findings:
+- **Blocker (both reviewers):** 2.1 and 7.4 rewritten — no `GET` handler changes data (`GET /api/admin/reset` the one exception), a path may export `GET` beside write methods, 7.4 checks that no `GET` handler calls the wrapper, and 7.2 adds an API test that every `GET` leaves the stored rows unchanged.
+- **Mapper (review 1 finding 2, review 2 finding 2):** 2.7 says the mapper takes the schema family, gives exact input→code pairs, keeps auth's mapping unchanged and says `invalid_value` never throws; 7.1 tests every pair, failing first.
+- **Pot deletion (review 2 finding 3):** 2.8 reads the total from the delete itself; 7.2 tests a concurrent deposit and delete.
+- **Content type (review 2 finding 4):** 2.4 compares the media type exactly, requires it on every `POST`/`PUT`/`PATCH`, lets a `DELETE` omit it, drops the body-detection by headers; 7.3 adds the cases.
+- **Silent amendments, exemptions, copy (review 1 findings 4, 5, 6; review 2 findings 5, 6, 10, 12, 13):** put to the owner — nine single-choice questions (Q1 the 403 body, Q2 the validation codes, Q3 the stale-write rule, Q4 the numbers, Q5 four copy strings, Q6 the AC3 reading, Q7 the threshold form, Q8 the exemptions, Q9 the amendments to other Approved documents).
+- **401 and 404 (review 2 findings 7, 8; review 1 finding 3):** §3 and 2.9 say the client reloads on a 401, that only the 409 path meets AC3 as worded, and name the two other texts the 404 reading departs from.
+- **Logging, `Set-Cookie`, `no-store` (review 1 findings 7, 17, 18):** 2.12 says the refusal log line is new; 2.2 step 10 says the wrapper and the proxy set `no-store` and the refusals skip the cookie re-issue.
+- **L7, L3, L4, L6 (review 2 findings 9, 11, 14, 15, 16, 17):** rows in 7.5 and 7.6, the search's command and hits in Q3, plain-text names and a `<script>` test, `untrustedContentHint` on every tool that returns user text with its sources, `taken` "as another pot", the explanations in Q3, Q4, Q7.
+- **E1–E8 and the minor findings 8–25 of review 1:** each stated or fixed in the text (2.6's message strings, `apiSend` and a 204, `DELETE` without a schema, 4.4's absent/not-JSON/`{}` cases, 2.9's behaviour when the check throws, the tests that fill the database, the refusal log line, `validationErrorResponse` taking a status, the corrected citations).
+
+The agent's own slips that the reviews and Copilot found: a worked example in v0.1's 4.2 that was garbled in the first draft (fixed before the first push), "Already used" described as existing copy, the brief files claiming a verbatim copy while shortening it, and, in the opening review's records (merged in #85), a brief and a report that were also shortened — to be replaced by the verbatim texts in the pull request that closes T-15d.
