@@ -36,7 +36,7 @@ change data, so 7.4 tests it.
 
 1. `proxy.ts`: the `X-Via` marker is recorded (`recordViaRequest`, any method, before any check, so a refused request is on record too).
 2. `proxy.ts`: no valid session → **401** `unauthenticated` (existing; it comes first, so an unauthenticated caller learns nothing else).
-3. `proxy.ts`: the cross-site rule (2.3) → **403** `forbidden`.
+3. `proxy.ts`: the cross-site rule (2.3) → **403**, body 2.6 (the envelope code `forbidden` with Q1 (a); logout's `{ message }` body with Q1 (b)).
 4. `proxy.ts`: the content-type rule (2.4) → **415**.
 5. The handler, through one shared wrapper (`src/server/write.ts`, a build task's name): the rate limit (2.10) → **429** `rate_limited`. It runs before the body is read, so a flood costs one small query and no parsing.
 6. The wrapper reads the body as JSON and validates it with the shared schema (2.7) → **400** `validation`. A `DELETE` has no body and no schema.
@@ -75,7 +75,7 @@ list and sits after the 401 branch. **415 or 400?** 415 is the status HTTP defin
 |---|---|---|---|
 | 400 | `validation` | the body is not JSON, or fails the schema, or breaks a business rule (2.7) | `issues: { path, code }[]` |
 | 401 | `unauthenticated` | no valid session, including after a reset (2.9) | `message: "Log in to continue"` (existing) |
-| 403 | `forbidden` | 2.3 | `message: "This request must be same-origin"` |
+| 403 | `forbidden` with Q1 (a); none with Q1 (b) | 2.3 | `message: "This request must be same-origin"` (with Q1 (b) the body is `{ message }` alone, as logout's is today) |
 | 404 | `not_found` | the record in the path does not exist (anymore) | `message: "Not found"` (the string `/api/test/log` already uses) |
 | 409 | `conflict` | the write triggered the threshold reset (2.9) | `message: "Data was reset"` |
 | 415 | `validation` | 2.4 | `issues: [{ path: [], code: "invalid_format" }]` — the shape `/api/admin/reset` already uses for a body that is not JSON |
@@ -286,4 +286,4 @@ Each is answered with its letter; "a" is my recommendation in every case, so **"
 
 ---
 
-Changelog: v0.2 (2026-10-04) — after two read-only reviews (briefs and reports in `docs/04-process/prompts/2026-10-04-T-15d/`): the `GET` rule corrected (a path may export `GET` beside write methods; `GET /api/admin/reset` the one exception); the issue mapper specified with exact input→code pairs; a pot deletion reads its total from the delete; the content-type rule made exact; the 401 client behaviour, the 404 departure from AC3, the proxy's logging and `Set-Cookie` re-issue, the missing-`no-store` helpers and the copy string "Already used" stated; the exemptions, amendments and copy put to the owner; Q1 and Q5 split into single-choice questions; tests made conditional on the answers and not dependent on a running server's environment; wrong or loose citations fixed. v0.1 (2026-10-04) — first draft. v0.2.1 (2026-10-04) — Copilot's review of v0.2: 7.3's 415 case names `PUT` and `PATCH`, the constraints list names each NFR in full, the owner question's shorthand is English. v0.2.2 (2026-10-04) — Copilot's second review: 2.2 step 10 states the real `no-store` baseline (pages only in the proxy; `/api/overview` and `/api/meta` on success), 2.6 says the 403 body depends on Q1.
+Changelog: v0.2 (2026-10-04) — after two read-only reviews (briefs and reports in `docs/04-process/prompts/2026-10-04-T-15d/`): the `GET` rule corrected (a path may export `GET` beside write methods; `GET /api/admin/reset` the one exception); the issue mapper specified with exact input→code pairs; a pot deletion reads its total from the delete; the content-type rule made exact; the 401 client behaviour, the 404 departure from AC3, the proxy's logging and `Set-Cookie` re-issue, the missing-`no-store` helpers and the copy string "Already used" stated; the exemptions, amendments and copy put to the owner; Q1 and Q5 split into single-choice questions; tests made conditional on the answers and not dependent on a running server's environment; wrong or loose citations fixed. v0.1 (2026-10-04) — first draft. v0.2.1 (2026-10-04) — Copilot's review of v0.2: 7.3's 415 case names `PUT` and `PATCH`, the constraints list names each NFR in full, the owner question's shorthand is English. v0.2.2 (2026-10-04) — Copilot's second review: 2.2 step 10 states the real `no-store` baseline (pages only in the proxy; `/api/overview` and `/api/meta` on success), 2.6 says the 403 body depends on Q1. v0.2.3 (2026-10-04) — Copilot's third review: 2.2 step 3 and 2.6's 403 row depend on Q1 too.
