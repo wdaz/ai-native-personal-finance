@@ -103,3 +103,10 @@ lesson above). Copilot errored on `3a4ae8c` and `ecf51c9`; the owner was asked h
 | Comment | Handling |
 |---|---|
 | §6 still lists `error.tsx` and omits `TruncatedName` | Fixed in v1.0.5 |
+
+## Copilot on PR #88 (head `72ce91b`)
+
+| Comment | Handling |
+|---|---|
+| 2.9: the row's second half renders under the tooltip's last sub-point | Fixed in v1.0.6: one list item, then the sub-points |
+| §7: the E2E row spans three physical lines and breaks the table | Fixed in v1.0.6: one line; a script checked that no table row is left unterminated |
