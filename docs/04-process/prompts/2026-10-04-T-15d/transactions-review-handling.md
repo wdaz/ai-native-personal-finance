@@ -62,3 +62,10 @@ sends it as `message`).
 A side note then pointed out that the owner's "learn for the future" cannot be promised by the app: an agent
 keeps no memory between conversations. v0.2.1 says so in 2.3 (the refusal helps within one conversation; the input
 schema with the allowed values is what every agent sees), and the owner was told.
+
+## The owner on v0.2.1
+
+The owner answered Q2 ((a), with the note that the shadow is for popovers and dropdown menus only — recorded
+verbatim in §9 Q2), found Q1 unclear (rewritten in v0.2.2 as a table: each text, where it is used, seen or heard,
+with "screen reader" and "voice control" explained), and remarked on Q3 that seeing the schema may prevent mistakes
+to some degree (recorded in §9 Q3).
