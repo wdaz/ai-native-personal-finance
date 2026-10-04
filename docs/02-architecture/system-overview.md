@@ -1,6 +1,6 @@
 # System overview
 
-Status: **Approved** (v1.0.1 — 2026-09-25: the diagram's `middleware` box reads `proxy`, wording only (T-13a, Q5); v1.0, owner approval 2026-09-13) · Author(s): Agent · Date: 2026-09-13 · Consistent with ADR-0001…0007
+Status: **Approved** (v1.0.2 — 2026-10-04: the diagram's database box lists `WriteAttempt` (T-15d, SPEC-write-path §2.10); v1.0.1 — 2026-09-25: the diagram's `middleware` box reads `proxy`, wording only (T-13a, Q5); v1.0, owner approval 2026-09-13) · Author(s): Agent · Date: 2026-09-13 · Consistent with ADR-0001…0007
 
 ```
 Browser (any modern)                              Vercel (production / preview)
@@ -16,8 +16,9 @@ Browser (any modern)                              Vercel (production / preview)
 └───────────────────────────────────────┘         ┌────────────────────────────────────┐
                                                    │ Neon Postgres (main / CI branch)   │
    GitHub Actions ── build, tests, axe,            │ Balance · Transaction · Budget ·   │
-   traceability, snapshots, Lighthouse             │ Pot · ResetLog · LoginAttempt      │
-   Vercel Cron ── POST /api/admin/reset            └────────────────────────────────────┘
+   traceability, snapshots, Lighthouse             │ Pot · ResetLog · LoginAttempt ·    │
+   Vercel Cron ── POST /api/admin/reset            │ WriteAttempt                       │
+                                                   └────────────────────────────────────┘
 ```
 
 Boundaries: `domain` is pure and clock-injected; `server` is the only module touching Prisma; `app/api` is thin; `webmcp` talks to the API exactly like the UI; nothing in the client trusts the browser (all validation repeated server-side).

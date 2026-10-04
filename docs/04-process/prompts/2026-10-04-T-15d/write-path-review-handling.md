@@ -4,7 +4,7 @@ The agent's own summary (not a copy of anything): the two reviews of `write-path
 Copilot then asked for the briefs and reports to be copied in full (`build-workflow.md`, "Per task" step 7: "copied"); the first version of these records condensed them, and this set replaces it.
 
 Everything in the reports that is a defect of the spec is fixed in v0.2; nothing was dismissed. In order of the findings:
-- **Blocker (both reviewers):** 2.1 and 7.4 rewritten — no `GET` handler changes data (`GET /api/admin/reset` the one exception), a path may export `GET` beside write methods, 7.4 checks that no `GET` handler calls the wrapper, and 7.2 adds an API test that every `GET` leaves the stored rows unchanged.
+- **Blocker (both reviewers):** 2.1 and 7.4 rewritten — no `GET` handler changes data (`GET /api/admin/reset` is the one exception), a path may export `GET` beside write methods, 7.4 checks that no `GET` handler calls the wrapper, and 7.2 adds an API test that every `GET` leaves the stored rows unchanged.
 - **Mapper (review 1 finding 2, review 2 finding 2):** 2.7 says the mapper takes the schema family, gives exact input→code pairs, keeps auth's mapping unchanged and says `invalid_value` never throws; 7.1 tests every pair, failing first.
 - **Pot deletion (review 2 finding 3):** 2.8 reads the total from the delete itself; 7.2 tests a concurrent deposit and delete.
 - **Content type (review 2 finding 4):** 2.4 compares the media type exactly, requires it on every `POST`/`PUT`/`PATCH`, lets a `DELETE` omit it, drops the body-detection by headers; 7.3 adds the cases.
@@ -15,3 +15,13 @@ Everything in the reports that is a defect of the spec is fixed in v0.2; nothing
 - **E1–E8 and the minor findings 8–25 of review 1:** each stated or fixed in the text (2.6's message strings, `apiSend` and a 204, `DELETE` without a schema, 4.4's absent/not-JSON/`{}` cases, 2.9's behaviour when the check throws, the tests that fill the database, the refusal log line, `validationErrorResponse` taking a status, the corrected citations).
 
 The agent's own slips that the reviews and Copilot found: a worked example in v0.1's 4.2 that was garbled in the first draft (fixed before the first push), "Already used" described as existing copy, the brief files claiming a verbatim copy while shortening it, and, in the opening review's records (merged in #85), a brief and a report that were also shortened — to be replaced by the verbatim texts in the pull request that closes T-15d.
+
+## Review 3 — the final spec and the amendments (`7545a04`, v1.0 → v1.0.1)
+
+Brief and report: `write-path-review-3-final-brief.md`, `write-path-review-3-final-report.md`. Nothing blocked; two important findings and ten minor. All are fixed in v1.0.1 except one, which is the owner's call:
+- **Important 1** (the rate-limit test mechanism said two things): one mechanism now — the suites run the server with a high finite limit (1,000 per window), the 429 path is tested by pre-filling `WriteAttempt` rows up to it, and the limiter's functions take the limit as an argument (2.10, §7, 7.3, 7.5).
+- **Important 2** (ADR-0005's Decision body still stated the replaced rule): the clause is struck inline with "clarification 2026-10-04", as the same ADR and ADR-0006 do for other replaced text.
+- **Minor 3–10, 12:** the broken code span in 7.6, "asks that it run as one query", US-40 AC3 quoted from its source, the path `id` validated in the pipeline, `forbidden` and `busy` as build notes, ADR-0006's attribution and both ADRs' searches widened to `docs/` with the hits listed, `WriteAttempt` named as not counted by the threshold, H6 and H8's Done cells say the ask was narrowed, the changelog newest first, `system-overview.md`'s diagram lists `WriteAttempt` (v1.0.2), "eight codes in the table", "Q7 and Q9".
+- **Minor 11, left for the owner:** US-37 AC3 and the copy appendix row "After reset | stale request" in `user-stories.md` could carry a dated note pointing to §9 Q6 (the reviewer checked it is safe for `copy.test.ts`). It edits the requirements, so the agent did not.
+
+Copilot's reviews of v1.0 added: 415 in the tool error mapping (2.11 (4)), `null` and non-string inputs in the mapper table (2.7), the hand-offs document's Status line saying it was amended by this pull request, a grammar fix in this file, and the pull request's description now says the spec is final.

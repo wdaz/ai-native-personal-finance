@@ -12,7 +12,7 @@ Money is integer cents, stored 64-bit (NFR-S3 allows 99,999,999,999). Dates are 
 | `Pot` | `seq` (creation order, assigned by the database — rows created in one transaction share `createdAt`), `name` (≤ 30, **unique, case-insensitive**), `target` (cents > 0), `total` (cents ≥ 0), `theme` (enum, **unique among pots**) | `total` may exceed `target`; deposit ≤ `Balance.current`; withdrawal ≤ `total` | US-05, US-21–26 |
 | `ResetLog` | `at`, `reason` (`scheduled` \| `threshold` \| `manual` \| `test`) | latest exposed via `/api/meta` | US-37 |
 | `LoginAttempt` | `ip`, `at`, `success` | cleared on reset; rate limit source | US-01, NFR-S4 |
-| `WriteAttempt` | `ip`, `at` | one row per write request the write rate limit counts (SPEC-write-path §2.10); pruned by the check itself (rows older than the window are deleted), cleared on reset; a working name, added with Release 2's first write task | US-36, NFR-S4 |
+| `WriteAttempt` | `ip`, `at` | one row per write request the write rate limit counts (SPEC-write-path §2.10); pruned by the check itself (rows older than the window are deleted), cleared on reset, not counted by the storage threshold; a working name, added with Release 2's first write task | US-36, NFR-S4 |
 
 Enums: `Category` = Entertainment, Bills, Groceries, Dining Out, Transportation, Personal Care, Education, Lifestyle, Shopping, General. `Theme` = Green, Yellow, Cyan, Navy, Red, Purple, Turquoise, Brown, Magenta, Blue, Navy Grey, Army Green, Gold, Orange, Pink.
 
