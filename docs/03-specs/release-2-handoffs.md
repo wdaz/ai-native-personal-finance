@@ -1,6 +1,6 @@
 # Release 2 hand-offs — what every Release 2 spec must resolve
 
-Status: **Draft** (T-15d, 2026-10-04; the owner approves it by merging the pull request that carries it) ·
+Status: **Approved** by the owner's merge of PR #85 (T-15d, 2026-10-04); its boxes are ticked as the specs land ·
 Author(s): Agent (Claude Code, Sonnet 5.5, background session) · Date: 2026-10-04
 Task: `docs/03-specs/backlog.md` → **T-15d** · Plan: `docs/04-process/plans/2026-10-04-T-15d.md` (D4, F6, F7) ·
 Phase: 4 (Specs & plan), Release 2

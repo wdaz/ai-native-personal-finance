@@ -4,7 +4,7 @@ Status: **Approved** (v1.58 — 2026-10-04: **T-15d is under way** — the plan 
 owner and merged (#84, `b29118d`): the opening and every Release 2 spec, each in its own pull request (Q1 (b)); the
 opening's pull request (`task/T-15d-open`) carries PRD v1.3 (Release 2's `Stories:` sentence), `release-2-stories.txt`,
 `scripts/traceability.ts` made release-aware (it still reads Release 1; the flip is the first Release 2 build task),
-the proposed ADR-0003 clarification and roadmap Status line, and `release-2-handoffs.md`; v1.57 — 2026-10-03: **T-15c is done**, and with it the retrospective of Release 1:
+the ADR-0003 clarification and the roadmap Status line (both in effect from the owner's merge of #85), and `release-2-handoffs.md`; v1.57 — 2026-10-03: **T-15c is done**, and with it the retrospective of Release 1:
 `docs/04-process/release-1-retrospective.md` (#82), the rule changes P1–P8 the owner accepted (#83: DoD v1.2,
 build-workflow v1.3, governance v1.8, the PR template), a "from T-15c" hand-off on T-15d's row; T-15d is next;
 v1.56 — 2026-10-03: **TD-23** opened (`tech-debt.md` v1.28, the owner's decision at

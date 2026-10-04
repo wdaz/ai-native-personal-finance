@@ -1,6 +1,6 @@
 # PRD — AI-Native Personal Finance
 
-Status: **Approved** (v1.3 — amendment 2026-10-04, proposed by T-15d and approved when its pull request is merged — owner decision at the T-15d plan gate, Q2 (a): §5 Release 2 gains a `Stories:` sentence, the source of `docs/03-specs/release-2-stories.txt`; v1.2 — amendments 2026-09-20: US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2; v1.1 2026-09-13: visual regression removed)
+Status: **Approved** (v1.3 — amendment 2026-10-04, the owner's decision at the T-15d plan gate, Q2 (a), in effect from the owner's merge of PR #85: §5 Release 2 gains a `Stories:` sentence, the source of `docs/03-specs/release-2-stories.txt`; v1.2 — amendments 2026-09-20: US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2; v1.1 2026-09-13: visual regression removed)
 Author(s): Agent (Claude, draft) · Owner (decisions) · Date: 2026-09-13 · Process log: `../04-process/process-log.md`
 Traces to: `../00-discovery/problem-statement.md` (v1.0), `../00-discovery/inputs/challenge-brief.md`, `../00-discovery/research/webmcp-status.md`
 
