@@ -117,6 +117,16 @@ lesson above). Copilot errored on `3a4ae8c` and `ecf51c9`; the owner was asked h
 |---|---|
 | 2.9: the joined sentence starts with a lowercase "the" | Fixed (v1.0.6, wording only) |
 
+## The designer's changelog in Claude Design (read 2026-10-04)
+
+The owner pointed at the designer's `CHANGELOG.md` in the Claude Design project; the `claude_design` MCP did not load
+into this session, and after the owner started `/design-sync` the agent read the one file with `DesignSync`
+(`get_file`, read only; nothing synced or written). Its §6 (custom tooltip) is newer than the local copy in
+`~/Own/design-exports`. v1.0.7 applies it to 2.9 (`TruncatedText`, `tabindex="0"`, `aria-describedby` only while
+open, one tooltip in a portal, `position: fixed`, flip at 72 px, 16 px clamp, close on scroll and resize) and adds
+H12 (the designer applies the tooltip on Overview too: hotfix 2). §9 Q5 stands: the changelog keeps "pointer leaves"
+and the 3 s touch timer.
+
 ## v1.0.7 reverted — the owner had not approved it
 
 The agent read the designer's `CHANGELOG.md` in Claude Design (`DesignSync` `get_file`, read only, after the owner
@@ -127,3 +137,11 @@ with `tabindex="0"` instead of a button; `aria-describedby` only while open; one
 `position: fixed`, a flip below at 72 px from the top and a 16 px clamp; closing on scroll and resize; the component
 name `TruncatedText`; the tooltip on Overview, Budgets, Pots and Recurring Bills too. None of it is applied until the
 owner says so. Lesson: reading a design source the owner points at is not approval to adopt it.
+
+## The owner: "Designer qərarlarına əsas götür"
+
+After asking where the tooltip is in the designer's changelog (§6), the owner wrote "Designer qərarlarına əsas götür"
+("Take the designer's decisions as the basis"). v1.0.8 restores v1.0.7 (revert of the revert; the merge conflict in
+this file was resolved by keeping both sections above) and answers §9 Q5 with (b): the tooltip as drawn, closing when
+the pointer leaves and after 3 s on touch. The spec records the gap against WCAG 2.1 rule 1.4.13 (NFR-A1) as the
+owner's decision. The v1.0.4 question (keep the style guide's tooltip) is settled by the same answer.
