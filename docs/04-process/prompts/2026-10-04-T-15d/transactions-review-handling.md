@@ -167,3 +167,13 @@ in `design-tokens.md`. Not applied, asked of the owner: the document-title forma
 contradicts `app-shell.md` §2.5's owner-approved "Personal Finance - <page name>". The touch tooltip keeps no timer
 (§9 Q5 (a)). The changelog's shell changes (skip link, `<main>`, nav labels, `aria-current`, modal, focus rings,
 "…" hit area) are hotfix 2's or the other page specs'.
+
+## "Zidd olan hissəni designda dəyiş. Export faylı ilə bağlı hissəni sil"
+
+The owner asked for the design to be changed where it conflicts (the document-title format "<Page> · Finance"
+against `app-shell.md` §2.5's owner-approved "Personal Finance - <page name>") and for the export-related part to be
+removed. The design project is a regular Claude Design project, not a design-system project, and the only tool the
+agent has for it (`DesignSync`) is for syncing component libraries and must not be used to change designs, so the agent
+did not edit the design; it wrote the task for the designer (the title format, the touch tooltip's 3 s timer per §9 Q5,
+and removing the export sections from the designer's changelog) for the owner to pass on. In the spec, v1.0.11 cites
+the design's source files instead of the standalone exports.
