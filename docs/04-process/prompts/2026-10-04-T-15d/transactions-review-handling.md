@@ -97,3 +97,9 @@ The designer's local `CHANGELOG.md` (21:59) has no tooltip section; the exports 
 not meet WCAG 1.4.13 (NFR-A1 is WCAG 2.1 AA): the tooltip is not hoverable (`pointer-events: none`, closes when the
 pointer leaves the name) and closes by itself after 3 s on touch. The agent did not decide them (see the long-names
 lesson above). Copilot errored on `3a4ae8c` and `ecf51c9`; the owner was asked how to proceed.
+
+## Copilot on PR #88 (head `387a65e`)
+
+| Comment | Handling |
+|---|---|
+| §6 still lists `error.tsx` and omits `TruncatedName` | Fixed in v1.0.5 |
