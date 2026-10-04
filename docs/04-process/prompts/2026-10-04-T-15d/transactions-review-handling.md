@@ -177,3 +177,9 @@ agent has for it (`DesignSync`) is for syncing component libraries and must not 
 did not edit the design; it wrote the task for the designer (the title format, the touch tooltip's 3 s timer per §9 Q5,
 and removing the export sections from the designer's changelog) for the owner to pass on. In the spec, v1.0.11 cites
 the design's source files instead of the standalone exports.
+
+## The designer's changes, re-read
+
+The owner passed the task on; the designer's changelog now has §9 ("Product owner decisions"): page titles
+"Personal Finance - <page name>" (§8c, §9a), no 3 s timer on the touch tooltip (§6c, §9b), and no export sections.
+v1.0.12 records that the design matches the spec on these points.
