@@ -1,6 +1,7 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
-- Status: **Accepted** (amended 2026-09-25) · Date: 2026-09-13
+- Status: **Accepted** (amended 2026-09-25; clarified 2026-10-04) · Date: 2026-09-13
+- Clarification 2026-10-04 (owner, T-15d plan gate, 2026-10-04; SPEC-write-path §2.3–§2.5): the same-origin check logout has (`Sec-Fetch-Site: cross-site` → 403) applies to every write route under `/api/*`, together with a content-type rule (`application/json` only), both in `proxy.ts`. `SameSite=Lax` stays the defence for a request that sends no fetch metadata. Exempt: login, signup, logout (its own rule), `/api/admin/reset` and `/api/test/*`. Searched on 2026-10-04 — `grep -rn -i "sec-fetch-site" docs/02-architecture` — only this ADR names the header.
 - Amendment 2026-09-25 (6) — **Accepted by the owner, 2026-09-25** ("ADR-0006 bağlı qərarı qəbul
   edirəm" — "I accept the decision on ADR-0006", after PR #44 with its code had merged; drafted by
   the agent during T-13a) (T-13a, TD-2): Next 16 renamed the

@@ -1,6 +1,7 @@
 # 0005 — Persistence, seed and reset: Neon Postgres, Prisma, integer cents, fixed clock, scheduled full reset
 
-- Status: **Accepted** · Date: 2026-09-13 · Author(s): Agent, Owner (decisions OQ-2/OQ-4/R-01/R-29)
+- Status: **Accepted** (clarified 2026-10-04) · Date: 2026-09-13 · Author(s): Agent, Owner (decisions OQ-2/OQ-4/R-01/R-29)
+- Clarification 2026-10-04 (owner, T-15d — SPEC-write-path §9 Q3 (a) and Q7 (a), "bütün suallara cavab a" ("answer (a) to all the questions")): the *Consistency* line's "lightweight optimistic check (`updatedAt`) returns 409 on stale writes" is replaced. A write is one transaction of conditional updates (a money move is `UPDATE … WHERE current ≥ x`; a pot deletion reads its total from the delete itself), a record that is gone answers 404, an edit is last-write-wins, and 409 `conflict` stays for the write that triggers the threshold reset only. Ids are server-generated and change on every reset, so an id from before a reset is a 404, never an edit of re-seeded data. The threshold check runs after each write's commit, as one query. Searched on 2026-10-04 — `grep -rn "updatedAt\|optimistic" docs/02-architecture` — the other ADRs name neither term; `data-model.md` line 5 lists `updatedAt` as a field of every entity, which stays true.
 - Clarification 2026-09-23 (owner, T-08 — plan gate Q1 (a) and PR #20's review, finding 2): the
   scheduled reset is `GET /api/admin/reset` from a **daily** Vercel cron (`0 3 * * *`); Vercel
   sends a bodyless `GET` with `CRON_SECRET` as its Bearer token, and the route resets only once
