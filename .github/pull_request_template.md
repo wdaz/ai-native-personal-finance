@@ -4,9 +4,10 @@
   output from the run, not from memory (governance.md).
   Base: `develop` for work. Base `main` only for a release (head `develop`) or a hotfix (head
   `hotfix/<name>-main`) (governance.md, "Branches and releases").
-  Open the PR as a draft. Take it out of draft only when it is finished and CI is green: the owner
-  merges every PR that is not a draft, and a ready PR gets no more pushes (governance.md,
-  "Branches and releases", "Draft until ready").
+  Open the PR as a draft. Take it out of draft only when it is finished, CI is green, and Copilot has
+  reviewed the current head and no important finding is left unfixed: the owner merges every PR that is not a
+  draft, and a ready PR gets no more pushes (governance.md, "Branches and releases", "Draft until
+  ready").
 -->
 
 ## What and why
