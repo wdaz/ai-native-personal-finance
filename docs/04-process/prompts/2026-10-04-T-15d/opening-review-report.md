@@ -64,6 +64,12 @@ The agent re-read each finding against the files and ran the code itself, since 
   with the guards in place).
 - **7, 8, 9:** fixed (header comment; backlog wording "reports 20 of the 23 ids as named in no test title"; backlog
   v1.58 names the two `docs/03-specs/README.md` rows). The plan's file map is a merged document and was not edited.
-- **4, 5:** accepted as minor and left. 4 is guarded by the repository test on `listedReleases`; 5 needs a stale file
-  left behind by a deleted PRD sentence, which the reviewer of a PRD change sees in the diff.
+- **5:** accepted as minor and left: it needs a stale file left behind by a deleted PRD sentence, which the reviewer of
+  a PRD change sees in the diff.
+- **4:** accepted as minor at `f736967` (the repository test on `listedReleases` guards this repository), then **fixed in
+  `497284f`** when Copilot raised the same defect as a high finding: `cumulativeStoryIds` now throws when the release
+  being built has no `Stories:` sentence. Copilot's next review found that `--write` still skipped it (medium, fixed in
+  `74267f0`: the release is read before `--write`). The lesson, for the retrospective: the reviewer's "minor" and
+  Copilot's "high" were the same finding, and the one the agent had accepted was the one the owner's rule (governance
+  v1.9) says must be fixed.
 - **CRLF in the `.txt` files:** older than this change; not changed.
