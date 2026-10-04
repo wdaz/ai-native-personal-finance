@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
@@ -18,12 +18,37 @@ const RUNNERS = new Set(["test", "it", "describe", "xit", "xtest", "xdescribe"])
 const MODIFIERS = new Set(["describe", "serial", "parallel", "only", "skip", "fixme", "todo"]);
 const SKIPS = new Set(["skip", "fixme", "todo"]);
 
-/** The ids of PRD §5's "### Release 1" `Stories:` sentence; `US-04…US-08` is a range. */
-export function releaseStoryIds(prd: string): string[] {
-  const block = /### Release 1[^\n]*\n([\s\S]*?)\n### Release 2/.exec(prd)?.[1] ?? "";
-  const sentence = /Stories:([\s\S]*?)Deferred/.exec(block)?.[1];
+/**
+ * The release being built (ADR-0003, clarification 2026-09-24 and its T-15d amendment): the stories
+ * of this release and of every release before it must be named in a test title. Release 1 until the
+ * first Release 2 build task, whose first test lands in the pull request that sets this to 2 — a
+ * flip before then would fail CI for ids no test can name yet (T-15d plan D3).
+ */
+export const RELEASE_BEING_BUILT = 1;
+
+/** The generated list of the stories a release first delivers (`--write`), one id per line. */
+export function storyListPath(release: number): string {
+  return `docs/03-specs/release-${release}-stories.txt`;
+}
+
+/**
+ * The text of PRD §5's `Stories:` sentence for a release: from the label to the first full stop that
+ * ends a sentence, to `Deferred` (Release 1's sentence is followed by it) or to the end of the
+ * release's block, which is the next `### Release` heading.
+ */
+function storySentence(prd: string, release: number): string | undefined {
+  const block =
+    new RegExp(`### Release ${release}\\b[^\\n]*\\n([\\s\\S]*?)(?=\\n### Release \\d|$)`).exec(
+      prd,
+    )?.[1] ?? "";
+  return /Stories:([\s\S]*?)(?:\.\s|\.$|Deferred|$)/.exec(block)?.[1];
+}
+
+/** The ids of PRD §5's "### Release N" `Stories:` sentence; `US-04…US-08` is a range. */
+export function releaseStoryIds(prd: string, release = 1): string[] {
+  const sentence = storySentence(prd, release);
   if (sentence === undefined) {
-    throw new Error("PRD §5 Release 1 has no `Stories: … Deferred` sentence");
+    throw new Error(`PRD §5 Release ${release} has no \`Stories:\` sentence`);
   }
   const ids: string[] = [];
   for (const [, from, to] of sentence.matchAll(/US-(\d\d)(?:…US-(\d\d))?/g)) {
@@ -31,8 +56,24 @@ export function releaseStoryIds(prd: string): string[] {
       ids.push(`US-${String(n).padStart(2, "0")}`);
     }
   }
-  if (ids.length === 0) throw new Error("PRD §5 Release 1 `Stories:` names no story");
+  if (ids.length === 0) throw new Error(`PRD §5 Release ${release} \`Stories:\` names no story`);
   return ids;
+}
+
+/** The releases whose PRD §5 block has a `Stories:` sentence, in order (Release 3 has none). */
+export function listedReleases(prd: string): number[] {
+  const numbers = [...prd.matchAll(/^### Release (\d+)/gm)].map(([, n]) => Number(n));
+  return [...new Set(numbers)]
+    .filter((release) => storySentence(prd, release) !== undefined)
+    .sort((a, b) => a - b);
+}
+
+/** The stories of every listed release up to and including `upTo`, in order, each id once. */
+export function cumulativeStoryIds(prd: string, upTo: number): string[] {
+  const ids = listedReleases(prd)
+    .filter((release) => release <= upTo)
+    .flatMap((release) => releaseStoryIds(prd, release));
+  return [...new Set(ids)];
 }
 
 export function definedStoryIds(userStories: string): string[] {
@@ -166,28 +207,42 @@ export function testSources(root: string): { path: string; source: string }[] {
 }
 
 /** The whole check for a repository at `root`: what to print and the exit code. */
-export function run(root: string, write = false): { code: number; out: string[]; err: string[] } {
-  const listPath = join(root, "docs/03-specs/release-1-stories.txt");
-  const release = releaseStoryIds(readFileSync(join(root, "docs/01-requirements/prd.md"), "utf8"));
-  const expected = `${release.join("\n")}\n`;
+export function run(
+  root: string,
+  write = false,
+  built = RELEASE_BEING_BUILT,
+): { code: number; out: string[]; err: string[] } {
+  const prd = readFileSync(join(root, "docs/01-requirements/prd.md"), "utf8");
+  const lists = listedReleases(prd).map((n) => {
+    const ids = releaseStoryIds(prd, n);
+    return { n, ids, path: storyListPath(n), expected: `${ids.join("\n")}\n` };
+  });
   if (write) {
     mkdirSync(join(root, "docs/03-specs"), { recursive: true });
-    writeFileSync(listPath, expected);
+    for (const { path, expected } of lists) writeFileSync(join(root, path), expected);
     return {
       code: 0,
-      out: [`traceability: wrote ${release.length} ids to docs/03-specs/release-1-stories.txt`],
+      out: lists.map(({ ids, path }) => `traceability: wrote ${ids.length} ids to ${path}`),
       err: [],
     };
   }
-  if (readFileSync(listPath, "utf8") !== expected) {
+  // Every release's list is held to the PRD, the one being built or not: a PRD edit that leaves a
+  // later list stale is caught before that release is built.
+  const drifted = lists.filter(({ path, expected }) => {
+    const file = join(root, path);
+    return !existsSync(file) || readFileSync(file, "utf8") !== expected;
+  });
+  if (drifted.length > 0) {
     return {
       code: 1,
       out: [],
-      err: [
-        "traceability: release-1-stories.txt differs from PRD §5; run `npm run traceability -- --write`",
-      ],
+      err: drifted.map(
+        ({ n }) =>
+          `traceability: release-${n}-stories.txt differs from PRD §5; run \`npm run traceability -- --write\``,
+      ),
     };
   }
+  const release = cumulativeStoryIds(prd, built);
   const { missing, unknown } = checkTraceability({
     release,
     defined: definedStoryIds(
@@ -204,7 +259,11 @@ export function run(root: string, write = false): { code: number; out: string[];
   if (err.length > 0) return { code: 1, out: [], err };
   return {
     code: 0,
-    out: [`traceability: all ${release.length} Release 1 stories are named in a test title`],
+    out: [
+      built === 1
+        ? `traceability: all ${release.length} Release 1 stories are named in a test title`
+        : `traceability: all ${release.length} stories of Releases 1–${built} are named in a test title`,
+    ],
     err: [],
   };
 }

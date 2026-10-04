@@ -110,7 +110,7 @@ positive is exempted by an allowlist in `.gitleaks.toml`, which is reviewed and 
 | `npm run secrets:scan`        | Gitleaks on all commit diffs and messages, inline `gitleaks:allow` ignored — first in `test:all`                 |
 | `npm test`                    | Vitest — `tests/unit`                                                                                            |
 | `npm run test:coverage`       | `npm test` with the coverage gate: at least 90 % of statements in `src/domain` (`vitest.thresholds.json`)        |
-| `npm run traceability`        | Every Release 1 story id (`docs/03-specs/release-1-stories.txt`) is named in a test title (NFR-T2)               |
+| `npm run traceability`        | Every story id of the release being built and of the releases before it (`docs/03-specs/release-<n>-stories.txt`) is named in a test title (NFR-T2) |
 | `npm run test:api`            | Playwright request-context tests — `tests/api`, one worker, against the app with `APP_ENV=test` and the database |
 | `npm run db:reset`            | `prisma migrate deploy`, then the seed (`prisma/seed.ts`); refuses a non-local `DATABASE_URL` first (TD-10)      |
 | `npm run db:drift`            | `prisma migrate diff`, migrated database vs `prisma/schema.prisma`; exit 2 on drift, also run by `test:api`      |
