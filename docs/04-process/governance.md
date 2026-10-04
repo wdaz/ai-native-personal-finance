@@ -176,8 +176,11 @@ new pull request, or the pull request is first put back into draft (`gh pr ready
 revyu edəndir və onun revyularını bitirmək gözlənməlidir. Vacib tapıntılar fix olmalıdır." — "Copilot
 is the mandatory reviewer and its reviews must be waited for to finish. Important findings must be
 fixed."). Before `gh pr ready`, Copilot's review of the branch's **current head** must exist: a review whose
-`commit_id` is the head's commit (`gh api repos/<owner>/<repo>/pulls/<n>/reviews`). A review of an
-earlier commit does not count. Every fix is itself a new push and so a new head, which Copilot reviews
+`commit_id` is the head's commit, and whose author is Copilot (`copilot-pull-request-reviewer[bot]`).
+Two commands show it: `gh pr view <n> --json headRefOid --jq .headRefOid` prints the head's full
+SHA, and `gh api --paginate repos/<owner>/<repo>/pulls/<n>/reviews --jq '.[] |
+select(.user.login=="copilot-pull-request-reviewer[bot]") | .commit_id'` lists the commit of every
+Copilot review; the head's SHA must be among them. A review of an earlier commit does not count. Every fix is itself a new push and so a new head, which Copilot reviews
 again; the agent therefore pushes the fixes, waits for the review of the new head, and leaves draft only
 on a head whose review is in and has no important finding still open. Each finding is fixed, or answered
 with its reason in the pull request. An **important** finding is one the agent confirms is a defect — a
