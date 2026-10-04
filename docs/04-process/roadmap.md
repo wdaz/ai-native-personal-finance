@@ -1,6 +1,6 @@
 # Roadmap
 
-Status: Approved · Current phase: **5 — Build the slice** (Phase 4 exit for Release 1 approved 2026-09-20; Release 2 specs return to Phase 4 after T-15)
+Status: Approved · Current phase: **Release 1 — 5, Build the slice** (Phase 4 exit for Release 1 approved 2026-09-20); **Release 2 — 4, Specs & plan** (the return trip, opened by T-15d on 2026-10-04; proposed there and approved when that pull request is merged)
 
 The roadmap is a sequence of phases with gates, not a calendar. A phase is
 entered only when the previous phase's exit gate is recorded in
