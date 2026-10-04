@@ -1,6 +1,6 @@
 # What the agent did with the write-path reviews (T-15d, S1, pull request #87)
 
-The agent's own summary (not a copy of anything): the two reviews of `write-path.md` v0.1 (`789135b`) — briefs `write-path-review-1-facts-brief.md` and `write-path-review-2-spec-brief.md`, reports `…-report.md` beside them, copied as handed back (each file's header says exactly which formatting and redaction edits it carries) — and what became of each finding in v0.2 (`656142e`).
+The agent's own summary (not a copy of anything): the two reviews of `write-path.md` v0.1 (`789135b`) — briefs `write-path-review-1-facts-brief.md` and `write-path-review-2-spec-brief.md`, reports `write-path-review-1-facts-report.md` and `write-path-review-2-spec-report.md` beside them, copied as handed back (each file's header says exactly which formatting and redaction edits it carries) — and what became of each finding in v0.2 (`656142e`).
 Copilot then asked for the briefs and reports to be copied in full (`build-workflow.md`, "Per task" step 7: "copied"); the first version of these records condensed them, and this set replaces it.
 
 Everything in the reports that is a defect of the spec is fixed in v0.2; nothing was dismissed. In order of the findings:

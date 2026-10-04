@@ -1,6 +1,6 @@
 # Report — write-path review 1, facts and figures (T-15d, S1, pull request #87)
 
-The reviewer's final report on `write-path.md` v0.1 (`789135b`), the text as handed back (the harness frames it as model output, not as the owner's words, and indents every line). **Edits to the text: none except formatting** — the harness's indent is removed and Prettier has normalised the Markdown (list and table spacing); no word is changed. The reviewer read the files; it ran no command.
+The reviewer's final report on `write-path.md` v0.1 (`789135b`), the text as handed back (the harness frames it as model output, not as the owner's words, and indents every line). **Edits to the text: none except formatting** — the harness's indent is removed and Prettier has normalised the Markdown (list and table spacing); no word of the text is changed. The reviewer read the files; it ran no command.
 
 ---
 
