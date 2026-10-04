@@ -43,8 +43,8 @@ change data, so 7.4 tests it.
 7. One database transaction applies the change (2.8); a missing record → **404** `not_found`; a broken business rule → **400** `validation`.
 8. After the commit the threshold check runs (2.9); when exceeded the demo resets and the answer is **409** `conflict`.
 9. Otherwise **201** (create, with the record), **200** (edit, deposit, withdraw, with what the page spec names) or **204** (delete).
-10. Every answer, including the refusals of steps 2–4 and every error the wrapper builds, carries `X-Request-Id` and `Cache-Control: no-store`. Today only a route's *success*
-    path sets `no-store` (`app/api/overview/route.ts`); the `errorResponse`, `validationErrorResponse` and `rateLimitedResponse` helpers (`src/server/http.ts`) and the proxy's own 401 set
+10. Every answer, including the refusals of steps 2–4 and every error the wrapper builds, carries `X-Request-Id` and `Cache-Control: no-store`. Today the proxy sets `no-store` only on authenticated
+    **page** responses (not on any `/api/*` answer, its own 401 included), and a route sets it on its *success* path (`app/api/overview/route.ts`, `app/api/meta/route.ts`); the `errorResponse`, `validationErrorResponse` and `rateLimitedResponse` helpers (`src/server/http.ts`) and the proxy's own 401 set
     none, so the wrapper and the proxy must (a build task; 7.3 tests every refusal). A refusal of step 3 or 4 must also not re-issue the session cookie: the proxy's sliding re-issue
     (`proxy.ts` 173–186) skips only `/api/auth/logout`, `/api/auth/login` and the logout fallback today, so the new branches join that skip.
 
@@ -68,7 +68,7 @@ Alternatives: *per route* (each handler calls a guard — one forgotten line fro
 precede it). The rate limit, the validation and the threshold stay in the wrapper: they need the database and the parsed body. The proxy's `needsSession` has no method term today; the new branch keys on the method and the exempt
 list and sits after the 401 branch. **415 or 400?** 415 is the status HTTP defines for an unsupported media type, and a client that gets it knows what to fix; `/api/admin/reset` answers 400 for a body that is not JSON, which stays as it is.
 
-**2.6 Answers.** All use `ErrorEnvelope` (`auth.md` §2.10, `src/shared/schemas.ts`); `message` is a fixed string, `validation` carries
+**2.6 Answers.** All use `ErrorEnvelope` (`auth.md` §2.10, `src/shared/schemas.ts`) — except the 403 if the owner answers Q1 (b), which keeps logout's `{ message }` body; `message` is a fixed string, `validation` carries
 `issues` and no `message`, and no answer echoes the input.
 
 | Status | `error` | When | Body beyond `error` |
@@ -286,4 +286,4 @@ Each is answered with its letter; "a" is my recommendation in every case, so **"
 
 ---
 
-Changelog: v0.2 (2026-10-04) — after two read-only reviews (briefs and reports in `docs/04-process/prompts/2026-10-04-T-15d/`): the `GET` rule corrected (a path may export `GET` beside write methods; `GET /api/admin/reset` the one exception); the issue mapper specified with exact input→code pairs; a pot deletion reads its total from the delete; the content-type rule made exact; the 401 client behaviour, the 404 departure from AC3, the proxy's logging and `Set-Cookie` re-issue, the missing-`no-store` helpers and the copy string "Already used" stated; the exemptions, amendments and copy put to the owner; Q1 and Q5 split into single-choice questions; tests made conditional on the answers and not dependent on a running server's environment; wrong or loose citations fixed. v0.1 (2026-10-04) — first draft. v0.2.1 (2026-10-04) — Copilot's review of v0.2: 7.3's 415 case names `PUT` and `PATCH`, the constraints list names each NFR in full, the owner question's shorthand is English.
+Changelog: v0.2 (2026-10-04) — after two read-only reviews (briefs and reports in `docs/04-process/prompts/2026-10-04-T-15d/`): the `GET` rule corrected (a path may export `GET` beside write methods; `GET /api/admin/reset` the one exception); the issue mapper specified with exact input→code pairs; a pot deletion reads its total from the delete; the content-type rule made exact; the 401 client behaviour, the 404 departure from AC3, the proxy's logging and `Set-Cookie` re-issue, the missing-`no-store` helpers and the copy string "Already used" stated; the exemptions, amendments and copy put to the owner; Q1 and Q5 split into single-choice questions; tests made conditional on the answers and not dependent on a running server's environment; wrong or loose citations fixed. v0.1 (2026-10-04) — first draft. v0.2.1 (2026-10-04) — Copilot's review of v0.2: 7.3's 415 case names `PUT` and `PATCH`, the constraints list names each NFR in full, the owner question's shorthand is English. v0.2.2 (2026-10-04) — Copilot's second review: 2.2 step 10 states the real `no-store` baseline (pages only in the proxy; `/api/overview` and `/api/meta` on success), 2.6 says the 403 body depends on Q1.
