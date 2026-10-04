@@ -74,8 +74,10 @@ export function listedReleases(prd: string): number[] {
 /**
  * The stories of every listed release up to and including `upTo`, in order, each id once. `upTo`
  * must itself be a listed release: a release being built whose `Stories:` sentence is missing would
- * otherwise be skipped and the check would pass on the earlier releases alone (it fails closed; a
- * release with no new stories says so in a sentence of its own, which the PRD's owner writes).
+ * otherwise be skipped and the check would pass on the earlier releases alone (it fails closed).
+ * A sentence that names no story is an error too (`releaseStoryIds`), so a release that delivers no
+ * stories — Release 3 today — cannot be the release being built until the PRD's owner decides how
+ * its list is written.
  */
 export function cumulativeStoryIds(prd: string, upTo: number): string[] {
   const listed = listedReleases(prd);
