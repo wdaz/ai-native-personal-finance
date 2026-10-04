@@ -26,7 +26,7 @@ agent before the edit (the command or file named).
 | 2 | One listbox cannot serve the pot action menu; forms need disabled options | Fixed in 2.8: the `Menu` chooses one value; `aria-disabled` options; the pot "…" menu is `pots.md`'s menu button |
 | 3 | `reset()` does not re-fetch | Checked Next 16.3.8's `10-error-handling.md` (`retry`) and that no `error.tsx` exists in `app/`. Fixed in 2.10: no `error.tsx`, as on Overview |
 | 4 | Debounce and pushes race; Back with focus | Fixed in 2.5: one intended query; a choice applies a pending search first; `popstate` resets the field; current option pushes nothing; `{ scroll: false }` |
-| 5 | Truncated names vs US-09 AC3, NFR-A8 | Fixed in 2.9 and 2.15: names wrap (a departure with its source); 4.7 updated |
+| 5 | Truncated names vs US-09 AC3, NFR-A8 | v0.2 made names wrap (a departure from the design decided by the agent without asking). **Overruled by the owner** on v1.0.1: truncated as drawn, with a tooltip (v1.0.2, §9) |
 | 6 | Q1 count and terms; missing questions | Fixed: Q1 rewritten with the terms explained; the two reuses of approved messages are Q4. The truncation question was not asked: the stories decide it (5) |
 | 7 | Missing test rows | Fixed in §7: the status line, page reset by search and by category, US-19 AC2 with `few-transactions` (checked: its 3 rows are Dining Out, General, General), one page, disabled hover, the busy state held with `page.route`; `empty-all` wins over a filter (2.10) |
 | 8 | `webmcp-tools.md` §7 text | Fixed: H11 (4) |
@@ -73,3 +73,11 @@ to some degree (recorded in §9 Q3).
 ## The owner on v0.2.2
 
 "Q1 və Q4-ə cavab a" ("answer a to Q1 and Q4"). v1.0 records both answers in §9; nothing waits for the owner.
+
+## The owner on v1.0.1 — a decision the agent should have asked
+
+"Spec uzun adları dizayndakı kimi "…" ilə kəsmir, sətirdən-sətrə keçirir; bu qərarı səndən soruşmadan agent verib.
+Orda tooltip olmalıdır." The agent had answered review 2's finding 5 by departing from the design on its own reading
+of US-09 AC3 and NFR-A8; a departure from what the design explicitly draws is the owner's call, even when a story
+seems to support it. v1.0.2 truncates as drawn and adds a native tooltip (`title`), recorded in §9. The owner also
+said the designer's sidebar and favicon changes go in as the second hotfix ("hotfix 2"), after T-15d.
