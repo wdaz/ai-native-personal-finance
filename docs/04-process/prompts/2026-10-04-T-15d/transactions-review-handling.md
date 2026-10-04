@@ -69,3 +69,7 @@ The owner answered Q2 ((a), with the note that the shadow is for popovers and dr
 verbatim in §9 Q2), found Q1 unclear (rewritten in v0.2.2 as a table: each text, where it is used, seen or heard,
 with "screen reader" and "voice control" explained), and remarked on Q3 that seeing the schema may prevent mistakes
 to some degree (recorded in §9 Q3).
+
+## The owner on v0.2.2
+
+"Q1 və Q4-ə cavab a" ("answer a to Q1 and Q4"). v1.0 records both answers in §9; nothing waits for the owner.

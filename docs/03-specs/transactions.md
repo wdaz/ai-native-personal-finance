@@ -1,6 +1,6 @@
 # SPEC-transactions — Transactions page
 
-Status: **Draft** (v0.2.2, 2026-10-04; §9: Q2 and Q3 answered by the owner, Q1 and Q4 open) · Author(s): Agent (Claude Code, Sonnet 5.5 and Opus 5.5, background session) · Date: 2026-10-04
+Status: **Approved** by the owner's merge of PR #88 (v1.0, 2026-10-04; the owner answered the draft's four questions on 2026-10-04 — Q1 and Q4 "cavab a" ("answer a"), Q2 (a) with a note on the token's use, Q3 (a) with an addition — recorded in §9; reviewed by two read-only reviewers and by Copilot; the changelog at the end lists each revision) · Author(s): Agent (Claude Code, Sonnet 5.5 and Opus 5.5, background session) · Date: 2026-10-04
 Implements: US-09 (AC1–AC4), US-10, US-11, US-12, US-13, US-19 (the receiving side: the page opened with `?category=<category>&page=1`), US-32, US-33, US-34 (for this page), US-36 (AC2), US-38 (AC1: `list_transactions`), US-39 (AC2–AC4 for `list_transactions`); US-31 does not apply (2.12) ·
 Constrained by: ADR-0001 (server and client components), ADR-0002, ADR-0003, ADR-0004, `write-path.md` 2.1 and 2.2 step 10 (a read route), NFR-A1, A2, A4, A6, A7, A8, B1, B3, P1, P2, P4, S2, S7, T1–T8, W3–W7, D2, D3 ·
 Resolves hand-offs H3 (`list_transactions`'s tool table; it has no `consequentialHint`), H9 (the rows for this page), H11 (new, `release-2-handoffs.md`) · Design: prototype "Transactions" (`~/Own/design-exports/app-prototype.html`, outside the repository — `docs/00-discovery/inputs/design/README.md`)
@@ -113,8 +113,8 @@ The pot "…" menu holds actions (Edit, Delete), has no current value and is not
 **2.10 Loading, empty, error.**
 - **Loading.** While a navigation started by a control is pending, the results region has `aria-busy="true"` (2.5). There is no loading route and no skeleton.
 - **The status line.** A visually hidden `role="status"` element, empty on first render; after every change made by a control it is emptied and then set (so the same text is announced again, e.g. after a sort change) to "{total} transactions, page {n} of {m}" ("1 transaction" for one), or, when there are no results, the empty message below. (US-09 AC2: "the current page is … announced".)
-- **No results.** There are transactions, but none matches the search and/or the category: the toolbar stays, with the typed text; on 768 px and up the table's header row stays; pagination is hidden; in place of the rows, in the table body, one row with one cell spanning the four columns (`colspan="4"`), centred, "No transactions match your search" (`COPY.transactionsNoResults`, the appendix's row), preset 4 grey-500. (US-13 AC1; US-19 AC2 sends a category with no rows here; §9 Q4.)
-- **No transactions at all** (no row exists, whatever the filter — the `empty-all` variant): the same place and layout, "No transactions yet" (`COPY.transactionsEmpty`, which Overview already uses; §9 Q4). It wins over "No results": with no rows, a filter has nothing to match.
+- **No results.** There are transactions, but none matches the search and/or the category: the toolbar stays, with the typed text; on 768 px and up the table's header row stays; pagination is hidden; in place of the rows, in the table body, one row with one cell spanning the four columns (`colspan="4"`), centred, "No transactions match your search" (`COPY.transactionsNoResults`, the appendix's row), preset 4 grey-500. (US-13 AC1; US-19 AC2 sends a category with no rows here; this use approved by the owner, §9 Q4.)
+- **No transactions at all** (no row exists, whatever the filter — the `empty-all` variant): the same place and layout, "No transactions yet" (`COPY.transactionsEmpty`, which Overview already uses; this place approved by the owner, §9 Q4). It wins over "No results": with no rows, a filter has nothing to match.
 - **Error.** If `getTransactions` throws, the page logs `Transactions: getTransactions failed requestId=<id>` (the id from `x-request-id`) and renders, in place of the card, one card "Couldn't load your transactions" with a "Retry" button (`router.refresh()`), inside the shell with the header (the Overview pattern, `overview.md` 2.8). As on Overview, the page has no `error.tsx`:
   any other error falls to Next's default handling.
 - **Session ended.** A page request without a session meets the proxy's redirect to `/login` (the query string kept in `?next=`); the API and the tool answer 401 `unauthenticated` (`write-path.md` 2.2 step 2, US-39 AC4).
@@ -193,7 +193,7 @@ The tool calls `apiGet` with the query string built by `URLSearchParams` (`apiGe
 | No transactions yet | no data | `COPY.transactionsEmpty` (exists) |
 | Couldn't load your transactions · Retry | error card | **new** · `COPY.retry` (exists) |
 
-The strings marked *the design*, *US-11*, *US-12* and *the brief* are not in the appendix today; they are added to it with the new ones (R-07: the design's copy lives in the appendix because the design is never in the repository). The new ones are §9 Q1.
+The strings marked *the design*, *US-11*, *US-12* and *the brief* are not in the appendix today; they are added to it with the new ones (R-07: the design's copy lives in the appendix because the design is never in the repository). The new ones were approved by the owner (§9 Q1).
 
 ## 3. States
 
@@ -288,6 +288,8 @@ localised dates or numbers. The `Menu` is specified here but its other uses are 
 
 ## 9. Open questions
 
+None is open. The owner answered all four on 2026-10-04; each answer is recorded under its question.
+
 **Q1 — May the page use these eight new texts?** *What:* the page needs eight short English texts that no approved list has yet. Every text the app shows or reads aloud must first be in the message table at the end of `user-stories.md`, which the owner approves; the code may use only texts from that table.
 One of the eight is seen on the screen. The other seven are never seen: they are what a **screen reader** (software that reads the page aloud for a person who cannot see it) or **voice control** (operating the page by speaking the names of its buttons) says or listens for. The design shows only what is seen, so it has none of them.
 
@@ -305,6 +307,8 @@ One of the eight is seen on the screen. The other seven are never seen: they are
 *Why it matters:* a text that is not in the approved table cannot be added to the code; without 2 to 8 a screen-reader user hears unnamed buttons. Once approved, the texts go into the table and into the code together, in the first Transactions build task (hand-off H11).
 - (a) **Approve all eight as written — recommended.**
 - (b) Change the wording of some (say which numbers and the new words).
+
+**Answered by the owner on 2026-10-04: (a)** — "Q1 və Q4-ə cavab a" ("answer a to Q1 and Q4"). The eight texts are approved as written; they land in the appendix and `COPY` with the first Transactions build task (H11 (1)).
 
 **Q2 — May the menu panels have the prototype's shadow?** *What:* the design's popover panels have a soft shadow (`0 4px 24px rgba(0, 0, 0, 0.25)`), which exists only in the prototype; the tokens are "the only source for UI values" (`docs/02-architecture/README.md`) and `design-tokens.md` has no shadow. A new token `--shadow-popover` would be added to `design-tokens.md` and, together, to the generated `src/ui/tokens.css` (a test holds them equal), by the first Transactions task (H11).
 *Why it matters:* without it the panel would be a flat white box on a white card.
@@ -332,7 +336,9 @@ On the limit of that lesson (2.3: the refusal helps within one conversation; the
 - (a) **Use both as approved; the appendix rows gain these two places — recommended** (no new text; US-19 AC2 itself points to US-13's state).
 - (b) Case (1) gets its own text, "No transactions in this category", a ninth new string, and case (2) uses "No transactions yet".
 
+**Answered by the owner on 2026-10-04: (a)** — "Q1 və Q4-ə cavab a". Both approved messages are used in these places (2.10); the appendix rows gain the two places with the first Transactions build task (H11 (1)).
+
 ---
 
-Changelog: v0.2.2 (2026-10-04) — the owner answered Q2 ((a), with the note that the shadow is for popovers and dropdown menus only, applied in 2.8 and H11 (2)) and added a remark to Q3; Q1 rewritten in plain words with a table, as the owner found it unclear. v0.2.1 (2026-10-04) — Copilot's two findings on PR #88 fixed (2.2: "the name limit is 60"; 2.15: two table rows that had merged); 2.3 states what the app can and cannot teach an agent (a refusal helps within one conversation; the input schema is what every agent sees). v0.2 (2026-10-04) — the two read-only reviews of v0.1 applied (`docs/04-process/prompts/2026-10-04-T-15d/transactions-review-handling.md` lists each finding and its fix): the layers (`pageItems` and the page size in `src/shared`), the `Menu` scoped to choosing one value (disabled options; the pot menu is `pots.md`'s), one intended query for every control,
+Changelog: v1.0 (2026-10-04) — the owner answered Q1 and Q4 ("Q1 və Q4-ə cavab a"); §9 records all four answers and nothing waits for the owner; 2.10, 2.16 and H11 say the answers as decided. v0.2.2 (2026-10-04) — the owner answered Q2 ((a), with the note that the shadow is for popovers and dropdown menus only, applied in 2.8 and H11 (2)) and added a remark to Q3; Q1 rewritten in plain words with a table, as the owner found it unclear. v0.2.1 (2026-10-04) — Copilot's two findings on PR #88 fixed (2.2: "the name limit is 60"; 2.15: two table rows that had merged); 2.3 states what the app can and cannot teach an agent (a refusal helps within one conversation; the input schema is what every agent sees). v0.2 (2026-10-04) — the two read-only reviews of v0.1 applied (`docs/04-process/prompts/2026-10-04-T-15d/transactions-review-handling.md` lists each finding and its fix): the layers (`pageItems` and the page size in `src/shared`), the `Menu` scoped to choosing one value (disabled options; the pot menu is `pots.md`'s), one intended query for every control,
 no `error.tsx`, names wrap, the `page` pattern and empty values, `no-store` on every answer, the status line, the tests the reviews found missing, the citations corrected; Q3 added at the owner's request and answered by the owner ((a), with the addition applied in 2.3); Q4 added; H11 (4) added. v0.1 (2026-10-04) — first draft, from a read of the prototype (outside the repository), the stories US-09 to US-13 and US-19, the NFRs, the tokens, `write-path.md`, the Release 1 code (`src/domain/transactions.ts`, the Overview page and route, `src/ui`, `src/webmcp`, the tests) and figures recomputed from the seed (4.2).
