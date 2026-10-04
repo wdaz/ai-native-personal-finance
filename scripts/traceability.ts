@@ -5,8 +5,8 @@ import ts from "typescript";
 
 /**
  * NFR-T2 / ADR-0003 (clarifications 2026-09-24 and 2026-10-04): every story of the release being
- * built, and of every release before it, is named in the title of at least one test; a title naming a story `user-stories.md` does not
- * define fails too. "Title" means the first argument of a `test`/`it`/`describe`/`test.describe`
+ * built, and of every release before it, is named in the title of at least one test; a title that
+ * names a story `user-stories.md` does not define fails too. "Title" means the first argument of a `test`/`it`/`describe`/`test.describe`
  * call that actually runs, read from the syntax tree — so a comment, a string, a skipped test or
  * group, a `.test(` on a regular expression or Zod's `.describe(` never counts. The title of an
  * `it.each([…])("…")` is not read either (the callee is a call): name the story in a plain title.
@@ -71,9 +71,20 @@ export function listedReleases(prd: string): number[] {
     .sort((a, b) => a - b);
 }
 
-/** The stories of every listed release up to and including `upTo`, in order, each id once. */
+/**
+ * The stories of every listed release up to and including `upTo`, in order, each id once. `upTo`
+ * must itself be a listed release: a release being built whose `Stories:` sentence is missing would
+ * otherwise be skipped and the check would pass on the earlier releases alone (it fails closed; a
+ * release with no new stories says so in a sentence of its own, which the PRD's owner writes).
+ */
 export function cumulativeStoryIds(prd: string, upTo: number): string[] {
-  const ids = listedReleases(prd)
+  const listed = listedReleases(prd);
+  if (!listed.includes(upTo)) {
+    throw new Error(
+      `PRD §5 Release ${upTo} has no \`Stories:\` sentence, and it is the release being built`,
+    );
+  }
+  const ids = listed
     .filter((release) => release <= upTo)
     .flatMap((release) => releaseStoryIds(prd, release));
   return [...new Set(ids)];

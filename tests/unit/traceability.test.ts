@@ -143,6 +143,12 @@ describe("the release's story list (PRD §5)", () => {
     expect(cumulativeStoryIds(repeated, 2)).toEqual(["US-01", "US-02", "US-03"]);
   });
 
+  it("fails closed: the release being built must have its own story sentence", () => {
+    const prd = "### Release 1 — a\nStories: US-01. Deferred\n### Release 2 — b\nNo list yet.\n";
+    expect(() => cumulativeStoryIds(prd, 2)).toThrow(/Release 2.*Stories:.*being built/);
+    expect(cumulativeStoryIds(prd, 1)).toEqual(["US-01"]);
+  });
+
   it("reads Release 1 while Release 1 is the one being built", () => {
     expect(RELEASE_BEING_BUILT).toBe(1);
   });
@@ -440,6 +446,11 @@ describe("testSources and run — against a throwaway repository", () => {
     expect(result.err).toEqual(
       RELEASE_1.map((id) => `traceability: ${id} is named in no test title`),
     );
+  });
+
+  it("refuses to run for a release being built that has no story sentence (Release 3 has none)", () => {
+    const root = repository(RELEASE_1, { "unit/all.test.ts": titles(RELEASE_1) });
+    expect(() => run(root, false, 3)).toThrow(/Release 3.*Stories:.*being built/);
   });
 
   it("with Release 2 being built, passes when all 41 stories are named", () => {
