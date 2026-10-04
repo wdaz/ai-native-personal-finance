@@ -116,3 +116,14 @@ lesson above). Copilot errored on `3a4ae8c` and `ecf51c9`; the owner was asked h
 | Comment | Handling |
 |---|---|
 | 2.9: the joined sentence starts with a lowercase "the" | Fixed (v1.0.6, wording only) |
+
+## v1.0.7 reverted — the owner had not approved it
+
+The agent read the designer's `CHANGELOG.md` in Claude Design (`DesignSync` `get_file`, read only, after the owner
+started `/design-sync`) and applied its §6 (the custom tooltip) to 2.9 as v1.0.7, with a new hand-off H12. The owner:
+"qəbul etmək üçün icazə verməmişəm" ("I have not given permission to accept it"). v1.0.7 was reverted with
+`git revert` (history kept); the spec is back at v1.0.6. What the changelog's §6 says differs from 2.9 in: a `span`
+with `tabindex="0"` instead of a button; `aria-describedby` only while open; one tooltip in a portal with
+`position: fixed`, a flip below at 72 px from the top and a 16 px clamp; closing on scroll and resize; the component
+name `TruncatedText`; the tooltip on Overview, Budgets, Pots and Recurring Bills too. None of it is applied until the
+owner says so. Lesson: reading a design source the owner points at is not approval to adopt it.
