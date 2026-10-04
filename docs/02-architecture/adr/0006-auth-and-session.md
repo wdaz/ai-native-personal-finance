@@ -1,6 +1,7 @@
 # 0006 — Authentication and session: single demo account, signed httpOnly cookie, 7-day sliding session
 
-- Status: **Accepted** (amended 2026-09-25) · Date: 2026-09-13
+- Status: **Accepted** (amended 2026-09-25; clarified 2026-10-04) · Date: 2026-09-13
+- Clarification 2026-10-04 (owner: the rule at the T-15d plan gate, the exempt routes in SPEC-write-path §9 Q8 (a), "bütün suallara cavab a" ("answer (a) to all the questions"); SPEC-write-path §2.3–§2.5): the same-origin check logout has (`Sec-Fetch-Site: cross-site` → 403) applies to every write route under `/api/*`, together with a content-type rule (`application/json` only), both in `proxy.ts`. `SameSite=Lax` stays the defence for a request that sends no fetch metadata. Exempt: login, signup, logout (its own rule), `/api/admin/reset` and `/api/test/*`. Searched on 2026-10-04 — `grep -rn -i "sec-fetch-site" docs/01-requirements docs/02-architecture docs/03-specs` — the other hits are `auth.md` §2.7, §2.8 and §7 (logout), `tech-debt.md` TD-15 (a closed, dated record), the backlog's T-07 row and `release-2-handoffs.md` H7; none contradicts this.
 - Amendment 2026-09-25 (6) — **Accepted by the owner, 2026-09-25** ("ADR-0006 bağlı qərarı qəbul
   edirəm" — "I accept the decision on ADR-0006", after PR #44 with its code had merged; drafted by
   the agent during T-13a) (T-13a, TD-2): Next 16 renamed the

@@ -1,7 +1,7 @@
 # Data model
 
-Status: **Approved** (v1.1 — 2026-09-22: `seq` and 64-bit money, owner decisions at the T-02 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent · Date: 2026-09-13 · Traces to: user stories US-04…US-30, US-36/37; ADR-0005
-Changelog: v1.1 (2026-09-22, owner, T-02 plan gate) — `Budget` and `Pot` gain `seq`, their creation order, because rows created in one transaction share `createdAt` (US-05/07/15/22); money columns are 64-bit, because NFR-S3's 99,999,999,999 cents does not fit a 32-bit integer (R-17).
+Status: **Approved** (v1.2 — 2026-10-04: the `WriteAttempt` entity, owner decision, T-15d, SPEC-write-path §9 Q4 (a) and Q9 (a); v1.1 — 2026-09-22: `seq` and 64-bit money, owner decisions at the T-02 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent · Date: 2026-09-13 · Traces to: user stories US-04…US-30, US-36/37; ADR-0005
+Changelog: v1.2 (2026-10-04, T-15d, SPEC-write-path §2.10) — a new entity, `WriteAttempt`, the state of the write rate limit (the table below). v1.1 (2026-09-22, owner, T-02 plan gate) — `Budget` and `Pot` gain `seq`, their creation order, because rows created in one transaction share `createdAt` (US-05/07/15/22); money columns are 64-bit, because NFR-S3's 99,999,999,999 cents does not fit a 32-bit integer (R-17).
 Money is integer cents, stored 64-bit (NFR-S3 allows 99,999,999,999). Dates are UTC timestamps; business time is fixed (ADR-0005). Every entity has a UUID `id`, `createdAt`, `updatedAt`, `seeded` (boolean).
 
 | Entity | Fields | Rules | Stories |
@@ -12,6 +12,7 @@ Money is integer cents, stored 64-bit (NFR-S3 allows 99,999,999,999). Dates are 
 | `Pot` | `seq` (creation order, assigned by the database — rows created in one transaction share `createdAt`), `name` (≤ 30, **unique, case-insensitive**), `target` (cents > 0), `total` (cents ≥ 0), `theme` (enum, **unique among pots**) | `total` may exceed `target`; deposit ≤ `Balance.current`; withdrawal ≤ `total` | US-05, US-21–26 |
 | `ResetLog` | `at`, `reason` (`scheduled` \| `threshold` \| `manual` \| `test`) | latest exposed via `/api/meta` | US-37 |
 | `LoginAttempt` | `ip`, `at`, `success` | cleared on reset; rate limit source | US-01, NFR-S4 |
+| `WriteAttempt` | `ip`, `at` | one row per write request the write rate limit counts (SPEC-write-path §2.10); pruned by the check itself (rows older than the window are deleted), cleared on reset, not counted by the storage threshold; a working name, added with Release 2's first write task | US-36, NFR-S4 |
 
 Enums: `Category` = Entertainment, Bills, Groceries, Dining Out, Transportation, Personal Care, Education, Lifestyle, Shopping, General. `Theme` = Green, Yellow, Cyan, Navy, Red, Purple, Turquoise, Brown, Magenta, Blue, Navy Grey, Army Green, Gold, Orange, Pink.
 
