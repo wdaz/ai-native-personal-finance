@@ -1,0 +1,296 @@
+# SPEC-transactions — Transactions page
+
+Status: **Draft** (v0.1, 2026-10-04; §9 holds two questions for the owner) · Author(s): Agent (Claude Code, Sonnet 5.5 and Opus 5.5, background session) · Date: 2026-10-04
+Implements: US-09 (AC1–AC4), US-10, US-11, US-12, US-13, US-19 (the receiving side: the page opened with `?category=<category>&page=1`), US-32, US-33, US-34 (for this page), US-36 (AC2), US-38 (AC1: `list_transactions`), US-39 (AC2–AC4 for `list_transactions`); US-31 does not apply (2.12) ·
+Constrained by: ADR-0001 (server and client components), ADR-0002, ADR-0003, ADR-0004, `write-path.md` 2.1 and 2.2 step 10 (a read route), NFR-A1, A2, A4, A6, A7, A8, B1, B3, P1, P2, P4, S2, S7, T1–T8, W3–W7, D1, D2 ·
+Resolves hand-offs H3 (`list_transactions`'s tool table; it has no `consequentialHint`), H9 (the rows for this page), H11 (new, `release-2-handoffs.md`) · Design: prototype "Transactions" (`~/Own/design-exports/app-prototype.html`, outside the repository — `docs/00-discovery/inputs/design/README.md`)
+
+## 1. Purpose
+
+The user sees every transaction of the demo account, ten to a page, and narrows or reorders the list by name, category and one of six sorts. Where the user is on the list — the search text, the category, the sort and the page — lives in the URL, so a view can be linked
+and Budgets' "See All" can open the list already filtered. The page only reads: transactions have no write route (`write-path.md` 2.1). An AI agent reads the same list through the page-scoped tool `list_transactions`.
+
+## 2. Behaviour
+
+**2.1 Where things run** (ADR-0001: a spec states which components are client components).
+- **Server:** `app/(app)/transactions/page.tsx` is an async Server Component. It awaits `searchParams` (a Promise in Next 16, as `app/(auth)/login/page.tsx` does), reads the query with the lenient parser of 2.3, calls `getTransactions(getDb(), query)` from `src/server/transactions.ts` **directly**
+  (no HTTP self-call, as Overview 2.1), and renders the page header (title "Transactions", no action button) and the card of 2.9. `TransactionTable` (the rows) is a Server Component. The same `getTransactions` backs `GET /api/transactions` (2.13).
+- **Client** (`"use client"`): `TransactionsNav` (a provider: it owns navigation, `router.push` and `router.replace`, and the pending state of `useTransition`), `TransactionsToolbar` (the search field and the two menus), `Menu` (`src/ui`, 2.8), `TransactionsPagination` (2.7), `ResultsRegion` (a wrapper that carries `aria-busy` and
+  receives the server-rendered table as `children`), `TransactionsError` (2.10) and `TransactionsTools` (`src/webmcp/tools`, registers the tool, 2.14). `app/(app)/transactions/layout.tsx` renders `children` and `<TransactionsTools />` (the Overview pattern, `webmcp-tools.md` 2.3).
+- **Domain** (pure, `src/domain/transactions.ts`, today `compareLatest` and `latestTransactions` only): `sortTransactions`, `filterTransactions`, `paginate` and `pageItems` (2.7); a constant `TRANSACTIONS_PAGE_SIZE = 10`. **Shared** (`src/shared`): `parseTransactionsQuery`, `TransactionsDtoSchema`, the sort slugs and labels, `COPY` entries (2.16).
+
+**2.2 The URL contract.** One contract for the page, `GET /api/transactions` and the Budgets link (US-09 AC4, US-12 AC2, US-19 AC1). `budgets.md` cites this section.
+
+| URL and API name | Tool input | Values | Meaning when absent | Written by the page's own controls |
+|---|---|---|---|---|
+| `q` | `search` | text, trimmed, at most 60 characters (the longest name is 60, `data-model.md`) | no search | only when non-empty after trimming |
+| `category` | `category` | exactly one of `Entertainment`, `Bills`, `Groceries`, `Dining Out`, `Transportation`, `Personal Care`, `Education`, `Lifestyle`, `Shopping`, `General` — the display names, case-sensitive | "All Transactions" (an empty `category=` means the same) | only when a category is chosen |
+| `sort` | `sort` | `latest`, `oldest`, `a-to-z`, `z-to-a`, `highest`, `lowest` | `latest` | never for `latest` |
+| `page` | `page` | an integer, 1 or more | 1 | never for page 1 (the Budgets link writes `page=1`; it is read like an absent one) |
+
+The written order is `q`, `category`, `sort`, `page`. The page writes the query string with `URLSearchParams` (a space becomes `+`); it reads both `+` and `%20`, so `?category=Dining+Out&page=1` and `?category=Dining%20Out&page=1` are the same view. Parameters not in the table are ignored and dropped
+the next time a control writes the URL; a repeated parameter reads as its first value. **The page never redirects to a canonical URL**: it shows the effective values, and the URL is rebuilt from them only when the user changes a control. The URL is the source of truth: Back and Forward re-render the view from it, and a login redirect keeps it
+(`?next=` keeps the query string, `src/shared/next-path.ts`, `tests/e2e/login.spec.ts`).
+
+**2.3 Reading the query — lenient on the page, strict on the API.** One pure function, `parseTransactionsQuery(params, { strict })`, returns `{ query, issues }`.
+
+| Parameter | The page (`strict: false`) | `GET /api/transactions` and the tool (`strict: true`) |
+|---|---|---|
+| `page` | not an integer or below 1 → 1; above the last page → the last page (R-27, US-09 AC4); the URL is not rewritten | the same: clamped, never an error (US-09 AC4 names only `page`) |
+| `sort` | an unknown value → `latest` | 400 `validation`, `issues: [{ path: ["sort"], code: "invalid_format" }]` |
+| `category` | an unknown value (any other case, any other text) → "All Transactions" | 400 `validation`, `issues: [{ path: ["category"], code: "invalid_format" }]` |
+| `q` | trimmed, then cut to 60 characters | trimmed; more than 60 → 400 `validation`, `issues: [{ path: ["q"], code: "too_long" }]` |
+
+The issues are written by hand with the two codes the contract has today (`invalid_format`, `too_long`), so the API does **not** depend on `toErrorIssues`, which throws on a Zod `invalid_value` (a `z.enum` miss, `schemas.ts` 136–149; `write-path.md` 2.7 fixes it for the write schemas). The tool's own input schema is a Zod object with `z.enum`;
+`defineTool` validates a tool's input before any request is sent, so a bad tool input never reaches the API; an out-of-enum value is a `validation` tool error whose `issues` appear once `write-path.md` 2.7's mapper change has landed (`defineTool.ts` leaves `issues` out while the mapper throws). **US-39 AC2's parity** — the tool returns exactly what the UI shows
+for the same parameters — holds for valid parameters; for invalid ones the page is lenient and the API strict, by design.
+
+**2.4 The list.** `getTransactions` reads every row (`db.transaction.findMany()`, the Overview pattern: `BigInt` → `Number` at the edge, the Prisma category key → the display name, no `seeded` filter), then the pure domain functions apply, in this order, the category filter, the search, the sort and the page. The dataset is read-only and bounded by the seed (49 rows), so the whole table
+is read on every request and the rules live in tested domain functions (NFR-T1), not in SQL.
+- **Category:** exact equality on the display name. **Search:** the name only, case-insensitive substring (`toLowerCase` on both sides, no pattern characters — a `.` or a `%` is literal). The category, date and amount are not searched (§8).
+- **Sort** (US-11 AC1, R-09; `Intl.Collator('en')` for names, the collator `compareLatest` already uses):
+
+| Label (menu) | Slug | Order of keys |
+|---|---|---|
+| Latest (default) | `latest` | full timestamp newest first, then name A to Z, then `id` |
+| Oldest | `oldest` | full timestamp oldest first, then name A to Z (US-11 gives the name direction for Latest only; Oldest keeps it), then `id` |
+| A to Z | `a-to-z` | name A to Z, then full timestamp newest first, then `id` |
+| Z to A | `z-to-a` | name Z to A, then full timestamp newest first, then `id` |
+| Highest | `highest` | signed amount, largest first (incomes first), then full timestamp newest first, then `id` |
+| Lowest | `lowest` | signed amount, smallest first, then full timestamp newest first, then `id` |
+
+  The last key, `id` ascending, exists because `Transaction` has no `seq` and `findMany()` has no `orderBy`: without it two rows that tie on every other key could swap places between two requests and a row would cross a page boundary. "Full timestamp" is the whole `date`, not the calendar day (4.4 shows why).
+- **Page:** `pageCount = max(1, ceil(total / 10))`; the effective page is the requested one clamped to `1…pageCount`; the rows are the slice of ten.
+
+**2.5 The search field.** A text input inside a container with `role="search"`. It has a visually hidden `<label>` ("Search transactions"), the placeholder "Search transaction" (the design's), `maxLength` 60, `autocomplete="off"` and no submit control: typing is the only way to search; there is no clear button (the design has none).
+- **Debounce:** 250 ms (US-10 AC1 allows at most 300). After 250 ms without a keystroke the effective query is the trimmed text; when it equals the URL's `q` nothing happens; otherwise `router.replace` writes the URL with the new `q` and **without** `page` (a search starts at page 1). `replace`, not `push`: a burst of typing does not fill the history.
+  Choosing a category or a sort and changing the page use `router.push`, so Back returns to the previous view.
+- **While the answer is pending** the results region carries `aria-busy="true"` (US-10 AC1); the previous rows stay until the new ones arrive (no skeleton, no dimming — the design has none).
+- **The field owns its text.** A server answer never rewrites the text while the field has focus. The text is reset from the URL only when the URL's `q` changes by something other than this field's own navigation (Back or Forward, a link), so a slow answer for an older query cannot overwrite newer typing. Navigations started by the field run in `startTransition`; the
+  latest requested one is the one displayed (an E2E types `a` and then `co` and expects the `co` rows).
+- **Trimming:** the needle is trimmed on both ends and its inner spaces are kept; a needle of only spaces is empty and filters nothing (untrimmed, one space would match 48 of the 49 names, 4.5).
+
+**2.6 The two menus.** "Sort by" and "Category" are instances of the `Menu` of 2.8. Sort offers the six labels of 2.4 in that order; Category offers "All Transactions" first, then the ten categories in the order `CATEGORIES` (`src/shared/enums.ts`) already has: Entertainment, Bills, Groceries, Dining Out, Transportation, Personal Care, Education, Lifestyle, Shopping, General (the order of the
+brief and of the design). Choosing an option applies it at once with `router.push`, without `page`; the current option is the one the effective query has (so a URL with an unknown `sort` shows "Latest" selected). At 768 px and up each menu has a visible label ("Sort by", "Category" — the design's words) and a trigger button showing the current option; below 768 px
+the label and the text are replaced by an icon-only trigger.
+
+**2.7 Pagination.** A `<nav aria-label="Pagination">` holding Previous, the page numbers and Next, all `type="button"`. It is rendered when `total ≥ 1` and **hidden when there are no results** (US-10 AC2, US-13 AC1). With one page it is shown: Previous and Next are disabled and the one number is current (US-09 AC2: Previous is disabled on page 1, Next on the last page).
+- **Names.** Previous: visible text "Prev" (an icon only below 768 px) and the accessible name "Previous page"; Next: "Next" and "Next page"; a number: its digits visible and the accessible name "Page {n}" (each name contains its visible text, WCAG 2.5.3). The current number has `aria-current="page"`, the dark style of the design, and does nothing when activated.
+  A disabled Previous or Next uses the native `disabled` attribute: it is out of the tab order, has no hover state (US-34 AC2), and is drawn at half opacity, as the design draws it.
+- **Which numbers show** (`pageItems(current, count, maxNumbers)`, pure, unit-tested). The pagination renders both lists below; CSS shows one and gives the other `display: none`, so the hidden one is out of the accessibility tree and the tab order.
+  - *768 px and up* (`maxNumbers` 7): every page when `count ≤ 7`; otherwise the first page, the last page and the current page with one neighbour each side, and `…` where pages are hidden (a gap of exactly one page shows that page instead of `…`). With the seed `count` is at most 5, so every page shows; the rule is for a longer list.
+  - *Below 768 px* (US-09 AC3, at most three numbers with an ellipsis): a window of three consecutive pages containing the current one, clamped to `1…count`, with `…` at each end where pages are hidden. With 5 pages: page 1 → `1 2 3 …`; page 3 → `… 2 3 4 …`; page 5 → `… 3 4 5`. With 3 pages or fewer every page shows.
+  An ellipsis is `aria-hidden` text, not a control.
+- **Announcement.** After every change the status line of 2.10 says "{total} transactions, page {n} of {m}".
+- **Focus.** An activated control keeps focus when it is still in the DOM and enabled. When it is not — Next reached the last page and became disabled, or the window moved and the number is gone — focus goes to the current page's number button. Focus is never left on `<body>`.
+
+**2.8 The menu, once** (US-32 AC1 names five menus on three pages: sort, category, theme, category in the budget form, the pot menu; `src/ui/README.md` promises a `Menu` that does not exist; `budgets.md` and `pots.md` cite this section). A `Menu` primitive in `src/ui`, a client component:
+- **Roles and state.** The trigger is a `<button type="button">` with `aria-haspopup="listbox"`, `aria-expanded` and `aria-controls`; its accessible name is the label and the current option, "Sort by: Latest" (`aria-labelledby` the label and the value; below 768 px, where there is no visible label, an `aria-label` of the same words). The popup is a `role="listbox"` with `aria-labelledby` the label
+  and one `role="option"` per option; the current option has `aria-selected="true"`; the highlighted option is named by `aria-activedescendant` on the listbox, which holds focus while the menu is open.
+- **Current option, not by colour alone** (NFR-A7): the current option is bold (700, as the design draws it) **and** `aria-selected`; the highlighted option has the focus indicator of the tokens (a 2 px grey-900 outline with a 2 px offset).
+- **Keys on the trigger:** Enter, Space and ArrowDown open the menu and highlight the current option (the first when there is none); ArrowUp opens it and highlights the current option. **Keys in the open menu:** ArrowDown and ArrowUp move the highlight (no wrap); Home and End go to the first and last option; Enter and Space choose the highlighted option, close the menu and return focus to the trigger;
+  Escape closes without choosing and returns focus to the trigger; Tab closes without choosing and lets focus move on from the trigger. Type-ahead is not required (§8).
+- **Pointer:** a click on the trigger opens or closes; a click on an option chooses it; a click anywhere outside closes; opening one menu closes the other; hovering an option colours its text grey-500 (the design).
+- **Look** (the design's, from the prototype; values in tokens where a token exists): a white panel with an 8 px radius (`--radius-100`), padding 12 px 20 px, options with 12 px vertical padding and a 1 px grey-100 divider between them, the text at preset 4, anchored under the trigger's right edge; Sort's panel 114 px wide, Category's 177 px wide with a maximum height of 360 px that scrolls. The panel's shadow
+  is the prototype's `0 4px 24px rgba(0, 0, 0, 0.25)`, which `design-tokens.md` does not have: `--shadow-popover`, §9 Q2.
+- **Tests:** Component tests (ADR-0003: "menu keyboard" is a `src/ui` component test) and the E2E walkthrough.
+
+**2.9 The card and the rows.** One white card (12 px radius, `--radius-150`), padding 32 px (24 px 20 px below 768 px), a 24 px gap between its parts: the toolbar, the results region (the table, or a message), and the pagination. The page background and the page padding are the shell's.
+- **Toolbar:** the search field on the left (at most 320 px wide on desktop, 215 px on tablet, the full row on mobile; it never gets narrower than 160 px) and on the right the Sort menu then the Category menu, 24 px apart. Below 768 px the two triggers are icon buttons with a 44 px tap target (`--tap-target-min`; the design draws a 20 px icon);
+  when the row cannot hold a 160 px search field the two buttons wrap to the next line, right-aligned, so nothing is clipped at 320 px (US-33 AC3).
+- **The table.** A real `<table>` with a visually hidden `<caption>` ("Transactions"), a `<thead>` and a `<tbody>`. Below 768 px CSS lays each row out as the design's card and the header row is visually hidden but stays in the DOM; because a changed `display` can drop table semantics in some assistive technology,
+  the table, row groups, rows, headers and cells carry explicit `role` attributes (`table`, `rowgroup`, `row`, `columnheader`, `cell`). The build verifies this with axe and a screen-reader pass noted in the pull request.
+- **768 px and up:** columns "Recipient / Sender", "Category", "Transaction Date", "Amount" (the design's headers; US-09 AC1 names them Recipient/Sender, Category, Date, Amount), amount right-aligned, header text preset 5 grey-500, a 1 px grey-100 line under the header and under each row except the last on the page, 16 px row padding.
+  The column tracks are the design's: desktop `minmax(0, 1fr) 120px 120px 200px`, tablet `minmax(0, 1fr) 80px 88px 120px`, 32 px apart. The tablet's 80 px category column cannot hold "Transportation" at preset 5, so **a category may wrap to a second line and is never truncated or allowed to overflow**; a date (11 characters) never wraps.
+- **Below 768 px:** no visible header; each row is the avatar (32 px) with, beside it, the name over the category, and on the right the amount over the date, right-aligned.
+- **A row:** the avatar `<img src="/avatars/<key>.jpg">` with its `width` and `height` set (40 px; 32 px on mobile; NFR-P4: no layout shift) and `alt` = the name (the Overview card's pattern; a bare `<img>`, `src/ui/README.md` explains why not `next/image`); the name at preset 4 bold on one line, truncated with an ellipsis (the full name stays in the text);
+  the category and the date at preset 5 grey-500; the amount at preset 4 bold: `formatSignedMoney` (`+$75.50`, `-$55.50`), green (`--color-green`) when positive and grey-900 otherwise. The date is `formatDate` (`d MMM yyyy`, UTC; `overview.md` 4.2). Rows are not interactive: no hover, no click, no focus stop. There is no marker for `recurring` (the design has none).
+
+**2.10 Loading, empty, error.**
+- **Loading.** While a navigation started by a control is pending, the results region has `aria-busy="true"` (2.5). There is no loading route and no skeleton.
+- **The status line.** A visually hidden `role="status"` element, empty on first render; after every change it holds "{total} transactions, page {n} of {m}" ("1 transaction" for one), or, when there are no results, the empty message below.
+- **No results.** With a search or a category active and no matching row: the toolbar stays, with the typed text; on 768 px and up the table's header row stays; pagination is hidden; in place of the rows one centred line, "No transactions match your search" (`COPY.transactionsNoResults`, the appendix's row), preset 4 grey-500. (US-13 AC1.)
+- **No transactions at all** (the `empty-all` variant, no filter active): the same place and layout, "No transactions yet" (`COPY.transactionsEmpty`, which Overview already uses).
+- **Error.** If `getTransactions` throws, the page logs `Transactions: getTransactions failed requestId=<id>` (the id from `x-request-id`) and renders, in place of the card, one card "Couldn't load your transactions" with a "Retry" button (`router.refresh()`), inside the shell with the header (the Overview pattern, `overview.md` 2.8). A navigation that fails in the browser reaches
+  `app/(app)/transactions/error.tsx`, which renders the same card with `reset()` as Retry.
+- **Session ended.** A page request without a session meets the proxy's redirect to `/login` (the query string kept in `?next=`); the API and the tool answer 401 `unauthenticated` (`write-path.md` 2.2 step 2, US-39 AC4).
+
+**2.11 The keyboard walkthrough** (US-32; documented in the E2E test, AC3). After the shell's own order — the skip link, the five navigation items, the footer controls — Tab visits: the search field; the Sort trigger; the Category trigger; Previous (skipped when disabled); the page numbers in order; Next (skipped when disabled). The rows are not focus stops. Enter or Space on a trigger opens its menu; the arrow keys, Home, End, Enter and Escape work as in 2.8;
+Enter or Space on a page button changes the page. Every stop shows the focus indicator.
+
+**2.12 Responsive, hover and focus; what does not apply.** Breakpoints are the tokens' and US-33's: tablet from 768 px, desktop from 1024 px (the prototype's script switches to desktop at 1100 px; the tokens win). The page is verified at 1440, 768, 375 and 320 px with no horizontal scroll (US-33 AC2, AC3).
+- **Hover and focus** (US-34): the search field's border is beige-500, grey-500 on hover and grey-900 on focus (the tokens' "Component states"; the prototype uses grey-900 on hover), **plus** the project's focus indicator (a 2 px grey-900 outline, 2 px offset); a menu trigger has the same border states; a page button (Previous, a number, Next) turns beige-500 with white text on hover (the style guide) and shows the focus indicator;
+  a menu option's text turns grey-500 on hover. Transitions use `--duration-hover`.
+- **US-31 (validation messages) does not apply:** the page has no required field and no form; the search field accepts any text up to its `maxLength` and has no error state. The page's own copy (2.16) carries no validation message.
+
+**2.13 `GET /api/transactions`.** The route for the tool and the tests (the page calls `getTransactions` directly). It reads `q`, `category`, `sort`, `page` with `parseTransactionsQuery(…, { strict: true })` (2.3), calls `getTransactions(getDb(), query)` and answers:
+- 200 with a `TransactionsDto` (a `z.strictObject`, so a leaked field fails an API test) and `Cache-Control: no-store` (the route sets it itself, `write-path.md` 2.2 step 10); every answer carries `X-Request-Id` (the proxy);
+- 400 `validation` with `issues` (2.3), `Cache-Control: no-store`; 401 `unauthenticated` from the proxy; 500 `server_error` with `message: "The transactions are unavailable"` after a `console.error("GET /api/transactions failed", error)`.
+It never changes data (`write-path.md` 2.1; its test 7.2 runs this route too).
+
+```
+TransactionsDto = {
+  items: { id: uuid, name: string (1–60), avatar: key, category: display name, date: UTC ISO-8601, amount: integer cents (signed) }[],   // at most 10
+  page: integer ≥ 1,        // the effective page, after the clamp
+  pageSize: 10,
+  pageCount: integer ≥ 1,   // max(1, ceil(total / 10))
+  total: integer ≥ 0        // the rows that match the search and the category
+}
+```
+
+The row has the fields the table shows plus the `id` (US-39 AC2: "including ids") and the `avatar` key; it has no `recurring`, because the page shows none.
+
+**2.14 The agent tool `list_transactions`** (page-scoped, R-23; registered after login by `TransactionsTools`, unregistered on leaving the page; `webmcp-tools.md` §3's columns).
+
+| Tool | Title | Description | Annotations | Input | Output (`structuredContent`) | Calls |
+|---|---|---|---|---|---|---|
+| `list_transactions` | List transactions | "Lists the demo account's transactions, ten per page, newest first unless sorted. Optional name search, category, sort and page. Money in USD cents. Available on the Transactions page." (the build counts it: at most 200 characters, `defineTool`) | `readOnlyHint: true`, `untrustedContentHint: true` (R-24: it returns user-entered names) | `{ search?: string (max 60), category?: one of the ten names, sort?: one of the six slugs, page?: integer ≥ 1 }` | `TransactionsDto` + `{ currency: "USD", unit: "cents" }` (a list needs the wrapper key `items`; `toolSuccess` spreads an object) | `GET /api/transactions` with `q` ← `search` |
+
+The tool calls `apiGet` with the query string built by `URLSearchParams` (`apiGet` has no query builder) and the header `X-Via: webmcp`; a 400 becomes a `validation` tool error, a 401 `unauthenticated`. The registry gains `PAGE_TOOLS.transactions`; the indicator reads "Agent tools: polyfill · 1" on this page. A read tool carries no `consequentialHint` (H3 asks for the registry test to assert the rule for the mutating tools only).
+
+**2.15 Where this spec departs from the prototype** (the design README: the prototype "is not a specification"; each departure has its source).
+
+| The prototype | This spec | Source |
+|---|---|---|
+| Pagination visible when there are no results | hidden | US-10 AC2, US-13 AC1 |
+| Every page number shown on every width | at most three numbers with an ellipsis below 768 px | US-09 AC3 |
+| Tablet below 1100 px | tablet 768–1023 px, desktop from 1024 px | US-33 AC1, tokens (`--bp-desktop`) |
+| 20 px icon-only buttons | a 44 px tap target | `--tap-target-min` |
+| Mobile Previous and Next have no name | "Previous page", "Next page" | WCAG 2.5.3, NFR-A2 |
+| Avatars unnamed (`role="img"`) | `alt` = the name | NFR-A6 |
+| No focus indicator on the controls; the search input has none beyond its border | the project's 2 px outline | tokens (NFR-A2) |
+| Menus are plain buttons; no roles, no keys; they do not close on Escape or Tab | listbox semantics and the keys of 2.8 | NFR-A4, US-32 AC1 |
+| State in memory; no URL | the URL is the source of truth | US-09 AC4, US-12 AC2 |
+| "See All" keeps the search and the sort | the link carries only `category` and `page` | US-19 AC1 |
+| Search input hover border grey-900 | grey-500 | tokens, "Component states" |
+| No label on the search field | a hidden label | NFR-A1, NFR-A5 |
+| Disabled Previous and Next keep a hover rule | no hover | US-34 AC2 |
+| Tablet category column 80 px, one line | may wrap, never truncated | 2.9 (its own reason) |
+| Empty message under a visible pagination | one line, no pagination | US-13 AC1 |
+| Dates 2024, 22 sample rows | the seed, shifted +2 years (2026), 49 rows | R-01 (`data.json` wins), OQ-4 |
+
+**2.16 Copy.** The Definition of Done makes `COPY` the only source of user-visible copy, mirrored by the appendix (`tests/unit/shared/copy.test.ts`). Every visible and every accessible string of the page, with its source:
+
+| String | Where | Source |
+|---|---|---|
+| Transactions | title, table caption (hidden) | `PAGE_NAMES` (exists) |
+| Search transaction | placeholder | the design |
+| Search transactions | hidden label of the field | **new** |
+| Sort by · Category | menu labels | the design |
+| Latest · Oldest · A to Z · Z to A · Highest · Lowest | sort options | US-11 AC1 |
+| All Transactions + the ten category names | category options | US-12 AC1, the brief |
+| "{label}: {current}" | accessible name of a menu trigger | **new** (pattern; no new word) |
+| Recipient / Sender · Category · Transaction Date · Amount | column headers | the design |
+| Prev · Next | visible text of the buttons | the design, US-09 AC1 |
+| Pagination · Previous page · Next page · Page {n} | landmark and button names | **new** |
+| {total} transactions, page {n} of {m} (singular for 1) | the status line | **new** |
+| No transactions match your search | no results | the appendix, `COPY.transactionsNoResults` |
+| No transactions yet | no data | `COPY.transactionsEmpty` (exists) |
+| Couldn't load your transactions · Retry | error card | **new** · `COPY.retry` (exists) |
+
+The strings marked *the design*, *US-11*, *US-12* and *the brief* are not in the appendix today; they are added to it with the new ones (R-07: the design's copy lives in the appendix because the design is never in the repository). The new ones are §9 Q1.
+
+## 3. States
+
+| State | Trigger | What the user sees | Exit |
+|---|---|---|---|
+| Default | `/transactions` | the first ten rows, Latest; "Latest" and "All Transactions" shown as current; pagination "Prev 1 2 3 4 5 Next" with Prev disabled (seed) | any control |
+| No data | no row exists (`empty-all`), no filter | the toolbar, the header row (768 px and up), "No transactions yet", no pagination | none (read-only) |
+| No results | a search and/or a category matches nothing | the toolbar with the typed text, the header row (768 px and up), "No transactions match your search", no pagination | change or clear the search, pick another category |
+| Loading | a control's navigation is pending | `aria-busy="true"` on the results region; the previous rows stay | the new rows |
+| One page | at most ten matches | the rows; pagination with Prev and Next disabled and the one number current | — |
+| Page out of range | `?page=99` or `?page=abc` | the last page / page 1, the URL unchanged, that page current in the pagination | any control |
+| Invalid parameter | `?sort=nope`, `?category=Nope` | the default sort / "All Transactions"; the API answers 400 for the same | any control (it rewrites the URL) |
+| Error | `getTransactions` throws | the card "Couldn't load your transactions" with Retry, the header kept | Retry |
+| Session ended | no session | the proxy's redirect to `/login?next=…` | log in; the same URL opens |
+
+## 4. Rules and boundaries
+
+**4.1 Constants.** Page size 10 (`TRANSACTIONS_PAGE_SIZE`); search at most 60 characters; debounce 250 ms; menus: six sort options, eleven category options; at most 7 page items on 768 px and up, at most 3 numbers below it.
+
+**4.2 The seed's numbers** (recomputed on 2026-10-04 from `seedRows()` — the repository's seed code, dates shifted +2 years — with the repository's `compareLatest`, `formatDate` and `formatSignedMoney`; the script and its output are
+`docs/04-process/prompts/2026-10-04-T-15d/transactions-figures/`, reproduced from the repository root by `FORCE_COLOR=0 npx tsx docs/04-process/prompts/2026-10-04-T-15d/transactions-figures/figures.ts`). **Only Latest uses repository code; the other five orders apply this spec's reading of US-11 (2.4) to the seed.** The build task extends `scripts/seed-figures.ts` with these figures (H11) so the E2E never types a number.
+- 49 transactions; 5 pages: 10, 10, 10, 10 and 9 rows. 30 distinct names; 8 positive amounts (sum 381,425 cents, the balance's income) and 41 negative; 11 `recurring` (not shown). Dates from 2 Jul 2026 (09:25:51Z) to 19 Aug 2026 (20:23:11Z); 49 distinct timestamps.
+- By category: Entertainment 3, Bills 7, Groceries 3, Dining Out 8, Transportation 6, Personal Care 3, Education 2, Lifestyle 3, Shopping 3, General 11 (sum 49). No category is empty. Every category is one page except **General: two pages** (page 2 has one row).
+- **The default view, page 1 (Latest):** Savory Bites Bistro, Dining Out, 19 Aug 2026, -$55.50 · Emma Richardson, General, 19 Aug 2026, +$75.50 · Daniel Carter, General, 18 Aug 2026, -$42.30 · Urban Services Hub, General, 17 Aug 2026, -$65.00 · Sun Park, General, 17 Aug 2026, +$120.00 · Liam Hughes, Groceries, 15 Aug 2026, +$65.75 ·
+  Lily Ramirez, General, 14 Aug 2026, +$50.00 · Ethan Clark, Dining Out, 13 Aug 2026, -$32.50 · Pixel Playground, Entertainment, 11 Aug 2026, -$10.00 · James Thompson, Entertainment, 11 Aug 2026, -$5.00. Page 5 runs from Yuna Kim, 10 Jul 2026, -$27.50 (number 41) to Spark Electric Solutions, 2 Jul 2026, -$100.00 (number 49).
+
+**4.3 First and last row of each sort** (the whole 49):
+
+| Sort | First | Last |
+|---|---|---|
+| Latest | Savory Bites Bistro, 19 Aug 2026, -$55.50 | Spark Electric Solutions, 2 Jul 2026, -$100.00 |
+| Oldest | Spark Electric Solutions, 2 Jul 2026, -$100.00 | Savory Bites Bistro, 19 Aug 2026, -$55.50 |
+| A to Z | Aqua Flow Utilities, 30 Jul 2026, -$100.00 | Yuna Kim, 10 Jul 2026, -$27.50 |
+| Z to A | Yuna Kim, 29 Jul 2026, -$28.50 | Aqua Flow Utilities, 30 Jul 2026, -$100.00 |
+| Highest | Buzz Marketing Group, 26 Jul 2026, +$3,358.00 | Spark Electric Solutions, 2 Jul 2026, -$100.00 |
+| Lowest | Spark Electric Solutions, 2 Aug 2026, -$100.00 | Buzz Marketing Group, 26 Jul 2026, +$3,358.00 |
+
+**4.4 Ties in the seed.** Latest and Oldest: **none** (49 distinct timestamps), so the name key is never reached by the seed and needs a hand-built unit fixture (as does a case-variant pair such as "apple" and "Apple"). A to Z and Z to A: 19 names appear twice (38 rows), each pair decided by the timestamp, newest first
+(Emma Richardson: 19 Aug 2026 before 20 Jul 2026). Highest and Lowest: 7 amounts repeat (17 rows), decided by the timestamp, newest first; the three -$100.00 rows (Spark Electric Solutions 2 Aug, Aqua Flow Utilities 30 Jul, Spark Electric Solutions 2 Jul) are in that order in **both** sorts, which is why Lowest is not the reverse of Highest. Eight calendar days hold two rows at different
+times, and in six of the eight pairs the time order is opposite to the name order (17 Aug 2026: Urban Services Hub 21:08:09 before Sun Park 16:12:05), so "full timestamp" in US-11 AC1 matters. No two rows tie on name and timestamp, or on amount and timestamp, so the final `id` key never decides in the seed.
+
+**4.5 Search and filter examples** (page 1 of the results, Latest): `a` → 47 results, 5 pages (7 rows on the last; only EcoFuel Energy and ByteWise have no `a`); `co` → 3: Sebastian Cook (6 Aug 2026), EcoFuel Energy (29 Jul 2026), Sebastian Cook (7 Jul 2026); `EMMA` → 2 (case-insensitive); `bill` → 0 and `xyz` → 0 (a category name is not searched);
+one space → 48 untrimmed, so **trimmed it is empty and filters nothing (49)**; `a` with Dining Out → 8; `co` with Entertainment → 0 (the empty state without the `empty-all` variant).
+
+**4.6 The Budgets link** (US-19): `?category=Dining+Out&page=1` shows 8 rows on one page, Latest: Savory Bites Bistro 19 Aug 2026 -$55.50; Ethan Clark 13 Aug 2026 -$32.50; Ella Phillips 10 Aug 2026 -$45.00; Yuna Kim 29 Jul 2026 -$28.50; Flavor Fiesta 27 Jul 2026 -$42.75; Ethan Clark 14 Jul 2026 -$41.25; Ella Phillips 11 Jul 2026 -$33.75; Yuna Kim 10 Jul 2026 -$27.50.
+`?category=Entertainment&page=1` shows 3: Pixel Playground 11 Aug 2026 -$10.00; James Thompson 11 Aug 2026 -$5.00; Rina Sato 13 Jul 2026 -$10.00. No category with the seed is empty (US-19 AC2's empty state needs a search, or the `empty-all` variant).
+
+**4.7 Boundaries.** Page 0, -3, 1.5 and `abc` read as 1; page 99 reads as 5 (seed, no filter). A search of 60 characters is accepted, 61 is cut (page) or refused (API). A category in another case ("dining out") is unknown. The longest name is 24 characters ("Spark Electric Solutions") and the widest amount is `+$3,358.00` (Buzz Marketing Group); a name that does not fit its column
+is truncated with an ellipsis (2.9), and the 320 px check of US-33 uses these two rows. A name with `&` ("Serenity Spa & Wellness") is rendered as text. No name is non-ASCII; "ByteWise" is the only name without a space.
+
+## 5. Data
+
+Reads `Transaction` (`name`, `avatar`, `category`, `date`, `amount`, and `id`); writes nothing (`write-path.md` 2.1). The source of truth is the database; `data.json` is only the seed (US-36 AC2). Money is `BigInt` in the database and integer cents in every DTO; it becomes text only at the edge (`formatSignedMoney`). Avatars are static files `public/avatars/<key>.jpg` (30 files for the 30 names).
+
+## 6. Interfaces
+
+### UI
+Components and their kind are in 2.1. New code: `app/(app)/transactions/{page.tsx, layout.tsx, error.tsx, page.module.css}`, `src/ui/transactions/` (`TransactionTable`, `TransactionsToolbar`, `TransactionsPagination`, `ResultsRegion`, `TransactionsError`, `TransactionsNav`), `src/ui/Menu.tsx`, new icons (magnifying glass, caret down, sort, filter; Phosphor, the tokens list them)
+and a hook `useDebouncedValue`. Keyboard and focus: 2.5, 2.7, 2.8, 2.11. Accessible names: 2.7, 2.8, 2.16.
+
+### Server and API
+`src/server/transactions.ts` (`getTransactions`, `toTransactionsDto`, the inverse of `CATEGORY_LABEL` for the filter), `app/api/transactions/route.ts` (2.13), `src/shared/schemas.ts` (`TransactionsDtoSchema`), `src/shared/transactions-query.ts` (`parseTransactionsQuery`).
+
+### WebMCP tools
+`list_transactions` (2.14). `webmcp-tools.md` §4 points here for its definition.
+
+## 7. Tests required
+
+Figures in tests come from the extended `scripts/seed-figures.ts` (H11) and are formatted with the shared functions, never typed. Role and label locators, no `.first()`, no time-based waits (the debounce is a unit test with fake timers; an E2E waits for the URL and the rows).
+
+| Level | What is asserted | Traces to |
+|-------|------------------|-----------|
+| Unit — domain | `sortTransactions`: each of the six orders, every tie rule with a hand-built fixture (equal timestamps → name; case variants; equal names → timestamp; equal amounts → timestamp; the final `id`); Latest equals `compareLatest`; `filterTransactions`: case-insensitive substring, a needle with `.` and `%`, an empty needle after trimming, category exact, both together; `paginate`: ten per page, the last page's size, the clamp (0, -3, 1.5, 99); `pageItems` for 1, 3, 5, 7, 8 and 20 pages at both widths (the examples of 2.7) | 2.4, 2.7 · US-09, US-10, US-11, US-12 |
+| Unit — shared and server | `parseTransactionsQuery` lenient and strict, every row of 2.3 (the repeated parameter, `+` and `%20`, an empty `category=`); `TransactionsDtoSchema` is strict; `toTransactionsDto` (BigInt → Number, label mapping, ISO date, no `recurring`); `useDebouncedValue` with fake timers (250 ms) | 2.2, 2.3, 2.13 · US-09 AC4, US-10 AC1 |
+| Component | `Menu`: every key of 2.8, the roles and `aria-selected`, focus return, outside click, one open at a time; `TransactionsPagination`: the names, `aria-current`, disabled ends, the hidden list per width, focus after a change | 2.7, 2.8 · US-09 AC2, US-11 AC2, US-32 AC1, NFR-A4 |
+| API (real database) | `GET /api/transactions`: 401 without a session, `no-store`, the strict DTO, parity with an independent oracle (`applyVariant` + the domain functions) for every seed variant and for the parameters of 4.3 to 4.6; the clamp; 400 for a bad `sort`, `category` and a 61-character `q`; the row count unchanged after the call (`write-path.md` 7.2) | 2.13 · US-09, US-39 AC2 |
+| E2E | **US-09 AC1/AC2:** ten rows, the four columns, the pagination, Prev disabled on page 1 and Next on page 5, the current page highlighted and `aria-current`; **AC3** at 375 px: the card rows, at most three numbers and the ellipsis; **AC4:** `?page=99` and `?page=abc`, a reload and a linked URL; **US-10:** `co` → the 3 rows, the URL gains `q=co` without a history entry, `a` then `co` ends on `co`, the busy state, the no-results line and no pagination; **US-11:** each sort's first and last row (4.3), the current option; **US-12:** each category's count, search + sort + category together, the URL; **US-13:** `co` + Entertainment → the line, the header row, no pagination; **`empty-all`** → "No transactions yet"; **US-19:** the page at `?category=Dining+Out&page=1` shows the 8 rows (4.6) — the link itself is `budgets.md`'s; **US-32:** the walkthrough of 2.11, every menu key; **US-33** at 1440, 768, 375 and 320 px: no horizontal scroll, nothing clipped; **US-34:** hover and focus with `toHaveCSS` on the field, a trigger, a page button, an option; **US-36 AC2** is covered by the API test (the page reads the backend); **axe** on the default seed, a no-results state, `empty-all`, and 375 px; the login redirect keeps `?page=2` | 2.2–2.12 · US-09 to US-13, US-19, US-32, US-33, US-34, NFR-A1 |
+| WebMCP | polyfill and off modes: the page registers exactly `list_transactions` with its two annotations and a description of at most 200 characters (counted); `executeTool` for no input, for `{ search, category, sort, page }` and for a page beyond the end returns what the UI shows and what the API returns, with ids; a bad input → `validation`; no session → `unauthenticated` and no data; the call is on record (`X-Via`, `write-path.md` 2.12); the indicator reads "polyfill · 1" | 2.14 · US-38 AC1, US-39 AC2–AC4, NFR-W3 |
+| Lighthouse (on release) | Performance at least 90 on the deployed Transactions page, mobile preset, warm instance; the avatars are sized (CLS) | NFR-P1, P2, P4 |
+
+**Tests that change when the placeholder goes:** `tests/e2e/app-shell.spec.ts` (the `/transactions` row has `release2: true` and expects `COPY.comingInRelease2`, lines 11, 36–50, 321–325); `tests/e2e/webmcp.spec.ts` (171–179: zero tools and "polyfill · 0" on `/transactions`); `tests/unit/webmcp/registry.test.ts` (its per-page assertions; the "get_ or list_ is read-only" check already covers the new tool);
+`tests/e2e/axe-routes.spec.ts` lists `/transactions` already.
+
+**H9, for this page:** US-31 — not applicable (2.12); US-32 — the walkthrough; US-33 — four widths; US-34 — hover and focus; US-38 AC1 and US-39 AC2 — the WebMCP row.
+
+## 8. Out of scope
+
+Searching the category, the date or the amount (the brief allows amounts "if you want to test yourself"; US-10 says the name); sorting by clicking a column header; type-ahead in the menus; a clear-search button; a recurring marker; a transaction's detail, edit or delete; a date-range filter; several categories at once; saved views; export; infinite scroll; a canonical-URL redirect; a skeleton or a loading route;
+localised dates or numbers. The `Menu` is specified here but its other four uses are `budgets.md`'s and `pots.md`'s.
+
+## 9. Open questions
+
+**Q1 — Are these new texts approved?** *What:* every string the page shows is kept in `COPY` and in the copy appendix of `user-stories.md` (a test holds the two equal). Six are new — they are not in the design, the stories or the appendix — and three are for screen readers, which the design does not cover: "Search transactions" (the hidden label of the search field; the visible "Search transaction" is only a placeholder),
+"Previous page", "Next page" and "Page {n}" (names of the pagination buttons, so a screen reader and a voice user can say them), "{total} transactions, page {n} of {m}" (announced after a change, "1 transaction" for one), "Pagination" (the landmark's name) and "Couldn't load your transactions" (the error card, like Overview's). They land in the appendix and `COPY` together with the first Transactions task (H11). *Why it matters:* the appendix is the owner-approved source of every message.
+- (a) **Approve the six as worded — recommended.**
+- (b) Give me other wording.
+
+**Q2 — May the menu panels have the prototype's shadow?** *What:* the design's popover panels have a soft shadow (`0 4px 24px rgba(0, 0, 0, 0.25)`), which exists only in the prototype; `design-tokens.md` is "the only source for UI values" and has no shadow. A new token `--shadow-popover` would be added to `design-tokens.md` and, together, to the generated `src/ui/tokens.css` (a test holds them equal), by the first Transactions task (H11).
+*Why it matters:* without it the panel would be a flat white box on a white card.
+- (a) **Add `--shadow-popover: 0 4px 24px rgba(0, 0, 0, 0.25)` to the tokens — recommended.**
+- (b) No shadow: the panel gets a 1 px beige-500 border instead (the colour of the input borders), and the tokens file is not touched.
+
+---
+
+Changelog: v0.1 (2026-10-04) — first draft, from a read of the prototype (outside the repository), the stories US-09 to US-13 and US-19, the NFRs, the tokens, `write-path.md`, the Release 1 code (`src/domain/transactions.ts`, the Overview page and route, `src/ui`, `src/webmcp`, the tests) and figures recomputed from the seed (4.2).
