@@ -145,3 +145,12 @@ After asking where the tooltip is in the designer's changelog (§6), the owner w
 this file was resolved by keeping both sections above) and answers §9 Q5 with (b): the tooltip as drawn, closing when
 the pointer leaves and after 3 s on touch. The spec records the gap against WCAG 2.1 rule 1.4.13 (NFR-A1) as the
 owner's decision. The v1.0.4 question (keep the style guide's tooltip) is settled by the same answer.
+
+## Q5 answered (a) — "NFR-A1 ödənməlidir"
+
+A side note told the owner that "Designer qərarlarına əsas götür" had been read as Q5 (b) without a direct answer, and
+that (b) leaves NFR-A1 unmet. The agent asked again; the owner answered "a", then "NFR-A1 ödənməlidir" ("NFR-A1
+must be met"). v1.0.9: the designer's tooltip stays, with two changes — it stays open while the pointer is on it, and
+on touch it has no 3-second timer; the recorded gap is removed; H11 (5) says the designer is told of both; the
+component and E2E tests assert them. Lesson: a general instruction ("take the designer's decisions") does not answer
+a specific open question that trades off an approved requirement; ask it directly.
