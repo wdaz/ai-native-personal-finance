@@ -1,6 +1,6 @@
 # PRD — AI-Native Personal Finance
 
-Status: **Approved** (v1.2 — amendments 2026-09-20: US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2; v1.1 2026-09-13: visual regression removed)
+Status: **Approved** (v1.3 — amendment 2026-10-04, the owner's decision at the T-15d plan gate, Q2 (a), in effect from the owner's merge of PR #85: §5 Release 2 gains a `Stories:` sentence, the source of `docs/03-specs/release-2-stories.txt`; v1.2 — amendments 2026-09-20: US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2; v1.1 2026-09-13: visual regression removed)
 Author(s): Agent (Claude, draft) · Owner (decisions) · Date: 2026-09-13 · Process log: `../04-process/process-log.md`
 Traces to: `../00-discovery/problem-statement.md` (v1.0), `../00-discovery/inputs/challenge-brief.md`, `../00-discovery/research/webmcp-status.md`
 
@@ -80,6 +80,13 @@ built once here and reused by every later page.
 Transactions (US-09…US-13), Budgets (US-14…US-20), Pots (US-21…US-26),
 Recurring Bills (US-27…US-30); full keyboard support on these screens;
 mutating WebMCP tools with safeguards (US-40); US-04 AC2 and US-37 AC3.
+Stories: US-09…US-30, US-40.
+
+*Consequence (v1.3):* the sentence lists the stories **first delivered** in Release 2. The traceability check
+reads the lists of the release being built and of every release before it, so at Release 2 it requires the 18
+ids of Release 1 and these 23. US-04 AC2 and US-37 AC3 stay under their stories, which Release 1's list names;
+a check per story id cannot see an acceptance criterion, so the spec that implements each names it in its Tests
+table.
 
 ### Release 3 — quality and narrative
 
