@@ -154,3 +154,16 @@ must be met"). v1.0.9: the designer's tooltip stays, with two changes — it sta
 on touch it has no 3-second timer; the recorded gap is removed; H11 (5) says the designer is told of both; the
 component and E2E tests assert them. Lesson: a general instruction ("take the designer's decisions") does not answer
 a specific open question that trades off an approved requirement; ask it directly.
+
+## The designer's sources, and the changelog's §8
+
+The owner named the designer's Claude Design project (its `CHANGELOG.md`, `Finance App.dc.html` and
+`Style Guide.dc.html`) as the source of design facts, and asked that their addresses stay out of the pull request; the
+project id was removed from 2.9. The updated changelog adds §8, "WCAG 2.1 AA fixes (NFR-A1)" (not yet in the exports).
+v1.0.10 applies what touches this page and contradicts no approved document, under the owner's "Designer qərarlarına
+əsas götür" and "NFR-A1 ödənməlidir": page-button hover beige-100 with grey-900 text and border, placeholder grey-500,
+decorative avatars (`alt=""`, which NFR-A6 allows), the tooltip's 150 ms hide delay; H11 (6) for the placeholder rule
+in `design-tokens.md`. Not applied, asked of the owner: the document-title format "<Page> · Finance" (§8c), which
+contradicts `app-shell.md` §2.5's owner-approved "Personal Finance - <page name>". The touch tooltip keeps no timer
+(§9 Q5 (a)). The changelog's shell changes (skip link, `<main>`, nav labels, `aria-current`, modal, focus rings,
+"…" hit area) are hotfix 2's or the other page specs'.
