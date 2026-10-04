@@ -81,3 +81,11 @@ Orda tooltip olmalıdır." The agent had answered review 2's finding 5 by depart
 of US-09 AC3 and NFR-A8; a departure from what the design explicitly draws is the owner's call, even when a story
 seems to support it. v1.0.2 truncates as drawn and adds a native tooltip (`title`), recorded in §9. The owner also
 said the designer's sidebar and favicon changes go in as the second hotfix ("hotfix 2"), after T-15d.
+
+## The owner on v1.0.2 — the tooltip is custom
+
+"Tooltip custom olacaq və dizaynerə bu haqda tapşırıq verdim" ("The tooltip will be custom, and I have given the
+designer a task about it"). v1.0.3 replaces `title` with a custom tooltip: the spec states its behaviour (only when
+the name is cut; pointer, keyboard focus and tap; WCAG 1.4.13), the look comes from the designer (H11 (5)). Copilot
+could not review `3a4ae8c` ("encountered an error"); it was not re-requested by hand (the owner's rule), the next
+push re-runs it.
