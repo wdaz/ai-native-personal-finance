@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
 /**
- * NFR-T2 / ADR-0003 (clarification 2026-09-24): every story of the release being built is
- * named in the title of at least one test; a title naming a story `user-stories.md` does not
+ * NFR-T2 / ADR-0003 (clarifications 2026-09-24 and 2026-10-04): every story of the release being
+ * built, and of every release before it, is named in the title of at least one test; a title naming a story `user-stories.md` does not
  * define fails too. "Title" means the first argument of a `test`/`it`/`describe`/`test.describe`
  * call that actually runs, read from the syntax tree — so a comment, a string, a skipped test or
  * group, a `.test(` on a regular expression or Zod's `.describe(` never counts. The title of an
@@ -32,16 +32,19 @@ export function storyListPath(release: number): string {
 }
 
 /**
- * The text of PRD §5's `Stories:` sentence for a release: from the label to the first full stop that
- * ends a sentence, to `Deferred` (Release 1's sentence is followed by it) or to the end of the
- * release's block, which is the next `### Release` heading.
+ * The text of PRD §5's `Stories:` sentence for a release: the label must start a line; the text runs
+ * to the first full stop that ends a sentence, to `Deferred` (a sentence with no stop before it) or
+ * to the end of the release's block. A block runs from its `### Release N` heading to the next
+ * heading of level 1–3 — `### Release N+1`, or `## 6.` after the last release — or to the end of the
+ * file, so a later "User Stories:" elsewhere in the PRD is never read as a release's list.
  */
 function storySentence(prd: string, release: number): string | undefined {
   const block =
-    new RegExp(`### Release ${release}\\b[^\\n]*\\n([\\s\\S]*?)(?=\\n### Release \\d|$)`).exec(
-      prd,
-    )?.[1] ?? "";
-  return /Stories:([\s\S]*?)(?:\.\s|\.$|Deferred|$)/.exec(block)?.[1];
+    new RegExp(
+      `^### Release ${release}\\b[^\\n]*\\n([\\s\\S]*?)(?=\\n#{1,3} |(?![\\s\\S]))`,
+      "m",
+    ).exec(prd)?.[1] ?? "";
+  return /^Stories:([\s\S]*?)(?:\.(?:\s|(?![\s\S]))|Deferred|(?![\s\S]))/m.exec(block)?.[1];
 }
 
 /** The ids of PRD §5's "### Release N" `Stories:` sentence; `US-04…US-08` is a range. */

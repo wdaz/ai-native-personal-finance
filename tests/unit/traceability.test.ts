@@ -101,6 +101,29 @@ describe("the release's story list (PRD §5)", () => {
     expect(releaseStoryIds(prd, 3)).toEqual(["US-50"]);
   });
 
+  it("does not read the next release's sentence as a release's own when it has none", () => {
+    // The sentence terminator cannot stop this one: only the block's end keeps Release 2 from US-50.
+    const prd = "### Release 2 — b\nNo list here.\n### Release 3 — c\nStories: US-50.\n";
+    expect(() => releaseStoryIds(prd, 2)).toThrow(/Release 2.*Stories:/);
+    expect(listedReleases(prd)).toEqual([3]);
+  });
+
+  it("ends the last release's block at the next section heading, not at the end of the file", () => {
+    const prd = "### Release 3 — c\nNo new stories.\n\n## 6. Functional\nStories: US-60.\n";
+    expect(() => releaseStoryIds(prd, 3)).toThrow(/Release 3.*Stories:/);
+    expect(listedReleases(prd)).toEqual([]);
+  });
+
+  it("reads `Stories:` only where it starts a line, not in 'User Stories:' mid-sentence", () => {
+    const prd = "### Release 3 — c\nSee the User Stories: US-61 and US-62 for these.\n";
+    expect(() => releaseStoryIds(prd, 3)).toThrow(/Release 3.*Stories:/);
+  });
+
+  it("stops a sentence at 'Deferred' when no full stop comes before it", () => {
+    const prd = "### Release 1 — a\nStories: US-01, US-02 Deferred to Release 2: US-09.\n";
+    expect(releaseStoryIds(prd, 1)).toEqual(["US-01", "US-02"]);
+  });
+
   it("lists the releases that carry a story sentence: Release 3 has none", () => {
     expect(listedReleases(PRD)).toEqual([1, 2]);
   });
@@ -373,6 +396,18 @@ describe("testSources and run — against a throwaway repository", () => {
   it("does not turn red for Release 2 while Release 1 is the one being built", () => {
     const root = repository(RELEASE_1, { "unit/all.test.ts": titles(RELEASE_1) });
     expect(run(root).code).toBe(0);
+  });
+
+  it("says a missing list file differs from PRD §5, instead of throwing", () => {
+    const root = repository(RELEASE_1, { "unit/all.test.ts": titles(RELEASE_1) });
+    rmSync(join(root, storyListPath(2)));
+    expect(run(root)).toEqual({
+      code: 1,
+      out: [],
+      err: [
+        "traceability: release-2-stories.txt differs from PRD §5; run `npm run traceability -- --write`",
+      ],
+    });
   });
 
   it("flags a Release 2 list that differs from PRD §5 even while Release 1 is being built", () => {
