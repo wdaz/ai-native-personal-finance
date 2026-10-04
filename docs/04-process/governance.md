@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.9 2026-10-04: the agent waits for Copilot's review of a pull request's latest push and fixes its important findings before taking the pull request out of draft (owner decision at T-15d) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6)
 
 ## Roles
 
@@ -107,7 +107,8 @@ Since T-15b (2026-09-29; plan `plans/2026-09-29-T-15b.md`):
 - **Copilot's review gates nothing.** Its review runs on every pull request (the rulesets "main:
   pull request, Copilot, CodeQL" and "develop: pull request, Copilot, CodeQL"; until T-15b the one
   "Copilot review for default branch") but is not reliable enough to hold a merge (owner, 2026-09-26: "Copilot
-  review qoşulsada stabil deyil"), and no rule requires an approval: the owner is the only
+  review qoşulsada stabil deyil"; since v1.9 the agent nevertheless waits for it before taking a pull
+  request out of draft, "Draft until ready" below), and no rule requires an approval: the owner is the only
   collaborator and author of every pull request, so a required approval would block every merge
   (`.github/CODEOWNERS` says why). What gates a merge is the pull request itself and the required
   checks.
@@ -166,9 +167,24 @@ ready to merge, and I merge it"). A pull request that is not a draft is merge-re
 merges it without a further check. Unfinished work — a plan waiting for answers, a pull request
 waiting for review fixes or CI, a document waiting for the owner — stays a draft
 (`gh pr create --draft`). The agent takes a pull request out of draft (`gh pr ready`) only when its
-content is finished, every required check is green, and the checklist items the agent can tick are
-ticked. A ready pull request gets no more pushes: further work goes in a new pull request, or the
-pull request is first put back into draft (`gh pr ready --undo`).
+content is finished, every required check is green, the checklist items the agent can tick are
+ticked, **and Copilot's review of the pull request's latest push has finished and its important
+findings are fixed** (v1.9, below). A ready pull request gets no more pushes: further work goes in a
+new pull request, or the pull request is first put back into draft (`gh pr ready --undo`).
+
+**Copilot's review is waited for** (v1.9, owner decision 2026-10-04, T-15d: "Copilot məcburi
+revyu edəndir və onun revyularını bitirmək gözlənməlidir. Vacib tapıntılar fix olmalıdır." — "Copilot
+is the mandatory reviewer and its reviews must be waited for to finish. Important findings must be
+fixed."). Before `gh pr ready`, the agent waits until Copilot has reviewed the pull request's **latest
+push** — a review whose `commit_id` is the branch's head (`gh api repos/<owner>/<repo>/pulls/<n>/reviews`);
+a review of an earlier push does not count, because every fix is a new push that Copilot reads again.
+Each finding is then fixed, or answered with its reason in the pull request. An **important** finding is
+one the agent confirms is a defect — a wrong fact or number, a contradiction, a broken command, a
+failing or vacuous test, a missed requirement — whatever severity Copilot gave it; those are always
+fixed before the pull request leaves draft. A finding that is a matter of taste may be declined with a
+sentence of reasoning. If Copilot has not reviewed the latest push after a reasonable wait, the agent
+leaves the pull request in draft and tells the owner, instead of marking it ready. This changes what the
+agent waits for, not what GitHub enforces (the bullet "Copilot's review gates nothing", above).
 
 Open at the switch (as written before T-15b; settled above):
 
