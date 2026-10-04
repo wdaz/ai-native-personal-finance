@@ -231,6 +231,9 @@ export function run(
     const ids = releaseStoryIds(prd, n);
     return { n, ids, path: storyListPath(n), expected: `${ids.join("\n")}\n` };
   });
+  // Read before `--write` as well: a release being built with no story sentence is an error there
+  // too, so regenerating the lists cannot hide a broken PRD behind exit code 0.
+  const release = cumulativeStoryIds(prd, built);
   if (write) {
     mkdirSync(join(root, "docs/03-specs"), { recursive: true });
     for (const { path, expected } of lists) writeFileSync(join(root, path), expected);
@@ -256,7 +259,6 @@ export function run(
       ),
     };
   }
-  const release = cumulativeStoryIds(prd, built);
   const { missing, unknown } = checkTraceability({
     release,
     defined: definedStoryIds(

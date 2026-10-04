@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -451,6 +451,13 @@ describe("testSources and run — against a throwaway repository", () => {
   it("refuses to run for a release being built that has no story sentence (Release 3 has none)", () => {
     const root = repository(RELEASE_1, { "unit/all.test.ts": titles(RELEASE_1) });
     expect(() => run(root, false, 3)).toThrow(/Release 3.*Stories:.*being built/);
+  });
+
+  it("--write refuses a release being built that has no story sentence, and writes nothing", () => {
+    const root = repository([], {}, []);
+    expect(() => run(root, true, 3)).toThrow(/Release 3.*Stories:.*being built/);
+    expect(existsSync(join(root, storyListPath(1)))).toBe(true);
+    expect(readFileSync(join(root, storyListPath(1)), "utf8")).toBe("\n");
   });
 
   it("with Release 2 being built, passes when all 41 stories are named", () => {
