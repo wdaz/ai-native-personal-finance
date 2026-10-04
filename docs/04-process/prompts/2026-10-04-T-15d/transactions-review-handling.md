@@ -89,3 +89,11 @@ designer a task about it"). v1.0.3 replaces `title` with a custom tooltip: the s
 the name is cut; pointer, keyboard focus and tap; WCAG 1.4.13), the look comes from the designer (H11 (5)). Copilot
 could not review `3a4ae8c` ("encountered an error"); it was not re-requested by hand (the owner's rule), the next
 push re-runs it.
+
+## The owner: "Tooltip haqda changeloga bax"
+
+The designer's local `CHANGELOG.md` (21:59) has no tooltip section; the exports of 22:17 do (style guide, section
+"Tooltip": style, mouse, touch, keyboard). v1.0.4 follows it in 2.9 and asks §9 Q5 about the two points where it does
+not meet WCAG 1.4.13 (NFR-A1 is WCAG 2.1 AA): the tooltip is not hoverable (`pointer-events: none`, closes when the
+pointer leaves the name) and closes by itself after 3 s on touch. The agent did not decide them (see the long-names
+lesson above). Copilot errored on `3a4ae8c` and `ecf51c9`; the owner was asked how to proceed.
