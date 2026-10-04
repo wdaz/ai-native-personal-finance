@@ -110,3 +110,9 @@ lesson above). Copilot errored on `3a4ae8c` and `ecf51c9`; the owner was asked h
 |---|---|
 | 2.9: the row's second half renders under the tooltip's last sub-point | Fixed in v1.0.6: one list item, then the sub-points |
 | §7: the E2E row spans three physical lines and breaks the table | Fixed in v1.0.6: one line; a script checked that no table row is left unterminated |
+
+## Copilot on PR #88 (head `ca266fb`)
+
+| Comment | Handling |
+|---|---|
+| 2.9: the joined sentence starts with a lowercase "the" | Fixed (v1.0.6, wording only) |
