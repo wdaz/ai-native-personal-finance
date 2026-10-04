@@ -51,3 +51,14 @@ should be no wrong value. In which cases can this happen?"). The agent answered 
 səhvi gələcəkdə etməməsi üçün öyrənmək təklif olunur". Recorded in §9 Q3 as answer (a) with an addition, applied in
 2.3 (checked: Zod 4's `z.enum` message is `Invalid option: expected one of "latest"|"oldest"|…`, and `defineTool`
 sends it as `message`).
+
+## Copilot on PR #88 (head `fe43b5c`)
+
+| Comment | Handling |
+|---|---|
+| 2.2 says "the longest name is 60", 4.7 says 24 | Fixed in v0.2.1: "the name limit is 60" |
+| 2.15: two departure rows merged into one | Fixed in v0.2.1 (the line break was lost when a row was removed in v0.2) |
+
+A side note then pointed out that the owner's "learn for the future" cannot be promised by the app: an agent
+keeps no memory between conversations. v0.2.1 says so in 2.3 (the refusal helps within one conversation; the input
+schema with the allowed values is what every agent sees), and the owner was told.

@@ -1,6 +1,6 @@
 # SPEC-transactions — Transactions page
 
-Status: **Draft** (v0.2, 2026-10-04; §9: Q3 answered by the owner, Q1, Q2 and Q4 open) · Author(s): Agent (Claude Code, Sonnet 5.5 and Opus 5.5, background session) · Date: 2026-10-04
+Status: **Draft** (v0.2.1, 2026-10-04; §9: Q3 answered by the owner, Q1, Q2 and Q4 open) · Author(s): Agent (Claude Code, Sonnet 5.5 and Opus 5.5, background session) · Date: 2026-10-04
 Implements: US-09 (AC1–AC4), US-10, US-11, US-12, US-13, US-19 (the receiving side: the page opened with `?category=<category>&page=1`), US-32, US-33, US-34 (for this page), US-36 (AC2), US-38 (AC1: `list_transactions`), US-39 (AC2–AC4 for `list_transactions`); US-31 does not apply (2.12) ·
 Constrained by: ADR-0001 (server and client components), ADR-0002, ADR-0003, ADR-0004, `write-path.md` 2.1 and 2.2 step 10 (a read route), NFR-A1, A2, A4, A6, A7, A8, B1, B3, P1, P2, P4, S2, S7, T1–T8, W3–W7, D2, D3 ·
 Resolves hand-offs H3 (`list_transactions`'s tool table; it has no `consequentialHint`), H9 (the rows for this page), H11 (new, `release-2-handoffs.md`) · Design: prototype "Transactions" (`~/Own/design-exports/app-prototype.html`, outside the repository — `docs/00-discovery/inputs/design/README.md`)
@@ -24,7 +24,7 @@ and Budgets' "See All" can open the list already filtered. The page only reads: 
 
 | URL and API name | Tool input | Values | Meaning when absent | Written by the page's own controls |
 |---|---|---|---|---|
-| `q` | `search` | text, trimmed, at most 60 characters (the longest name is 60, `data-model.md`) | no search | only when non-empty after trimming |
+| `q` | `search` | text, trimmed, at most 60 characters (the name limit is 60, `data-model.md`) | no search | only when non-empty after trimming |
 | `category` | `category` | exactly one of `Entertainment`, `Bills`, `Groceries`, `Dining Out`, `Transportation`, `Personal Care`, `Education`, `Lifestyle`, `Shopping`, `General` — the display names, case-sensitive | "All Transactions" (an empty `category=` means the same) | only when a category is chosen |
 | `sort` | `sort` | `latest`, `oldest`, `a-to-z`, `z-to-a`, `highest`, `lowest` | `latest` | never for `latest` |
 | `page` | `page` | an integer, 1 or more | 1 | never for page 1 (the Budgets link writes `page=1`; it is read like an absent one) |
@@ -46,6 +46,7 @@ In both modes an empty value (`q=`, `category=`, `sort=`, `page=`) reads as abse
 `defineTool` validates a tool's input before any request is sent, so a bad tool input never reaches the API; an out-of-enum value is a `validation` tool error whose `issues` appear once `write-path.md` 2.7's mapper change has landed (`defineTool.ts` leaves `issues` out while the mapper throws). The tool's `page` is `z.number().int().min(1)`: a `0` fails with Zod's `too_small`, which `toErrorIssues` maps to the code `required` (`schemas.ts`); the tool test expects that code. **US-39 AC2's parity** — the tool returns exactly what the UI shows
 for the same parameters — holds for valid parameters; for invalid ones the page is lenient and the API strict. This reading of US-39 AC2 is the owner's (§9 Q3, answered (a)). **A refused call teaches the agent and changes nothing:** the tool reads only, so a refusal leaves the agent's previous result and the person's page as they were; the tool's `validation` message names the field and its allowed values (Zod's `z.enum` message, `sort: Invalid option: expected one of "latest"|"oldest"|…`, which `defineTool` sends as `message`),
 and the API's 400 carries the same in its `message` ("sort must be one of: latest, oldest, a-to-z, z-to-a, highest, lowest"; "category must be one of: Entertainment, …, General"; "q must be at most 60 characters"). The tool's input schema lists the allowed values too (`toolInputJsonSchema`), so a well-behaved agent never sends a wrong one.
+What the app can and cannot teach: the refusal's message helps the agent within the same conversation; the app keeps no memory of an agent between conversations and cannot change what an agent remembers. What every agent sees, in every conversation and before its first call, is the tool's input schema with the allowed values; that is the lasting part of the lesson.
 
 **2.4 The list.** `getTransactions` reads every row (`db.transaction.findMany()`, the Overview pattern: `BigInt` → `Number` at the edge, the Prisma category key → the display name, no `seeded` filter), then the pure domain functions apply, in this order, the category filter, the search, the sort and the page. The dataset is read-only and bounded by the seed (49 rows), so the whole table
 is read on every request and the rules live in tested domain functions (NFR-T1), not in SQL.
@@ -169,7 +170,8 @@ The tool calls `apiGet` with the query string built by `URLSearchParams` (`apiGe
 | No label on the search field | a hidden label | NFR-A1 |
 | Disabled Previous and Next keep a hover rule | no hover | US-34 AC2 |
 | Tablet category column 80 px, one line | may wrap, never truncated | 2.9 (its own reason) |
-| A long name truncated with an ellipsis | wraps, never truncated | US-09 AC3, NFR-A8 || Empty message under a visible pagination | one line, no pagination | US-13 AC1 |
+| A long name truncated with an ellipsis | wraps, never truncated | US-09 AC3, NFR-A8 |
+| Empty message under a visible pagination | one line, no pagination | US-13 AC1 |
 | Dates 2024, 22 sample rows | the seed, shifted +2 years (2026), 49 rows | R-01 (`data.json` wins), OQ-4 |
 
 **2.16 Copy.** The Definition of Done makes `COPY` the only source of user-visible copy, mirrored by the appendix (`tests/unit/shared/copy.test.ts`). Every visible and every accessible string of the page, with its source:
@@ -314,5 +316,5 @@ of its mistake rather than receive a list it did not ask for. A page number past
 
 ---
 
-Changelog: v0.2 (2026-10-04) — the two read-only reviews of v0.1 applied (`docs/04-process/prompts/2026-10-04-T-15d/transactions-review-handling.md` lists each finding and its fix): the layers (`pageItems` and the page size in `src/shared`), the `Menu` scoped to choosing one value (disabled options; the pot menu is `pots.md`'s), one intended query for every control,
+Changelog: v0.2.1 (2026-10-04) — Copilot's two findings on PR #88 fixed (2.2: "the name limit is 60"; 2.15: two table rows that had merged); 2.3 states what the app can and cannot teach an agent (a refusal helps within one conversation; the input schema is what every agent sees). v0.2 (2026-10-04) — the two read-only reviews of v0.1 applied (`docs/04-process/prompts/2026-10-04-T-15d/transactions-review-handling.md` lists each finding and its fix): the layers (`pageItems` and the page size in `src/shared`), the `Menu` scoped to choosing one value (disabled options; the pot menu is `pots.md`'s), one intended query for every control,
 no `error.tsx`, names wrap, the `page` pattern and empty values, `no-store` on every answer, the status line, the tests the reviews found missing, the citations corrected; Q3 added at the owner's request and answered by the owner ((a), with the addition applied in 2.3); Q4 added; H11 (4) added. v0.1 (2026-10-04) — first draft, from a read of the prototype (outside the repository), the stories US-09 to US-13 and US-19, the NFRs, the tokens, `write-path.md`, the Release 1 code (`src/domain/transactions.ts`, the Overview page and route, `src/ui`, `src/webmcp`, the tests) and figures recomputed from the seed (4.2).

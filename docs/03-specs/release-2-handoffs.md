@@ -1,6 +1,6 @@
 # Release 2 hand-offs — what every Release 2 spec must resolve
 
-Status: **Approved** by the owner's merge of PR #85 (T-15d, 2026-10-04); amended by the owner's merge of PR #87 (H6 corrected, H2, H5 and H7 ticked, H10 added); amended by the Transactions spec's pull request (H11 added, H3 and H9 noted for Transactions); its boxes are ticked as the specs land ·
+Status: **Approved** by the owner's merge of PR #85 (T-15d, 2026-10-04); amended by the owner's merge of PR #87 (H6 corrected, H2, H5 and H7 ticked, H10 added); amended by the Transactions spec's PR #88 (H11 added, H3 and H9 noted for Transactions); its boxes are ticked as the specs land ·
 Author(s): Agent (Claude Code, Sonnet 5.5, background session) · Date: 2026-10-04
 Task: `docs/03-specs/backlog.md` → **T-15d** · Plan: `docs/04-process/plans/2026-10-04-T-15d.md` (D4, F6, F7) ·
 Phase: 4 (Specs & plan), Release 2
