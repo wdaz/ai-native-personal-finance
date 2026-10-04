@@ -1,7 +1,7 @@
 # What the agent did with the write-path reviews (T-15d, S1, pull request #87)
 
-The agent's own summary (not a copy of anything): the two reviews of `write-path.md` v0.1 (`789135b`) — briefs `write-path-review-1-facts-brief.md` and `write-path-review-2-spec-brief.md`, reports `…-report.md` beside them, both verbatim — and what became of each finding in v0.2 (`656142e`).
-Copilot then asked for the briefs and reports to be copied verbatim (`build-workflow.md`, "Per task" step 7); the first version of these records condensed them, and this set replaces it.
+The agent's own summary (not a copy of anything): the two reviews of `write-path.md` v0.1 (`789135b`) — briefs `write-path-review-1-facts-brief.md` and `write-path-review-2-spec-brief.md`, reports `…-report.md` beside them, copied as handed back (each file's header says exactly which formatting and redaction edits it carries) — and what became of each finding in v0.2 (`656142e`).
+Copilot then asked for the briefs and reports to be copied in full (`build-workflow.md`, "Per task" step 7: "copied"); the first version of these records condensed them, and this set replaces it.
 
 Everything in the reports that is a defect of the spec is fixed in v0.2; nothing was dismissed. In order of the findings:
 - **Blocker (both reviewers):** 2.1 and 7.4 rewritten — no `GET` handler changes data (`GET /api/admin/reset` the one exception), a path may export `GET` beside write methods, 7.4 checks that no `GET` handler calls the wrapper, and 7.2 adds an API test that every `GET` leaves the stored rows unchanged.

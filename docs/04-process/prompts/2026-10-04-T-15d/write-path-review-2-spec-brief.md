@@ -1,6 +1,6 @@
 # Brief — write-path review 2, the spec against the checklist, the stories and the questions (T-15d, S1, pull request #87)
 
-Verbatim, as dispatched after `write-path.md` v0.1 (`789135b`). Subagent type `feature-dev:code-reviewer`, model `opus`, tools read, grep and glob only (`governance.md` v1.1, v1.3).
+As dispatched (the Markdown only normalised by Prettier; no word changed) after `write-path.md` v0.1 (`789135b`). Subagent type `feature-dev:code-reviewer`, model `opus`, tools read, grep and glob only (`governance.md` v1.1, v1.3).
 
     You are a READ-ONLY reviewer (tools: read, grep, glob only; edit nothing). Repository worktree = your current working directory, branch task/T-15d-spec-write-path. Review the NEW document docs/03-specs/write-path.md (v0.1, a feature spec; Draft, with five open questions in section 9 for the product owner) as an adversarial SPEC reviewer.
 

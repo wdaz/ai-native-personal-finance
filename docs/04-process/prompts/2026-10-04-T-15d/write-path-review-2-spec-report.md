@@ -1,6 +1,6 @@
 # Report — write-path review 2, the spec against the checklist, the stories and the questions (T-15d, S1, pull request #87)
 
-The reviewer's final report on `write-path.md` v0.1 (`789135b`), verbatim as handed back (the harness frames it as model output, not as the owner's words, and indents every line; the indent is removed here). The reviewer read the files; it ran no command. The only edit: the home-directory prefix of the one worktree path it names is written `~` (the repository's home-path guard, T-15a).
+The reviewer's final report on `write-path.md` v0.1 (`789135b`), as handed back (the harness frames it as model output, not as the owner's words, and indents every line). **Edits to the text: two, neither changes a word of the review** — (1) formatting: the harness's indent is removed and Prettier has normalised the Markdown; (2) one redaction: the home-directory prefix of the one worktree path the reviewer names is written `~` (the repository's home-path guard, T-15a). The reviewer read the files; it ran no command.
 
 ---
 
