@@ -170,3 +170,15 @@ modal were read again from the live source on 2026-10-05, before v0.7 changed th
 | Amount ≤ 0 (§15a) | `modalConfirm()`: "Amount must be greater than 0" | no row claims the design shows "Enter an amount above 0" (the phrase appears only as §13a's history); no change |
 | §12b | `--filter-menu-max-height: 360px`, a wording-only amendment of `transactions.md` 2.8 | §6 says "wording only" and quotes the amended text; the amendment stays in its own pull request |
 | §14, §16c | the content-width two-column layout accepted (Overview ≥ 1060 px, Budgets ≥ 952 px, Recurring Bills ≥ 961 px; container queries; breakpoint tokens a separate decision) | touches none of these parts; the page and shell specs' |
+
+### v0.8 — the owner's decision on UK-Q9 (2026-10-05)
+
+No design re-read: the owner set §16a aside for now. The owner's words, in order: "hazırda form qərarları dəyişirmir.
+Release 1 uyğun davam et" ("form decisions do not change now; continue in line with Release 1"); "mesaj yazan kimi
+təmizlənir -bunu tech dept olaraq qeyd et. fix-i bütün releaselər bitəndən sonra" ("'the message clears as soon as the
+user types' — record this as tech debt; its fix after all releases are finished").
+
+| Point | Spec v0.7 | Spec v0.8 |
+|---|---|---|
+| UK-Q9 (message clearing) | (b) from §16a: `Field`'s clear-on-typing option, on in Release 2's forms | (a), the owner's: Release 1's timing (`auth.md` "Timing (US-31 AC1)") — a message appears on blur once touched and on submit, and stays until the next blur or submit; the option removed (2.5, §3, §6, §7); 2.11 keeps one row, with TD-24; the design's rule is TD-24 (`tech-debt.md` v1.29), fixed after all releases are finished |
+| The blur check / Release 1 forms | two items waiting for the owner (§8, §9, the PR body) | settled by the owner's first line; both items removed; Release 1's forms unchanged |
