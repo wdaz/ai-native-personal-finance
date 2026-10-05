@@ -1,10 +1,12 @@
 # Report — webmcp-tools review 2 (T-15d S6)
 
+Home paths in this report are written as `~/…` (the repository's home-path rule); nothing else was changed from the reviewer's text.
+
 As returned by the read-only Opus reviewer for commit a0fbfbc.
 
 **Review of `webmcp-tools.md` v1.0.7 against the review-2 brief (A–F)**
 
-I read the worktree at `a0fbfbc` (`/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/wf_e020d1ba-e8d-3`) and compared it by hand with the `origin/develop` copy (v1.0.6), since I could not run git. I found no blockers, two important findings and six minor ones.
+I read the worktree at `a0fbfbc` (`~/Own/ai-native-personal-finance/.claude/worktrees/wf_e020d1ba-e8d-3`) and compared it by hand with the `origin/develop` copy (v1.0.6), since I could not run git. I found no blockers, two important findings and six minor ones.
 
 **What changed, and whether it is in scope (A).** Every change is inside items (1)–(5) or follows directly from them:
 - Status and Changelog lines.

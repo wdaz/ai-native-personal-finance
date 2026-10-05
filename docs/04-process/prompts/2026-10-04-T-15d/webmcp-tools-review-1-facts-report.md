@@ -1,5 +1,7 @@
 # Report — webmcp-tools review 1 (T-15d S6)
 
+Home paths in this report are written as `~/…` (the repository's home-path rule); nothing else was changed from the reviewer's text.
+
 As returned by the read-only Opus reviewer for commit a0fbfbc.
 
 **Review of `webmcp-tools.md` v1.0.7 (worktree wf_e020d1ba-e8d-3, commit a0fbfbc): fact check against the repository**
@@ -53,4 +55,4 @@ I checked the current text against origin/develop's v1.0.6, `write-path.md`, `re
 - **Group 3, apart from finding 5:** the delete flow matches ADR-0004 line 18.
 - **Group 5, apart from finding 7:** `transactions.md` 2.14 defines `list_transactions` (line 151), its §6 says "`webmcp-tools.md` §4 points here" (line 265), and H11 (4) gives the E2E row to the first Transactions build task.
 
-Files: `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/wf_e020d1ba-e8d-3/docs/03-specs/webmcp-tools.md`, `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/wf_e020d1ba-e8d-3/docs/03-specs/release-2-handoffs.md`
+Files: `~/Own/ai-native-personal-finance/.claude/worktrees/wf_e020d1ba-e8d-3/docs/03-specs/webmcp-tools.md`, `~/Own/ai-native-personal-finance/.claude/worktrees/wf_e020d1ba-e8d-3/docs/03-specs/release-2-handoffs.md`
