@@ -223,7 +223,7 @@ H("TOOL DESCRIPTIONS (NFR-W3: at most 200 characters)");
   const descriptions: [string, string][] = [
     ["list_pots", "Lists the demo account's pots in creation order: name, theme, total saved, target and percentage, plus the current balance. Money in USD cents. Available on the Pots page."],
     ["add_pot", "Creates a pot from a name (unique, up to 30 characters), a target in USD cents and an unused theme. It starts with $0 saved. Available on the Pots page."],
-    ["edit_pot", "Changes a pot's name, target in USD cents and theme, by id. Its total saved does not change. Available on the Pots page."],
+    ["edit_pot", "Changes a pot by id; send all three: its name, target in USD cents and theme. Its total saved does not change. Available on the Pots page."],
     ["delete_pot", "Asks the person to confirm on screen, then deletes a pot by id; its total goes back to the current balance. Nothing is deleted without that confirmation. Available on the Pots page."],
     ["add_money_to_pot", "Moves an amount in USD cents from the current balance into a pot, by id. It may not exceed the current balance. Available on the Pots page."],
     ["withdraw_from_pot", "Moves an amount in USD cents out of a pot back to the current balance, by id. It may not exceed the pot's total. Available on the Pots page."],

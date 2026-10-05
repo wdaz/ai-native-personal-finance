@@ -85,7 +85,7 @@ PO-Q7 (a), 676: content 644 ≥ 644, two columns, card 310, inside the 24/20 px 
 === TOOL DESCRIPTIONS (NFR-W3: at most 200 characters) ===
 list_pots: 171 characters
 add_pot: 152 characters
-edit_pot: 120 characters
+edit_pot: 138 characters
 delete_pot: 181 characters
 add_money_to_pot: 139 characters
 withdraw_from_pot: 140 characters
