@@ -6310,3 +6310,54 @@ them too").
   - The owner reviews and merges #83 (the rules) and #82 (the retrospective, with this entry and backlog v1.57).
   - T-15d, Release 2 spec work, starts from the retrospective's section 3 and theme D (the hand-off in backlog
     v1.57). The retrospective's section 7 is read at the end of Release 2.
+
+## 2026-10-05 — Phase 5: Vercel skips docs-only commits
+
+- **Phase:** 5 (Build the slice), between tasks; a delivery change outside T-15d, its own pull request
+  (`chore/vercel-ignore-docs-only`).
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5): a read-only investigation earlier the same day, then a
+  subagent in its own worktree, dispatched by the controller session, for the change.
+- **Trigger:** two preview builds of `task/T-15d-spec-ui-kit` failed on TypeScript errors in a `docs/` figures
+  script, and the controller session asked why docs-only work builds at all.
+- **Prompt(s):** the controller session's brief to the subagent (not saved under `prompts/`); the owner's answer
+  is quoted below.
+- **Investigation (two lines):** of ~100 Vercel builds, 3 failed — two (`a1bf745`, `1cf0c9d`) on TS errors in a
+  `docs/` script (fixed separately), one (`docs/draft-ready-copilot`, `e3d5e48`, 2026-10-04) on Prisma P1001 during
+  a Neon cold start; every build runs `npx prisma migrate deploy && npm run build`, and every Git branch gets its own
+  Neon preview branch from the Vercel–Neon integration, so docs-only pushes also build, migrate and wake Neon.
+- **Owner's answer and how it was read:** asked "Vercel 'Ignored Build Step' for docs-only commits?", the owner
+  answered "2", read as: Vercel skips the build when a commit changes nothing outside `docs/`. The owner did not
+  choose to exclude `docs/` from type checking, so `tsconfig.json` is untouched and `docs/**/*.ts` stay
+  type-checked.
+- **Produced:**
+  - `scripts/vercel-ignore-build.sh` (POSIX sh) and `vercel.json` `"ignoreCommand": "sh scripts/vercel-ignore-build.sh"`:
+    skip (exit 0) only when the diff from `VERCEL_GIT_PREVIOUS_SHA` to `HEAD` is non-empty and every path, both
+    sides of a move (`--no-renames`), is under `docs/`; build (exit 1) on an unset or empty previous SHA, one that is
+    not a 40-character lowercase hex SHA, one not in the clone, an empty diff, a failed `git diff`, or any path
+    outside `docs/`;
+  - `tests/unit/vercel-ignore-build.test.ts` (21 cases against temporary git repositories, a `--depth=1` clone
+    among them), and `tests/unit/vercel-config.test.ts` extended for the new key; both written first and seen
+    failing (22 failures) before the script and the key existed; the script's cases also passed under `dash`;
+  - ADR-0007 amendment 2026-10-05, a row in `runbooks/deploy.md`, a paragraph in `scripts/README.md`, this entry.
+- **Vercel's documentation, read 2026-10-05:** exit 0 skips (the deployment is `CANCELED`), exit 1 builds
+  (vercel.com/docs/project-configuration/project-settings#ignored-build-step); `VERCEL_GIT_PREVIOUS_SHA` is "the git
+  SHA of the last successful deployment for the project and branch", empty on a branch's first deployment, and set
+  only when an Ignored Build Step is configured (vercel.com/docs/environment-variables/system-environment-variables);
+  the clone is `git clone --depth=10`
+  (vercel.com/kb/guide/how-do-i-use-the-ignored-build-step-field-on-vercel); a canceled build still counts toward
+  the deployment quota and build slots.
+- **What the agent got right:** it read the variable's definition before relying on it: since the previous SHA
+  is the last *successful* deployment, a docs-only commit after a failed code build still builds; and it found that
+  a branch's first push always builds (empty previous SHA), so the brief's trade-off "docs-only PRs get no preview
+  URL" holds only for their later pushes — the ADR says so.
+- **What the agent got wrong or missed:** not yet known; for the owner's review.
+- **Owner changes and reasoning:** the decision itself ("2"); none to the implementation yet.
+- **Disagreements:** none.
+- **Lessons for the process:** a docs-only change can still break a build when `docs/` holds TypeScript that
+  `tsc` checks; this change stops such a commit from *deploying* but not from failing CI's typecheck, which is the
+  intended guard.
+- **Next:**
+  - The owner reviews the draft pull request; the first docs-only push after the merge shows the skip in the
+    Vercel build log ("vercel-ignore-build: skipping").
+  - Not verified: whether the Neon integration still creates or wakes a preview branch for a deployment that is
+    then skipped.
