@@ -142,6 +142,7 @@ same day 21, latest order: alpha ; Alpha ; beta | oldest order: alpha ; Alpha ; 
 === LENGTHS ===
 longest bill name: Spark Electric Solutions 24 chars | widest amount: $100.00 | widest due text: Monthly - 11th
 names with & or no space: Serenity Spa & Wellness ; ByteWise
+names with a non-ASCII character: 0 (none)
 
 === TOOL DESCRIPTION length (at most 200, defineTool) ===
 192 chars: Lists the demo account's recurring bills, one per vendor, with status (paid, dueSoon, upcoming) and the totals. Optional name search, status and sort. Money in USD cents. Recurring Bills page.

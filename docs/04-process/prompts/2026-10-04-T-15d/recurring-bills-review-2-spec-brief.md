@@ -2,6 +2,8 @@
 
 Written after `recurring-bills.md` v0.1 (`9b7776e`) for a subagent of type `feature-dev:code-reviewer`, model `opus`, tools read, grep and glob only (`governance.md` v1.1, v1.3). **Not yet dispatched:** the drafting session had no Agent tool (see `recurring-bills-review-handling.md`). The controller sends it as written, with the head commit of the branch in place of `<sha>`.
 
+Dispatched by the controller session against 53b2d02c62304c835ca3ae999220ad29bc32d837 (the drafting session had no subagent tool).
+
     You are a READ-ONLY reviewer (tools: read, grep, glob only; edit nothing). Repository worktree = your current working directory, branch task/T-15d-spec-recurring-bills, commit <sha>. Review the NEW document docs/03-specs/recurring-bills.md (a feature spec for the Recurring Bills page of Release 2; Draft, with seven questions for the product owner in section 9, prefixed RB-) as an adversarial SPEC reviewer. A separate reviewer checks its facts; you check its design and completeness. Its model is docs/03-specs/transactions.md (Approved), which it cites for the search field, the Menu and TruncatedText.
 
     Review against, in this order:

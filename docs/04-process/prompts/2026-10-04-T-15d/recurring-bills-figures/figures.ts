@@ -133,6 +133,8 @@ H("LENGTHS");
 const longest = [...bills].sort((a, b) => b.name.length - a.name.length)[0]!;
 console.log("longest bill name:", longest.name, longest.name.length, "chars | widest amount:", [...bills].map((b) => formatMoney(b.amount)).sort((a, b) => b.length - a.length)[0], "| widest due text:", [...bills].map((b) => monthly(b.day)).sort((a, b) => b.length - a.length)[0]);
 console.log("names with & or no space:", bills.filter((b) => b.name.includes("&") || !b.name.includes(" ")).map((b) => b.name).join(" ; "));
+const nonAscii = bills.filter((b) => /[^\x00-\x7F]/.test(b.name)).map((b) => b.name);
+console.log("names with a non-ASCII character:", nonAscii.length, nonAscii.length ? "(" + nonAscii.join(" ; ") + ")" : "(none)");
 
 H("TOOL DESCRIPTION length (at most 200, defineTool)");
 const description =

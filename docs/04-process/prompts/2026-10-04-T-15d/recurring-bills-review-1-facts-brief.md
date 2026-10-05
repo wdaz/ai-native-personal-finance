@@ -2,6 +2,8 @@
 
 Written after `recurring-bills.md` v0.1 (`9b7776e`) for a subagent of type `feature-dev:code-reviewer`, model `opus`, tools read, grep and glob only (`governance.md` v1.1, v1.3). **Not yet dispatched:** the drafting session had no Agent tool (see `recurring-bills-review-handling.md`). The controller sends it as written, with the head commit of the branch in place of `<sha>`.
 
+Dispatched by the controller session against 53b2d02c62304c835ca3ae999220ad29bc32d837 (the drafting session had no subagent tool).
+
     You are a READ-ONLY reviewer (tools: read, grep, glob only; edit nothing). Repository worktree = your current working directory, branch task/T-15d-spec-recurring-bills, commit <sha>. The NEW document docs/03-specs/recurring-bills.md (Draft) is a feature spec for the Recurring Bills page of Release 2. Your job is a FACT CHECK only: every statement the spec makes about something that exists outside it must be true.
 
     Check, and report each claim that is false, imprecise or unverifiable:

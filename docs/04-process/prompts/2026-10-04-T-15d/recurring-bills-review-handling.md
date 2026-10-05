@@ -1,20 +1,79 @@
 # How the recurring-bills reviews were handled (T-15d, S3)
 
-Draft reviewed: `recurring-bills.md` v0.1 (`9b7776e`).
+Drafts reviewed: `recurring-bills.md` v0.1.1 (the scope audit) and v0.2 (`53b2d02`, the two read-only reviews).
+Handled in v0.3.
 
-## The two read-only reviews (plan D7) — not yet run
+## The two read-only reviews (plan D7) — run, and handled in v0.3
 
-The drafting session ran without the Agent tool: a `ToolSearch` for it on 2026-10-05 found only unrelated tools
-(Vercel's agent-run readers, Notion's agent search). So the reviews of `governance.md` v1.1 and v1.3 (Opus, read only)
-could not be sent from that session. Their briefs are written and ready to send as they are:
+The drafting session ran without the Agent tool (a `ToolSearch` for it on 2026-10-05 found only unrelated tools), so
+the controller session sent both briefs as written (Opus, read only; `governance.md` v1.1 and v1.3) against
+`53b2d02c62304c835ca3ae999220ad29bc32d837`. Each report is saved word for word next to its brief:
 
-- `recurring-bills-review-1-facts-brief.md` — every file, symbol, line, token, requirement id and figure;
-- `recurring-bills-review-2-spec-brief.md` — F7's checklist (`release-2-handoffs.md` §2), every acceptance
-  criterion, the template's quality bar and S2's lessons (plan D14).
+- `recurring-bills-review-1-facts-brief.md` → `recurring-bills-review-1-facts-report.md` — 1 important, 7 minor;
+- `recurring-bills-review-2-spec-brief.md` → `recurring-bills-review-2-spec-report.md` — 2 important, 8 minor.
 
-The `-report.md` files do not exist yet. When the controller runs the reviews, each report is saved word for word
-next to its brief and every finding gets a row below, fixed or with a reason; the spec then moves to its next
-version (v0.3; v0.2 is the live design re-read below). **The pull request stays a draft until then.**
+A third, independent audit of process and scope (checks 1–8: design addresses, Status, allowed edits, strings,
+figures, tests, tool inputs) ran on v0.1.1; its file is outside the repository and its five findings are summarised
+below. Every finding was checked against the repository (and, for a design fact, against the designer's live source)
+before it was acted on. The tables say where each one was fixed (the spec's section in v0.3) or why it was declined.
+The pull request stays a draft until the items in its description are done.
+
+### Review 1 — facts
+
+| # | Finding | Handling (v0.3) |
+|---|---|---|
+| 1 (important) | `billsSummary` gives three cent sums only — no counts, no Total Bills — so the DTO's four `{ count, amount }` rows need code the spec does not name; 4.2 calls the totals repository code | **Fixed.** Confirmed: `src/domain/bills.ts:55-70`; `figures.ts` computes the counts and the total by hand. 2.1 and §6 name a new pure `billsTotals` (counts and cents; `billsSummary`, the Overview DTO and `get_overview_summary` unchanged); 2.4 builds the summary with it; §7's domain row tests it; 4.2 now says the three cent sums are repository code and the counts and Total Bills are the script's (the build's `billsTotals`). The figures README says so too. Same as review 2 #2 |
+| 2 | §7 lists day 24 and 25 as "not yet covered"; `tests/unit/domain/bills.test.ts:43-49` covers them (and 23:59:59Z, 20 Aug, 10 Jul) | **Fixed** (§7, Unit — domain): "not yet covered (day 31, a recurring income)", naming the cases already covered |
+| 3 | 2.13 states one shell tab order; it depends on the width and leaves out the reset banner's "Dismiss notice" | **Fixed** (2.13). Confirmed in `tests/e2e/app-shell-keyboard.spec.ts`: 1440 px — skip link, five nav items, "Log out", "Minimize Menu", "Dismiss notice"; 375 px — skip link, "Dismiss notice", header "Log out", five bottom-bar items. 2.13 now gives both. `transactions.md` 2.11 has the same wording; it is Approved and outside this task, so it is **not** changed here — a follow-up for the owner (a one-line fix in its own pull request) |
+| 4 | 2.6 cites the style guide's "Contrast pairs" for 4.73:1; no such section was recorded as read | **Fixed** (2.6): the ratio is cited from the figures script only (`output.txt` "CONTRAST"), which computes it |
+| 5 | Design values in 2.6, 2.9 and 2.13 (11 px, the 20 px heading gap, the list card's paddings and 24 px gap, the 32 px avatar, the 16 px avatar–name gap, the 24 px column gaps) have no row in the re-read table | **Fixed**: each was re-read from the designer's live source on 2026-10-05 and recorded in "Design re-read for the reviews" below; every value holds, so the spec's numbers are unchanged |
+| 6 | 2.14's 44 px row cites `transactions.md` 2.8; the 44 px trigger is in 2.9 | **Fixed** (2.14): "`transactions.md` 2.8, 2.9" |
+| 7 | The header lists W3–W7 (W5 is about destructive tools) and leaves out NFR-A8, whose "no horizontal scroll ≥ 320 px" 2.13 and 4.6 use | **Fixed** (header): "W3, W4, W6, W7" and "A8 (no horizontal scroll at 320 px, 2.13)". This reverses v0.1.1's own-check item 2, which had read A8 as unused |
+| 8 | RB-Q5 leaves out R-24, which asked for `untrustedContentHint` on list tools in general | **Fixed** (RB-Q5): R-24 cited in the question and in option (a) |
+
+### Review 2 — the spec
+
+| # | Finding | Handling (v0.3) |
+|---|---|---|
+| 1 (important) | RB-Q4 (a) promises the output says "upcoming = every unpaid bill", but the DTO key `summary.upcoming` (4 bills) and the filter `status: "upcoming"` (2 rows) share a name and nothing tells them apart | **Fixed** (2.11, 2.12, RB-Q4 (a), §9 decisions): the summary key is `totalUpcoming`, the card's label, so it cannot be read as the row status. The tool description is unchanged (192 characters). The key is part of RB-Q4 (a), which the owner answers |
+| 2 (important) | No source for the summary's counts and total; changing `billsSummary` would change the approved Overview DTO | **Fixed**, as review 1 #1: a new `billsTotals`; `billsSummary` and Overview stay unchanged (2.1, §6, §7) |
+| 3 | The status list has no home that `shared` and `webmcp` may import (`eslint.config.mjs`: `shared` → `shared`; `webmcp` → `webmcp`, `shared`) | **Fixed** (2.1, 2.11, §6, §7): `BILL_STATUSES` in `src/shared/recurring-bills-query.ts`; the domain's `BillStatus` is its type (`domain` may import `shared`); the DTO schema, the parser and the tool's `z.enum` read it |
+| 4 | 2.14's intro says no row changes what the design draws, but the hover border, the full stop and the 44 px button do | **Fixed** (2.14 intro): it now names the rows that change what is drawn because an approved document differs — and a fourth the reviewer did not list, the desktop layout from 1024 px instead of 1100 px (US-33 AC1, `--bp-desktop`). **Declined:** asking the hover colour as an RB- question. Each of these rows follows an approved document the owner already applied to Transactions (the tokens' "Component states", `transactions.md` 2.12; the copy appendix; `--tap-target-min`, `transactions.md` 2.9), so no choice is left open; plan D14's rule is about departures that no approved document carries |
+| 5 | The separator before the hidden status word is not specified ("Monthly - 21stDue soon") | **Fixed** (2.9, §7 Component, RB-Q1 #3): the due text `span`, one space, the visually hidden status `span`, then the decorative icon; the cell's exact accessible text is "Monthly - 21st Due soon" (and "… Paid", "… Upcoming"). The space is markup, not a new string |
+| 6 | The toolbar below 768 px says both "the full row" and "beside the icon button", with no wrap rule | **Fixed** (2.9): the field takes the rest of the row beside the 44 px button, 24 px apart (the design: `max-width: 100%`, `gap: 24px`, re-read live); at 320 px it gets 320 − 32 − 40 − 44 − 24 = 180 px ≥ 160 px (shell padding 16 px, `src/ui/Shell.module.css`; card padding 20 px), so the button never wraps |
+| 7 | §7 does not cover US-38 AC1's "leaving a page unregisters its tools", US-34 AC2, or "a refused call changes nothing" | **Fixed** (§7 WebMCP row and H9 line): a client navigation away → `[data-webmcp]` absent and 0 tools; the page unchanged after a refused call; "US-34 AC2 — not applicable: no disabled control" |
+| 8 | H14 misses RB-Q8 (c)'s US-30 AC1 amendment; the build order after Transactions is implicit; `ResultsRegion` undecided; `tests/e2e/webmcp.spec.ts` missing from the placeholder list | **Fixed**: `release-2-handoffs.md` H14 gains (4) (RB-Q8 (c) amends US-30 AC1 in this pull request) and the build order; RB-Q8 (c) points to it; §6 states the order and decides `ResultsRegion` — Transactions' one, moved to `src/ui/ResultsRegion.tsx` by this build with no change of behaviour; §7 adds the conditional `webmcp.spec.ts` / `webmcp-tools.md` §7 line (today the check navigates to Transactions, line 173) |
+| 9 | RB-Q7 asks about `q` and `sort` only; 2.3 also decides `status` | **Fixed** (RB-Q7): one sentence on `status` (ignored by the page; refused by the API and the tool, naming the allowed values) |
+| 10 | 4.6's "no name is non-ASCII" is not printed by the figures script; "the design computes it the same way" and "the design draws no pagination" have no recorded source | **Fixed**: `figures.ts` prints the non-ASCII check (`output.txt` "LENGTHS": 0), and 4.6 cites it. The two design facts are re-read live and recorded below; 2.4 cites the record |
+
+### The scope audit (on v0.1.1)
+
+| # | Finding (summary) | Handling |
+|---|---|---|
+| 1 (blocker) | The two D7 reviews had not run; no report files existed, so no findings could be handled | **Fixed**: both ran on v0.2 (above); the reports are saved word for word; every finding has a row; the spec is v0.3 |
+| 2 (important) | The spec's A to Z tie-break puts Aqua Flow Utilities before Spark Electric Solutions in Highest and Lowest, while the design (no tie-break, a stable sort over its fixed list) shows Spark first — a change to what the design draws without an RB- question | **Already handled in v0.2**: §9 **RB-Q8** asks it (three options with the seed effect of each; (a) recommended), the tie-break left the "decisions" list, and 2.4, 2.14 and 4.3 point to it. Re-checked live on 2026-10-05: `billSortFns` still has no tie-break, and `BILLS` still lists Spark (2nd) first and Aqua (30th) last |
+| 3 (important) | The design facts came from a stale export (2026-10-04 22:17) without the changelog's §8–§9 | **Already handled in v0.2** ("Design re-read (live)" below); the reviews' design values were re-read live once more for v0.3 ("Design re-read for the reviews") |
+| 4 | The spec cites plan decisions D10, D13 and D14, which exist only in plan v0.3 (PR #89, not on this branch) | **Open, by design:** plan D11 — once PR #89 merges, `develop` is merged into this branch once, just before the pull request goes ready, and the references are checked then. Listed in the pull request as still open |
+| 5 | RB-Q3 (a) would amend the Approved `data-model.md`; the plan's file table does not list it | **Fixed** (RB-Q3 (a), H14 (3)): if the owner answers (a), the edit is a separate commit, named in `data-model.md`'s Status line and in the pull request's description, so the merge visibly approves it |
+
+### Design re-read for the reviews
+
+Read on 2026-10-05 from the designer's Claude Design project, `Finance App.dc.html` (the Recurring Bills screen, its
+layout values `L` and the bills script), for the values the reviews could not trace. Every value holds; the spec's
+numbers are unchanged.
+
+| Fact the spec states | Live design |
+|---|---|
+| 2.6: the Total Bills label and total 11 px apart | `gap: 11px` between "Total Bills" and the total |
+| 2.6: Summary card padding 20 px, 20 px between the heading and the rows | `padding: 20px; gap: 20px` |
+| 2.9: list card padding 32 px (24 px 20 px below 768 px), 24 px between the toolbar and the rows | `padding: L.cardPad` (`32px`; below 768 px `24px 20px`), `gap: 24px` |
+| 2.9: the row avatar 32 px at every width | `width: 32px; height: 32px` in both row layouts |
+| 2.9: below 768 px, the avatar and the name 16 px apart | `gap: 16px` |
+| 2.9: below 768 px, the search field beside the Sort button | `flex: 1; max-width: 100%` beside the button, `gap: 24px` |
+| 2.13: desktop two columns 24 px apart; the left column 337 px, its cards 24 px apart and as tall as the list card; tablet the two cards side by side | `gap: 24px`; `L.billsLeftW` `337px`; left column `gap: 24px`, `align-self: stretch`; `L.billsLeftDir` `row` on tablet, each card `flex: 1` |
+| 2.4 and §9: the summary is over all bills, not the searched rows | `paidBills`, `upcoming` and `dueSoon` filter `BILLS`; only `billsView` applies the search |
+| 2.7: no pagination | the Recurring Bills section has none (the Transactions section has) |
+| RB-Q8: no tie-break | `billSortFns` compares only the day, the name or the amount |
 
 ## The drafting agent's own check (not a review)
 
@@ -24,7 +83,7 @@ independent reviews; it is listed so that the reviewers can see what was already
 | # | Found | Handling (v0.1.1) |
 |---|---|---|
 | 1 | 2.3 called the lenient/strict split "a decision you may override" in §9's decisions list, but §9 asks it as RB-Q7 | 2.3 now points to RB-Q7 |
-| 2 | The header named NFR-A8, which the body never uses | removed from the header |
+| 2 | The header named NFR-A8, which the body never uses | removed from the header (reversed in v0.3: review 1 #7 showed that 2.13 uses A8's "no horizontal scroll") |
 
 ## Design source
 
