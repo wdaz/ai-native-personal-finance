@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6) · v1.9 2026-10-04: before taking a pull request out of draft the agent waits for Copilot's review of the branch's current head and has fixed its important findings (owner decision at T-15d)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6) · v1.9 2026-10-04: before taking a pull request out of draft the agent waits for Copilot's review of the branch's current head and has fixed its important findings (owner decision at T-15d) · v1.10 2026-10-05: design questions are the designer's — the agent tells the owner, the owner takes it to the designer, the designer records the decision in the designer's changelog, and the agent applies it from there (owner decisions at T-15d)
 
 ## Roles
 
@@ -19,10 +19,53 @@ Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run 
 | Acceptance criteria wording | Approves | Drafts |
 | Architecture (stack, layout, persistence, auth) | Accepts ADR | Drafts ADR with ≥2 alternatives |
 | Feature spec content | Approves | Drafts |
+| The design itself: a look, a value, a size, a token, a drawn behaviour (v1.10) | Discusses it with the designer, who decides and records it in the designer's changelog | Tells the owner; applies the designer's recorded decision, citing its section |
 | Implementation details within an approved spec | — | Decides, documents in PR |
 | Test design within the testing ADR | — | Decides |
 | Marking anything Approved/Accepted | Only | Never |
 | Merging | Only | Never |
+
+**Design questions are decided by the designer** (v1.10, owner decisions 2026-10-05, T-15d, while
+`ui-kit.md` was drafted in #92: "dizayner üzrə qərarlar dizayner verir" — "decisions about the
+design are made by the designer"; then "Dizayndan kənara çıxma mənə deyilir mən dizaynerlə müzakirə
+edirəm. Onun sonra qərarı changelogunda qeyd olunur" — "a departure from the design is told to me; I
+discuss it with the designer. The designer's decision is then recorded in their changelog"). The
+designer works in the designer's Claude Design project; documents name it, and the designer's
+changelog, that way and never by an address or an id. A question about the design itself — a look, a
+value, a size, a token, a drawn behaviour — goes this way:
+
+1. **The agent tells the owner.** When a spec would depart from what the design draws, or a design
+   question comes up that the design does not answer, the agent says so in the spec's §9 and in the
+   pull request, as for any open question. It does not put the question to the designer itself, and
+   it does not decide it.
+2. **The owner discusses it with the designer.**
+3. **The designer records the decision in the designer's changelog.**
+4. **The agent reads that entry and applies it as the answer**, citing the changelog's section (for
+   example "the designer's changelog §8a"). It reads the designer's live source and changelog, not an
+   older export. An entry that is a proposal, an option or a note to discuss, not stated as a
+   decision, is not yet the answer, and the question stays open.
+
+When the owner sends the agent to the designer's sources for an answer ("92 q4 və q5 cavabı claude
+design-dan götür" — "for #92 take the answers to Q4 and Q5 from Claude Design"), step 4 applies to
+what is already recorded there.
+
+Still the owner's, whatever the design says:
+
+- **A trade-off against an approved non-functional requirement.** An approved NFR wins over the
+  design unless the owner says otherwise (the owner's ruling on `transactions.md` §9 Q5, 2026-10-04:
+  "NFR-A1 ödənməlidir" — "NFR-A1 must be met"). A general instruction such as "Designer qərarlarına
+  əsas götür" ("take the designer's decisions as the basis") does not answer such a question; it is
+  asked directly.
+- **Scope.**
+- **User-facing strings that the design does not already fix.**
+- **Every amendment of an Approved document**, which the owner approves by merging its pull request.
+  Where the design contradicts an Approved document (the designer's page-title format against
+  `app-shell.md` §2.5, T-15d), the agent tells the owner, as in step 1.
+
+Unchanged: a spec never departs from what the design draws on its own (the S2 lesson: `transactions.md`
+v0.2 wrapped long names without asking, and v1.0.2 replaced it with the owner's truncation). Additions
+the design cannot show — accessible names, focus, keyboard behaviour, ARIA, URL state — are listed in
+the spec as departures, each with its source (an NFR, a WCAG rule, a story).
 
 ## Human-in-the-loop points
 

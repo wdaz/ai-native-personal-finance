@@ -6361,3 +6361,50 @@ them too").
     Vercel build log ("vercel-ignore-build: skipping").
   - Not verified: whether the Neon integration still creates or wakes a preview branch for a deployment that is
     then skipped.
+
+## 2026-10-05 — Phase 4: the designer decides design questions (governance v1.10)
+
+- **Phase:** 4 (Specs & plan), T-15d; a process change in its own pull request
+  (`docs/governance-designer-decides`), outside the spec pull requests.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5): a subagent in its own worktree, dispatched by the
+  controller session that drafts `ui-kit.md` (#92).
+- **Trigger:** two design questions in `ui-kit.md` (#92). The owner first answered "92 q4 və q5 cavabı claude
+  design-dan götür" ("for #92 take the answers to Q4 and Q5 from Claude Design"); when one part was still open, the
+  owner stated the rule "dizayner üzrə qərarlar dizayner verir" ("decisions about the design are made by the
+  designer"), and then clarified how it runs: "Dizayndan kənara çıxma mənə deyilir mən dizaynerlə müzakirə edirəm.
+  Onun sonra qərarı changelogunda qeyd olunur" ("a departure from the design is told to me; I discuss it with the
+  designer. The designer's decision is then recorded in their changelog").
+- **Prompt(s):** the controller session's brief to the subagent and its clarification (not saved under
+  `prompts/`); the owner's words are quoted above.
+- **Produced:** `governance.md` v1.10 — a row in "Decision rights" and the paragraph "Design questions are decided
+  by the designer": the agent tells the owner (the spec's §9 and the pull request), the owner discusses it with the
+  designer, the designer records the decision in the designer's changelog, the agent applies that entry as the
+  answer, citing its section; a proposal in the changelog is not yet an answer. Still the owner's: a trade-off
+  against an approved NFR, scope, strings the design does not fix, every amendment of an Approved document. This
+  entry.
+- **The two earlier rulings it refines** (both on `transactions.md`, 2026-10-04,
+  `prompts/2026-10-04-T-15d/transactions-review-handling.md`): "Designer qərarlarına əsas götür" ("take the
+  designer's decisions as the basis") — now a rule with a defined route, instead of a general instruction; and §9
+  Q5's "NFR-A1 ödənməlidir" ("NFR-A1 must be met") — kept as the exception: an approved NFR wins over the design
+  unless the owner says otherwise. The S2 lesson "reading the designer's changelog is not approval to adopt it" is
+  narrowed: a decision the designer recorded after the owner's discussion is the answer; a changelog read without
+  that route, or an entry that is only a proposal, is not.
+- **What the agent got right:** it checked `governance.md` for a sentence the rule contradicts (none: the
+  owner's role in step 1 is the existing "tell the owner, do not decide"), and listed, without editing, the other
+  places that still describe the old route (the pull request lists them).
+- **What the agent got wrong or missed:** not yet known; for the owner's review. The brief's first reading of the
+  rule had the agent read the designer's source and apply a decision with no owner step in between; the owner's
+  clarification, which arrived before any text was written, puts the owner's discussion with the designer in as
+  step 2.
+- **Owner changes and reasoning:** the clarification above — departures go through the owner, who is the only
+  channel to the designer.
+- **Disagreements:** none.
+- **Lessons for the process:** a design question has a recorded answer only once the designer's changelog says
+  so; the spec's §9 cites that section, so a reader can check the answer at its source.
+- **Next:**
+  - The owner reviews the draft pull request.
+  - Later changes, each in its own pull request: AGENTS.md §2 "Never fabricate" (names "the Figma file" as the
+    design source), `docs/templates/feature-spec.md` (the "Design:" line names Figma frames; §9 could name the
+    designer's changelog as the answer to a design question), `docs/templates/user-story.md` (Figma frame names),
+    `docs/04-process/build-workflow.md` step 2 ("design is fixed in `docs/`"; "the owner answers questions"), and
+    the T-15d plan's D14 ("reading the designer's changelog is not approval to adopt it").
