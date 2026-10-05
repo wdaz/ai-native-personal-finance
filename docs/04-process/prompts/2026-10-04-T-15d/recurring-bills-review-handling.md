@@ -1,7 +1,7 @@
 # How the recurring-bills reviews were handled (T-15d, S3)
 
 Drafts reviewed: `recurring-bills.md` v0.1.1 (the scope audit) and v0.2 (`53b2d02`, the two read-only reviews).
-Handled in v0.3.
+Handled in v0.3. The design re-read for v0.6 (the designer's changelog §12–§16, RB-Q9 answered) is the last section.
 
 ## The two read-only reviews (plan D7) — run, and handled in v0.3
 
@@ -132,3 +132,26 @@ is still waiting on an approved document: the placeholder rule is `transactions.
 `design-tokens.md`; the focus ring is the tokens' focus indicator; the page title is `app-shell.md` 2.5; the dropdown
 attributes and the avatars are `transactions.md` 2.8 and 2.9; the tooltip is `transactions.md` 2.9 (its §9 Q5). No
 question RB-Q1 to RB-Q7 was settled by the live design.
+
+## Design re-read for v0.6 (the designer's changelog §12–§16)
+
+Read on 2026-10-05 from the designer's Claude Design project: the designer's changelog §12–§16 (it had changed
+since v0.5: §15 and §16 are new, and §14's status now reads "accepted by the owner") and, in `Finance App.dc.html`,
+the Recurring Bills toolbar and `renderVals()`. Process (governance, owner 2026-10-05, recorded in PR #94): a design
+question goes to the owner, the owner discusses it with the designer, the designer records the decision in the
+designer's changelog, and the agent applies the recorded decision, citing its section.
+
+| Changelog section | Live design | What the spec does (v0.6) |
+|---|---|---|
+| §16c (with §14): the content-width two-column layout is accepted; Recurring Bills ≥ 961 px content width; container queries on the content area; breakpoint tokens "a separate decision" | `cw = s.w - (s.sidebarMin ? 88 : 300) - 80`; `billsTwo = isDesktop && cw >= 961`; `billsLeftDir: !isMobile && !billsTwo ? 'row' : 'column'`; `billsLeftW: billsTwo ? '337px' : '100%'` | **RB-Q9 answered (b)**: 2.13 rewritten (two columns from a content width of 961 px by `@container` on `main`; stacked with the summary cards in a row from 768 px; below 768 px unchanged, still a window query); 2.9 (the list card's widths); 2.14 (the §14 row "No longer a departure"; a row for the shell's 1024 px against the design's 1100 px); §7 (E2E at content widths below and from 961 px, sidebar expanded and collapsed). 961 px is written as a number: no token is invented |
+| — (the v0.5 caveat) | — | Checked: content ≥ 961 px from a 1341 px window (sidebar expanded) and 1129 px (collapsed); a tablet window (768–1023 px, no sidebar) has at most 943 px. The list card is ≥ 600 px beside the summary and ≥ 644 px stacked at a desktop window, against the table's 380 px, so the 1024–1120 px overflow is gone; the caveat is removed and the 380 px fact kept (2.13) |
+| §15b: the toolbar triggers back to 45 px | the Bills Sort trigger `height: 45px`, its panel `top: 53px` (8 px under it) | 2.8 says it matches the design; 2.14's 47 px row is removed |
+| §15a: "Amount must be greater than 0" | the modal's `errs.amount` | none: the page has no form |
+| §15c, §15d: Style Guide field samples at 47 px; placeholder grey-500 | — | none: the search field is a 45 px toolbar control with a grey-500 placeholder already (2.5, 2.9) |
+| §16a: a field's message clears as soon as the user types | the modal's `updateModal()` | none: the page has no field message (2.13, US-31 does not apply) |
+| §16b: the modal's backdrop scrolls, the panel never clips | — | none: the page has no modal |
+| §12a, §12b: `--opacity-unavailable`; `--filter-menu-max-height` with a wording-only `transactions.md` 2.8 amendment | — | none: a modal's swatch and the Transactions Category menu; this page's Sort menu has no maximum height |
+
+The shared container rule (the content area as a size container, and Overview's 1060 px) is amended in `overview.md`
+and `app-shell.md` by the app-shell.md amendment, own pull request; the spec cites it and edits neither document.
+Budgets' 952 px is for `budgets.md`.
