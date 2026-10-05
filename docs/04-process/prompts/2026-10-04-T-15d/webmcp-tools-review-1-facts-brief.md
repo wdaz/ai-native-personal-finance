@@ -2,6 +2,7 @@
 
 Written for `webmcp-tools.md` v1.0.7 (`06b4452`). Subagent type `feature-dev:code-reviewer`, model `opus`, tools read, grep and glob only (`governance.md` v1.1, v1.3).
 **Not yet dispatched:** the session that drafted v1.0.7 had no tool to start a subagent; the brief is kept here as it is to be sent, and the report is saved beside it as `webmcp-tools-review-1-facts-report.md` when it comes back.
+Dispatched by the controller session against a0fbfbc (the drafting session had no subagent tool).
 
     You are a READ-ONLY reviewer (tools: read, grep, glob only; edit nothing). Repository worktree = your current working directory, branch task/T-15d-spec-webmcp-tools, commit 06b4452. docs/03-specs/webmcp-tools.md is an Approved spec (last approved text: v1.0.6); v1.0.7 is a DRAFT amendment made for T-15d Task S6 (plan docs/04-process/plans/2026-10-04-T-15d.md as amended in v0.3 on branch docs/T-15d-plan-v0.3 — read it with `git show origin/docs/T-15d-plan-v0.3:docs/04-process/plans/2026-10-04-T-15d.md` if your tools allow, else the v0.2 copy on this branch). See the change with `git diff origin/develop -- docs/03-specs` if you can; otherwise compare with the v1.0.6 text quoted in the changelog. Your job is a FACT CHECK only: every statement the amendment makes about something outside it must be true.
 

@@ -2,6 +2,7 @@
 
 Written for `webmcp-tools.md` v1.0.7 (`06b4452`). Subagent type `feature-dev:code-reviewer`, model `opus`, tools read, grep and glob only (`governance.md` v1.1, v1.3).
 **Not yet dispatched:** the session that drafted v1.0.7 had no tool to start a subagent; the brief is kept here as it is to be sent, and the report is saved beside it as `webmcp-tools-review-2-spec-report.md` when it comes back.
+Dispatched by the controller session against a0fbfbc (the drafting session had no subagent tool).
 
     You are a READ-ONLY reviewer (tools: read, grep, glob only; edit nothing). Repository worktree = your current working directory, branch task/T-15d-spec-webmcp-tools, commit 06b4452. docs/03-specs/webmcp-tools.md is an Approved spec (last approved text v1.0.6); v1.0.7 is a DRAFT amendment for T-15d Task S6. A separate reviewer checks its facts; you check its scope, design and completeness.
 
