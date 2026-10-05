@@ -77,3 +77,22 @@ each `transition: width .3s ease`; the gap from a bar to its text row is `gap: 1
 | Same question 8 | PO-Q8 #2 / `budgets.md` 2.3, two decimals | Kept as a question (governance v1.10: "Where the design contradicts an Approved document … the agent tells the owner"); PO-Q8 says `budgets.md` makes the same change and one ruling covers both |
 | Same question 9 | BU-Q5 / PO-Q8 #3, a row with no room at 320 px | Moved to a new **PO-Q11**, worded as BU-Q5 with three options (stack where it does not fit, recommended; smaller text; the designer draws one); PO-Q8 keeps three rows (#4 renumbered #3) and 2.2, 2.14, 4.7 and §7 cite PO-Q11 |
 | §9 | The read of `budgets.md` | Rewritten for v0.3 (`a122984`, BU-Q1–BU-Q5 unanswered) with a table of the questions the two specs share, each with the sibling's id |
+
+## Review 4 — the stand-in review of `07209a4` (v0.5, after the owner's answers)
+
+Two read-only stand-in reviews (facts; scope and process) of `pots.md` v0.5 (`07209a4`) against `budgets.md` v0.5
+(`fece1ac`); every fix is in v0.5.1. No owner answer changed. The design's preview was re-read live on 2026-10-06
+(read only): a beige-100 track 8 px tall, `display: flex; gap: 2px; overflow: hidden`, holding the staying segment
+(grey-900, `border-radius: 4px 0 0 4px`) and the moving one (`border-radius: 0 4px 4px 0`), each
+`transition: width .3s ease`.
+
+| # | Finding | Handling |
+|---|---|---|
+| F1 (important) | The PO-Q9 (a) error-state test sits on `PotsBoard`, which gets no DTO in that state; the page's error branch, its log and `PotsError` are untested | Checked `budgets.md` 2.1 and §7 at `fece1ac` and `app/(app)/overview/page.tsx` (`x-request-id`, `console.error`). Fixed: 2.1's Server bullet renders `PotsBoard` or, when `getPots` throws, `PageHeader` with no `primaryAction` and `PotsError`; 2.9 names the page; §7 tests `page.tsx` with `getPots` mocked to throw (no "+ Add New Pot", the card, the log with the request id) and `PotsError`'s Retry, as `budgets.md` §7 |
+| F2 (important) | One answer (S45-4), two rules for an engine that does not animate | Fixed in 2.11 with `budgets.md` 2.4's wording: such an engine is reported to the owner before the page ships |
+| F3 | PO-Q8 (S45-9) missing from "asked only here" | Fixed in §9: "PO-Q8, PO-Q2, PO-Q4 and PO-Q5 (S45-9 to S45-12) only here" |
+| F4 (with scope 2) | The sibling cited at v0.4 (`c3cfbcd`) | Fixed in §9: `budgets.md` v0.5, `fece1ac`; the v0.5 changelog entry is history and stays |
+| F5 (with scope 1) | Who adds `--duration-preview` when Budgets is built first | Checked `budgets.md` §6 and H15 (3) at `fece1ac` (only `--duration-progress` is Budgets'). Fixed in 2.11 and H16 (3): `--duration-progress` is shared (whichever build task comes first); `--duration-preview` is Pots-only and is added by the first Pots build task unless already there |
+| F6 (plausible) | The preview's moving segment may jump while the staying width animates | Confirmed against the design: its flex row moves the second segment with the first's end. Fixed in 2.6: the moving `rect`'s `x` is the staying width as a percentage, shifted by `translateX(var(--spacing-25))` from the CSS module (no `style` attribute, ADR-0006), and `x` transitions with `width` (2.11); past a full track its 2 px are clipped by the track; §7's `MoneyModal` test asserts the two `rect`s' attributes |
+| Scope 3 (note) | The branch conflicts with `develop` in `release-2-handoffs.md` | Not a defect of the spec; left to the planned D11 merge of `develop`, with the resolution the review gives (both Done-cell notes kept, H16 between H14 and H17, the Status line untouched) |
+| Scope nit | The pull request body's "Where it lands" table omits 2.15 for PO-Q3 and 2.14 for PO-Q6 | Fixed in the pull request body |
