@@ -1,0 +1,282 @@
+# How the ui-kit reviews were handled (T-15d, S1b)
+
+## The two independent reviews and the process audit (v0.3 → v0.4)
+
+Plan D7 asks for two read-only Opus reviews: one of the facts, one of the spec. The drafting agent ran inside a workflow
+whose tool set has no Agent tool, so it could not dispatch them; it wrote their briefs (`ui-kit-review-1-facts-brief.md`,
+`ui-kit-review-2-spec-brief.md`). The controller session dispatched both against v0.3 (`1cf0c9d`), and their reports
+are saved verbatim: `ui-kit-review-1-facts-report.md`, `ui-kit-review-2-spec-report.md`. A separate process and scope
+audit of v0.2 (`a1bf745`) is handled as a third report; it is summarised below, not copied. Each finding was checked
+against the repository before it was acted on. A fix that would change what the design draws, or decide a choice an
+approved document leaves open, became an owner question (UK-Q7, UK-Q8) instead of an edit. Result: `ui-kit.md` v0.4.
+Spec lines are those of v0.4.
+
+### Review 1 — facts (8 findings: 7 fixed, 1 declined)
+
+| # | Finding | Handling |
+|---|---|---|
+| 1 | The header, §9, H13 (5) and this file cite plan v0.3 and D10–D14, which neither this branch nor `develop` holds (both have v0.2) | Confirmed: v0.3 is on `docs/T-15d-plan-v0.3`, pull request #89, open. Fixed: the header (line 6) cites v0.3 through #89 and says the pull request goes ready only after #89 is merged and `develop` is merged in once (D11); H13's source names #89. The merge itself is a step before ready, listed in the pull request |
+| 2 | UK-Q4 names two tokens with the same number; there are four (`--duration-sidebar` 200 ms, `--sidebar-width` 300 px beside `--auth-card-max-width` and `--duration-hover`) | Confirmed (`design-tokens.md` lines 84, 97, 117, 118). Fixed: UK-Q4 (line 257) has a column naming all four; option (b) borrows all four, and a new option (c) borrows none |
+| 3 | `Field` has no `defaultValue` and is uncontrolled; the pre-fill needs a fourth prop | Confirmed (`src/ui/Field.tsx` lines 4–20, 27–30). Fixed: 2.5 (lines 73, 77) and §6 (line 190): four props, the pre-fill is `defaultValue` |
+| 4 | `Menu` must stop Escape and take a width and a fade, but §6 says "used, not changed" | Confirmed (`transactions.md` 2.8 says neither). Fixed: §6 lists `Menu` under "Changed" (Escape stops propagating; for `SelectField`, a trigger-wide panel, rich option content and the fade as options a use passes); 2.2 (line 40) and 2.6 (line 80) say so; H13 (1) carries it to the build |
+| 5 | `PageHeader.module.css` hides the whole actions group at ≥ 1024 px, so the button would vanish on desktop | Confirmed (`src/ui/PageHeader.module.css` lines 22–26). Fixed: a build note in 2.8 (line 94) and §6 — the indicator and "Log out" are hidden one by one |
+| 6 | `maxLength`'s reason counts `-$999,999,999.99`, which is refused | Confirmed (`output.txt`: `"-$5" -> too_small`). Fixed: 2.5 (line 74) counts `$999,999,999.99`, 15 characters; 4.4 states it |
+| 7 | The modal's height cap uses `--spacing-200` at every width while the edge gap is `--spacing-500` from 768 px | Confirmed. Fixed by removing the cap: the modal's layer now scrolls and the panel never clips (2.2 line 42, the fix of review 2 #5), so the gap is the only rule and follows the width |
+| 8 | `transactions.md` 2.8 and §8 still name `budgets.md` and `pots.md` as direct users of `Menu` | Declined: the reviewer calls it optional and "not wrong in substance" — the two pages still use `Menu`, through `ui-kit.md` 2.6. `transactions.md` is Approved, and its v1.0.13 amendment is kept to the one sentence the owner approves by merging this pull request |
+
+Review 1's notes: the `figures.py` trimming comment is added (`ui-kit-figures/figures.py`, `parse_amount`); the figures
+were run through `figures.ts` (audit #5).
+
+### Review 2 — the spec (20 findings: 18 fixed, 2 turned into owner questions, of which #16 is also partly fixed)
+
+| # | Finding | Handling |
+|---|---|---|
+| 1 | Focus can fall to `<body>`: "gone" is checked when the modal closes, while the card is still on the page | Confirmed. Fixed: 2.2 Focus (line 39) — on a 204 or 404 the page names `<main>` when the return element lies in the deleted card or the refreshed list; 2.3 (line 47), 2.7 (line 91); §7 `Modal` row (line 208): a delayed removal never leaves focus on `<body>` |
+| 2 | "No, Go Back" still works while the delete is pending | Confirmed (v0.3 disabled only Escape, Close and the backdrop). Fixed: 2.3 (line 47) — Go Back `aria-disabled` and inert while pending; §3; §7 `ConfirmDeleteDialog` row (line 209) |
+| 3 | Unmounting after a confirm reports a false `cancelled` | Confirmed. Fixed: 2.3 item 4 (line 61) — `cancelled` only before a confirm; afterwards the request is not aborted and the result is its answer, or the failure's own code when no dialog is left; `DeleteResult` gains those codes (line 52); §7 bus row (line 210) |
+| 4 | Two tool calls in one tick can open two dialogs | Confirmed (React state is not updated between them). Fixed: `ModalSlot` (2.2, line 36) checks and claims synchronously; 2.3 item 2 (line 59); §7 `ModalSlot` row (line 207) and bus row |
+| 5 | A select's absolutely positioned options panel is clipped by the modal's own scrolling | Confirmed (an absolutely positioned descendant is clipped by a scrolling ancestor below its containing block). Fixed: the full-screen layer scrolls, the panel is `overflow: visible` (2.2 Look, line 42; 2.11 new row, line 115; 4.4); §7 `Modal` row and the E2E row (Theme options visible at 320 px). The design draws no overflowing modal, so this fills a case it leaves open rather than changing a drawing |
+| 6 | The `Menu` Escape change contradicts §6 and is in no hand-off | Confirmed. Fixed: as review 1 #4; H13 (1) names it ("`Menu` stops the propagation of the Escape it handles"), for either build order |
+| 7 | A `role="status"` inserted with its text may not be announced | Confirmed (`transactions.md` 2.10 keeps its region empty, then sets it). Fixed: 2.9 (line 98) — the region is always in the page, its text set after the modal has closed; a second 404 clears then sets; §7 `Notice` assertions (line 214) |
+| 8 | UK-Q5 (a) changes the Approved `design-tokens.md` "Component states" without saying so | Confirmed (`design-tokens.md` line 126: "destroy (red → red at 80 % opacity)"). Fixed: UK-Q5 (line 274) says so and option (a) names the amendment; H13 gains (6) |
+| 9 | §7 lacks US-34 AC2 (no hover when disabled), US-15 AC2 "does not submit", and NFR-W5's `busy` / `not_found` at E2E | Confirmed. Fixed: `FormFooter` row asserts no request is sent (line 214); the E2E row (line 215) adds "no hover" on a used option and a pending button, and `busy` and `not_found` through the tool |
+| 10 | Nothing owns "one modal at a time" or "a write is pending" across the page | Confirmed. Fixed: `ModalSlot` (2.2, line 36; 2.1, §5, §6, §7), provided once per page by the page's client container |
+| 11 | `requestDelete` has no signal parameter, so the abort case cannot be built | Confirmed (US-40 AC2 names "abort (`signal`)"). Fixed: `requestDelete(kind, id, signal?)` and the handler's signal (line 52); item 6 (line 63) — before, during and after a confirm; §7 bus rows |
+| 12 | The tool-side failure list differs from the person-side one | Confirmed. Fixed: item 4 (line 61) lists 429, 403, 415, 500 and no response, as line 47 does |
+| 13 | §3 lacks states: select open, select error/`taken`, no handler, a form's 409/401, a second 404; the pending look | Confirmed. Fixed: §3 rows added (lines 146–170); 2.7 (line 91): a pending button keeps its resting colours, loses its hover, changes its label (the design draws no pending state, so nothing visual is invented) |
+| 14 | "Input boxes 45 px tall → `Field`'s box" changes what the design draws and cites code, not an approved document | Confirmed (`Field.module.css`: 12 + 12 + 21 + 2 = 47 px; no approved document sets the height). Not decided by the spec: **UK-Q7** (line 290), with the select panel's offset (review 2 #17); 2.5 Look (line 78) and 2.11 (line 114) point to it |
+| 15 | The used option's 25 % opacity has no token and is not in UK-Q4 | Confirmed. Fixed: UK-Q4 has seven values (line 257); 2.6 (line 84) points to it |
+| 16 | `0,500` and `0,123` are read as thousands; the strict reading of commas is a scope decision; the `maxLength` nit | Confirmed (`output.txt` of v0.3 accepted the grammar's shape; `0,500` → 50,000 cents). Fixed: a grouped number starts with 1–9 (2.5, line 75); `0,500`, `0,123`, `01,234` added to 4.1, both figures scripts and `output.txt`; the nit as review 1 #6. The strictness itself — US-15 AC2 says only that separators "are stripped" — is **UK-Q8** (line 295) |
+| 17 | `Field` needs `defaultValue`; the select trigger's name with no value; the trigger-to-panel gap is not stated | Confirmed. Fixed: `defaultValue` (as review 1 #3); the name with no value is the label alone (2.6, line 81; §7); the gap is `--spacing-100` (line 83), with the design's 74 px offset put to the owner in UK-Q7 |
+| 18 | Housekeeping: H13 is added, not resolved; H13 (2) repeats "Already used" (H10); `DEFAULT_TOOL_MESSAGE.busy`; plan v0.3 not on the branch | Confirmed (`src/webmcp/tool-result.ts` line 18 is a `Record` over every code). Fixed: the header says "Adds hand-off H13" (line 6); H13 (2) excludes "Already used"; H13 (1) and 2.3 item 7 (line 64) name `DEFAULT_TOOL_MESSAGE`; the plan as review 1 #1 |
+| 19 | UK-Q3 (a) does not say how long the notice stays or where focus goes | Confirmed. Fixed: UK-Q3 (a) (line 252) says it stays until closed or the next successful change, a second message replaces it, and closing it puts focus at the start of the content |
+| 20 | `figures.ts`, the script on the repository's code, was never run | Fixed: run on 2026-10-05 after `npm ci --ignore-scripts` and `npx prisma generate`; its output of the v0.3 scripts was identical to `output.txt`. After the grammar change both scripts were re-run, `output.txt` is `figures.ts`'s output and `figures.py` prints the same lines (`ui-kit-figures/README.md`) |
+
+### The process audit (third report; 6 findings, of v0.2 at `a1bf745`)
+
+| # | Finding (summarised) | Handling |
+|---|---|---|
+| 1 | Blocker: the two D7 reviews never ran; only the drafter's self-check exists | Fixed: both reviews ran against v0.3, their reports are saved verbatim and handled above |
+| 2 | The design facts came from the stale export of 2026-10-04 22:17; UK-Q5 rows 1–2, 2.4 and 2.11 and UK-Q1 #3's premise may be superseded | No change needed in v0.4: v0.3 already re-read the live source ("Design re-read (live)" below) — 2.4 has the grey-500 icon and the 24 × 24 design hit area, UK-Q5 lost its two fixed rows, 2.11 lists only what still departs, and UK-Q1 #3's premise ("Budget options" on every trigger) was rechecked and holds. Review 1 found the spec consistent with that table |
+| 3 | The spec and H13 cite plan v0.3 and D10–D14, which are not on the branch or on `develop`; the pull request body does not state the dependency | Fixed: as review 1 #1; the pull request body states that #92 depends on #89 and on one `develop` merge (D11) |
+| 4 | Most claimed UI criteria have no E2E row (PRD M2): US-15 AC1, AC2; US-16 AC1; US-17 AC1, AC3; US-22 AC1, AC2; US-23 AC1; US-24 AC1, AC2; US-25 AC2; US-26 AC2 | Fixed: §7 gains a table naming the page spec that E2E-traces each claimed criterion (line 217): the Budgets criteria `budgets.md`, the Pots criteria `pots.md`, US-31 to US-34 and US-40 AC2 both, each for its page |
+| 5 | `figures.ts` never ran; `output.txt` came from the Python mirror | Fixed: as review 2 #20 |
+| 6 | The `Menu` Escape note reaches no build task | Fixed: H13 (1) carries it (as review 2 #6), for whichever of Transactions or Budgets/Pots builds `Menu` first |
+
+## The drafting agent's own fact check of v0.1
+
+Not a substitute for the reviews: the agent re-read each claim of v0.1 against its source. Fixed in v0.2:
+
+| # | Finding | Handling |
+|---|---|---|
+| 1 | 2.1, 2.10, §6 said the swatch is coloured "through `themeVar`"; `themeVar` (`src/ui/overview/theme-color.ts`) returns a CSS value for an SVG attribute (the donut's `stroke`), while an HTML element is coloured by `ThemeBar`'s `data-theme` selector (`src/ui/overview/ThemeBar.tsx` line 6) | Fixed: the `data-theme` selector, as `ThemeBar`; never inline `style` |
+| 2 | 2.11 said the designer's changelog §8 "reportedly" adds the modal's role and trap; the source of that was not a repository document | Fixed: cites S2's record (`transactions-review-handling.md`), which lists "modal" among the changelog §8 changes, and the live re-read before ready |
+| 3 | 2.2 said a `Menu` inside the modal "handles Escape first" as if `transactions.md` 2.8 said so; it does not | Fixed: stated as a build note for the `Menu` (it stops the key) |
+| 4 | 2.5 set `maxLength` 32 with no reason | Fixed: the reason (the longest valid text has 16 characters) |
+| 5 | 2.3 sent focus to `<main>` after every deletion; a tool-started deletion may leave the previously focused element in place | Fixed: "where 2.2 says"; `<main>` when the "…" button is gone |
+
+## The design source during drafting
+
+The task gave the agent local copies of the designer's export of 2026-10-04 22:17. While the agent worked, those copies
+were renamed `*.STALE-export-*` and replaced by a note saying the export lacks the changelog's §8 (WCAG fixes, among them
+the modal's role and focus trap, the dropdowns' `aria-haspopup`/`aria-expanded`, the "…" button's colour and size, the
+"$" prefix's colour, the placeholder colour, `:focus-visible` rules) and §9, and pointing to the live source. The agent
+did not read the live source: the note came from a file, not from the owner or the task, and the task says the design
+facts are re-read live before the pull request goes ready. The spec cites the export it read (its header and §9 "Before
+ready"), UK-Q5 says rows may fall away, and the pull request lists the facts to re-check.
+
+## Design re-read (live)
+
+On 2026-10-05 the owner authorised reading the designer's live Claude Design project in the controller's session, and
+the controller passed that on in the task. A second agent re-read every design fact of `ui-kit.md` v0.2 against the
+live source — `Finance App.dc.html` (the Budgets and Pots screens, their "…" menus, the modal with its add, edit and
+delete content, the amount field, the Theme and Budget Category selects, the page-header add button, the modal's and
+dropdowns' script), `Style Guide.dc.html` (Accessibility, Buttons, Input Fields, Shadow) and the designer's changelog
+(§5, §8a–§8f, §9) — and compared it with the export of 2026-10-04 22:17 that v0.1 and v0.2 were written from. Plan D14
+applied: a fact the design may decide and no approved document contradicts is followed and attributed to the live
+design; a change to what the design draws or does, or to an approved document, is an owner question. Result: `ui-kit.md`
+v0.3.
+
+| Fact | Export of 2026-10-04 22:17 | Live source (2026-10-05) | What the spec does now |
+|---|---|---|---|
+| Modal markup | a plain `div`; the title an unlinked `<h2>` | `role="dialog"`, `aria-modal="true"`, `aria-labelledby` the `<h2>`, `aria-describedby` the description `<p>`, `tabIndex="-1"` (changelog §8d) | 2.2 unchanged in substance, now attributed to the design; 2.11 keeps only what the spec adds (the page `inert`, scroll lock, focus to `<main>` when the opener is gone, the press-and-release rule on the backdrop, not dismissible while pending) |
+| Modal focus | none | on open, the first focusable after Close; Tab and Shift+Tab wrap; Escape closes; focus back to the opener if it is still on the page (§8d) | 2.2 matches and says so |
+| Delete dialog's first focus | none | "Yes, Confirm Deletion" (the same rule: first after Close) | the spec keeps "No, Go Back" and asks: **new UK-Q6** (it changes the design's behaviour) |
+| Escape with a dropdown open inside the modal | no keyboard handling | Escape closes the dropdown first and returns focus to its trigger (§8e) | 2.2 and 2.4 match and say so |
+| "…" icon colour | grey-300 (2.10:1) | grey-500 (5.55:1) (§8a #2) | 2.4 grey-500; **UK-Q5 row 1 falls away** |
+| "…" hit area | the 16 × 16 icon | 24 × 24, `padding: 4px; margin: -4px` (§8e; the style guide: "at least a 24×24 hit area") | the spec keeps at least `--tap-target-min` (44 px), from the approved `app-shell.md` §4; invisible, the layout as drawn; 2.11 row reworded |
+| "…" trigger ARIA | `aria-label` only | adds `aria-haspopup="menu"` and `aria-expanded` (§8e); the popup and its items still have no roles, no `aria-controls`, no arrow keys | 2.4 attributes the two attributes to the design; the roles and keys stay the spec's additions (US-32 AC1, NFR-A4); 2.11 row reworded |
+| Select triggers' ARIA | none | `aria-haspopup="listbox"` and `aria-expanded` (§8e); options are `<button disabled>` when used, with no roles | 2.6 says so; 2.8's `Menu` adds the listbox roles and keys |
+| "$" colour | beige-500 (3.14:1) | grey-500 in `Finance App.dc.html` (§8a #4); **the style guide's "Field With Prefix" sample still draws it beige-500** | 2.5 grey-500, following the app screens and the changelog; **UK-Q5 row 2 falls away**; the style guide's sample is a mismatch inside the design — the controller tells the designer |
+| "$" accessibility | plain text | plain text (read aloud) | `aria-hidden`; a new row in 2.11 (an addition) |
+| Placeholder colour | beige-500 | grey-500, the helmet's `input::placeholder` (§8a #3) | 2.5 already grey-500 (H11 (6)); the source is now the live rule |
+| Focus indicator | none; `outline: none` on the inputs | `:focus-visible { outline: 2px solid grey-900; outline-offset: 2px }`, white inside `[data-theme="dark"]`; every `outline: none` removed (§8b) | the project's `--focus-ring-*` tokens hold the same values; the 2.11 row "No focus indicator" is removed |
+| Delete item hover | `opacity: .7` (2.93:1) | unchanged | UK-Q5 keeps the row |
+| Destroy button hover | `opacity: .8` (3.44:1) | unchanged, in the Delete dialog and the style guide's Button/Destroy | UK-Q5 keeps the row; option (c) (fix only the two resting colours) falls away, since the designer fixed them |
+| Submit disabled until valid | `disabled`, opacity .5 | unchanged | UK-Q2 unchanged, now says "still so in the live file" |
+| Modal values | max-width 560, backdrop black 50 %, padding 32 / 24 20 below 768, overlay padding 40 / 16, gap 20, title 32 / 20 px, close 32 px, `fadeIn` .2s (opacity 0 → 1, 8 px rise) | identical | unchanged; the 8 px rise (`--spacing-100`) is now stated in 2.2 and 2.4; UK-Q4 unchanged |
+| "…" menu values | width 134, top 28 px, padding 12 20, items 12 0, grey-100 divider, Edit grey-900 → grey-500, Delete red, `fadeIn` .15s, `0 4px 24px rgba(0,0,0,0.25)` | identical | unchanged; the shadow's use is cited to changelog §5 |
+| Select values | panel top 74 px, max-height 300, padding 12 20, radius 8, popover shadow; used option grey-500 with a 25 % swatch and "Already used" (12 px, grey-500); check-circle (green) on the current theme only; caret-down 16 px; label 12 px bold grey-500 | identical | unchanged; the panel's look is now stated in 2.6 (as 2.4's) |
+| Delete dialog | "Delete ‘{name}’?", the appendix's description, "Yes, Confirm Deletion" (red, 53 px, padding 16, radius 8, white 14 px bold) and "No, Go Back" (14 px grey-500 → grey-900), 20 px apart | identical | unchanged |
+| Header add button | "+ Add New Budget" / "+ Add New Pot", 53 px, padding 16, `nowrap`, 16 px from the Log out icon; the row 24 px gap, no wrap rule | identical | 2.8's "read the 375 px frame before ready" is dropped: the design draws no wrapped state, so the spec's wrap rule applies at whatever width the row stops fitting, and 320 px is tested |
+| Input hover border | grey-900 | grey-900 (also the style guide's fields) | unchanged departure (grey-500, the tokens' "Component states") |
+| Used option hover rule | present | present | unchanged departure (no hover, US-34 AC2) |
+| Changelog §9 | absent | page titles "Personal Finance - <page>"; the touch tooltip never closes by itself | nothing for these parts (the titles are `app-shell.md` v1.2's rule; the tooltip is `transactions.md` 2.9) |
+
+Questions after the re-read: UK-Q1 unchanged (the live design still names every "…" trigger "Budget options" or "Pot
+options", the premise the process audit asked to recheck); UK-Q2, UK-Q3 and UK-Q4 unchanged; UK-Q5 down to two rows and
+two options; UK-Q6 new. No other live change touches an approved document beyond what H11 (6) already carries (the
+placeholder colour and the beige-500 rule of changelog §8a). The ratios in `ui-kit-figures/output.txt` are unchanged;
+its labels "as exported" for grey-300 and beige-500 describe the export, and spec 4.3 now uses beige-500's 3.14:1 for
+the input border only.
+
+## The designer's changelog §12–§16 (v0.6, v0.7)
+
+After v0.5 the designer added §12 (UK-Q4's last part), §13 (the owner's answers on PR #92 drawn into the design) and §14
+(page layouts by content width) to the designer's changelog. Two independent read-only Opus agents compared them with
+v0.5 against the live files on 2026-10-05; the drafting agent re-read each point in the live files before changing the
+spec. While v0.6 was being written the designer added §15 (review fixes) and §16 (records on the departures) and changed
+both design files, so the changelog and the modal, its validation and the style guide's "Input Fields" were read again
+the same day before the commit; the table gives the state at that second read. Under the owner's rule of 2026-10-05
+(governance v1.10, pull request #94) a design question is the designer's: the spec tells the owner, and applies only a
+decision the designer has recorded in the designer's changelog.
+
+| Point | Live design (re-read 2026-10-05) | Spec v0.6 |
+|---|---|---|
+| UK-Q2 | §13a: the submit always enabled; messages under the fields on submit; focus to the first invalid field; `aria-invalid` | no longer a departure; 2.7 says the design matches; the four "for the designer" notes dropped |
+| UK-Q6 | §13b: `data-autofocus` on "No, Go Back", `min-height: 44px` | no longer a departure (2.3); "No, Go Back" at least `var(--tap-target-min)` tall, checked in §7's E2E row |
+| UK-Q7 | §13c: modal and login/sign-up fields 47 px; lists at `top: calc(100% + 8px)` | no longer a departure (2.5, 2.6) |
+| "$" | grey-500 and `aria-hidden` in the modal; grey-500 in the style guide's sample (§13d) | the stale beige-500 note and the 2.11 "$" row removed; under "No longer departures" |
+| UK-Q4, last part | §12a `--opacity-unavailable: 0.25`; §12b `--filter-menu-max-height: 360px` with a one-line `transactions.md` 2.8 amendment | answered by §12a–§12b as the owner directed; applied in 2.6, 2.10, §6, H13 (3); the 2.8 amendment goes in its own pull request; the seventh/eighth numbering fixed |
+| Amount ≤ 0 message | §13a had "Enter an amount above 0"; §15a changed it to the approved "Amount must be greater than 0" | the field messages listed as the approved copy (§9 UK-Q2); no longer a difference, under "No longer departures" |
+| Message clearing | `updateModal()` clears a field's message on edit; no blur message; §16a: "not decided. To discuss with the designer" | UK-Q9, a departure waiting for the designer's decision (through the owner); the blur message is US-31 AC1's |
+| Modal overflow | first read: the panel scrolled (`max-height: calc(100vh - 32px)`, `overflow-y: auto`); second read, §16b "spec wins": the backdrop scrolls (`overflow-y: auto; overscroll-behavior: contain`), the panel has no maximum height or overflow | UK-Q10 raised, then answered by §16b; 2.2 cites it and takes `overscroll-behavior: contain`; nothing in 2.11 |
+| §14, §16c | two-column layouts by the content width beside the sidebar; §16c records it as accepted | touches none of these parts; raised with the owner separately |
+| §15b–§15d | the toolbar triggers back to 45 px; the style guide's field samples at 47 px, their placeholder grey-500 | not these parts (the verifications had raised them for the designer) |
+
+`design-tokens.md`'s beige-500 "placeholder text" use, which one verification noted, is H11 (6)'s.
+
+### v0.7 — §16a now a decision (re-read 2026-10-05)
+
+After the owner discussed the departures with the designer, the designer's changelog §12–§16 and `Finance App.dc.html`'s
+modal were read again from the live source on 2026-10-05, before v0.7 changed the spec.
+
+| Point | Live design (re-read 2026-10-05, v0.7) | Spec v0.7 |
+|---|---|---|
+| Message clearing (UK-Q9) | §16a "When the field error clears: current design kept": "the owner keeps the current behaviour. The message clears as soon as the user types in the field"; "Amend the spec to match"; "Code: clear the field's error in its `onChange`, not on blur". `updateModal()` still deletes the edited field's error | answered by §16a — (b) for Release 2's forms; 2.5 (`Field`'s fifth prop, a clear-on-typing option, off for the login and sign-up forms), 2.11 ("No longer departures"), §3, §6, §7 (typing clears the message; the next blur or submit checks again), §8, §9 |
+| When a message appears | the modal's fields have only `onChange`, no `onBlur`; `modalConfirm()` checks on submit; §16a speaks only of clearing | the spec keeps US-31 AC1's blur check ("on submit and on blur after first interaction"); the one remaining difference, kept in 2.11 and stated for the owner under UK-Q9 — not decided by the agent |
+| Release 1 forms | §16a: "Differs from: Release 1 forms and the spec" | not changed here; put to the owner; §8 says so |
+| UK-Q10 | §16b unchanged: backdrop `overflow-y: auto; overscroll-behavior: contain`; `#modal-dialog` with no `max-height` or overflow, `margin: auto 0` | 2.2 and §9 UK-Q10 already match; no change |
+| Amount ≤ 0 (§15a) | `modalConfirm()`: "Amount must be greater than 0" | no row claims the design shows "Enter an amount above 0" (the phrase appears only as §13a's history); no change |
+| §12b | `--filter-menu-max-height: 360px`, a wording-only amendment of `transactions.md` 2.8 | §6 says "wording only" and quotes the amended text; the amendment stays in its own pull request |
+| §14, §16c | the content-width two-column layout accepted (Overview ≥ 1060 px, Budgets ≥ 952 px, Recurring Bills ≥ 961 px; container queries; breakpoint tokens a separate decision) | touches none of these parts; the page and shell specs' |
+
+### v0.8 — the owner's decision on UK-Q9 (2026-10-05)
+
+No design re-read: the owner set §16a aside for now. The owner's words, in order: "hazırda form qərarları dəyişirmir.
+Release 1 uyğun davam et" ("form decisions do not change now; continue in line with Release 1"); "mesaj yazan kimi
+təmizlənir -bunu tech dept olaraq qeyd et. fix-i bütün releaselər bitəndən sonra" ("'the message clears as soon as the
+user types' — record this as tech debt; its fix after all releases are finished").
+
+| Point | Spec v0.7 | Spec v0.8 |
+|---|---|---|
+| UK-Q9 (message clearing) | (b) from §16a: `Field`'s clear-on-typing option, on in Release 2's forms | (a), the owner's: Release 1's timing (`auth.md` "Timing (US-31 AC1)") — a message appears on blur once touched and on submit, and stays until the next blur or submit; the option removed (2.5, §3, §6, §7); 2.11 keeps one row, with TD-24; the design's rule is TD-24 (`tech-debt.md` v1.29), fixed after all releases are finished |
+| The blur check / Release 1 forms | two items waiting for the owner (§8, §9, the PR body) | settled by the owner's first line; both items removed; Release 1's forms unchanged |
+
+Two factual corrections from a read-only Opus check, same version: §9 UK-Q9 now says `LoginForm` and `SignupForm`
+check a field on blur and every field on submit and `Field` holds no rule (2.5); TD-24's "Guarded meanwhile by" now
+says `login.spec.ts` checks the messages on blur and on submit, `signup.spec.ts` on submit only.
+
+## v0.8.1 — the stand-in review of `00fc2cf` (2026-10-05)
+
+Copilot's review of the pull request's head `00fc2cf` errored, so by the owner's decision of 2026-10-05 two
+independent read-only Opus reviewers stood in for it: facts (`ui-kit-review-4-standin-facts-report.md`; 1 important,
+4 minor) and scope (`ui-kit-review-4-standin-scope-report.md`; 3 minor). Each finding was checked against the files
+before it was fixed; all eight hold.
+
+| # | Finding | Fixed where |
+|---|---|---|
+| F1 (important) | §3 "Select field \| Error / `taken`" exits on "a new choice" — the design's clear-on-change, which the owner set aside (UK-Q9 (a), TD-24) | §3: the exit is the trigger's next blur, or submit, with a valid value; 2.5: the rule names the select fields of 2.6; 2.6: a new bullet, "A choice is not a check" (focus returns to the trigger, so no blur; the message stays until blur or submit); §7 `SelectField` row: choosing a new option does not clear the message, the next blur or submit re-checks |
+| F2 | §3 "Modal \| Pending": "'No, Go Back' inert", where 2.3 says `aria-disabled` | §3: "'No, Go Back' `aria-disabled`, does nothing" |
+| F3 | a pending `Button` must show no hover, but `Button.module.css` suppresses hover only for `:disabled` | §6 (`Button`'s change) and H13 (1): no hover with `[aria-disabled="true"]` either |
+| F4 | `TOOL_ERROR_CODES` has neither `busy` nor `forbidden` (`write-path.md` 2.11), and `DeleteResult` returns `forbidden` | 2.3 item 7, §6 and H13 (1): gains `busy` and `forbidden` |
+| F5 | §7 traces US-33 AC3 and US-40 AC3, which the header does not claim | header "Implements": US-33 AC3 (these parts at 320 px), US-40 AC3 (the delete's `X-Via: webmcp`) |
+| S1 | UK-Q4's last part and H13 (5) cite plan D14 for "amending an Approved document goes to the owner" | both cite governance v1.10 ("Every amendment of an Approved document", approved by merging its pull request); H13 (5) keeps D14 only for S2's lesson that a design change to what the spec states asks the owner |
+| S2 | the pull request edited `release-2-handoffs.md`'s Status line, which plan D10 does not allow | the Status line restored to `develop`'s exactly; H13 and H3's Done cell kept |
+| S3 | the header and H13 (5) tie the design facts to the v0.3 re-read alone | both: re-read on 2026-10-05 (v0.3, again for v0.6 and v0.7) |
+
+## v0.8.2 — the stand-in review of `3ad9032` (2026-10-05)
+
+Copilot kept erroring, so by the owner's decision of 2026-10-05 two independent read-only Opus reviewers stood in for
+it again, for the pull request's head `3ad9032`: delta, the v0.8.1 changes (`ui-kit-review-5-standin-delta-report.md`;
+2 important, 1 minor) and whole, the pull request against `develop` (`ui-kit-review-5-standin-whole-report.md`;
+2 important, 1 minor). Two findings were raised by both lenses, so there are four distinct findings. Each was checked
+against the files before it was fixed; all four hold, and none is declined. The owner's decision UK-Q9 (a) is kept:
+every form keeps Release 1's timing, and the design's clear-on-change is TD-24.
+
+| # | Finding | Checked | Fixed where |
+|---|---|---|---|
+| D1 = W1 (important) | 2.6's "A choice is not a check" says focus returns to the trigger after a choice, "so the field has not been left", and §3 and §7 check at "the trigger's next blur"; but the open `Menu`'s listbox holds focus, so the trigger blurs on every open, and an open would check (or show a message on an untouched empty field) | `transactions.md` 2.8 (line 93): `aria-activedescendant` "on the listbox, which holds focus while the menu is open"; a choice, Escape and Tab return focus to the trigger first (lines 95–96) | 2.6: a select field's blur is focus leaving the field as a whole — a `focusout` whose `relatedTarget` is outside the wrapper holding the trigger and its listbox (none counts as outside); opening the menu, moving the highlight, choosing and Escape are not a blur; Tab out and a click that moves focus off the field are; the same wording in 2.5, §3 ("Select field \| Error / `taken`") and §7's `SelectField` row, which also asserts that opening and closing the menu neither shows nor clears a message |
+| D2 (important) = W3 (minor) | TD-24 not updated for the select fields: "What" scopes 2.5 to the amount fields and Pot Name, "Guarded meanwhile by" names only `AmountField`, "Fix" omits 2.6; 2.11's row names only typing | `tech-debt.md` TD-24 and `ui-kit.md` 2.11 as at `3ad9032` | TD-24: its Status clause (still v1.29, the pull request has not merged: the select fields since `ui-kit.md` v0.8.2, the design clears on typing or a new choice), "What" (the select fields of 2.6, their blur), "Where it applies" (2.6), "Guarded meanwhile by" (the `SelectField` row), "Fix" (a new choice clears; amend 2.5, 2.6, §3, §7), "How it will be verified"; `ui-kit.md` 2.11's row and §8: "or chooses a new option" |
+| W2 (important) | US-40 AC3 is claimed in the header (v0.8.1) but missing from §7's "Which page spec E2E-traces each criterion" table | `ui-kit.md` line 4 (header) against line 221 | §7's table: US-40 AC3 (the tool's confirmed delete carries `X-Via: webmcp`, and the page changes as after a person's delete), in `budgets.md` / `pots.md`; the E2E row names it |
+| D3 (minor) | §6 and H13 (1) exclude `[aria-disabled="true"]` from `Button`'s hover only; the destroy "Yes, Confirm Deletion" (underline hover) and "No, Go Back" (grey-900 hover) are not covered, though 2.7 says both show no hover while pending | `src/ui/Button.module.css` has only `.primary`; §6 names no destroy or text variant | 2.3 (both buttons: no hover with `[aria-disabled="true"]`), §6 (`Button`'s change: the same for both, whether or not they are `Button` variants), §7's E2E row (no hover on the pending submit, confirm and Go Back), H13 (1) and (6) (destroy: no hover with `[aria-disabled="true"]`; "No, Go Back" the same) |
+
+## v0.8.3 — the stand-in review of `41d6bc6` (2026-10-05)
+
+Copilot kept erroring, so by the owner's decision of 2026-10-05 two independent read-only Opus reviewers stood in for
+it again, for the pull request's head `41d6bc6`: delta, the v0.8.2 changes (`ui-kit-review-6-standin-delta-report.md`;
+0 important, 3 minor) and whole, the pull request against `develop` (`ui-kit-review-6-standin-whole-report.md`;
+2 important, 6 minor). Delta 1 is part of whole 2 and delta 2 is whole 4, so there are nine distinct findings. Each was
+checked against the files (and delta 3 against the designer's live source) before it was fixed; all nine hold, and none
+is declined. The owner's decision UK-Q9 (a) is kept: every form keeps Release 1's timing, and the clearing on change
+is TD-24.
+
+| # | Finding | Checked | Fixed where |
+|---|---|---|---|
+| W1 (important) | §7's `Modal` row reads the panel's computed `overflow` and the layer's `overflow-y` in jsdom | `vitest.config.ts` sets no `css` option, so no CSS module reaches jsdom; §7's own rule asserts CSS in E2E with `toHaveCSS` | the `Modal` row drops it; the E2E row asserts the layer `toHaveCSS("overflow-y", "auto")` and the panel `toHaveCSS("overflow-y", "visible")` at 320 px |
+| W2 (important) = D1 (minor) | 2.6 credits a pointer focus return to `transactions.md` 2.8, which states one only for the keys; a click choice, and in WebKit a closing click on the trigger (a press does not focus a button), would blur the listbox with no `relatedTarget` — a field blur by 2.6's rule | `transactions.md` 2.8, "Keys in the open menu" and "Pointer" (no focus return for a click) | 2.6: by the pointer `Menu` gains two things — while open, a press on the trigger or an option does not move focus (`mousedown` default prevented), and a click on an option or a closing click on the trigger returns focus to the trigger; closing by a trigger click is not a blur (2.5, 2.6, §3, §7, TD-24 "What"); §6's `Menu` changes and H13 (1); §7's `SelectField` row (choosing by click, closing by the trigger, focus on the trigger after) and E2E row (by pointer in every engine, WebKit included) |
+| W3 | the E2E row lists no 404 notice check and no check of the edited record's own values, though the tracing table gives US-16 AC1, US-17 AC3 and US-24 AC2 to the page specs; its Traces cell stops at 2.8 | `ui-kit.md` §7 as at `41d6bc6` | the E2E row: a 404 on a delete and an edit (modal closes, focus on `<main>`, notice shown and announced, list refreshed) and the edit form's own category and theme choosable; Traces 2.2–2.10 |
+| W4 = D2 | TD-24's index row and heading name typing only | `tech-debt.md` as at `41d6bc6` | both: "types or chooses a new option", and, after D3, "the target" rather than "the design" |
+| W5 | the `ConfirmDeleteDialog` row omits 403 and 415, which 2.3 lists among the answers that keep the dialog open | 2.3, "Confirming" | the row lists 204, 404, 409, 401, 429, 403, 415, 500, network |
+| W6 | the spec does not say what a select field's check covers, so a `taken` could be removed at the next blur while the value is still taken | 2.6 and 2.5 as at `41d6bc6` | 2.6: the check covers no value and a value the page's data shows another record holding ("Already used"; the list is refreshed after a `taken`), so a `taken` stays until a free option is chosen; §3's exit and §7's `SelectField` row say so |
+| W7 | 2.5's "typing never shows a message" against US-25 AC2's "shows that message on any input" | `user-stories.md` US-25 AC2 | 2.5 reads "on any input" as any value the field is checked with, at blur or submit, not each keystroke; `pots.md` states it for its field |
+| W8 | 2.11's intro says every drawn change is a §9 departure, but its table lists drawn changes that approved documents decide | 2.11's rows and their Source column; `transactions.md` 2.15 (the search input's grey-500 hover border, "tokens, Component states") | the intro adds "or an approved requirement or token already decides it — the Source column then names it" |
+| D3 | "the design clears a select's message on a new choice" is attributed to §16a with no design re-read | the designer's changelog and `Finance App.dc.html`'s modal, re-read live on 2026-10-05: §16a is now "When the field error clears: Release 1 behaviour" ("the error stays while typing. It is re-checked on the next blur or submit"); `updateModal()` keeps the errors; `blurField()` re-checks the Pot Name and amount fields on blur (a field already showing a message only); `modalCatOptions` and `modalThemeOptions` only set the value, and neither field has a message | not confirmable — the live design has no select message and no longer clears on typing. The select part is attributed to `ui-kit.md`'s reading, not to §16a (TD-24's Status clause, index row, heading, "Found", "What", "Fix"; `ui-kit.md` 2.11's row, §8); the clearing on typing is what the design first drew (§13a, §16a as first written); the header, 2.5, 2.11's row and "No longer departures", §9 UK-Q9 and "The design source" record the re-read. TD-24 stays open as the owner recorded it; whether to keep or close it, now that the design follows Release 1, is the owner's and is raised on the pull request |
+
+## v0.8.4 — the stand-in reviews of `8268e42` (2026-10-05)
+
+Copilot kept erroring, so by the owner's decision of 2026-10-05 four independent read-only Opus reviewers stood in for
+it, for commit `8268e42`: review 7, delta (`ui-kit-review-7-standin-delta-report.md`; 2 important, 3 minor) and whole
+(`ui-kit-review-7-standin-whole-report.md`; 3 important, 3 minor); review 8, delta
+(`ui-kit-review-8-standin-delta-report.md`; 1 important, 4 minor) and whole (`ui-kit-review-8-standin-whole-report.md`;
+1 important, 2 minor). `8268e42` was not yet on GitHub: the first three reviewed the local commit, the fourth the
+branch's head there, `41d6bc6`. Seven important and twelve minor findings, fifteen distinct (six important, nine minor).
+Each was checked against the files at `8268e42` (and the design facts against the designer's live source, re-read on
+2026-10-05: `blurField()`, `updateModal()`, `modalConfirm()`, `openAdd`, `firstFreeTheme()`, `modalCatOptions`,
+`modalThemeOptions`); thirteen are fixed and two are declined as already fixed at `8268e42`. The owner's decision
+UK-Q9 (a) is kept: every form keeps Release 1's timing, and the clearing on change is TD-24.
+
+**The select claim, re-read live.** `modalCatOptions` and `modalThemeOptions` set only the new value
+(`{ ...s.modal, category: c }`, `{ ...s.modal, theme: n }`), so the modal's errors are kept as they were; the errors
+hold only `name` and `amount` (`modalConfirm()`, `blurField()`), so neither select field ever has a message. The design
+therefore clears no select message on a new choice. No text says it does: TD-24's Status clause and "What", and
+`ui-kit.md` 2.11's row and §8, give the new choice to `ui-kit.md`'s reading of the target, and "What" says the design
+has no select message to clear; 2.11's row cites the two functions.
+
+| # | Finding (report) | Checked | Fixed where, or declined with evidence |
+|---|---|---|---|
+| A (important) | TD-24's index row credits "chooses a new option" to the designer's changelog §13a, §16a (7-delta 2, 7-whole 2) | `tech-debt.md` line 85 at `8268e42`; v0.8.3's D3 row lists the index row as fixed | the index row: "types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option" |
+| B (important) | TD-24 "Fix" drops 2.11's row, though the row keeps the blur difference the fix does not touch (7-whole 1, 7-delta 3) | 2.11's row and 2.5 at `8268e42` | TD-24 "Fix": amend 2.11's row (keep the blur difference; record any difference the re-read design then shows); its third bullet no longer says §16a "describes Release 1's rule" |
+| C (important) | 2.5 reads US-25 AC2's "on any input" as every checked value showing "Amount exceeds your current balance", against 2.5's own check order; `pots.md` does not exist (7-delta 1) | 2.5's order: the shared parse first, the page's rules after | 2.5: the reading is for timing only; at a $0.00 balance empty, malformed, 0 or negative and too-large values show 2.5's messages, every value that passes them "Amount exceeds your current balance"; `pots.md` must state it and ask the owner if it reads the criterion otherwise; §7's tracing table gives US-25 AC2 "with what a $0.00 balance shows, 2.5" to `pots.md`. The suggested hand-off is not added: §7's table is the instruction a page spec meets, and H13 says `pots.md` cites `ui-kit.md` by section |
+| D | §3 "Select field \| Open" leaves out a click on the trigger as an exit (7-delta 5, 7-whole 5, 8-delta 4) | 2.6 at `8268e42` (a closing click on the trigger) | §3: "a click on its trigger" in the select field's and the action menu's exits |
+| E | the E2E pointer clause "show no message on an untouched field" cannot fail: each form opens a select on a valid option (7-delta 4) | the design's `openAdd`; 2.6 | §7's E2E row: a pointer choice of a free option on a field showing a server `taken` keeps "Already used" and `aria-invalid` until the next blur or submit; focus on the trigger kept |
+| F (important) | 2.8 says "the E2E check at 320 px (§7) proves nothing is clipped", but §7 checks 320 px only with a modal open (7-whole 3) | §7's E2E row at `8268e42` | §7's E2E row: at 320 px with no modal open the header button and compact actions are inside the viewport, no horizontal scroll; 2.8 names both checks |
+| G | `PageHeader`'s CSS change at 1024 px and up has no test (jsdom loads no CSS) (7-whole 4) | `PageHeader.module.css`; §7's `PageHeader` row | §7's E2E row: at 1440 px the header button visible, the indicator and "Log out" not; §6 names the check |
+| H | the "…" menu opened by a click: focus goes nowhere in WebKit, so its keys have nothing to act on (7-whole 6) | 2.4's Pointer bullet at `8268e42` | 2.4: a click that opens the menu focuses the first item, a click that closes it returns focus to the trigger; §7's `ActionMenu` row and E2E row test it |
+| I (important) | the delta says the live design "matches" Release 1's rule, but `blurField()` returns at once for a field with no message, so a blur never shows one — first or later (8-delta 1) | `Finance App.dc.html`, `blurField()`, re-read live | TD-24 "Found" and Status clause; the header, 2.5, 2.11's row and "No longer departures", §8, §9 (the intro, UK-Q2, UK-Q9) and "The design source": §16a is titled "Release 1 behaviour" and keeps a message while the person types; the difference left is the blur check of a field showing none, on its first blur or a later one |
+| J | 2.11's row: "each form opens on a free option" is untrue when none is free (8-delta 2) | `openAdd` (`CATS.find(…) \|\| CATS[0]`), `firstFreeTheme()` (`\|\| THEMES[0]`) | 2.11's row: each add form opens on the first free option, falling back to the first option when none is free; an edit form on the record's own value |
+| K | §9 UK-Q9: "The blur check, which the design does not draw" is stale after the re-read (8-delta 3) | UK-Q9's re-read paragraph | UK-Q9: "The blur check of a field that shows no message, which the design does not draw"; its last sentence states the difference as in I |
+| L | the pointer focus rules change the Approved `transactions.md` 2.8 `Menu` "for every use", with no amendment of that spec (8-delta 5) | `transactions.md` 2.8 "Pointer" (no focus return); its v1.0.13 entry says "no behaviour of this page" | 2.6, §6 and H13 (1): the pointer focus rules are an option `SelectField` passes, so the Transactions menus keep 2.8's behaviour; Escape's `stopPropagation` stays for every use (no Transactions menu sits in a modal) |
+| M (important) | §7's `Modal` row reads computed overflow in jsdom (8-whole 1) | `ui-kit.md` §7 at `8268e42`: the row says the overflow is "CSS, asserted in E2E", and the E2E row has `toHaveCSS("overflow-y", "auto")` / `"visible"` | declined — already fixed at `8268e42` (v0.8.3, W1); the reviewer read `41d6bc6` |
+| N | a bare "2.8" in 2.4 means `transactions.md` 2.8, where this spec's own 2.8 is the header button (8-whole 2) | 2.1's table, 4.4 and §6 use "2.8" for this spec's section | 2.4 (both places, and its "Look") and every bare reference in 2.6: `transactions.md` 2.8 |
+| O | TD-24's index row and heading name typing only (8-whole 3) | `tech-debt.md` at `8268e42`: both say "types or chooses a new option" | declined — already fixed at `8268e42` (v0.8.3, W4); the reviewer read `41d6bc6`. The index row's attribution is A |
