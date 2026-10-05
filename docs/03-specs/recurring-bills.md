@@ -1,8 +1,8 @@
 # SPEC-recurring-bills — Recurring Bills page
 
-Status: **Draft v0.1** (T-15d, S3; seven questions for the owner in §9) · Author(s): Agent (Claude Code, Opus 5.5, background session) · Date: 2026-10-05
+Status: **Draft v0.1.1** (T-15d, S3; seven questions for the owner in §9; the two read-only reviews are not yet run, `docs/04-process/prompts/2026-10-04-T-15d/recurring-bills-review-handling.md`) · Author(s): Agent (Claude Code, Opus 5.5, background session) · Date: 2026-10-05
 Implements: US-27 (AC1–AC3), US-28 (AC1), US-29 (AC1), US-30 (AC1, AC2), US-08 AC2 (the receiving side: Overview's "See Details" opens `/recurring-bills`), US-32, US-33, US-34 (for this page), US-36 (AC2), US-38 (AC1: `list_recurring_bills`), US-39 (AC2–AC4 for `list_recurring_bills`); US-31 does not apply (2.13) ·
-Constrained by: ADR-0001 (server and client components), ADR-0002, ADR-0003, ADR-0004, ADR-0005 (the clock), `write-path.md` 2.1 and 2.2 step 10 (a read route), `transactions.md` 2.3 (lenient page, strict API), 2.5 (the search field), 2.8 (the `Menu`), 2.9 (`TruncatedText`), NFR-A1, A2, A4, A6, A7, A8, B1, B3, S2, S7, T1–T8, W3–W7, D1, D2, D3 ·
+Constrained by: ADR-0001 (server and client components), ADR-0002, ADR-0003, ADR-0004, ADR-0005 (the clock), `write-path.md` 2.1 and 2.2 step 10 (a read route), `transactions.md` 2.3 (lenient page, strict API), 2.5 (the search field), 2.8 (the `Menu`), 2.9 (`TruncatedText`), NFR-A1, A2, A4, A6, A7, B1, B3, S2, S7, T1–T8, W3–W7, D1, D2, D3 ·
 Resolves hand-offs H3 (`list_recurring_bills`'s tool table; a read tool, no `consequentialHint`), H9 (the rows for this page), H12 (the bill names cite `transactions.md` 2.9), H14 (new, `release-2-handoffs.md`) · Design: the designer's Claude Design project — `Finance App.dc.html` (the Recurring Bills screen), `Style Guide.dc.html` and the designer's changelog; outside the repository — `docs/00-discovery/inputs/design/README.md`
 
 ## 1. Purpose
@@ -26,7 +26,7 @@ The user sees every recurring bill of the demo account — one row per vendor, b
 
 The written order is `q`, `sort`; the page writes the query string with `URLSearchParams` (a space becomes `+`) and reads both `+` and `%20`. Parameters not in the table are ignored and dropped the next time a control writes the URL; a repeated parameter reads as its first value. The page never redirects to a canonical URL; the URL is the source of truth (Back and Forward re-render from it), and a login redirect keeps it (`?next=`, `src/shared/next-path.ts`). These are `transactions.md` 2.2's rules, applied to this page's parameters. There is no `page` parameter: the list is not paginated (2.7).
 
-**2.3 Reading the query — lenient on the page, strict on the API.** `parseRecurringBillsQuery(params, { strict })` returns `{ query, issues }`, with the split of `transactions.md` 2.3, which the owner approved for that page (its §9 Q3 (a)) and this spec applies to this page's parameters (a decision you may override, §9 "Decisions this spec takes"):
+**2.3 Reading the query — lenient on the page, strict on the API.** `parseRecurringBillsQuery(params, { strict })` returns `{ query, issues }`, with the split of `transactions.md` 2.3, which the owner approved for that page (its §9 Q3 (a)) and this spec applies to this page's parameters (asked again in §9 RB-Q7):
 
 | Parameter | The page (`strict: false`) | `GET /api/recurring-bills` and the tool (`strict: true`) |
 |---|---|---|
@@ -298,4 +298,4 @@ Seven questions, each prefixed `RB-` so an answer cannot be taken for another sp
 
 ---
 
-Changelog: v0.1 (2026-10-05) — first draft, from a read of the designer's export of 2026-10-04 22:17 (the Recurring Bills screen, outside the repository), US-08, US-27 to US-30, US-31 to US-34, US-36, US-38, US-39, the NFRs, the tokens, `data-model.md`, `write-path.md`, `transactions.md` (the model, Approved), `overview.md`, `reset-and-test-support.md`, `webmcp-tools.md`, the Release 1 code (`src/domain/bills.ts`, the Overview page, route and tools, `src/ui`, the tests) and figures recomputed from the seed (4.2, `recurring-bills-figures/`).
+Changelog: v0.1.1 (2026-10-05) — the drafting agent's own check (not the two reviews, which this session could not dispatch; their briefs are written): 2.3 points to §9 RB-Q7, the header drops NFR-A8, which the body does not use. v0.1 (2026-10-05) — first draft, from a read of the designer's export of 2026-10-04 22:17 (the Recurring Bills screen, outside the repository), US-08, US-27 to US-30, US-31 to US-34, US-36, US-38, US-39, the NFRs, the tokens, `data-model.md`, `write-path.md`, `transactions.md` (the model, Approved), `overview.md`, `reset-and-test-support.md`, `webmcp-tools.md`, the Release 1 code (`src/domain/bills.ts`, the Overview page, route and tools, `src/ui`, the tests) and figures recomputed from the seed (4.2, `recurring-bills-figures/`).
