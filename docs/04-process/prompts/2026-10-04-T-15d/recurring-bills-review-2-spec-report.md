@@ -1,10 +1,12 @@
 # Report — recurring-bills review 2 (T-15d S3)
 
+Home paths in this report are written as `~/…` (the repository's home-path rule); nothing else was changed from the reviewer's text.
+
 As returned by the read-only Opus reviewer for commit 53b2d02c62304c835ca3ae999220ad29bc32d837.
 
 **Review 2 of `recurring-bills.md` Draft v0.2 against the spec brief (commit 53b2d02, worktree `wf_ca2e2077-bdb-2`): two important findings and eight minor ones; checks A–F are listed after them**
 
-All paths below are under `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/wf_ca2e2077-bdb-2/`.
+All paths below are under `~/Own/ai-native-personal-finance/.claude/worktrees/wf_ca2e2077-bdb-2/`.
 
 ## Findings
 
