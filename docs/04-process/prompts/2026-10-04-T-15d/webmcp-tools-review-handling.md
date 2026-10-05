@@ -34,9 +34,9 @@ numbers are v1.0.8's.
 
 | # | Finding (summary) | Handling |
 |---|---|---|
-| 1 | Important: the D7 reviews were never run — briefs only, no reports, no handling file; the D12 cross-spec brief does not exist; the PR must stay a draft | Fixed: both reviews were dispatched by the controller against `a0fbfbc`; the reports are saved verbatim beside their briefs, each brief records the dispatch, and this file records the handling. Still open before ready: the D12 cross-spec review (S6 against S3–S5), after S5 merges |
+| 1 | Important: the D7 reviews were never run — briefs only, no reports, no handling file; the D12 cross-spec brief does not exist; the PR must stay a draft | Fixed: both reviews were dispatched by the controller against `a0fbfbc`; the reports are saved verbatim beside their briefs, each brief records the dispatch, and this file records the handling. The D12 cross-spec review (S6 against S3–S5) is done: v1.0.10, after S5 (`pots.md`, #97) merged on 2026-10-05 |
 | 2 | Minor: the changelog puts the §2.6 and header edits under `write-path.md` §9 Q9, which names only §2.5, §2.8 and §4 | Same as review 1, finding 1. Fixed in the v1.0.7 changelog entry and WM-Q1 |
-| 3 | Minor: the spec cites plan v0.3, whose text is only on branch `docs/T-15d-plan-v0.3` (PR #89), not on `develop` | Checked `git show origin/docs/T-15d-plan-v0.3:docs/04-process/plans/2026-10-04-T-15d.md` (S1b, D10–D14 present) against `develop`'s v0.2. Fixed in the Status line: it names PR #89 and the branch until the plan merges. Still open before ready: PR #89 merged |
+| 3 | Minor: the spec cites plan v0.3, whose text is only on branch `docs/T-15d-plan-v0.3` (PR #89), not on `develop` | Checked `git show origin/docs/T-15d-plan-v0.3:docs/04-process/plans/2026-10-04-T-15d.md` (S1b, D10–D14 present) against `develop`'s v0.2. Fixed in the Status line: it names PR #89 and the branch until the plan merges. PR #89 merged on 2026-10-05T03:32:09Z (`gh pr view 89 --json state,mergedAt`, read 2026-10-06; the v1.0.10 entry) |
 | 4 | Minor: no fallback text for `forbidden`; the build would invent one | Same as review 2, finding 5. Fixed in §2.5: a citation of `write-path.md` 2.6's 403 message |
 | 5 | Minor: §7's API row asserts `method` for US-40 AC3 but traces only 2.8; Implements names no part of US-40 | Checked `write-path.md` 7.6's Traces (US-40 AC1, AC3). Fixed: the API row traces "2.8 · US-40 AC3 (with `write-path.md` 7.6)"; Implements names US-40 AC3 (§2.8) |
 
@@ -45,3 +45,37 @@ numbers are v1.0.8's.
 Review 1: 7 findings, 7 fixed. Review 2: 8 findings, 8 fixed (one part of finding 8 declined with its reason). Audit: 5
 findings, 5 handled. No finding changes what the design draws or decides a choice an approved document leaves open,
 so no new owner question was opened; WM-Q1 stays the only one.
+
+## Independent stand-in review of `344060b` (v1.0.10; fixes in v1.0.11)
+
+An independent read-only Opus review of the branch's head `344060b` (v1.0.10, after the D11 merge of `develop`),
+dispatched by the controller session before the pull request goes ready. Its findings and their handling (each
+claim checked against the file named before the edit, 2026-10-06):
+
+| # | Finding | Handling |
+|---|---|---|
+| 1 | The `id` rule contradicts two Approved documents: `write-path.md` §6, "WebMCP tools" (line 212), and US-40's header (`user-stories.md`, line 248) say every mutating tool takes the record `id`; `budgets.md` 2.13 and `pots.md` 2.13, merged, give `add_budget` and `add_pot` none, and §4 followed them while citing `write-path.md` §6 as the source | Checked the four lines, `user-stories.md` line 5, NFR-S3 and R-26's row in `docs/01-requirements/reviews/2026-09-13-adversarial-review.md`. Not an agent's decision (amending Approved documents): opened as **§9 WM-Q2**, open, no answer applied. §4 now says the page specs decide the rule and `write-path.md` §6 disagrees; the v1.0.8 changelog claim that `write-path.md`:212 "stays true" is corrected in the v1.0.11 entry, the v1.0.8 text unchanged. `write-path.md` and `user-stories.md` are not edited |
+| 2 | The placeholder-page E2E checks are lost: once the four Release 2 pages are built every page of `app/(app)` has tools, so §7's "polyfill · 0 on a placeholder page" and "0 tools after a client navigation" have no page — and become false, since the destination page registers its own tools — and US-38 AC1's "leaving a page unregisters its tools" loses its browser trace; `recurring-bills.md` §7's WebMCP row has the same check | Checked §3, §4 (2, 1, 4, 6, 1 tools on the five pages), `app/(app)/` on this branch, H11 (4) and `recurring-bills.md` §7 (its WebMCP row and its "Tests that change when the placeholder goes"). Opened as **§9 WM-Q3**, open; its interim rule keeps §7's E2E row as approved, moved by H11 (4). §2.3's "Pages without tools (R2 placeholders)" and §4's "How many" now point to it. `recurring-bills.md` is not edited (below, "For other PRs") |
+| 3 | H3's Done cell is still unticked though every resolver it names has merged | Checked each cited section on `origin/develop` with `git grep` (`transactions.md` 2.14, `recurring-bills.md` 2.12, `ui-kit.md` 2.3, `budgets.md` 2.13, `pots.md` 2.13 and §7, `write-path.md` 2.11 (6)); this spec's §4 is the last. Fixed: ☑, notes kept; `git diff origin/develop -- docs/03-specs/release-2-handoffs.md` shows the H3 row only, no Status-line hunk (plan D10) |
+| 4 | Nits: the Status line said "nothing else waits for the owner"; its list of merged specs §4 points to left out `transactions.md` (#88); §2.3 still spoke of "R2 placeholders" as if they last | Fixed in v1.0.11: the Status line names WM-Q2 and WM-Q3 as waiting and adds `transactions.md` (#88, merged 2026-10-04T19:17:18Z, `gh pr view 88`); §2.3's sentence folds into WM-Q3's interim rule |
+
+This round opened two owner questions, WM-Q2 and WM-Q3 (the Totals above, "WM-Q1 stays the only one", were true of
+the first round). Both are in the governance v1.8 form (what is decided, why it matters, options, a recommendation,
+every new term explained, who decides) with the prefix of plan D13.
+
+### For other PRs
+
+Found in this round, outside this pull request (it edits only `webmcp-tools.md`, H3's Done cell and this file):
+
+- `budgets.md` 2.13: `delete_budget`'s description says it returns `busy` "if a dialog is already open", narrower
+  than `ui-kit.md` 2.3 item 2 (any modal of the page open, or a write in flight).
+- `write-path.md` §6, "WebMCP tools": the `id` wording — the edit WM-Q2's answer asks for, in its own small pull
+  request.
+- `release-2-handoffs.md` H11 (4) (and the Budgets and Pots build notes): say which page each build moves the
+  placeholder check to, and what the last build does (WM-Q3); `recurring-bills.md` §7's WebMCP row ("→
+  `[data-webmcp]` absent and 0 tools") follows WM-Q3's answer.
+- `release-2-handoffs.md` H1 and H9: every resolver they name has merged, but both Done cells are still ☐.
+- `release-2-handoffs.md` H15 (3) says `--duration-preview` is "each added once as in (1)", as if shared; H16 says
+  it is Pots only, added by the first Pots build task.
+- `release-2-handoffs.md` H18: "the circumference, the segments' dash values and `Donut.tsx`'s `INNER_SCALE`
+  follows" — the verb should be "follow".
