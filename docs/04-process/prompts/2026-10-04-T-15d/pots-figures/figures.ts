@@ -96,6 +96,10 @@ for (let total = 1; total <= 400 && floatMisses.length < 3; total += 1) {
 console.log("float toFixed(2) disagrees with half up: " + (floatMisses.length ? floatMisses.join(" | ") : "none found"));
 console.log(`0/1 → ${pctText(percentBp(0, 1))}; 1/3 → ${pctText(percentBp(1, 3))}; 2/3 → ${pctText(percentBp(2, 3))}; 1/99999999999 → ${pctText(percentBp(1, 99999999999))}`);
 console.log(`largest percentage the data allows: total ${seedBalance + potsSum} / target 1 → ${pctText(percentBp(seedBalance + potsSum, 1))}`);
+{
+  const numerator = 2n * BigInt(seedBalance + potsSum) * 10_000n + 99_999_999_999n;
+  console.log(`largest numerator of potPercent: 2 · ${seedBalance + potsSum} · 10000 + 99999999999 = ${numerator}; Number.MAX_SAFE_INTEGER ${Number.MAX_SAFE_INTEGER}; within it: ${numerator <= BigInt(Number.MAX_SAFE_INTEGER)}`);
+}
 
 // ---------------------------------------------------------------------------------------
 H("THREE WRITES IN A ROW (write-path.md 4.2's sequence), conservation after each");
@@ -203,6 +207,13 @@ H("CARD WIDTHS (content width = window − sidebar − 80 px page padding; below
   mobile.forEach(([name, content]) => {
     const inner = content - 2 * 20, button = (inner - 16) / 2;
     console.log(`${name}: content ${content}, one column, card ${content}, inside the 24/20 px padding ${inner}, each money button ${button}`);
+  });
+  // PO-Q7 (a): two columns from a 644 px content width — below a 768 px window that is 676 px and up.
+  const threshold = 1024 - 300 - 80;
+  const below768: [string, number][] = [["767", 767 - 32], [String(threshold + 32), threshold]];
+  below768.forEach(([name, content]) => {
+    const card = (content - 24) / 2, inner = card - 2 * 20, button = (inner - 16) / 2;
+    console.log(`PO-Q7 (a), ${name}: content ${content} ≥ ${threshold}, two columns, card ${card}, inside the 24/20 px padding ${inner}, each money button ${button}`);
   });
 }
 

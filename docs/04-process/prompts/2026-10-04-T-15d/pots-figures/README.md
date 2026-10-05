@@ -4,8 +4,9 @@ Task: T-15d (S5, `docs/03-specs/pots.md`) · Date: 2026-10-05 · Written by the 
 
 `figures.ts` prints every number `pots.md` quotes: the seed's pots with their percentages and bars, the money moves
 and their previews, the balance after each, the zero-balance and all-themes-used cases, the Pot Name counter, the card
-widths, the tool descriptions' lengths and the contrast ratios. `output.txt` is its output of 2026-10-05, made from the
-repository root with:
+widths (with the two-column widths of `pots.md` §9 PO-Q7 (a)), the largest numerator of the percentage, the tool
+descriptions' lengths and the contrast ratios. `output.txt` is its output of 2026-10-05 (re-run for `pots.md` v0.2),
+made from the repository root with:
 
 ```
 FORCE_COLOR=0 npx tsx docs/04-process/prompts/2026-10-04-T-15d/pots-figures/figures.ts
@@ -27,8 +28,9 @@ this spec's reading, written in the script by hand, because no repository code i
   `ui-kit.md` 2.5's, whose figures record holds its examples;
 - the **name** rules — trimmed, case-insensitive, the record's own name allowed, the counter `30 − length` with "1
   character left" in the singular (`pots.md` 2.5);
-- the **card widths** — the shell's content width (`app-shell.md` §2.9 as PR #96 states it: window − sidebar − 80 px,
-  or window − 32 px below 768 px) and the design's paddings and gaps (`pots.md` 2.4);
+- the **card widths** — the shell's content width (`app-shell.md` §2.9, Approved v1.5 by PR #96: window − sidebar − 80 px,
+  or window − 32 px below 768 px) and the design's paddings and gaps (`pots.md` 2.4, 4.7); whether a label fits its button is not measured
+  here (it needs the font): the E2E asserts it (`pots.md` 4.7, §7);
 - the **design's own texts** for the departure rows — `pct.toFixed(pct >= 10 ? 1 : 2)` and `fmtShort` — copied from
   the designer's Claude Design project (`Finance App.dc.html`, `renderVals()`);
 - the **contrast ratios**, WCAG 2.1's relative-luminance formula on `design-tokens.md`'s colours.
