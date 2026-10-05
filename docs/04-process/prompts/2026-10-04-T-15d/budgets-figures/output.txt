@@ -1,0 +1,183 @@
+
+=== BUDGETS — variant "seed" (creation order, seq) ===
+budgets: 4 | transactions: 49
+1. Entertainment | theme Green | maximum 5000 ($50.00) | spent 1500 ($15.00) | remaining 3500 ($35.00) | spent/maximum 30.0000 % | bar fill 30 %
+   card: "Maximum of $50.00" · summary row: "$15.00" "of $50.00"
+   latest 1: Pixel Playground | 11 Aug 2026 (2026-08-11T18:45:38Z) | -1000 cents | -$10.00
+   latest 2: James Thompson | 11 Aug 2026 (2026-08-11T15:45:38Z) | -500 cents | -$5.00
+   latest 3: Rina Sato | 13 Jul 2026 (2026-07-13T09:15:32Z) | -1000 cents | -$10.00
+2. Bills | theme Cyan | maximum 75000 ($750.00) | spent 15000 ($150.00) | remaining 60000 ($600.00) | spent/maximum 20.0000 % | bar fill 20 %
+   card: "Maximum of $750.00" · summary row: "$150.00" "of $750.00"
+   latest 1: Rina Sato | 2 Aug 2026 (2026-08-02T13:31:11Z) | -5000 cents | -$50.00
+   latest 2: Spark Electric Solutions | 2 Aug 2026 (2026-08-02T09:25:11Z) | -10000 cents | -$100.00
+   latest 3: Aqua Flow Utilities | 30 Jul 2026 (2026-07-30T13:20:14Z) | -10000 cents | -$100.00
+3. Dining Out | theme Yellow | maximum 7500 ($75.00) | spent 13300 ($133.00) | remaining 0 ($0.00) | spent/maximum 177.3333 % | bar fill 100 %
+   card: "Maximum of $75.00" · summary row: "$133.00" "of $75.00"
+   latest 1: Savory Bites Bistro | 19 Aug 2026 (2026-08-19T20:23:11Z) | -5550 cents | -$55.50
+   latest 2: Ethan Clark | 13 Aug 2026 (2026-08-13T20:15:59Z) | -3250 cents | -$32.50
+   latest 3: Ella Phillips | 10 Aug 2026 (2026-08-10T19:22:51Z) | -4500 cents | -$45.00
+4. Personal Care | theme Navy | maximum 10000 ($100.00) | spent 4000 ($40.00) | remaining 6000 ($60.00) | spent/maximum 40.0000 % | bar fill 40 %
+   card: "Maximum of $100.00" · summary row: "$40.00" "of $100.00"
+   latest 1: William Harris | 5 Aug 2026 (2026-08-05T14:30:56Z) | -1000 cents | -$10.00
+   latest 2: Serenity Spa & Wellness | 3 Aug 2026 (2026-08-03T14:00:37Z) | -3000 cents | -$30.00
+   latest 3: Serenity Spa & Wellness | 3 Jul 2026 (2026-07-03T14:00:37Z) | -3000 cents | -$30.00
+totals: spent 33800 ($338.00) | limit 97500 ($975.00)
+donut aria-label: "Spent $338.00 of $975.00 limit" | centre: "$338.00" / "of $975.00 limit"
+overviewSummary (repository) agrees: spent true, limit true
+
+=== DONUT SEGMENTS (seed) — the repository's donutSegments, over all budgets, total = limit ===
+Entertainment (Green): 5000 / 97500 = 5.13 % | from 0.00° to 18.46° | dasharray "34.799180162840784 678.5840131753953" offset 0
+Bills (Cyan): 75000 / 97500 = 76.92 % | from 18.46° to 295.38° | dasharray "521.9877024426117 678.5840131753953" offset -34.799180162840784
+Dining Out (Yellow): 7500 / 97500 = 7.69 % | from 295.38° to 323.08° | dasharray "52.198770244261176 678.5840131753953" offset -556.7868826054525
+Personal Care (Navy): 10000 / 97500 = 10.26 % | from 323.08° to 360.00° | dasharray "69.59836032568157 678.5840131753953" offset -608.9856528497137
+radius 108 (the repository's DONUT_RADIUS, Release 1's), circumference 678.5840131753953
+the formula agrees with donutSegments at radius 108: true
+outer ring at the design's radius 96 (OV-Q1 (a)): circumference 603.19
+  Entertainment: length 30.93 | offset 0.00
+  Bills: length 463.99 | offset -30.93
+  Dining Out: length 46.40 | offset -494.92
+  Personal Care: length 61.87 | offset -541.32
+inner ring at the design's radius 78 (OV-Q1 (a)): circumference 490.09
+  Entertainment: length 25.13 | offset 0.00
+  Bills: length 376.99 | offset -25.13
+  Dining Out: length 37.70 | offset -402.12
+  Personal Care: length 50.27 | offset -439.82
+
+=== AUGUST SPENT PER CATEGORY (seed) — the repository's budgetSpent; what a new budget would show (US-15 AC3) ===
+Entertainment: has a budget | transactions 3 (August 2: 2 negative, 0 positive) | August spent 1500 ($15.00)
+Bills: has a budget | transactions 7 (August 2: 2 negative, 0 positive) | August spent 15000 ($150.00)
+Groceries: free | transactions 3 (August 2: 1 negative, 1 positive) | August spent 7850 ($78.50)
+Dining Out: has a budget | transactions 8 (August 3: 3 negative, 0 positive) | August spent 13300 ($133.00)
+Transportation: free | transactions 6 (August 3: 3 negative, 0 positive) | August spent 5625 ($56.25)
+Personal Care: has a budget | transactions 3 (August 2: 2 negative, 0 positive) | August spent 4000 ($40.00)
+Education: free | transactions 2 (August 1: 1 negative, 0 positive) | August spent 5000 ($50.00)
+Lifestyle: free | transactions 3 (August 1: 1 negative, 0 positive) | August spent 3525 ($35.25)
+Shopping: free | transactions 3 (August 0: 0 negative, 0 positive) | August spent 0 ($0.00)
+General: free | transactions 11 (August 5: 2 negative, 3 positive) | August spent 10730 ($107.30)
+
+=== LATEST SPENDING PER CATEGORY (seed) — latestTransactions (repository) on the category's rows ===
+## Entertainment: 3 shown
+   1. Pixel Playground | 11 Aug 2026 (2026-08-11T18:45:38Z) | -1000 cents | -$10.00
+   2. James Thompson | 11 Aug 2026 (2026-08-11T15:45:38Z) | -500 cents | -$5.00
+   3. Rina Sato | 13 Jul 2026 (2026-07-13T09:15:32Z) | -1000 cents | -$10.00
+## Bills: 3 shown
+   1. Rina Sato | 2 Aug 2026 (2026-08-02T13:31:11Z) | -5000 cents | -$50.00
+   2. Spark Electric Solutions | 2 Aug 2026 (2026-08-02T09:25:11Z) | -10000 cents | -$100.00
+   3. Aqua Flow Utilities | 30 Jul 2026 (2026-07-30T13:20:14Z) | -10000 cents | -$100.00
+## Groceries: 3 shown
+   1. Liam Hughes | 15 Aug 2026 (2026-08-15T18:20:33Z) | 6575 cents | +$65.75 | INCOME
+   2. Green Plate Eatery | 6 Aug 2026 (2026-08-06T08:25:44Z) | -7850 cents | -$78.50
+   3. Liam Hughes | 16 Jul 2026 (2026-07-16T10:10:51Z) | -5275 cents | -$52.75
+## Dining Out: 3 shown
+   1. Savory Bites Bistro | 19 Aug 2026 (2026-08-19T20:23:11Z) | -5550 cents | -$55.50
+   2. Ethan Clark | 13 Aug 2026 (2026-08-13T20:15:59Z) | -3250 cents | -$32.50
+   3. Ella Phillips | 10 Aug 2026 (2026-08-10T19:22:51Z) | -4500 cents | -$45.00
+## Transportation: 3 shown
+   1. Sofia Peterson | 8 Aug 2026 (2026-08-08T08:55:17Z) | -1500 cents | -$15.00
+   2. Sebastian Cook | 6 Aug 2026 (2026-08-06T10:05:44Z) | -2250 cents | -$22.50
+   3. Swift Ride Share | 1 Aug 2026 (2026-08-01T18:40:33Z) | -1875 cents | -$18.75
+## Personal Care: 3 shown
+   1. William Harris | 5 Aug 2026 (2026-08-05T14:30:56Z) | -1000 cents | -$10.00
+   2. Serenity Spa & Wellness | 3 Aug 2026 (2026-08-03T14:00:37Z) | -3000 cents | -$30.00
+   3. Serenity Spa & Wellness | 3 Jul 2026 (2026-07-03T14:00:37Z) | -3000 cents | -$30.00
+## Education: 2 shown
+   1. Elevate Education | 4 Aug 2026 (2026-08-04T11:15:22Z) | -5000 cents | -$50.00
+   2. Elevate Education | 5 Jul 2026 (2026-07-05T11:15:22Z) | -5000 cents | -$50.00
+## Lifestyle: 3 shown
+   1. Mason Martinez | 7 Aug 2026 (2026-08-07T17:40:29Z) | -3525 cents | -$35.25
+   2. ByteWise | 23 Jul 2026 (2026-07-23T09:35:14Z) | -4999 cents | -$49.99
+   3. Mason Martinez | 8 Jul 2026 (2026-07-08T15:20:41Z) | -6500 cents | -$65.00
+## Shopping: 3 shown
+   1. Harper Edwards | 26 Jul 2026 (2026-07-26T09:43:23Z) | -8999 cents | -$89.99
+   2. TechNova Innovations | 25 Jul 2026 (2026-07-25T16:25:37Z) | -2999 cents | -$29.99
+   3. Harper Edwards | 17 Jul 2026 (2026-07-17T14:55:37Z) | -2999 cents | -$29.99
+## General: 3 shown
+   1. Emma Richardson | 19 Aug 2026 (2026-08-19T14:23:11Z) | 7550 cents | +$75.50 | INCOME
+   2. Daniel Carter | 18 Aug 2026 (2026-08-18T09:45:32Z) | -4230 cents | -$42.30
+   3. Urban Services Hub | 17 Aug 2026 (2026-08-17T21:08:09Z) | -6500 cents | -$65.00
+incomes in the seed budgets' latest lists: 0
+incomes in any category's latest list: Groceries: Liam Hughes +$65.75 ; General: Emma Richardson +$75.50
+
+=== NAMES in the seed budgets' latest lists ===
+24 chars: Spark Electric Solutions
+23 chars: Serenity Spa & Wellness
+19 chars: Aqua Flow Utilities
+19 chars: Savory Bites Bistro
+16 chars: Pixel Playground
+14 chars: James Thompson
+14 chars: William Harris
+13 chars: Ella Phillips
+11 chars: Ethan Clark
+9 chars: Rina Sato
+longest name in any category's latest list: Spark Electric Solutions 24
+
+=== SEE ALL (US-19 AC1) — URLSearchParams, as transactions.md 2.2 writes the query ===
+Entertainment: /transactions?category=Entertainment&page=1 | rows on Transactions: 3
+Bills: /transactions?category=Bills&page=1 | rows on Transactions: 7
+Groceries: /transactions?category=Groceries&page=1 | rows on Transactions: 3
+Dining Out: /transactions?category=Dining+Out&page=1 | rows on Transactions: 8
+Transportation: /transactions?category=Transportation&page=1 | rows on Transactions: 6
+Personal Care: /transactions?category=Personal+Care&page=1 | rows on Transactions: 3
+Education: /transactions?category=Education&page=1 | rows on Transactions: 2
+Lifestyle: /transactions?category=Lifestyle&page=1 | rows on Transactions: 3
+Shopping: /transactions?category=Shopping&page=1 | rows on Transactions: 3
+General: /transactions?category=General&page=1 | rows on Transactions: 11
+
+=== THEMES (seed) — budgets' themes and the first free one ===
+used: Green, Cyan, Yellow, Navy | free: 11 | first free: Red
+categories used: 4 | free: Groceries, Transportation, Education, Lifestyle, Shopping, General | first free: Groceries
+budgets possible at once: 10 (one per category) | themes: 15 | so a free theme always exists for a new budget: true
+
+=== BUDGETS — variant "empty-budgets" (creation order, seq) ===
+budgets: 0 | transactions: 49
+(no budgets: the empty state of US-14 AC3, US-20 AC2)
+totals: spent 0 ($0.00) | limit 0 ($0.00)
+donut aria-label: "Spent $0.00 of $0.00 limit" | centre: "$0.00" / "of $0.00 limit"
+overviewSummary (repository) agrees: spent true, limit true
+
+=== BUDGETS — variant "few-transactions" (creation order, seq) ===
+budgets: 4 | transactions: 3
+1. Entertainment | theme Green | maximum 5000 ($50.00) | spent 0 ($0.00) | remaining 5000 ($50.00) | spent/maximum 0.0000 % | bar fill 0 %
+   card: "Maximum of $50.00" · summary row: "$0.00" "of $50.00"
+   latest spending: none (the empty message)
+2. Bills | theme Cyan | maximum 75000 ($750.00) | spent 0 ($0.00) | remaining 75000 ($750.00) | spent/maximum 0.0000 % | bar fill 0 %
+   card: "Maximum of $750.00" · summary row: "$0.00" "of $750.00"
+   latest spending: none (the empty message)
+3. Dining Out | theme Yellow | maximum 7500 ($75.00) | spent 5550 ($55.50) | remaining 1950 ($19.50) | spent/maximum 74.0000 % | bar fill 74 %
+   card: "Maximum of $75.00" · summary row: "$55.50" "of $75.00"
+   latest 1: Savory Bites Bistro | 19 Aug 2026 (2026-08-19T20:23:11Z) | -5550 cents | -$55.50
+4. Personal Care | theme Navy | maximum 10000 ($100.00) | spent 0 ($0.00) | remaining 10000 ($100.00) | spent/maximum 0.0000 % | bar fill 0 %
+   card: "Maximum of $100.00" · summary row: "$0.00" "of $100.00"
+   latest spending: none (the empty message)
+totals: spent 5550 ($55.50) | limit 97500 ($975.00)
+donut aria-label: "Spent $55.50 of $975.00 limit" | centre: "$55.50" / "of $975.00 limit"
+overviewSummary (repository) agrees: spent true, limit true
+
+=== BUDGETS — variant "empty-all" (creation order, seq) ===
+budgets: 0 | transactions: 0
+(no budgets: the empty state of US-14 AC3, US-20 AC2)
+totals: spent 0 ($0.00) | limit 0 ($0.00)
+donut aria-label: "Spent $0.00 of $0.00 limit" | centre: "$0.00" / "of $0.00 limit"
+overviewSummary (repository) agrees: spent true, limit true
+
+=== WORKED WRITES (the spec's examples, on the seed) ===
+add General $500.00 Red: seq 5 | spent $107.30 | remaining $392.70 | fill 21.46 % | latest Emma Richardson +$75.50 19 Aug 2026 ; Daniel Carter -$42.30 18 Aug 2026 ; Urban Services Hub -$65.00 17 Aug 2026 | new totals $445.30 of $1,475.00
+add Groceries $200.00 Red: seq 5 | spent $78.50 | remaining $121.50 | fill 39.25 % | latest Liam Hughes +$65.75 15 Aug 2026 ; Green Plate Eatery -$78.50 6 Aug 2026 ; Liam Hughes -$52.75 16 Jul 2026 | new totals $416.50 of $1,175.00
+edit Dining Out maximum $75.00 -> $150.00: spent $133.00 | remaining $17.00 | fill 88.67 % | new limit $1,050.00
+edit Dining Out maximum $75.00 -> $133.00: spent $133.00 | remaining $0.00 | fill 100 % | new limit $1,033.00
+edit Entertainment maximum $50.00 -> $0.01: spent $15.00 | remaining $0.00 | fill 100 % | new limit $925.01
+delete Entertainment: 3 budgets | totals $323.00 of $925.00 | balance unchanged $4,836.00
+
+=== BOUNDARIES ===
+maximum 1 cent, spent $15.00: remaining $0.00, fill 100 %
+maximum $999,999,999.99, spent $15.00: remaining $999,999,984.99, fill 0 %, raw 0.0000 %
+maximum $133.00, spent $133.00: remaining $0.00, fill 100 %
+maximum $300.00, spent $100.00: fill 33.33 % (raw 33.3333)
+
+=== TOOL DESCRIPTIONS (budgets.md 2.13) — defineTool allows at most 200 characters ===
+list_budgets: 192 characters | Lists the demo account's budgets in creation order: category, theme, maximum, August spent, remaining, three latest transactions, and totals. Money in USD cents. Available on the Budgets page.
+add_budget: 196 characters | Creates a budget: a category with no budget yet, a maximum in USD cents (1 to 99999999999) and a theme no other budget uses. Returns the budget as the page shows it. Available on the Budgets page.
+edit_budget: 167 characters | Changes a budget by id; send all three: its category, maximum (USD cents) and theme. A category or theme another budget uses is refused. Available on the Budgets page.
+delete_budget: 176 characters | Deletes a budget by id, only after the person confirms in the page's dialog; returns cancelled if they decline, busy if a dialog is already open. Available on the Budgets page.
+ten budgets at the largest maximum: limit 999999999990 cents, safe integer true
+the widest money text of a maximum: $999,999,999.99 (15 characters); "Maximum of $999,999,999.99"

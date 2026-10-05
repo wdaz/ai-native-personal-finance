@@ -9,6 +9,7 @@ type VercelConfig = {
   regions?: string[];
   installCommand?: string;
   buildCommand?: string;
+  ignoreCommand?: string;
   crons?: { path: string; schedule: string }[];
 };
 
@@ -21,6 +22,9 @@ type VercelConfig = {
  *   otherwise runs `npm install` (vercel.com/docs/package-managers, read 2026-09-25).
  * - `buildCommand`: migrations first — through the direct URL, prisma.config.ts — then the build,
  *   so no deployment runs against an older schema.
+ * - `ignoreCommand`: `sh scripts/vercel-ignore-build.sh`, which skips the build of a commit that
+ *   changes nothing outside `docs/` and builds whenever it cannot tell (ADR-0007 amendment
+ *   2026-10-05; the script's own cases are in tests/unit/vercel-ignore-build.test.ts).
  * - `crons`: the daily reset, unchanged (ADR-0007 amendment 2026-09-23).
  */
 const vercelConfigProblems = (config: VercelConfig): string[] => {
@@ -30,6 +34,7 @@ const vercelConfigProblems = (config: VercelConfig): string[] => {
   if (config.buildCommand !== "npx prisma migrate deploy && npm run build") {
     problems.push("buildCommand");
   }
+  if (config.ignoreCommand !== "sh scripts/vercel-ignore-build.sh") problems.push("ignoreCommand");
   const cron = [{ path: "/api/admin/reset", schedule: "0 3 * * *" }];
   if (JSON.stringify(config.crons) !== JSON.stringify(cron)) problems.push("crons");
   return problems;
@@ -42,7 +47,7 @@ const vercelConfigProblems = (config: VercelConfig): string[] => {
 const gitignoreProblems = (text: string): string[] =>
   text.split("\n").includes("/.neon") ? [] : ["/.neon"];
 
-describe("vercel.json deploys to fra1, installs with npm ci and migrates before it builds (ADR-0007, T-14)", () => {
+describe("vercel.json deploys to fra1, installs with npm ci, migrates before it builds and skips docs-only commits (ADR-0007)", () => {
   it("says what ADR-0007 and its T-14 amendment say", () => {
     expect(vercelConfigProblems(JSON.parse(read("vercel.json")) as VercelConfig)).toEqual([]);
   });
@@ -52,6 +57,7 @@ describe("vercel.json deploys to fra1, installs with npm ci and migrates before 
       "regions",
       "installCommand",
       "buildCommand",
+      "ignoreCommand",
       "crons",
     ]);
   });
@@ -64,7 +70,7 @@ describe("vercel.json deploys to fra1, installs with npm ci and migrates before 
         buildCommand: "npm run build",
         crons: [{ path: "/api/admin/reset", schedule: "0 3 */10 * *" }],
       }),
-    ).toEqual(["regions", "installCommand", "buildCommand", "crons"]);
+    ).toEqual(["regions", "installCommand", "buildCommand", "ignoreCommand", "crons"]);
   });
 
   it("(fixture) reports migrations run after the build", () => {
@@ -73,9 +79,21 @@ describe("vercel.json deploys to fra1, installs with npm ci and migrates before 
         regions: ["fra1"],
         installCommand: "npm ci",
         buildCommand: "npm run build && npx prisma migrate deploy",
+        ignoreCommand: "sh scripts/vercel-ignore-build.sh",
         crons: [{ path: "/api/admin/reset", schedule: "0 3 * * *" }],
       }),
     ).toEqual(["buildCommand"]);
+  });
+
+  it("(fixture) reports an ignoreCommand that skips every build, and a missing one", () => {
+    const rest = {
+      regions: ["fra1"],
+      installCommand: "npm ci",
+      buildCommand: "npx prisma migrate deploy && npm run build",
+      crons: [{ path: "/api/admin/reset", schedule: "0 3 * * *" }],
+    };
+    expect(vercelConfigProblems({ ...rest, ignoreCommand: "exit 0" })).toEqual(["ignoreCommand"]);
+    expect(vercelConfigProblems(rest)).toEqual(["ignoreCommand"]);
   });
 
   it(".gitignore keeps `neon link`'s .neon out of the repository (F13)", () => {
