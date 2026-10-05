@@ -186,3 +186,21 @@ user types' — record this as tech debt; its fix after all releases are finishe
 Two factual corrections from a read-only Opus check, same version: §9 UK-Q9 now says `LoginForm` and `SignupForm`
 check a field on blur and every field on submit and `Field` holds no rule (2.5); TD-24's "Guarded meanwhile by" now
 says `login.spec.ts` checks the messages on blur and on submit, `signup.spec.ts` on submit only.
+
+## v0.8.1 — the stand-in review of `00fc2cf` (2026-10-05)
+
+Copilot's review of the pull request's head `00fc2cf` errored, so by the owner's decision of 2026-10-05 two
+independent read-only Opus reviewers stood in for it: facts (`ui-kit-review-4-standin-facts-report.md`; 1 important,
+4 minor) and scope (`ui-kit-review-4-standin-scope-report.md`; 3 minor). Each finding was checked against the files
+before it was fixed; all eight hold.
+
+| # | Finding | Fixed where |
+|---|---|---|
+| F1 (important) | §3 "Select field \| Error / `taken`" exits on "a new choice" — the design's clear-on-change, which the owner set aside (UK-Q9 (a), TD-24) | §3: the exit is the trigger's next blur, or submit, with a valid value; 2.5: the rule names the select fields of 2.6; 2.6: a new bullet, "A choice is not a check" (focus returns to the trigger, so no blur; the message stays until blur or submit); §7 `SelectField` row: choosing a new option does not clear the message, the next blur or submit re-checks |
+| F2 | §3 "Modal \| Pending": "'No, Go Back' inert", where 2.3 says `aria-disabled` | §3: "'No, Go Back' `aria-disabled`, does nothing" |
+| F3 | a pending `Button` must show no hover, but `Button.module.css` suppresses hover only for `:disabled` | §6 (`Button`'s change) and H13 (1): no hover with `[aria-disabled="true"]` either |
+| F4 | `TOOL_ERROR_CODES` has neither `busy` nor `forbidden` (`write-path.md` 2.11), and `DeleteResult` returns `forbidden` | 2.3 item 7, §6 and H13 (1): gains `busy` and `forbidden` |
+| F5 | §7 traces US-33 AC3 and US-40 AC3, which the header does not claim | header "Implements": US-33 AC3 (these parts at 320 px), US-40 AC3 (the delete's `X-Via: webmcp`) |
+| S1 | UK-Q4's last part and H13 (5) cite plan D14 for "amending an Approved document goes to the owner" | both cite governance v1.10 ("Every amendment of an Approved document", approved by merging its pull request); H13 (5) keeps D14 only for S2's lesson that a design change to what the spec states asks the owner |
+| S2 | the pull request edited `release-2-handoffs.md`'s Status line, which plan D10 does not allow | the Status line restored to `develop`'s exactly; H13 and H3's Done cell kept |
+| S3 | the header and H13 (5) tie the design facts to the v0.3 re-read alone | both: re-read on 2026-10-05 (v0.3, again for v0.6 and v0.7) |
