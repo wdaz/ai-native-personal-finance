@@ -130,7 +130,7 @@ placeholder colour and the beige-500 rule of changelog §8a). The ratios in `ui-
 its labels "as exported" for grey-300 and beige-500 describe the export, and spec 4.3 now uses beige-500's 3.14:1 for
 the input border only.
 
-## The designer's changelog §12–§16 (v0.6)
+## The designer's changelog §12–§16 (v0.6, v0.7)
 
 After v0.5 the designer added §12 (UK-Q4's last part), §13 (the owner's answers on PR #92 drawn into the design) and §14
 (page layouts by content width) to the designer's changelog. Two independent read-only Opus agents compared them with
@@ -155,3 +155,18 @@ decision the designer has recorded in the designer's changelog.
 | §15b–§15d | the toolbar triggers back to 45 px; the style guide's field samples at 47 px, their placeholder grey-500 | not these parts (the verifications had raised them for the designer) |
 
 `design-tokens.md`'s beige-500 "placeholder text" use, which one verification noted, is H11 (6)'s.
+
+### v0.7 — §16a now a decision (re-read 2026-10-05)
+
+After the owner discussed the departures with the designer, the designer's changelog §12–§16 and `Finance App.dc.html`'s
+modal were read again from the live source on 2026-10-05, before v0.7 changed the spec.
+
+| Point | Live design (re-read 2026-10-05, v0.7) | Spec v0.7 |
+|---|---|---|
+| Message clearing (UK-Q9) | §16a "When the field error clears: current design kept": "the owner keeps the current behaviour. The message clears as soon as the user types in the field"; "Amend the spec to match"; "Code: clear the field's error in its `onChange`, not on blur". `updateModal()` still deletes the edited field's error | answered by §16a — (b) for Release 2's forms; 2.5 (`Field`'s fifth prop, a clear-on-typing option, off for the login and sign-up forms), 2.11 ("No longer departures"), §3, §6, §7 (typing clears the message; the next blur or submit checks again), §8, §9 |
+| When a message appears | the modal's fields have only `onChange`, no `onBlur`; `modalConfirm()` checks on submit; §16a speaks only of clearing | the spec keeps US-31 AC1's blur check ("on submit and on blur after first interaction"); the one remaining difference, kept in 2.11 and stated for the owner under UK-Q9 — not decided by the agent |
+| Release 1 forms | §16a: "Differs from: Release 1 forms and the spec" | not changed here; put to the owner; §8 says so |
+| UK-Q10 | §16b unchanged: backdrop `overflow-y: auto; overscroll-behavior: contain`; `#modal-dialog` with no `max-height` or overflow, `margin: auto 0` | 2.2 and §9 UK-Q10 already match; no change |
+| Amount ≤ 0 (§15a) | `modalConfirm()`: "Amount must be greater than 0" | no row claims the design shows "Enter an amount above 0" (the phrase appears only as §13a's history); no change |
+| §12b | `--filter-menu-max-height: 360px`, a wording-only amendment of `transactions.md` 2.8 | §6 says "wording only" and quotes the amended text; the amendment stays in its own pull request |
+| §14, §16c | the content-width two-column layout accepted (Overview ≥ 1060 px, Budgets ≥ 952 px, Recurring Bills ≥ 961 px; container queries; breakpoint tokens a separate decision) | touches none of these parts; the page and shell specs' |
