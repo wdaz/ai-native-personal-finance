@@ -1084,10 +1084,10 @@ of protected pages on Vercel
 - **Risk:** low — a difference from the design, not a defect. US-31 AC1 is met either way. A person who corrects a field
   still sees the old message until they leave the field or submit, which may read as if the correction was not taken.
   Nothing reaches data or the server.
-- **Guarded meanwhile by:** today's rule is the code's (`LoginForm`, `SignupForm`); `tests/e2e/login.spec.ts` and
-  `signup.spec.ts` check the messages on blur and on submit, not what typing does. `ui-kit.md` §7's `AmountField` row
-  pins the rule for Release 2's forms once they are built (typing does not clear a message; the next blur or submit
-  checks again); those assertions change with the fix.
+- **Guarded meanwhile by:** today's rule is the code's (`LoginForm`, `SignupForm`); `tests/e2e/login.spec.ts` checks
+  the messages on blur and on submit, `signup.spec.ts` on submit; neither checks what typing does. `ui-kit.md` §7's
+  `AmountField` row pins the rule for Release 2's forms once they are built (typing does not clear a message; the next
+  blur or submit checks again); those assertions change with the fix.
 - **When:** after all releases are finished (the owner's word), with the other open debts.
 - **Fix:**
   - One rule for every form at once: the first input in a field that shows a message removes the message and

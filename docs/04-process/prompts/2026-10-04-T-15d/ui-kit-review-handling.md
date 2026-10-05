@@ -182,3 +182,7 @@ user types' — record this as tech debt; its fix after all releases are finishe
 |---|---|---|
 | UK-Q9 (message clearing) | (b) from §16a: `Field`'s clear-on-typing option, on in Release 2's forms | (a), the owner's: Release 1's timing (`auth.md` "Timing (US-31 AC1)") — a message appears on blur once touched and on submit, and stays until the next blur or submit; the option removed (2.5, §3, §6, §7); 2.11 keeps one row, with TD-24; the design's rule is TD-24 (`tech-debt.md` v1.29), fixed after all releases are finished |
 | The blur check / Release 1 forms | two items waiting for the owner (§8, §9, the PR body) | settled by the owner's first line; both items removed; Release 1's forms unchanged |
+
+Two factual corrections from a read-only Opus check, same version: §9 UK-Q9 now says `LoginForm` and `SignupForm`
+check a field on blur and every field on submit and `Field` holds no rule (2.5); TD-24's "Guarded meanwhile by" now
+says `login.spec.ts` checks the messages on blur and on submit, `signup.spec.ts` on submit only.
