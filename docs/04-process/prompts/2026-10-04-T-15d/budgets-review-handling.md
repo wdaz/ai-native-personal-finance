@@ -1,6 +1,6 @@
 # How the budgets reviews were handled (T-15d, S4)
 
-Reviews of `budgets.md` v0.1 (`1db13be`), the two read-only reviews of plan D7; every fix is in v0.2. Each claim a fix
+Reviews of `budgets.md` v0.1 (`1db13be`), the two read-only reviews of plan D7, with every fix in v0.2; and of v0.2 (`a122984`), the cross-spec review of plan D12 (review 3), with every fix in v0.3. Each claim a fix
 depends on was checked by the agent before the edit (the command, file or design source named). Under governance v1.10 a
 fix that would change what the design draws, or decide a choice an approved document leaves open, became a §9 question
 (BU-) instead.
@@ -38,6 +38,40 @@ fix that would change what the design draws, or decide a choice an approved docu
 | 14 | Tests that change: line 178, `app-shell-keyboard.spec.ts:26` | Checked both. Fixed in §7 (with the 98–115 loop, review 1 #2) |
 | 15 | US-19 AC2's expected state unnamed | Checked `transactions.md` 2.10, §3 and §9 Q4. Fixed: "No results", "No transactions match your search" |
 | 16 | `readOnlyHint` on `list_budgets` not named | Checked `tests/unit/webmcp/registry.test.ts` 32–37. Fixed in the WebMCP row |
+
+## Review 3 — cross-spec, plan D12 (`budgets-review-3-crossspec-report.md`)
+
+Reviewed `budgets.md` v0.2 (`a122984`) and `pots.md` v0.2 (`6927a5a`); fixed in `budgets.md` v0.3. This branch applies
+the `budgets.md` findings, the hand-off findings that touch H15 and the shared questions; the `pots.md` findings (P1–P8)
+and H-c are the Pots branch's. Where a question is asked in both specs, the Budgets question is worded for both pages and
+names its Pots sibling (§9, "Asked in both specs").
+
+| # | Finding | Handling |
+|---|---|---|
+| B1 | The agent-write refresh contradicts `pots.md` and the bus contract | Confirmed: `pots.md` 2.8 (`6927a5a`, line 61) keeps `bus.ts` unchanged and refreshes from `PotsTools`; `ui-kit.md` 2.3 defines only `requestDelete`/`onDeleteRequest`; H15 had neither. Fixed by taking the mechanism that amends no merged spec: `BudgetsTools` calls `useRouter()` and memoises `PAGE_TOOLS.budgets` with `add_budget`'s and `edit_budget`'s `execute` wrapped to call `router.refresh()` after a result without `isError` (checked against `src/webmcp/tools/registry.ts`, `OverviewTools.tsx`, `WebMcpTools.tsx` — its effect depends on `[tools]` — and `types.ts`/`tool-result.ts` for `isError`); the registry keeps the unwrapped tools. 2.1, 2.13, §6, the Component and WebMCP rows; `notifyWrite`/`onWrite` removed; an agent's write no longer sets `aria-busy` (it runs outside `BudgetsView`'s transition). H15 says `bus.ts` is unchanged. `pots.md` already states this mechanism, so P1's alignment needs only its citations |
+| B2 | The error-state header button dropped without asking | Confirmed (`ui-kit.md` §3, line 165: "always on Budgets and Pots"). Not decided here: **§9 BU-Q6**, worded for both pages as `pots.md` PO-Q9; 2.6, 2.12, 2.16, §3 and the Component row follow its answer (recommended (a): no button); H15 (6) carries the shared `ui-kit.md` §3 amendment |
+| B3 | A window breakpoint inside the page against `app-shell.md` §2.9 | Confirmed: re-read the designer's live `renderVals()` on 2026-10-05 — `budgetSummaryDir: !isMobile && !budTwo ? 'row' : 'column'`, keyed on the window's mobile mode (< 768 px). Evidence for both readings exists (`overview.md` v1.2 keeps the stat-card row on `@media (min-width: 768px)`, `app/(app)/overview/page.module.css`), so the choice is the owner's: **§9 BU-Q8**, asked with PO-Q7; recommended (a) a 644 px content width, the number PO-Q7 (a) gives the grid (the narrowest content where the design draws the row: 1024 px with the sidebar expanded); at 676 px each half is at least 286 px for the 240 px donut. 2.2, 2.16, the E2E layout row |
+| B4 | Animation defaults differ from `pots.md` | Confirmed (live source: the bar's `transition: width .4s`, the donut's `stroke-dasharray .4s`). The bars' animation leaves BU-Q3 for **§9 BU-Q7**, worded for both pages with PO-Q6 (1)–(2) and (b); its recommendation now matches PO-Q6 (a) (animate as drawn, `--duration-progress`, none under reduced motion), and the spec's behaviour is conditional on the answer (2.4, 2.16, §7, §8). BU-Q3 keeps the donut only. 2.4 says how the SVG `rect` animates (a CSS transition of `width`, a CSS property of `rect` in SVG 2) and that the build confirms it in every engine, reporting to the owner if one does not |
+| B5 | The token rule stated against `pots.md` | Confirmed: `src/ui/overview/ThemeBar.module.css` line 9 `inline-size: 4px` (and this spec's own summary list reuses it), `overview.md` v1.2's 608 px. The claim "the token rule forbids" is removed; **§9 BU-Q4** asks one rule for both pages' four values (= PO-Q6 (3)–(4)) with options new token / nearest token / the design's number with a comment / value by value; recommended (a), new tokens (the designer's changelog §10, "prefer separate tokens over reuse") |
+| B6 | The description suffix | Confirmed (`webmcp-tools.md` lines 64–65, S-32). Fixed: "Available on the Budgets page." on all four; `edit_budget` drops "Returns the budget as the page shows it."; recounted by `budgets-figures/figures.ts` (`output.txt` regenerated: 192, 196, 167, 176 — only those four lines changed) |
+| B7 | The create answer and schema names | Confirmed (`write-path.md` 2.2 step 9 leaves the shape to the page spec; `src/shared/schemas.ts` names noun first). Fixed: `POST` and `PATCH` answer `{ budget: BudgetItemDto }`, as Pots' `{ pot }`; `BudgetUpdateSchema` becomes `BudgetEditSchema` (noun first, the tools' verb); 2.10, 2.13, §6, the unit row. The Pots names are the Pots branch's |
+| B8 | `delete_budget`'s results incomplete | Confirmed against `ui-kit.md` 2.3 items 4 and 7. Fixed in 2.13: the full list, as `pots.md` 2.13 |
+| B9 | The empty-state key not named | Confirmed (`src/shared/copy.ts` line 52, `budgetsEmpty: "No budgets yet"`). Fixed in 2.12, 2.17 and BU-Q2 |
+| B10 | The walkthrough and the notice's place | Confirmed (`ui-kit.md` 2.9: a stop "Dismiss notice", under the page header). Fixed: 2.12 places the notice under the header, above both columns at full width; 2.14 adds its stop in both orders |
+| B11 | The forbidden-tool test | Confirmed (`write-path.md` 7.6). Fixed in the WebMCP row: an `add_budget` answered 403 returns `forbidden`, not `server_error`, and the page does not refresh |
+| H-a | H15 and H16 contradict on `bus.ts`; H15 lacks the `ui-kit.md` §3 amendment | Fixed in H15: `bus.ts` unchanged for Budgets, and (6) the shared §3 amendment under BU-Q6 (a) |
+| H-b | Shared form strings in H15 (1) and H16 (1) | Fixed in H15 (1): "Save Changes", "Theme", "e.g. 2000" are added once by whichever first build task comes first and reused by the second; H15 (3) does the same for `--duration-progress` |
+| H-c | H16 omits the H17 dependency | Not this branch's: H16 is the Pots row (plan D10) |
+| H-d | Done cells to reconcile at merge | No change now: Budgets merges first (plan D7 order S4 → S5) and keeps H6 ☐ with its note; the Pots branch, merging second, keeps ☑ with both notes (plan D11) |
+| P1–P8 | `pots.md` findings | Not this branch's (P8, the after-write pattern: Budgets keeps 2.9's `startTransition` with `aria-busy` for its own writes; the Pots branch chooses its side) |
+| List 1 | BU-Q2 and PO-Q3 | BU-Q2 is worded for both pages, with four options covering both specs' third options ((c) nothing, (d) the designer draws one) |
+| List 2 | PO-Q9 and 2.12 | BU-Q6 (B2) |
+| List 3 | BU-Q3 and PO-Q6 (1)–(2)/(b) | BU-Q7 (B4) |
+| List 4 | BU-Q4 and PO-Q6 (3)–(4) | BU-Q4 (B5) |
+| List 5–6 | BU-Q1 and PO-Q1 | BU-Q1 names PO-Q1 #1 and #2–3 and the UK-Q1 principle, so (a) on both approves each pattern once |
+| List 7 | PO-Q7 and the summary row | BU-Q8 (B3) |
+| List 8 | PO-Q8 #2 and the two decimals | Kept as decided by an approved requirement (`user-stories.md` "Conventions", `overview.md` S-02; governance v1.10); 2.3, 2.16 and §9's preamble name PO-Q8 #2 and say an answer there that keeps whole dollars reopens the donut's centre — one ruling |
+| List 9 | BU-Q5 and PO-Q8 #3 | BU-Q5 states the one rule — what does not fit moves to the next line, whole — as its recommended (a), which is PO-Q8 #3's stacking for the Pots buttons |
 
 ## Outside the findings
 
