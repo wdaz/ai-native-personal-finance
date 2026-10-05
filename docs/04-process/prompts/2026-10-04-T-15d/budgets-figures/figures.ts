@@ -222,7 +222,7 @@ const descriptions: Record<string, string> = {
   add_budget:
     "Creates a budget: a category with no budget yet, a maximum in USD cents (1 to 99999999999) and a theme no other budget uses. Returns the budget as the page shows it. Budgets page.",
   edit_budget:
-    "Changes a budget by id: any of its category, maximum (USD cents) and theme. A category or theme another budget uses is refused. Returns the budget as the page shows it. Budgets page.",
+    "Changes a budget by id; send all three: its category, maximum (USD cents) and theme. A category or theme another budget uses is refused. Returns the budget as the page shows it. Budgets page.",
   delete_budget:
     "Deletes a budget by id, only after the person confirms in the page's dialog; returns cancelled if they decline, busy if a dialog is already open. Budgets page.",
 };

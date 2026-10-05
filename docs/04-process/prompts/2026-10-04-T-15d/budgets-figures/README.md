@@ -29,4 +29,7 @@ FORCE_COLOR=0 npx tsx docs/04-process/prompts/2026-10-04-T-15d/budgets-figures/f
   computes); the tool descriptions, whose lengths it counts.
 
 The build task moves these figures into `scripts/seed-figures.ts` (`release-2-handoffs.md` H15 (2)), so the tests read
-them from the repository's own code, not from this record.
+them from the repository's own code, not from this record. That script may import only `src/domain` and `src/shared`
+(ADR-0002's clarification; `eslint.config.mjs`), so it cannot use `seedRows`, `applyVariant`, `CATEGORY_LABEL`/`THEME_LABEL`
+(`src/server`) or `donutSegments` (`src/ui`) as this record does: `budgets.md` §4 says how (v0.2, the D7 fact review's
+finding 4).

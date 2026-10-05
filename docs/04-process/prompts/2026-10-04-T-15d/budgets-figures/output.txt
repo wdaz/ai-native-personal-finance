@@ -166,7 +166,7 @@ maximum $300.00, spent $100.00: fill 33.33 % (raw 33.3333)
 === TOOL DESCRIPTIONS (budgets.md 2.13) — defineTool allows at most 200 characters ===
 list_budgets: 175 characters | Lists the demo account's budgets in creation order: category, theme, maximum, August spent, remaining, three latest transactions, and totals. Money in USD cents. Budgets page.
 add_budget: 179 characters | Creates a budget: a category with no budget yet, a maximum in USD cents (1 to 99999999999) and a theme no other budget uses. Returns the budget as the page shows it. Budgets page.
-edit_budget: 182 characters | Changes a budget by id: any of its category, maximum (USD cents) and theme. A category or theme another budget uses is refused. Returns the budget as the page shows it. Budgets page.
+edit_budget: 191 characters | Changes a budget by id; send all three: its category, maximum (USD cents) and theme. A category or theme another budget uses is refused. Returns the budget as the page shows it. Budgets page.
 delete_budget: 159 characters | Deletes a budget by id, only after the person confirms in the page's dialog; returns cancelled if they decline, busy if a dialog is already open. Budgets page.
 ten budgets at the largest maximum: limit 999999999990 cents, safe integer true
 the widest money text of a maximum: $999,999,999.99 (15 characters); "Maximum of $999,999,999.99"
