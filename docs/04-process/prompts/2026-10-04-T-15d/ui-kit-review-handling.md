@@ -129,3 +129,29 @@ two options; UK-Q6 new. No other live change touches an approved document beyond
 placeholder colour and the beige-500 rule of changelog §8a). The ratios in `ui-kit-figures/output.txt` are unchanged;
 its labels "as exported" for grey-300 and beige-500 describe the export, and spec 4.3 now uses beige-500's 3.14:1 for
 the input border only.
+
+## The designer's changelog §12–§16 (v0.6)
+
+After v0.5 the designer added §12 (UK-Q4's last part), §13 (the owner's answers on PR #92 drawn into the design) and §14
+(page layouts by content width) to the designer's changelog. Two independent read-only Opus agents compared them with
+v0.5 against the live files on 2026-10-05; the drafting agent re-read each point in the live files before changing the
+spec. While v0.6 was being written the designer added §15 (review fixes) and §16 (records on the departures) and changed
+both design files, so the changelog and the modal, its validation and the style guide's "Input Fields" were read again
+the same day before the commit; the table gives the state at that second read. Under the owner's rule of 2026-10-05
+(governance v1.10, pull request #94) a design question is the designer's: the spec tells the owner, and applies only a
+decision the designer has recorded in the designer's changelog.
+
+| Point | Live design (re-read 2026-10-05) | Spec v0.6 |
+|---|---|---|
+| UK-Q2 | §13a: the submit always enabled; messages under the fields on submit; focus to the first invalid field; `aria-invalid` | no longer a departure; 2.7 says the design matches; the four "for the designer" notes dropped |
+| UK-Q6 | §13b: `data-autofocus` on "No, Go Back", `min-height: 44px` | no longer a departure (2.3); "No, Go Back" at least `var(--tap-target-min)` tall, checked in §7's E2E row |
+| UK-Q7 | §13c: modal and login/sign-up fields 47 px; lists at `top: calc(100% + 8px)` | no longer a departure (2.5, 2.6) |
+| "$" | grey-500 and `aria-hidden` in the modal; grey-500 in the style guide's sample (§13d) | the stale beige-500 note and the 2.11 "$" row removed; under "No longer departures" |
+| UK-Q4, last part | §12a `--opacity-unavailable: 0.25`; §12b `--filter-menu-max-height: 360px` with a one-line `transactions.md` 2.8 amendment | answered by §12a–§12b as the owner directed; applied in 2.6, 2.10, §6, H13 (3); the 2.8 amendment goes in its own pull request; the seventh/eighth numbering fixed |
+| Amount ≤ 0 message | §13a had "Enter an amount above 0"; §15a changed it to the approved "Amount must be greater than 0" | the field messages listed as the approved copy (§9 UK-Q2); no longer a difference, under "No longer departures" |
+| Message clearing | `updateModal()` clears a field's message on edit; no blur message; §16a: "not decided. To discuss with the designer" | UK-Q9, a departure waiting for the designer's decision (through the owner); the blur message is US-31 AC1's |
+| Modal overflow | first read: the panel scrolled (`max-height: calc(100vh - 32px)`, `overflow-y: auto`); second read, §16b "spec wins": the backdrop scrolls (`overflow-y: auto; overscroll-behavior: contain`), the panel has no maximum height or overflow | UK-Q10 raised, then answered by §16b; 2.2 cites it and takes `overscroll-behavior: contain`; nothing in 2.11 |
+| §14, §16c | two-column layouts by the content width beside the sidebar; §16c records it as accepted | touches none of these parts; raised with the owner separately |
+| §15b–§15d | the toolbar triggers back to 45 px; the style guide's field samples at 47 px, their placeholder grey-500 | not these parts (the verifications had raised them for the designer) |
+
+`design-tokens.md`'s beige-500 "placeholder text" use, which one verification noted, is H11 (6)'s.
