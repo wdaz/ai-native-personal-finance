@@ -6310,3 +6310,101 @@ them too").
   - The owner reviews and merges #83 (the rules) and #82 (the retrospective, with this entry and backlog v1.57).
   - T-15d, Release 2 spec work, starts from the retrospective's section 3 and theme D (the hand-off in backlog
     v1.57). The retrospective's section 7 is read at the end of Release 2.
+
+## 2026-10-05 — Phase 5: Vercel skips docs-only commits
+
+- **Phase:** 5 (Build the slice), between tasks; a delivery change outside T-15d, its own pull request
+  (`chore/vercel-ignore-docs-only`).
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5): a read-only investigation earlier the same day, then a
+  subagent in its own worktree, dispatched by the controller session, for the change.
+- **Trigger:** two preview builds of `task/T-15d-spec-ui-kit` failed on TypeScript errors in a `docs/` figures
+  script, and the controller session asked why docs-only work builds at all.
+- **Prompt(s):** the controller session's brief to the subagent (not saved under `prompts/`); the owner's answer
+  is quoted below.
+- **Investigation (two lines):** of ~100 Vercel builds, 3 failed — two (`a1bf745`, `1cf0c9d`) on TS errors in a
+  `docs/` script (fixed separately), one (`docs/draft-ready-copilot`, `e3d5e48`, 2026-10-04) on Prisma P1001 during
+  a Neon cold start; every build runs `npx prisma migrate deploy && npm run build`, and every Git branch gets its own
+  Neon preview branch from the Vercel–Neon integration, so docs-only pushes also build, migrate and wake Neon.
+- **Owner's answer and how it was read:** asked "Vercel 'Ignored Build Step' for docs-only commits?", the owner
+  answered "2", read as: Vercel skips the build when a commit changes nothing outside `docs/`. The owner did not
+  choose to exclude `docs/` from type checking, so `tsconfig.json` is untouched and `docs/**/*.ts` stay
+  type-checked.
+- **Produced:**
+  - `scripts/vercel-ignore-build.sh` (POSIX sh) and `vercel.json` `"ignoreCommand": "sh scripts/vercel-ignore-build.sh"`:
+    skip (exit 0) only when the diff from `VERCEL_GIT_PREVIOUS_SHA` to `HEAD` is non-empty and every path, both
+    sides of a move (`--no-renames`), is under `docs/`; build (exit 1) on an unset or empty previous SHA, one that is
+    not a 40-character lowercase hex SHA, one not in the clone, an empty diff, a failed `git diff`, or any path
+    outside `docs/`;
+  - `tests/unit/vercel-ignore-build.test.ts` (21 cases against temporary git repositories, a `--depth=1` clone
+    among them), and `tests/unit/vercel-config.test.ts` extended for the new key; both written first and seen
+    failing (22 failures) before the script and the key existed; the script's cases also passed under `dash`;
+  - ADR-0007 amendment 2026-10-05, a row in `runbooks/deploy.md`, a paragraph in `scripts/README.md`, this entry.
+- **Vercel's documentation, read 2026-10-05:** exit 0 skips (the deployment is `CANCELED`), exit 1 builds
+  (vercel.com/docs/project-configuration/project-settings#ignored-build-step); `VERCEL_GIT_PREVIOUS_SHA` is "the git
+  SHA of the last successful deployment for the project and branch", empty on a branch's first deployment, and set
+  only when an Ignored Build Step is configured (vercel.com/docs/environment-variables/system-environment-variables);
+  the clone is `git clone --depth=10`
+  (vercel.com/kb/guide/how-do-i-use-the-ignored-build-step-field-on-vercel); a canceled build still counts toward
+  the deployment quota and build slots.
+- **What the agent got right:** it read the variable's definition before relying on it: since the previous SHA
+  is the last *successful* deployment, a docs-only commit after a failed code build still builds; and it found that
+  a branch's first push always builds (empty previous SHA), so the brief's trade-off "docs-only PRs get no preview
+  URL" holds only for their later pushes — the ADR says so.
+- **What the agent got wrong or missed:** not yet known; for the owner's review.
+- **Owner changes and reasoning:** the decision itself ("2"); none to the implementation yet.
+- **Disagreements:** none.
+- **Lessons for the process:** a docs-only change can still break a build when `docs/` holds TypeScript that
+  `tsc` checks; this change stops such a commit from *deploying* but not from failing CI's typecheck, which is the
+  intended guard.
+- **Next:**
+  - The owner reviews the draft pull request; the first docs-only push after the merge shows the skip in the
+    Vercel build log ("vercel-ignore-build: skipping").
+  - Not verified: whether the Neon integration still creates or wakes a preview branch for a deployment that is
+    then skipped.
+
+## 2026-10-05 — Phase 4: the designer decides design questions (governance v1.10)
+
+- **Phase:** 4 (Specs & plan), T-15d; a process change in its own pull request
+  (`docs/governance-designer-decides`), outside the spec pull requests.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5): a subagent in its own worktree, dispatched by the
+  controller session that drafts `ui-kit.md` (#92).
+- **Trigger:** two design questions in `ui-kit.md` (#92). The owner first answered "92 q4 və q5 cavabı claude
+  design-dan götür" ("for #92 take the answers to Q4 and Q5 from Claude Design"); when one part was still open, the
+  owner stated the rule "dizayner üzrə qərarlar dizayner verir" ("decisions about the design are made by the
+  designer"), and then clarified how it runs: "Dizayndan kənara çıxma mənə deyilir mən dizaynerlə müzakirə edirəm.
+  Onun sonra qərarı changelogunda qeyd olunur" ("a departure from the design is told to me; I discuss it with the
+  designer. The designer's decision is then recorded in their changelog").
+- **Prompt(s):** the controller session's brief to the subagent and its clarification (not saved under
+  `prompts/`); the owner's words are quoted above.
+- **Produced:** `governance.md` v1.10 — a row in "Decision rights" and the paragraph "Design questions are decided
+  by the designer": the agent tells the owner (the spec's §9 and the pull request), the owner discusses it with the
+  designer, the designer records the decision in the designer's changelog, the agent applies that entry as the
+  answer, citing its section; a proposal in the changelog is not yet an answer. Still the owner's: a trade-off
+  against an approved NFR, scope, strings the design does not fix, every amendment of an Approved document. This
+  entry.
+- **The two earlier rulings it refines** (both on `transactions.md`, 2026-10-04,
+  `prompts/2026-10-04-T-15d/transactions-review-handling.md`): "Designer qərarlarına əsas götür" ("take the
+  designer's decisions as the basis") — now a rule with a defined route, instead of a general instruction; and §9
+  Q5's "NFR-A1 ödənməlidir" ("NFR-A1 must be met") — kept as the exception: an approved NFR wins over the design
+  unless the owner says otherwise. The S2 lesson "reading the designer's changelog is not approval to adopt it" is
+  narrowed: a decision the designer recorded after the owner's discussion is the answer; a changelog read without
+  that route, or an entry that is only a proposal, is not.
+- **What the agent got right:** it checked `governance.md` for a sentence the rule contradicts (none: the
+  owner's role in step 1 is the existing "tell the owner, do not decide"), and listed, without editing, the other
+  places that still describe the old route (the pull request lists them).
+- **What the agent got wrong or missed:** not yet known; for the owner's review. The brief's first reading of the
+  rule had the agent read the designer's source and apply a decision with no owner step in between; the owner's
+  clarification, which arrived before any text was written, puts the owner's discussion with the designer in as
+  step 2.
+- **Owner changes and reasoning:** the clarification above — departures go through the owner, who is the only
+  channel to the designer.
+- **Disagreements:** none.
+- **Lessons for the process:** a design question has a recorded answer only once the designer's changelog says
+  so; the spec's §9 cites that section, so a reader can check the answer at its source.
+- **Next:**
+  - The owner reviews the draft pull request.
+  - Later changes, each in its own pull request: AGENTS.md §2 "Never fabricate" (names "the Figma file" as the
+    design source), `docs/templates/feature-spec.md` (the "Design:" line names Figma frames; §9 could name the
+    designer's changelog as the answer to a design question), `docs/templates/user-story.md` (Figma frame names),
+    `docs/04-process/build-workflow.md` step 2 ("design is fixed in `docs/`"; "the owner answers questions"), and
+    the T-15d plan's D14 ("reading the designer's changelog is not approval to adopt it").
