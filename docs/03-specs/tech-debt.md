@@ -4,9 +4,9 @@ Status: **Approved** (v1.29 — 2026-10-05: **TD-24** opened, the owner's decisi
 `ui-kit.md` v0.8, its select fields since v0.8.2, PR #92, whose merge approves this amendment): Release 2's forms
 keep Release 1's validation timing — a field's message stays until the next blur or submit, a select field's blur
 being focus leaving the field as a whole — where the design first cleared it as soon as the person typed (the
-designer's changelog §13a, and §16a as first written; `ui-kit.md` v0.8.3 found §16a since redrawn to Release 1's
-rule); clearing on typing, and on a new choice in a select field (`ui-kit.md`'s reading), is fixed after all
-releases are finished; nothing else in the file changes; v1.28 — 2026-10-03: **TD-23** opened, the owner's decision at the T-15c plan's Q7:
+designer's changelog §13a, and §16a as first written; `ui-kit.md` v0.8.3 found §16a since redrawn, "Release 1
+behaviour", to keep a message while the person types); clearing on typing, and on a new choice in a select field
+(`ui-kit.md`'s reading), is fixed after all releases are finished; nothing else in the file changes; v1.28 — 2026-10-03: **TD-23** opened, the owner's decision at the T-15c plan's Q7:
 `npm audit` read 10 on `develop` — 1 critical in `next`, fixed by PR #80, and 9 high that are one `braces`
 advisory with no patched release; recorded as a debt fixed with the others at the end, sooner if the same
 case repeats; nothing else in the file changes; v1.27 — 2026-09-29: **TD-22** opened by T-15a, the owner's decision of
@@ -82,7 +82,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — kept as a documented exception (owner, 2026-09-26) | T-14 (8.6) |
 | TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | nobody yet; moved from T-16 (backlog v1.48) |
 | TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) | nobody yet |
-| TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types or chooses a new option (the designer's changelog §13a, §16a as first written) | **Open** — fixed after all releases are finished (owner, 2026-10-05) | nobody yet |
+| TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option | **Open** — fixed after all releases are finished (owner, 2026-10-05) | nobody yet |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -1069,8 +1069,10 @@ of protected pages on Vercel
   Release 2's forms; the owner set it aside the same day (v0.8). Re-read 2026-10-05 for `ui-kit.md` v0.8.3: §16a now
   records the owner's decision ("When the field error clears: Release 1 behaviour"; "the error stays while typing. It
   is re-checked on the next blur or submit"), and the prototype's `updateModal()` no longer deletes the errors
-  (`blurField()` re-checks the Pot Name and amount fields on blur); its Budget Category and Theme fields have no
-  message at all. So the live design now matches today's rule; this entry keeps the owner's target as recorded.
+  (`blurField()` re-checks the Pot Name and amount fields on blur, a field already showing a message only); its Budget
+  Category and Theme fields have no message at all, and a choice in them only sets the value. So the live design no
+  longer clears a message on typing, though it gives a field that shows none no message on blur (`ui-kit.md` 2.11);
+  this entry keeps the owner's target as recorded.
 - **Owner decision:** 2026-10-05, on PR #92, in two lines, in this order: "hazırda form qərarları dəyişirmir. Release 1
   uyğun davam et" ("form decisions do not change now; continue in line with Release 1"), and "mesaj yazan kimi
   təmizlənir -bunu tech dept olaraq qeyd et. fix-i bütün releaselər bitəndən sonra" ("'the message clears as soon as
@@ -1106,9 +1108,11 @@ of protected pages on Vercel
     field — removes the message and `aria-invalid` and empties the live region; typing never shows a message; the
     blur and submit checks stay.
   - Amend `auth.md` "Timing (US-31 AC1)" and `ui-kit.md` 2.5, 2.6, §3, §7 (and any later form spec) to say so, and
-    drop `ui-kit.md` 2.11's row — each an amendment the owner approves by merging.
-  - Re-read the designer's live source first: since `ui-kit.md` v0.8.3 §16a describes Release 1's rule, not this
-    target, so the owner confirms the target (with the designer) before the fix.
+    amend `ui-kit.md` 2.11's row (keep the blur difference it still lists; record any difference the re-read design
+    then shows) — each an amendment the owner approves by merging.
+  - Re-read the designer's live source first: as re-read for `ui-kit.md` v0.8.3, §16a is titled "Release 1 behaviour"
+    and keeps a message while the person types — not this target — so the owner confirms the target (with the
+    designer) before the fix.
 - **How it will be verified:**
   - Component tests, failing first on today's code: typing in a field with a message, or choosing a new option in a
     select field with one, removes the message and `aria-invalid` at once and shows none while typing; an invalid value typed after that shows nothing until the next
