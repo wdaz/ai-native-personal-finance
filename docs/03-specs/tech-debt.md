@@ -1,9 +1,10 @@
 # Tech debt — Release 1
 
 Status: **Approved** (v1.29 — 2026-10-05: **TD-24** opened, the owner's decision at T-15d (Task S1b,
-`ui-kit.md` v0.8, PR #92, whose merge approves this amendment): Release 2's forms keep Release 1's validation
-timing — a field's message stays until the next blur or submit — where the designer's changelog §16a clears it
-as soon as the person types; the design's rule is fixed after all releases are finished; nothing else in the
+`ui-kit.md` v0.8, its select fields since v0.8.2, PR #92, whose merge approves this amendment): Release 2's forms
+keep Release 1's validation timing — a field's message stays until the next blur or submit, a select field's blur
+being focus leaving the field as a whole — where the designer's changelog §16a clears it as soon as the person types
+or chooses a new option; the design's rule is fixed after all releases are finished; nothing else in the
 file changes; v1.28 — 2026-10-03: **TD-23** opened, the owner's decision at the T-15c plan's Q7:
 `npm audit` read 10 on `develop` — 1 critical in `next`, fixed by PR #80, and 9 high that are one `braces`
 advisory with no patched release; recorded as a debt fixed with the others at the end, sooner if the same
@@ -1073,31 +1074,35 @@ of protected pages on Vercel
 - **What:** every form keeps Release 1's validation timing (`auth.md`, "Timing (US-31 AC1)"): a field is checked on blur
   once it has been touched (focused and left) and every field on submit; a message, once shown, stays until the field
   is checked again at its next blur or at submit, and typing does not clear it. Release 2's forms follow the same rule
-  by the owner's decision (`ui-kit.md` 2.5 — the amount fields and `pots.md`'s Pot Name — and the forms of
-  `budgets.md` and `pots.md` that cite it). The design's rule, the eventual target: a field's message and its
-  `aria-invalid` go away as soon as the person types in that field; typing never shows a message; the blur and submit
-  checks of US-31 AC1 stay. `ui-kit.md` 2.11 lists the difference, citing this entry.
+  by the owner's decision (`ui-kit.md` 2.5 — the amount fields, the select fields of 2.6 (a choice does not clear a
+  message; their blur is focus leaving the field as a whole, a `focusout` whose `relatedTarget` is outside the wrapper
+  holding the trigger and its listbox) and `pots.md`'s Pot Name — and the forms of `budgets.md` and `pots.md` that
+  cite it). The design's rule, the eventual target: a field's message and its `aria-invalid` go away as soon as the
+  person types in that field or chooses a new option in a select field; typing never shows a message; the blur and
+  submit checks of US-31 AC1 stay. `ui-kit.md` 2.11 lists the difference, citing this entry.
 - **Where it applies:** `src/ui/Field.tsx` (uncontrolled; its form decides when it is checked) and the forms that check
   it — today `app/(auth)/login/LoginForm.tsx` and `app/(auth)/signup/SignupForm.tsx` (`validateOnBlur`, and the submit
-  handler); `ui-kit.md` 2.5, §3 and §7 and the Budgets and Pots forms built from them; `auth.md`'s login and sign-up
+  handler); `ui-kit.md` 2.5, 2.6, §3 and §7 and the Budgets and Pots forms built from them; `auth.md`'s login and sign-up
   forms ("Timing (US-31 AC1)"). At fix time, every form of every release, so the app keeps one rule.
 - **Risk:** low — a difference from the design, not a defect. US-31 AC1 is met either way. A person who corrects a field
   still sees the old message until they leave the field or submit, which may read as if the correction was not taken.
   Nothing reaches data or the server.
 - **Guarded meanwhile by:** today's rule is the code's (`LoginForm`, `SignupForm`); `tests/e2e/login.spec.ts` checks
   the messages on blur and on submit, `signup.spec.ts` on submit; neither checks what typing does. `ui-kit.md` §7's
-  `AmountField` row pins the rule for Release 2's forms once they are built (typing does not clear a message; the next
-  blur or submit checks again); those assertions change with the fix.
+  `AmountField` and `SelectField` rows pin the rule for Release 2's forms once they are built (typing or a choice does
+  not clear a message, and opening and closing a select's menu neither shows nor clears one; the next blur or submit
+  checks again); those assertions change with the fix.
 - **When:** after all releases are finished (the owner's word), with the other open debts.
 - **Fix:**
-  - One rule for every form at once: the first input in a field that shows a message removes the message and
-    `aria-invalid` and empties the live region; typing never shows a message; the blur and submit checks stay.
-  - Amend `auth.md` "Timing (US-31 AC1)" and `ui-kit.md` 2.5, §3, §7 (and any later form spec) to say so, and drop
-    `ui-kit.md` 2.11's row — each an amendment the owner approves by merging.
+  - One rule for every form at once: the first input in a field that shows a message — or a new choice in a select
+    field — removes the message and `aria-invalid` and empties the live region; typing never shows a message; the
+    blur and submit checks stay.
+  - Amend `auth.md` "Timing (US-31 AC1)" and `ui-kit.md` 2.5, 2.6, §3, §7 (and any later form spec) to say so, and
+    drop `ui-kit.md` 2.11's row — each an amendment the owner approves by merging.
   - Re-read the designer's live source first, to confirm §16a still describes the target.
 - **How it will be verified:**
-  - Component tests, failing first on today's code: typing in a field with a message removes the message and
-    `aria-invalid` at once and shows none while typing; an invalid value typed after that shows nothing until the next
+  - Component tests, failing first on today's code: typing in a field with a message, or choosing a new option in a
+    select field with one, removes the message and `aria-invalid` at once and shows none while typing; an invalid value typed after that shows nothing until the next
     blur or submit, which shows the new result; a server `issues` message is cleared by typing the same way.
   - E2E on the login, sign-up, Budgets and Pots forms, on Chromium, Firefox and WebKit: a message is gone as soon as the
     person types in its field, and the next blur or submit shows it again for an invalid value.
