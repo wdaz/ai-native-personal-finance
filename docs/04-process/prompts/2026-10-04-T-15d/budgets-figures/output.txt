@@ -30,7 +30,18 @@ Entertainment (Green): 5000 / 97500 = 5.13 % | from 0.00° to 18.46° | dasharra
 Bills (Cyan): 75000 / 97500 = 76.92 % | from 18.46° to 295.38° | dasharray "521.9877024426117 678.5840131753953" offset -34.799180162840784
 Dining Out (Yellow): 7500 / 97500 = 7.69 % | from 295.38° to 323.08° | dasharray "52.198770244261176 678.5840131753953" offset -556.7868826054525
 Personal Care (Navy): 10000 / 97500 = 10.26 % | from 323.08° to 360.00° | dasharray "69.59836032568157 678.5840131753953" offset -608.9856528497137
-radius 108, circumference 678.5840131753953
+radius 108 (the repository's DONUT_RADIUS, Release 1's), circumference 678.5840131753953
+the formula agrees with donutSegments at radius 108: true
+outer ring at the design's radius 96 (OV-Q1 (a)): circumference 603.19
+  Entertainment: length 30.93 | offset 0.00
+  Bills: length 463.99 | offset -30.93
+  Dining Out: length 46.40 | offset -494.92
+  Personal Care: length 61.87 | offset -541.32
+inner ring at the design's radius 78 (OV-Q1 (a)): circumference 490.09
+  Entertainment: length 25.13 | offset 0.00
+  Bills: length 376.99 | offset -25.13
+  Dining Out: length 37.70 | offset -402.12
+  Personal Care: length 50.27 | offset -439.82
 
 === AUGUST SPENT PER CATEGORY (seed) — the repository's budgetSpent; what a new budget would show (US-15 AC3) ===
 Entertainment: has a budget | transactions 3 (August 2: 2 negative, 0 positive) | August spent 1500 ($15.00)

@@ -3,7 +3,8 @@
 Task: T-15d (S4, `docs/03-specs/budgets.md`) · Date: 2026-10-05 · Written by the agent (Claude Code)
 
 `figures.ts` prints every seed-derived number that `budgets.md` §4 (and the tool descriptions' lengths in 2.13) quotes;
-`output.txt` is its output on 2026-10-05. Reproduce it from the repository root (after `npm ci --ignore-scripts` and
+`output.txt` is its output on 2026-10-05, regenerated on 2026-10-06 for `budgets.md` v0.7 (the donut's lengths at
+the design's radius, below; every other line unchanged). Reproduce it from the repository root (after `npm ci --ignore-scripts` and
 `npx prisma generate`, since it imports `src/server/overview.ts`, which reads the generated Prisma enums):
 
 ```
@@ -26,7 +27,10 @@ FORCE_COLOR=0 npx tsx docs/04-process/prompts/2026-10-04-T-15d/budgets-figures/f
   spent)` and the bar's **fill** = `min(100, spent ÷ maximum × 100)` with two decimals (`budgets.md` 4.1); the
   category filter in front of `latestTransactions` (the build's `latestSpending`); the "See All" address
   (`URLSearchParams`, as `transactions.md` 2.2 writes it); the worked writes of 4.6 (the new totals are sums the script
-  computes); the tool descriptions, whose lengths it counts.
+  computes); the tool descriptions, whose lengths it counts; the donut's segment lengths and offsets at the design's radius
+  96 px (outer ring) and 78 px (inner ring) — `overview.md` §9 OV-Q1 (a), answered by the owner on 2026-10-06 — with
+  `donutSegments`' own formula, because the repository's `DONUT_RADIUS` stays Release 1's 108 px until hotfix 2
+  (H18); the script prints whether that formula agrees with `donutSegments` at `DONUT_RADIUS`.
 
 The build task moves these figures into `scripts/seed-figures.ts` (`release-2-handoffs.md` H15 (2)), so the tests read
 them from the repository's own code, not from this record. That script may import only `src/domain` and `src/shared`

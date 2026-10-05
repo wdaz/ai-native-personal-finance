@@ -123,7 +123,45 @@ seed.budgets.forEach((b, i) => {
   );
   startDegrees += share * 360;
 });
-console.log(`radius ${DONUT_RADIUS}, circumference ${circumference}`);
+console.log(`radius ${DONUT_RADIUS} (the repository's DONUT_RADIUS, Release 1's), circumference ${circumference}`);
+
+// overview.md §9 OV-Q1 (a), answered by the owner on 2026-10-06: the outer ring at the design's
+// radius 96 px and the inner ring 18 px less, at 78 px (overview.md 4.4). The repository's
+// DONUT_RADIUS stays Release 1's 108 until hotfix 2 changes it (H18), so the lengths at 96 px
+// and 78 px are computed here with donutSegments' own formula (share × 2πr, offsets the running
+// sum, negated); the first line checks that formula against donutSegments at DONUT_RADIUS.
+const DESIGN_OUTER_RADIUS = 96;
+const DESIGN_INNER_RADIUS = DESIGN_OUTER_RADIUS - 18;
+function lengthsAt(radius: number): { circumference: number; lengths: number[]; offsets: number[] } {
+  const c = 2 * Math.PI * radius;
+  const lengths = seed.budgets.map((b) => (limit > 0 ? (b.maximum / limit) * c : 0));
+  const offsets: number[] = [];
+  let sum = 0;
+  for (const length of lengths) {
+    offsets.push(sum === 0 ? 0 : -sum);
+    sum += length;
+  }
+  return { circumference: c, lengths, offsets };
+}
+const atRepository = lengthsAt(DONUT_RADIUS);
+const formulaAgrees = segments.every(
+  (s, i) =>
+    s.strokeDasharray === `${atRepository.lengths[i]} ${atRepository.circumference}` &&
+    s.strokeDashoffset === atRepository.offsets[i],
+);
+console.log(`the formula agrees with donutSegments at radius ${DONUT_RADIUS}: ${formulaAgrees}`);
+for (const [ring, radius] of [
+  ["outer", DESIGN_OUTER_RADIUS],
+  ["inner", DESIGN_INNER_RADIUS],
+] as const) {
+  const at = lengthsAt(radius);
+  console.log(`${ring} ring at the design's radius ${radius} (OV-Q1 (a)): circumference ${at.circumference.toFixed(2)}`);
+  seed.budgets.forEach((b, i) => {
+    console.log(
+      `  ${b.category}: length ${(at.lengths[i] ?? Number.NaN).toFixed(2)} | offset ${(at.offsets[i] ?? Number.NaN).toFixed(2)}`,
+    );
+  });
+}
 
 H("AUGUST SPENT PER CATEGORY (seed) — the repository's budgetSpent; what a new budget would show (US-15 AC3)");
 for (const c of CATEGORIES) {
