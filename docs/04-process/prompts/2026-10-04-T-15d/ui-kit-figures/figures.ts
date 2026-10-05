@@ -45,7 +45,8 @@ console.log("longest seed pot name:", Math.max(...rows.pots.map((p: any) => p.na
 
 H("AMOUNT GRAMMAR (the spec's reading of US-15 AC2, written here by hand; no repository code yet)");
 const MAX = 99_999_999_999n;
-const SHAPE = /^([0-9]+|[0-9]{1,3}(?:,[0-9]{3})+)?(\.[0-9]{1,2})?$/;
+// A grouped number starts with 1-9, so "0,500" is refused rather than read as 500 dollars (ui-kit.md 2.5, v0.4).
+const SHAPE = /^([0-9]+|[1-9][0-9]{0,2}(?:,[0-9]{3})+)?(\.[0-9]{1,2})?$/;
 function parseAmount(text: string): string {
   let t = text.trim();
   if (t === "") return "required";
@@ -64,7 +65,7 @@ function parseAmount(text: string): string {
 const inputs = [
   "", "   ", "0.01", "1", "42", " 42 ", "007", "75.5", "75.50", ".5", "5.", "$1,234.50", "1,234.5", "1234.50",
   "12,345,678", "$999,999,999.99", "999999999.99", "1,000,000,000", "1000000000", "99999999999999999999",
-  "0", "0.00", "$0", "-5", "-$5", "-0", "$-5", "1.234", "1,23", "1,2345", "12,34.5", "$ 5", "$$5", "$", "-",
+  "0", "0.00", "$0", "-5", "-$5", "-0", "$-5", "1.234", "1,23", "1,2345", "12,34.5", "0,500", "0,123", "01,234", "$ 5", "$$5", "$", "-",
   "1e3", "0x10", "Infinity", "NaN", "5 000", "５", "−5", "USD 5",
 ];
 inputs.forEach((s) => console.log(JSON.stringify(s) + " -> " + parseAmount(s)));

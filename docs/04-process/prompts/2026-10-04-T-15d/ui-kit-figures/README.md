@@ -9,18 +9,21 @@ Task: T-15d (S1b, `docs/03-specs/ui-kit.md`) · Date: 2026-10-05 · Written by t
 FORCE_COLOR=0 npx tsx docs/04-process/prompts/2026-10-04-T-15d/ui-kit-figures/figures.ts
 ```
 
-**How `output.txt` was made.** The worktree this spec was drafted in has no `node_modules`, so `figures.ts` was not
-run. `figures.py` is a line-for-line mirror that needs only Python 3; `output.txt` is its output:
+**How `output.txt` was made.** For `ui-kit.md` v0.1 to v0.3 the drafting worktree had no `node_modules`, so `figures.ts`
+was not run and `output.txt` came from `figures.py`, a line-for-line mirror that needs only Python 3. For v0.4
+(2026-10-05, after the D7 reviews) `figures.ts` was run in a worktree with `npm ci --ignore-scripts` and
+`npx prisma generate`: its output of the v0.3 scripts was identical to the committed `output.txt`. The v0.4 grammar
+change (a grouped number starts with 1–9; three inputs added) was then made in both scripts, `output.txt` is now
+`figures.ts`'s output, and `figures.py` prints the same lines:
 
 ```
-python3 docs/04-process/prompts/2026-10-04-T-15d/ui-kit-figures/figures.py > docs/04-process/prompts/2026-10-04-T-15d/ui-kit-figures/output.txt
+python3 docs/04-process/prompts/2026-10-04-T-15d/ui-kit-figures/figures.py
 ```
 
 `figures.py` reads `prisma/data.json` (the seed), the `CATEGORIES` and `THEMES` arrays of `src/shared/enums.ts` and the
 theme hex values of `docs/02-architecture/design-tokens.md` (the seed's own hex → theme map, `THEME_BY_HEX` in
 `src/server/seed.ts`, is held to that table by `tests/unit/seed.test.ts`). Dollars become cents by rounding `× 100`,
-which `src/domain/money.ts` `toCents` does for the seed. A reviewer with `node_modules` runs `figures.ts` and compares;
-the two must print the same lines.
+which `src/domain/money.ts` `toCents` does for the seed. The two must print the same lines.
 
 **What is the repository's code and what is not.** `figures.ts` reads the seed through `seedRows()`
 (`src/server/seed.ts`), the enums from `src/shared/enums.ts` and formats with `formatMoney` (`src/shared/money.ts`). The

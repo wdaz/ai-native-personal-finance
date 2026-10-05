@@ -1,12 +1,67 @@
 # How the ui-kit reviews were handled (T-15d, S1b)
 
-## The two independent reviews have not run yet
+## The two independent reviews and the process audit (v0.3 → v0.4)
 
-Plan D7 asks for two read-only Opus reviews of `ui-kit.md` v0.1 (`06cfcd4`): one of the facts, one of the spec. The
-drafting agent ran inside a workflow whose tool set has no Agent tool, so it could not dispatch them. Their briefs are
-written (`ui-kit-review-1-facts-brief.md`, `ui-kit-review-2-spec-brief.md`); there are **no report files**, and none
-were written in their place. The controller dispatches both against the pull request's head before it goes ready, saves
-each report verbatim, and this file gains a table per report, as `transactions-review-handling.md` has.
+Plan D7 asks for two read-only Opus reviews: one of the facts, one of the spec. The drafting agent ran inside a workflow
+whose tool set has no Agent tool, so it could not dispatch them; it wrote their briefs (`ui-kit-review-1-facts-brief.md`,
+`ui-kit-review-2-spec-brief.md`). The controller session dispatched both against v0.3 (`1cf0c9d`), and their reports
+are saved verbatim: `ui-kit-review-1-facts-report.md`, `ui-kit-review-2-spec-report.md`. A separate process and scope
+audit of v0.2 (`a1bf745`) is handled as a third report; it is summarised below, not copied. Each finding was checked
+against the repository before it was acted on. A fix that would change what the design draws, or decide a choice an
+approved document leaves open, became an owner question (UK-Q7, UK-Q8) instead of an edit. Result: `ui-kit.md` v0.4.
+Spec lines are those of v0.4.
+
+### Review 1 — facts (8 findings: 7 fixed, 1 declined)
+
+| # | Finding | Handling |
+|---|---|---|
+| 1 | The header, §9, H13 (5) and this file cite plan v0.3 and D10–D14, which neither this branch nor `develop` holds (both have v0.2) | Confirmed: v0.3 is on `docs/T-15d-plan-v0.3`, pull request #89, open. Fixed: the header (line 6) cites v0.3 through #89 and says the pull request goes ready only after #89 is merged and `develop` is merged in once (D11); H13's source names #89. The merge itself is a step before ready, listed in the pull request |
+| 2 | UK-Q4 names two tokens with the same number; there are four (`--duration-sidebar` 200 ms, `--sidebar-width` 300 px beside `--auth-card-max-width` and `--duration-hover`) | Confirmed (`design-tokens.md` lines 84, 97, 117, 118). Fixed: UK-Q4 (line 257) has a column naming all four; option (b) borrows all four, and a new option (c) borrows none |
+| 3 | `Field` has no `defaultValue` and is uncontrolled; the pre-fill needs a fourth prop | Confirmed (`src/ui/Field.tsx` lines 4–20, 27–30). Fixed: 2.5 (lines 73, 77) and §6 (line 190): four props, the pre-fill is `defaultValue` |
+| 4 | `Menu` must stop Escape and take a width and a fade, but §6 says "used, not changed" | Confirmed (`transactions.md` 2.8 says neither). Fixed: §6 lists `Menu` under "Changed" (Escape stops propagating; for `SelectField`, a trigger-wide panel, rich option content and the fade as options a use passes); 2.2 (line 40) and 2.6 (line 80) say so; H13 (1) carries it to the build |
+| 5 | `PageHeader.module.css` hides the whole actions group at ≥ 1024 px, so the button would vanish on desktop | Confirmed (`src/ui/PageHeader.module.css` lines 22–26). Fixed: a build note in 2.8 (line 94) and §6 — the indicator and "Log out" are hidden one by one |
+| 6 | `maxLength`'s reason counts `-$999,999,999.99`, which is refused | Confirmed (`output.txt`: `"-$5" -> too_small`). Fixed: 2.5 (line 74) counts `$999,999,999.99`, 15 characters; 4.4 states it |
+| 7 | The modal's height cap uses `--spacing-200` at every width while the edge gap is `--spacing-500` from 768 px | Confirmed. Fixed by removing the cap: the modal's layer now scrolls and the panel never clips (2.2 line 42, the fix of review 2 #5), so the gap is the only rule and follows the width |
+| 8 | `transactions.md` 2.8 and §8 still name `budgets.md` and `pots.md` as direct users of `Menu` | Declined: the reviewer calls it optional and "not wrong in substance" — the two pages still use `Menu`, through `ui-kit.md` 2.6. `transactions.md` is Approved, and its v1.0.13 amendment is kept to the one sentence the owner approves by merging this pull request |
+
+Review 1's notes: the `figures.py` trimming comment is added (`ui-kit-figures/figures.py`, `parse_amount`); the figures
+were run through `figures.ts` (audit #5).
+
+### Review 2 — the spec (20 findings: 18 fixed, 2 turned into owner questions, of which #16 is also partly fixed)
+
+| # | Finding | Handling |
+|---|---|---|
+| 1 | Focus can fall to `<body>`: "gone" is checked when the modal closes, while the card is still on the page | Confirmed. Fixed: 2.2 Focus (line 39) — on a 204 or 404 the page names `<main>` when the return element lies in the deleted card or the refreshed list; 2.3 (line 47), 2.7 (line 91); §7 `Modal` row (line 208): a delayed removal never leaves focus on `<body>` |
+| 2 | "No, Go Back" still works while the delete is pending | Confirmed (v0.3 disabled only Escape, Close and the backdrop). Fixed: 2.3 (line 47) — Go Back `aria-disabled` and inert while pending; §3; §7 `ConfirmDeleteDialog` row (line 209) |
+| 3 | Unmounting after a confirm reports a false `cancelled` | Confirmed. Fixed: 2.3 item 4 (line 61) — `cancelled` only before a confirm; afterwards the request is not aborted and the result is its answer, or the failure's own code when no dialog is left; `DeleteResult` gains those codes (line 52); §7 bus row (line 210) |
+| 4 | Two tool calls in one tick can open two dialogs | Confirmed (React state is not updated between them). Fixed: `ModalSlot` (2.2, line 36) checks and claims synchronously; 2.3 item 2 (line 59); §7 `ModalSlot` row (line 207) and bus row |
+| 5 | A select's absolutely positioned options panel is clipped by the modal's own scrolling | Confirmed (an absolutely positioned descendant is clipped by a scrolling ancestor below its containing block). Fixed: the full-screen layer scrolls, the panel is `overflow: visible` (2.2 Look, line 42; 2.11 new row, line 115; 4.4); §7 `Modal` row and the E2E row (Theme options visible at 320 px). The design draws no overflowing modal, so this fills a case it leaves open rather than changing a drawing |
+| 6 | The `Menu` Escape change contradicts §6 and is in no hand-off | Confirmed. Fixed: as review 1 #4; H13 (1) names it ("`Menu` stops the propagation of the Escape it handles"), for either build order |
+| 7 | A `role="status"` inserted with its text may not be announced | Confirmed (`transactions.md` 2.10 keeps its region empty, then sets it). Fixed: 2.9 (line 98) — the region is always in the page, its text set after the modal has closed; a second 404 clears then sets; §7 `Notice` assertions (line 214) |
+| 8 | UK-Q5 (a) changes the Approved `design-tokens.md` "Component states" without saying so | Confirmed (`design-tokens.md` line 126: "destroy (red → red at 80 % opacity)"). Fixed: UK-Q5 (line 274) says so and option (a) names the amendment; H13 gains (6) |
+| 9 | §7 lacks US-34 AC2 (no hover when disabled), US-15 AC2 "does not submit", and NFR-W5's `busy` / `not_found` at E2E | Confirmed. Fixed: `FormFooter` row asserts no request is sent (line 214); the E2E row (line 215) adds "no hover" on a used option and a pending button, and `busy` and `not_found` through the tool |
+| 10 | Nothing owns "one modal at a time" or "a write is pending" across the page | Confirmed. Fixed: `ModalSlot` (2.2, line 36; 2.1, §5, §6, §7), provided once per page by the page's client container |
+| 11 | `requestDelete` has no signal parameter, so the abort case cannot be built | Confirmed (US-40 AC2 names "abort (`signal`)"). Fixed: `requestDelete(kind, id, signal?)` and the handler's signal (line 52); item 6 (line 63) — before, during and after a confirm; §7 bus rows |
+| 12 | The tool-side failure list differs from the person-side one | Confirmed. Fixed: item 4 (line 61) lists 429, 403, 415, 500 and no response, as line 47 does |
+| 13 | §3 lacks states: select open, select error/`taken`, no handler, a form's 409/401, a second 404; the pending look | Confirmed. Fixed: §3 rows added (lines 146–170); 2.7 (line 91): a pending button keeps its resting colours, loses its hover, changes its label (the design draws no pending state, so nothing visual is invented) |
+| 14 | "Input boxes 45 px tall → `Field`'s box" changes what the design draws and cites code, not an approved document | Confirmed (`Field.module.css`: 12 + 12 + 21 + 2 = 47 px; no approved document sets the height). Not decided by the spec: **UK-Q7** (line 290), with the select panel's offset (review 2 #17); 2.5 Look (line 78) and 2.11 (line 114) point to it |
+| 15 | The used option's 25 % opacity has no token and is not in UK-Q4 | Confirmed. Fixed: UK-Q4 has seven values (line 257); 2.6 (line 84) points to it |
+| 16 | `0,500` and `0,123` are read as thousands; the strict reading of commas is a scope decision; the `maxLength` nit | Confirmed (`output.txt` of v0.3 accepted the grammar's shape; `0,500` → 50,000 cents). Fixed: a grouped number starts with 1–9 (2.5, line 75); `0,500`, `0,123`, `01,234` added to 4.1, both figures scripts and `output.txt`; the nit as review 1 #6. The strictness itself — US-15 AC2 says only that separators "are stripped" — is **UK-Q8** (line 295) |
+| 17 | `Field` needs `defaultValue`; the select trigger's name with no value; the trigger-to-panel gap is not stated | Confirmed. Fixed: `defaultValue` (as review 1 #3); the name with no value is the label alone (2.6, line 81; §7); the gap is `--spacing-100` (line 83), with the design's 74 px offset put to the owner in UK-Q7 |
+| 18 | Housekeeping: H13 is added, not resolved; H13 (2) repeats "Already used" (H10); `DEFAULT_TOOL_MESSAGE.busy`; plan v0.3 not on the branch | Confirmed (`src/webmcp/tool-result.ts` line 18 is a `Record` over every code). Fixed: the header says "Adds hand-off H13" (line 6); H13 (2) excludes "Already used"; H13 (1) and 2.3 item 7 (line 64) name `DEFAULT_TOOL_MESSAGE`; the plan as review 1 #1 |
+| 19 | UK-Q3 (a) does not say how long the notice stays or where focus goes | Confirmed. Fixed: UK-Q3 (a) (line 252) says it stays until closed or the next successful change, a second message replaces it, and closing it puts focus at the start of the content |
+| 20 | `figures.ts`, the script on the repository's code, was never run | Fixed: run on 2026-10-05 after `npm ci --ignore-scripts` and `npx prisma generate`; its output of the v0.3 scripts was identical to `output.txt`. After the grammar change both scripts were re-run, `output.txt` is `figures.ts`'s output and `figures.py` prints the same lines (`ui-kit-figures/README.md`) |
+
+### The process audit (third report; 6 findings, of v0.2 at `a1bf745`)
+
+| # | Finding (summarised) | Handling |
+|---|---|---|
+| 1 | Blocker: the two D7 reviews never ran; only the drafter's self-check exists | Fixed: both reviews ran against v0.3, their reports are saved verbatim and handled above |
+| 2 | The design facts came from the stale export of 2026-10-04 22:17; UK-Q5 rows 1–2, 2.4 and 2.11 and UK-Q1 #3's premise may be superseded | No change needed in v0.4: v0.3 already re-read the live source ("Design re-read (live)" below) — 2.4 has the grey-500 icon and the 24 × 24 design hit area, UK-Q5 lost its two fixed rows, 2.11 lists only what still departs, and UK-Q1 #3's premise ("Budget options" on every trigger) was rechecked and holds. Review 1 found the spec consistent with that table |
+| 3 | The spec and H13 cite plan v0.3 and D10–D14, which are not on the branch or on `develop`; the pull request body does not state the dependency | Fixed: as review 1 #1; the pull request body states that #92 depends on #89 and on one `develop` merge (D11) |
+| 4 | Most claimed UI criteria have no E2E row (PRD M2): US-15 AC1, AC2; US-16 AC1; US-17 AC1, AC3; US-22 AC1, AC2; US-23 AC1; US-24 AC1, AC2; US-25 AC2; US-26 AC2 | Fixed: §7 gains a table naming the page spec that E2E-traces each claimed criterion (line 217): the Budgets criteria `budgets.md`, the Pots criteria `pots.md`, US-31 to US-34 and US-40 AC2 both, each for its page |
+| 5 | `figures.ts` never ran; `output.txt` came from the Python mirror | Fixed: as review 2 #20 |
+| 6 | The `Menu` Escape note reaches no build task | Fixed: H13 (1) carries it (as review 2 #6), for whichever of Transactions or Budgets/Pots builds `Menu` first |
 
 ## The drafting agent's own fact check of v0.1
 
