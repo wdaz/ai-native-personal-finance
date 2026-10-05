@@ -2,6 +2,8 @@
 
 Written for `ui-kit.md` v0.1 (`06cfcd4`), to be dispatched as subagent type `feature-dev:code-reviewer`, model `opus`, tools read, grep and glob only (`governance.md` v1.1, v1.3). **Not yet dispatched:** the drafting agent ran inside a workflow without the Agent tool (`ui-kit-review-handling.md`). The controller dispatches it against the pull request's head and saves the report verbatim as `ui-kit-review-2-spec-report.md`.
 
+Dispatched by the controller session against 1cf0c9d685cfc4ef8709d529420794b2931bb6f8 (the drafting session had no subagent tool).
+
     You are a READ-ONLY reviewer (tools: read, grep, glob only; edit nothing). Repository worktree = your current working directory, branch task/T-15d-spec-ui-kit, at the commit named by the dispatcher. Review the NEW document docs/03-specs/ui-kit.md (Draft, a SHARED spec of the src/ui parts that budgets.md and pots.md will both cite, with five owner questions UK-Q1 to UK-Q5) as an adversarial SPEC reviewer. A separate reviewer checks its facts; you check its design and completeness.
 
     Review against, in this order:

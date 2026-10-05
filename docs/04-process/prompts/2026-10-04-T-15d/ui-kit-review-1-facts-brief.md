@@ -2,6 +2,8 @@
 
 Written for `ui-kit.md` v0.1 (`06cfcd4`), to be dispatched as subagent type `feature-dev:code-reviewer`, model `opus`, tools read, grep and glob only (`governance.md` v1.1, v1.3). **Not yet dispatched:** the drafting agent ran inside a workflow without the Agent tool (`ui-kit-review-handling.md`). The controller dispatches it against the pull request's head and saves the report verbatim as `ui-kit-review-1-facts-report.md`.
 
+Dispatched by the controller session against 1cf0c9d685cfc4ef8709d529420794b2931bb6f8 (the drafting session had no subagent tool).
+
     You are a READ-ONLY reviewer (tools: read, grep, glob only; edit nothing). Repository worktree = your current working directory, branch task/T-15d-spec-ui-kit, at the commit named by the dispatcher. The NEW document docs/03-specs/ui-kit.md (Draft) is a SHARED spec: the src/ui parts that the Budgets and Pots page specs will both cite (modal, delete confirmation and its src/webmcp/bus.ts contract, "…" action menu, amount field and its grammar, select field, form footer, page-header button, notice, theme swatch). The same pull request amends docs/03-specs/transactions.md 2.8 (v1.0.13) and docs/03-specs/release-2-handoffs.md (H13, H3, Status line). Your job is a FACT CHECK only: every statement about something outside the spec must be true.
 
     Check, and report each claim that is false, imprecise or unverifiable:
