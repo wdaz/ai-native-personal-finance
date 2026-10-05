@@ -1,0 +1,98 @@
+
+=== SEED POTS (creation order = data.json order; seq 1..5) ===
+1. Savings | Green | total 15900 = $159.00 | target 200000 = $2,000.00 | 7.95% (795 bp) | bar 7.95% | design draws "7.95%", "Target of $2,000"
+2. Concert Ticket | Navy | total 11000 = $110.00 | target 15000 = $150.00 | 73.33% (7333 bp) | bar 73.33% | design draws "73.3%", "Target of $150"
+3. Gift | Cyan | total 11000 = $110.00 | target 15000 = $150.00 | 73.33% (7333 bp) | bar 73.33% | design draws "73.3%", "Target of $150"
+4. New Laptop | Yellow | total 1000 = $10.00 | target 100000 = $1,000.00 | 1.00% (100 bp) | bar 1.00% | design draws "1.00%", "Target of $1,000"
+5. Holiday | Purple | total 53100 = $531.00 | target 144000 = $1,440.00 | 36.88% (3688 bp) | bar 36.88% | design draws "36.9%", "Target of $1,440"
+pots total 92000 = $920.00; balance 483600 = $4,836.00; balance + pots = 575600 = $5,756.00
+income $3,814.25, expenses $1,700.50 (never change, US-04 AC3)
+the largest Total Saved any pot can reach (money is conserved, write-path.md 2.8): $5,756.00
+longest seed pot name: 14 characters (Concert Ticket)
+delete titles: Delete ‘Savings’? | Delete ‘Concert Ticket’? | Delete ‘Gift’? | Delete ‘New Laptop’? | Delete ‘Holiday’?
+money modal titles: Add to ‘Savings’ / Withdraw from ‘Savings’ | Add to ‘Concert Ticket’ / Withdraw from ‘Concert Ticket’ | Add to ‘Gift’ / Withdraw from ‘Gift’ | Add to ‘New Laptop’ / Withdraw from ‘New Laptop’ | Add to ‘Holiday’ / Withdraw from ‘Holiday’
+
+=== ROUND HALF UP (US-21 AC1, R-08) ===
+Savings 15900/200000 → 7.95% (the story's example: 7.95%)
+Holiday 53100/144000 = 36.875 % exactly → 36.88% (half up; the design's one-decimal text: 36.9%)
+float toFixed(2) disagrees with half up: total 3/20000: exact half up 0.02%, toFixed(2) 0.01%, Math.round 0.02% | total 7/20000: exact half up 0.04%, toFixed(2) 0.03%, Math.round 0.03% | total 9/20000: exact half up 0.05%, toFixed(2) 0.04%, Math.round 0.05%
+0/1 → 0.00%; 1/3 → 33.33%; 2/3 → 66.67%; 1/99999999999 → 0.00%
+largest percentage the data allows: total 575600 / target 1 → 57560000.00%
+
+=== THREE WRITES IN A ROW (write-path.md 4.2's sequence), conservation after each ===
+1. preview, Add to ‘Savings’ $100.00: New Amount $259.00, 12.95% (green), Target of $2,000.00; bar: base 7.95% + green 5.00%
+   after: balance $4,736.00, Savings $259.00 12.95%, pots $1,020.00, sum $5,756.00
+2. preview, Withdraw from ‘Concert Ticket’ $30.00: New Amount $80.00, 53.33% (red), Target of $150.00; bar: base 53.33% + red 20.00%
+   after: balance $4,766.00, Concert Ticket $80.00 53.33%, pots $990.00, sum $5,756.00
+3. delete New Laptop ($10.00 back): balance $4,776.00, pots $980.00 (4 pots: Savings, Concert Ticket, Gift, Holiday), sum $5,756.00
+
+=== ONE MOVE AT A TIME FROM THE SEED (each from a fresh seed) ===
+Add to ‘Concert Ticket’ $50.00 (past the target, US-25 AC3): New Amount $160.00, 106.67% (green), Target of $150.00; bar: base 73.33% + green 26.67%; card bar 100.00%
+Add to ‘Gift’ $40.00 (exactly the target): New Amount $150.00, 100.00% (green), Target of $150.00; bar: base 73.33% + green 26.67%
+Withdraw from ‘Holiday’ $531.00 (all of it): New Amount $0.00, 0.00% (red), Target of $1,440.00; bar: base 0.00% + red 36.88%; balance after $5,367.00
+Withdraw from ‘Holiday’ $531.01: exceeds_total; preview clamps: New Amount $0.00, 0.00% (red), Target of $1,440.00; bar: base 0.00% + red 36.88% (typed $531.01, clamped to $531.00)
+Add to ‘Savings’ $4,836.01: exceeds_balance; preview clamps: New Amount $4,995.00, 249.75% (green), Target of $2,000.00; bar: base 7.95% + green 92.05% (typed $4,836.01, clamped to $4,836.00)
+Add to ‘Savings’ $4,836.00: ok; New Amount $4,995.00, 249.75% (green), Target of $2,000.00; bar: base 7.95% + green 92.05%; balance after $0.00; card bar 100.00%
+Delete Holiday: balance $4,836.00 → $5,367.00; delete Savings: → $4,995.00; delete New Laptop: → $4,846.00
+Edit Holiday's target to $500.00 (below its total, US-23 AC2): 106.20%, bar 100.00%
+Edit Savings' target to $159.00 (equal to its total): 100.00%
+Overview after Add to ‘Savings’ $100.00 (US-04 AC2): Current Balance $4,736.00, Pots total $1,020.00, Income $3,814.25, Expenses $1,700.50
+Overview after Withdraw from ‘Holiday’ $31.00: Current Balance $4,867.00, Pots total $889.00
+Overview after deleting Holiday: Current Balance $5,367.00, Pots total $389.00, first four pots unchanged: Savings, Concert Ticket, Gift, New Laptop
+Overview after deleting Savings: first four pots Concert Ticket $110.00, Gift $110.00, New Laptop $10.00, Holiday $531.00
+
+=== ZERO BALANCE (reached through the API: deposit the whole balance into a pot) ===
+deposit $4,836.00 into Savings → balance $0.00, Savings $4,995.00 249.75%
+  at $0.00, Add to ‘Gift’ "(empty)": required → Can't be empty
+  at $0.00, Add to ‘Gift’ "abc": invalid_format → Enter an amount with up to two decimals
+  at $0.00, Add to ‘Gift’ "0": too_small → Amount must be greater than 0
+  at $0.00, Add to ‘Gift’ "-5": too_small → Amount must be greater than 0
+  at $0.00, Add to ‘Gift’ "1,000,000,000": too_large → Amount is too large
+  at $0.00, Add to ‘Gift’ "0.01": exceeds_balance → Amount exceeds your current balance
+  at $0.00, Add to ‘Gift’ "$4,836.00": exceeds_balance → Amount exceeds your current balance
+  at $0.00 a withdrawal still works: Withdraw from ‘Gift’ $10.00 → ok, balance $10.00
+
+=== THEMES ===
+used by pots: 5 (Green, Navy, Cyan, Yellow, Purple); free: 10 (Red, Turquoise, Brown, Magenta, Blue, Navy Grey, Army Green, Gold, Orange, Pink); the add form opens on: Red
+to use all 15 (through the API, one POST per theme): 10 more pots, themes in order Red, Turquoise, Brown, Magenta, Blue, Navy Grey, Army Green, Gold, Orange, Pink; then 15 pots, 0 free
+budget themes (they do not count against a pot): Green, Cyan, Yellow, Navy; shared by a budget and a pot: Green, Cyan, Yellow, Navy
+  edit Savings: own theme Green selectable; disabled Navy, Cyan, Yellow, Purple
+  edit Concert Ticket: own theme Navy selectable; disabled Green, Cyan, Yellow, Purple
+  edit Gift: own theme Cyan selectable; disabled Green, Navy, Yellow, Purple
+  edit New Laptop: own theme Yellow selectable; disabled Green, Navy, Cyan, Purple
+  edit Holiday: own theme Purple selectable; disabled Green, Navy, Cyan, Yellow
+
+=== POT NAME (trimmed; counted in UTF-16 code units, as JS .length and maxLength do) ===
+counter: "" → 30 characters left; "Savings" → 23 characters left; 29 characters → 1 character left; 30 → 0 characters left
+"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" (30) → accepted; 31 characters → too_long (API and tools only: the input's maxLength is 30)
+"  savings  " on add → taken; "SAVINGS" → taken; "Savings 2" → free; editing Savings to "savings" → free (its own name); editing Gift to "Holiday" → taken
+"   " (spaces only) → required; "Rainy Days" → free (the design's placeholder "e.g. Rainy Days")
+an emoji "🎉" has .length 2: 15 of them fill the 30
+
+=== CARD WIDTHS (content width = window − sidebar − 80 px page padding; below 768 px window − 32 px) ===
+1440, sidebar expanded: content 1060, two columns, card 518, inside the 24 px padding 470, each money button 227
+1440, sidebar collapsed: content 1272, two columns, card 624, inside the 24 px padding 576, each money button 280
+1024, sidebar expanded: content 644, two columns, card 310, inside the 24 px padding 262, each money button 123
+1024, sidebar collapsed: content 856, two columns, card 416, inside the 24 px padding 368, each money button 176
+768 (no sidebar): content 688, two columns, card 332, inside the 24 px padding 284, each money button 134
+767: content 735, one column, card 735, inside the 24/20 px padding 695, each money button 339.5
+375: content 343, one column, card 343, inside the 24/20 px padding 303, each money button 143.5
+320: content 288, one column, card 288, inside the 24/20 px padding 248, each money button 116
+
+=== TOOL DESCRIPTIONS (NFR-W3: at most 200 characters) ===
+list_pots: 171 characters
+add_pot: 152 characters
+edit_pot: 120 characters
+delete_pot: 181 characters
+add_money_to_pot: 139 characters
+withdraw_from_pot: 140 characters
+
+=== CONTRAST (WCAG 2.1 relative luminance; the colours of design-tokens.md) ===
+green on white: 4.95:1 — the add preview's percentage (12 px bold) and its green segment
+red on white: 4.73:1 — the withdraw preview's percentage (12 px bold) and its red segment
+grey-500 on white: 5.55:1 — Total Saved, the card's percentage, Target of …, New Amount, the counter
+grey-900 on white: 16.37:1 — the amounts, the pot name
+grey-900 on beige-100: 14.96:1 — the + Add Money / Withdraw labels at rest
+grey-900 on white: 16.37:1 — the + Add Money / Withdraw labels on hover (white background)
+beige-500 on white: 3.14:1 — the money buttons' hover border (1.4.11 asks 3:1)
+grey-900 on beige-100: 14.96:1 — the preview's dark segment on the beige-100 track
