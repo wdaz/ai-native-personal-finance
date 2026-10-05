@@ -77,13 +77,14 @@ console.log("pot targets:", rows.pots.map((p: any) => prefill(p.target)).join(",
 [1, 7550, 123450, 99_999_999_999].forEach((c) => console.log(c + " cents -> " + JSON.stringify(prefill(c)) + " -> parses back to " + parseAmount(prefill(c)) + " | formatMoney " + formatMoney(c)));
 
 H("CONTRAST (WCAG 2.1 relative luminance; opacity composited over white)");
-const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+type Rgb = [number, number, number];
+const hex = (h: string): Rgb => { const c = (i: number) => parseInt(h.slice(i, i + 2), 16); return [c(1), c(3), c(5)]; };
 const lin = (c: number) => { const s = c / 255; return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
-const lum = (rgb: number[]) => 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
-const ratio = (a: number[], b: number[]) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
-const over = (fg: number[], a: number, bg: number[]) => fg.map((f, i) => Math.round(a * f + (1 - a) * bg[i]));
+const lum = (rgb: Rgb) => 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
+const ratio = (a: Rgb, b: Rgb) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+const over = (fg: Rgb, a: number, bg: Rgb): Rgb => { const mix = (i: 0 | 1 | 2) => Math.round(a * fg[i] + (1 - a) * bg[i]); return [mix(0), mix(1), mix(2)]; };
 const W = hex("#FFFFFF"), G900 = hex("#201F24"), G500 = hex("#696868"), G300 = hex("#B3B3B3"), B500 = hex("#98908B"), RED = hex("#C94736");
-const pairs: [string, number[], number[]][] = [
+const pairs: [string, Rgb, Rgb][] = [
   ["grey-300 on white (the … icon at rest, as exported)", G300, W],
   ["grey-500 on white", G500, W],
   ["grey-900 on white", G900, W],
