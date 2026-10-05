@@ -1,8 +1,10 @@
 # Report — ui-kit review 2 (T-15d S1b)
 
+Home paths in this report are written as `~/…` (the repository's home-path rule); nothing else was changed from the reviewer's text.
+
 As returned by the read-only Opus reviewer for commit 1cf0c9d685cfc4ef8709d529420794b2931bb6f8.
 
-**Review 2 of ui-kit.md v0.3 (spec design and completeness, read-only).** Branch task/T-15d-spec-ui-kit at 1cf0c9d. The spec is at `/Users/ruslan/Own/ai-native-personal-finance/.claude/worktrees/wf_ca2e2077-bdb-1/docs/03-specs/ui-kit.md`, and every `ui-kit.md:N` reference below is a line in that file. The brief named v0.1; I reviewed v0.3, which is what is there now.
+**Review 2 of ui-kit.md v0.3 (spec design and completeness, read-only).** Branch task/T-15d-spec-ui-kit at 1cf0c9d. The spec is at `~/Own/ai-native-personal-finance/.claude/worktrees/wf_ca2e2077-bdb-1/docs/03-specs/ui-kit.md`, and every `ui-kit.md:N` reference below is a line in that file. The brief named v0.1; I reviewed v0.3, which is what is there now.
 
 ### Findings
 
