@@ -250,7 +250,7 @@ it, for commit `8268e42`: review 7, delta (`ui-kit-review-7-standin-delta-report
 (`ui-kit-review-7-standin-whole-report.md`; 3 important, 3 minor); review 8, delta
 (`ui-kit-review-8-standin-delta-report.md`; 1 important, 4 minor) and whole (`ui-kit-review-8-standin-whole-report.md`;
 1 important, 2 minor). `8268e42` was not yet on GitHub: the first three reviewed the local commit, the fourth the
-branch's head there, `41d6bc6`. Nine important and twelve minor findings, fifteen distinct (six important, nine minor).
+branch's head there, `41d6bc6`. Seven important and twelve minor findings, fifteen distinct (six important, nine minor).
 Each was checked against the files at `8268e42` (and the design facts against the designer's live source, re-read on
 2026-10-05: `blurField()`, `updateModal()`, `modalConfirm()`, `openAdd`, `firstFreeTheme()`, `modalCatOptions`,
 `modalThemeOptions`); thirteen are fixed and two are declined as already fixed at `8268e42`. The owner's decision
