@@ -1,0 +1,154 @@
+
+=== TOTALS ===
+business today: 2026-08-19 | DUE_SOON_DAYS: 5 | transactions: 49 | recurring: 11 | distinct recurring names (bills): 8
+
+=== RECURRING TRANSACTIONS per vendor (seed, +2 years) ===
+Pixel Playground: 11 Aug 2026 -1000
+Elevate Education: 4 Aug 2026 -5000, 5 Jul 2026 -5000
+Serenity Spa & Wellness: 3 Aug 2026 -3000, 3 Jul 2026 -3000
+Spark Electric Solutions: 2 Aug 2026 -10000, 2 Jul 2026 -10000
+Aqua Flow Utilities: 30 Jul 2026 -10000
+EcoFuel Energy: 29 Jul 2026 -3500
+ByteWise: 23 Jul 2026 -4999
+Nimbus Data Storage: 21 Jul 2026 -999
+
+=== BILLS in recurringBills order (first appearance) ===
+1. Pixel Playground | Monthly - 11th | $10.00 (1000 cents) | paid | avatar pixel-playground | latest 11 Aug 2026 (2026-08-11T18:45:38Z)
+2. Elevate Education | Monthly - 4th | $50.00 (5000 cents) | paid | avatar elevate-education | latest 4 Aug 2026 (2026-08-04T11:15:22Z)
+3. Serenity Spa & Wellness | Monthly - 3rd | $30.00 (3000 cents) | paid | avatar serenity-spa-and-wellness | latest 3 Aug 2026 (2026-08-03T14:00:37Z)
+4. Spark Electric Solutions | Monthly - 2nd | $100.00 (10000 cents) | paid | avatar spark-electric-solutions | latest 2 Aug 2026 (2026-08-02T09:25:11Z)
+5. Aqua Flow Utilities | Monthly - 30th | $100.00 (10000 cents) | upcoming | avatar aqua-flow-utilities | latest 30 Jul 2026 (2026-07-30T13:20:14Z)
+6. EcoFuel Energy | Monthly - 29th | $35.00 (3500 cents) | upcoming | avatar ecofuel-energy | latest 29 Jul 2026 (2026-07-29T11:55:29Z)
+7. ByteWise | Monthly - 23rd | $49.99 (4999 cents) | dueSoon | avatar bytewise | latest 23 Jul 2026 (2026-07-23T09:35:14Z)
+8. Nimbus Data Storage | Monthly - 21st | $9.99 (999 cents) | dueSoon | avatar nimbus-data-storage | latest 21 Jul 2026 (2026-07-21T10:05:42Z)
+
+=== SUMMARY (billsSummary + counts) ===
+{
+  "totalBills": "$384.98 (38498 cents, 8 bills)",
+  "paid": "4 ($190.00) = 19000 cents",
+  "totalUpcoming": "4 ($194.98) = 19498 cents",
+  "dueSoon": "2 ($59.98) = 5998 cents",
+  "rowStatusUpcomingOnly": "2 ($135.00)"
+}
+
+=== SORTS full order ===
+## latest
+  1. Spark Electric Solutions | Monthly - 2nd | $100.00 | paid
+  2. Serenity Spa & Wellness | Monthly - 3rd | $30.00 | paid
+  3. Elevate Education | Monthly - 4th | $50.00 | paid
+  4. Pixel Playground | Monthly - 11th | $10.00 | paid
+  5. Nimbus Data Storage | Monthly - 21st | $9.99 | dueSoon
+  6. ByteWise | Monthly - 23rd | $49.99 | dueSoon
+  7. EcoFuel Energy | Monthly - 29th | $35.00 | upcoming
+  8. Aqua Flow Utilities | Monthly - 30th | $100.00 | upcoming
+## oldest
+  1. Aqua Flow Utilities | Monthly - 30th | $100.00 | upcoming
+  2. EcoFuel Energy | Monthly - 29th | $35.00 | upcoming
+  3. ByteWise | Monthly - 23rd | $49.99 | dueSoon
+  4. Nimbus Data Storage | Monthly - 21st | $9.99 | dueSoon
+  5. Pixel Playground | Monthly - 11th | $10.00 | paid
+  6. Elevate Education | Monthly - 4th | $50.00 | paid
+  7. Serenity Spa & Wellness | Monthly - 3rd | $30.00 | paid
+  8. Spark Electric Solutions | Monthly - 2nd | $100.00 | paid
+## a-to-z
+  1. Aqua Flow Utilities | Monthly - 30th | $100.00 | upcoming
+  2. ByteWise | Monthly - 23rd | $49.99 | dueSoon
+  3. EcoFuel Energy | Monthly - 29th | $35.00 | upcoming
+  4. Elevate Education | Monthly - 4th | $50.00 | paid
+  5. Nimbus Data Storage | Monthly - 21st | $9.99 | dueSoon
+  6. Pixel Playground | Monthly - 11th | $10.00 | paid
+  7. Serenity Spa & Wellness | Monthly - 3rd | $30.00 | paid
+  8. Spark Electric Solutions | Monthly - 2nd | $100.00 | paid
+## z-to-a
+  1. Spark Electric Solutions | Monthly - 2nd | $100.00 | paid
+  2. Serenity Spa & Wellness | Monthly - 3rd | $30.00 | paid
+  3. Pixel Playground | Monthly - 11th | $10.00 | paid
+  4. Nimbus Data Storage | Monthly - 21st | $9.99 | dueSoon
+  5. Elevate Education | Monthly - 4th | $50.00 | paid
+  6. EcoFuel Energy | Monthly - 29th | $35.00 | upcoming
+  7. ByteWise | Monthly - 23rd | $49.99 | dueSoon
+  8. Aqua Flow Utilities | Monthly - 30th | $100.00 | upcoming
+## highest
+  1. Aqua Flow Utilities | Monthly - 30th | $100.00 | upcoming
+  2. Spark Electric Solutions | Monthly - 2nd | $100.00 | paid
+  3. Elevate Education | Monthly - 4th | $50.00 | paid
+  4. ByteWise | Monthly - 23rd | $49.99 | dueSoon
+  5. EcoFuel Energy | Monthly - 29th | $35.00 | upcoming
+  6. Serenity Spa & Wellness | Monthly - 3rd | $30.00 | paid
+  7. Pixel Playground | Monthly - 11th | $10.00 | paid
+  8. Nimbus Data Storage | Monthly - 21st | $9.99 | dueSoon
+## lowest
+  1. Nimbus Data Storage | Monthly - 21st | $9.99 | dueSoon
+  2. Pixel Playground | Monthly - 11th | $10.00 | paid
+  3. Serenity Spa & Wellness | Monthly - 3rd | $30.00 | paid
+  4. EcoFuel Energy | Monthly - 29th | $35.00 | upcoming
+  5. ByteWise | Monthly - 23rd | $49.99 | dueSoon
+  6. Elevate Education | Monthly - 4th | $50.00 | paid
+  7. Aqua Flow Utilities | Monthly - 30th | $100.00 | upcoming
+  8. Spark Electric Solutions | Monthly - 2nd | $100.00 | paid
+
+=== TIES ===
+same day: []
+same amount: [["10000",["Spark Electric Solutions","Aqua Flow Utilities"]]]
+same name ignoring case: []
+lowest is the reverse of highest: false
+A to Z Collator order equals raw code-unit order: true
+
+=== SEARCH (case-insensitive substring of the name, trimmed), Latest order ===
+"a": 6 -> Spark Electric Solutions ; Serenity Spa & Wellness ; Elevate Education ; Pixel Playground ; Nimbus Data Storage ; Aqua Flow Utilities
+"e": 8 -> Spark Electric Solutions ; Serenity Spa & Wellness ; Elevate Education ; Pixel Playground ; Nimbus Data Storage ; ByteWise ; EcoFuel Energy ; Aqua Flow Utilities
+"s": 5 -> Spark Electric Solutions ; Serenity Spa & Wellness ; Nimbus Data Storage ; ByteWise ; Aqua Flow Utilities
+"co": 1 -> EcoFuel Energy
+"data": 1 -> Nimbus Data Storage
+"BYTE": 1 -> ByteWise
+"&": 1 -> Serenity Spa & Wellness
+"bill": 0 (no results)
+"xyz": 0 (no results)
+" ": 8 -> Spark Electric Solutions ; Serenity Spa & Wellness ; Elevate Education ; Pixel Playground ; Nimbus Data Storage ; ByteWise ; EcoFuel Energy ; Aqua Flow Utilities
+"  flow  ": 1 -> Aqua Flow Utilities
+"spa & w": 1 -> Serenity Spa & Wellness
+"Bills": 0 (no results)
+names without an a: ByteWise ; EcoFuel Energy
+
+=== STATUS filter (row status), Latest order ===
+paid: 4 -> Spark Electric Solutions $100.00 ; Serenity Spa & Wellness $30.00 ; Elevate Education $50.00 ; Pixel Playground $10.00 | sum $190.00
+dueSoon: 2 -> Nimbus Data Storage $9.99 ; ByteWise $49.99 | sum $59.98
+upcoming: 2 -> EcoFuel Energy $35.00 ; Aqua Flow Utilities $100.00 | sum $135.00
+not paid (the summary's Total Upcoming): Nimbus Data Storage ; ByteWise ; EcoFuel Energy ; Aqua Flow Utilities
+search 'e' + status upcoming, sort highest: Aqua Flow Utilities ; EcoFuel Energy
+search 'e' + status paid, sort a-to-z: Elevate Education ; Pixel Playground ; Serenity Spa & Wellness ; Spark Electric Solutions
+
+=== SEED VARIANTS ===
+seed: 8 bills; {"totalBills":"$384.98 (38498 cents, 8 bills)","paid":"4 ($190.00) = 19000 cents","totalUpcoming":"4 ($194.98) = 19498 cents","dueSoon":"2 ($59.98) = 5998 cents","rowStatusUpcomingOnly":"2 ($135.00)"}
+empty-pots: 8 bills; {"totalBills":"$384.98 (38498 cents, 8 bills)","paid":"4 ($190.00) = 19000 cents","totalUpcoming":"4 ($194.98) = 19498 cents","dueSoon":"2 ($59.98) = 5998 cents","rowStatusUpcomingOnly":"2 ($135.00)"}
+empty-budgets: 8 bills; {"totalBills":"$384.98 (38498 cents, 8 bills)","paid":"4 ($190.00) = 19000 cents","totalUpcoming":"4 ($194.98) = 19498 cents","dueSoon":"2 ($59.98) = 5998 cents","rowStatusUpcomingOnly":"2 ($135.00)"}
+few-transactions: 0 bills; {"totalBills":"$0.00 (0 cents, 0 bills)","paid":"0 ($0.00) = 0 cents","totalUpcoming":"0 ($0.00) = 0 cents","dueSoon":"0 ($0.00) = 0 cents","rowStatusUpcomingOnly":"0 ($0.00)"}
+no-recurring: 0 bills; {"totalBills":"$0.00 (0 cents, 0 bills)","paid":"0 ($0.00) = 0 cents","totalUpcoming":"0 ($0.00) = 0 cents","dueSoon":"0 ($0.00) = 0 cents","rowStatusUpcomingOnly":"0 ($0.00)"}
+empty-all: 0 bills; {"totalBills":"$0.00 (0 cents, 0 bills)","paid":"0 ($0.00) = 0 cents","totalUpcoming":"0 ($0.00) = 0 cents","dueSoon":"0 ($0.00) = 0 cents","rowStatusUpcomingOnly":"0 ($0.00)"}
+
+=== BOUNDARIES (hand-built fixtures through recurringBills, today 19 Aug 2026) ===
+day 24, July only -> Day24 | Monthly - 24th | $10.00 | dueSoon
+day 25, July only -> Day25 | Monthly - 25th | $10.00 | upcoming
+paid today at 23:59:59Z -> Late | Monthly - 19th | $10.00 | paid
+dated tomorrow, 20 Aug -> Tomorrow | Monthly - 20th | $10.00 | dueSoon
+day 10, July only (missed this month) -> Missed | Monthly - 10th | $10.00 | dueSoon
+day 31, July only -> Day31 | Monthly - 31st | $10.00 | upcoming
+recurring income +$20.00 -> Refund | Monthly - 28th | $20.00 | upcoming
+same day 21, latest order: alpha ; Alpha ; beta | oldest order: alpha ; Alpha ; beta
+
+=== ORDINALS 1-31 ===
+1st 2nd 3rd 4th 5th 6th 7th 8th 9th 10th 11th 12th 13th 14th 15th 16th 17th 18th 19th 20th 21st 22nd 23rd 24th 25th 26th 27th 28th 29th 30th 31st
+
+=== LENGTHS ===
+longest bill name: Spark Electric Solutions 24 chars | widest amount: $100.00 | widest due text: Monthly - 11th
+names with & or no space: Serenity Spa & Wellness ; ByteWise
+
+=== TOOL DESCRIPTION length (at most 200, defineTool) ===
+192 chars: Lists the demo account's recurring bills, one per vendor, with status (paid, dueSoon, upcoming) and the totals. Optional name search, status and sort. Money in USD cents. Recurring Bills page.
+
+=== CONTRAST on white (WCAG 2.1 relative luminance) ===
+red (due soon amount, Due Soon summary row) #C94736 on white: 4.73:1
+green (paid due text, check icon) #277C78 on white: 4.95:1
+grey-500 (secondary text) #696868 on white: 5.55:1
+grey-900 (text) #201F24 on white: 16.37:1
+white on grey-900 (Total Bills card): 16.37:1
