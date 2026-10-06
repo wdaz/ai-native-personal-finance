@@ -79,3 +79,26 @@ Found in this round, outside this pull request (it edits only `webmcp-tools.md`,
   it is Pots only, added by the first Pots build task.
 - `release-2-handoffs.md` H18: "the circumference, the segments' dash values and `Donut.tsx`'s `INNER_SCALE`
   follows" — the verb should be "follow".
+
+## The owner's answers to WM-Q2 and WM-Q3 (2026-10-06; applied in v1.0.12)
+
+WM-Q2/WM-Q3 answered 2026-10-06 ("2a 3a": option (a) of each), applied in v1.0.12 / #102. WM-Q2 (a) is
+`write-path.md` v1.0.2 (pull request #102, merged 2026-10-06T04:55:35Z, `gh pr view 102 --json state,mergedAt`),
+which §4 now cites; the `write-path.md` §6 bullet of the list above is done by it. WM-Q3 (a) is written into §7's E2E
+row of `webmcp-tools.md`; §2.3 and §4 point to it. `develop` was merged in again first (plan D11; `ec29cdc`, no
+conflict). This pull request edits only `webmcp-tools.md`, H3's Done cell and this file, so WM-Q3's "the same change
+names the new check for `recurring-bills.md` §7's row and for H11 (4)" is met by naming it here.
+
+### For other PRs / Task C
+
+- `release-2-handoffs.md` H11 (4): say which page build moves the placeholder E2E check (§7's "polyfill · 0 on a
+  placeholder page" and the zero tools after a client navigation) — each build task moves it to a page that still
+  registers no tools — and that the build task that builds the last Release 2 page replaces it with the check of
+  `webmcp-tools.md` §9 WM-Q3 (a): after a client navigation between two built pages (for example Overview → Budgets),
+  poll until the names `getTools()` returns equal exactly the destination page's tools, none of the first page's
+  left, and the indicator reads "polyfill · N" for that page.
+- `recurring-bills.md` §7's WebMCP row ("a client navigation from `/recurring-bills` to another page by the main
+  navigation → `[data-webmcp]` absent and 0 tools") has the same "0 tools" end state and follows WM-Q3 (a) at the
+  last page's build, as `webmcp-tools.md` §7 does; an amendment of a merged spec in its own pull request.
+- WM-Q2/WM-Q3 answered 2026-10-06, applied in v1.0.12 / #102: nothing in `user-stories.md` changes (US-40's header
+  is read as `write-path.md` v1.0.2 §6 says).
