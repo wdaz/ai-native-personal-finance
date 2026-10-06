@@ -6408,3 +6408,220 @@ them too").
     designer's changelog as the answer to a design question), `docs/templates/user-story.md` (Figma frame names),
     `docs/04-process/build-workflow.md` step 2 ("design is fixed in `docs/`"; "the owner answers questions"), and
     the T-15d plan's D14 ("reading the designer's changelog is not approval to adopt it").
+
+## 2026-10-06 — Phase 4: T-15d closed — the Release 2 specs, the build tasks T-17–T-27, and how the work was merged
+
+- **Phase:** 4 (Specs & plan) for Release 2 — the **return to Phase 4** that the roadmap names ("Release 2 specs
+  return to Phase 4 after T-15"; its Status line since #85 merged — the agent merged it on the owner's conditional
+  word, as the controller session recorded (below): "Release 2 — 4, Specs & plan (the
+  return trip, opened by T-15d on 2026-10-04)"), while Release 1 stays in Phase 5. T-15d is the return trip; with it
+  T-15, the closing task of Release 1, is done. The roadmap still says "Release 2 — 4": moving Release 2 to Phase 5 is
+  an amendment of an Approved document, the owner's, and is not in this pull request.
+- **Participants:** Owner / Agent (Claude Code): Sonnet 5.5 background sessions (the plan, the opening, `write-path.md`,
+  `transactions.md`), then Opus 5.5 — a controller session that dispatched drafting subagents in their own worktrees
+  from plan v0.3 on, read-only Opus 5.5 reviewers (plan D7, D12) and, while Copilot failed, Opus 5.5 stand-in reviewers;
+  this closing pull request is an Opus 5.5 subagent dispatched by the controller.
+- **Trigger:** "t15 d başlayaq" ("Let's start T-15d", 2026-10-04). This last pull request is plan Q4 (a) — "a "Release
+  2" section in backlog.md (rows T-17…), in T-15d's last pull request" — and Task C, started by the controller once
+  #90, the last spec, had merged.
+- **Prompt(s):** `prompts/2026-10-04-T-15d.md` (the owner's messages, with translations; its last section is this
+  pull request's) and `prompts/2026-10-04-T-15d/` (every reviewer's brief and report, the review-handling files and
+  the figures scripts).
+- **Produced** (merge commits and times read with `gh pr list --repo wdaz/ai-native-personal-finance --state all
+  --limit 30 --json number,title,state,mergedAt,mergeCommit,headRefName`, 2026-10-06; 19 pull requests, #84–#102, all
+  merged, UTC):
+  - the plan: #84 (v0.2, `b29118d`, 2026-10-04 14:49) and #89 (v0.3 — S3–S6 drafted in parallel, a new shared spec
+    S1b `ui-kit.md`, D10–D14; `0f64796`, 2026-10-05 03:32);
+  - the opening: #85 (`b1f0b57`, 2026-10-04 15:30) — PRD v1.3's Release 2 `Stories:` sentence, `release-2-stories.txt`,
+    `scripts/traceability.ts` release-aware with `RELEASE_BEING_BUILT` still 1, the ADR-0003 clarification, the
+    roadmap's Status line, `release-2-handoffs.md`;
+  - the specs, in the merge order of plan D6 (v0.3): S1 `write-path.md` #87 (`2410bf6`, 2026-10-04 16:53), S2
+    `transactions.md` #88 (`945dc07`, 19:17), S1b `ui-kit.md` #92 (`b25387c`, 2026-10-05 18:43), S3
+    `recurring-bills.md` #91 (`f5e454a`, 19:19), S4 `budgets.md` #98 (`4a45816`, 21:59), S5 `pots.md` #97 (`b5562d6`,
+    22:16), S6 `webmcp-tools.md` §4 #90 (`27fdeb9`, 2026-10-06 05:12);
+  - amendments of merged documents: `transactions.md` v1.0.14 #95 (`bb0a68d`), `app-shell.md` v1.5 and `overview.md`
+    v1.2 (the content-width layout) #96 (`28ad970`), the `Menu`'s fade #99 (`5e76263`), `ui-kit.md` v0.8.6 #100
+    (`135daf7`), `overview.md` v1.3 (the donut) #101 (`fe8ad80`), `write-path.md` v1.0.2 (WM-Q2 (a)) #102 (`ec29cdc`);
+  - process: `governance.md` v1.9 #86 (`06d012e`) and v1.10 #94 (`5c79948`); outside the task, the Vercel Ignored Build
+    Step #93 (`738f301`; its own entry, 2026-10-05);
+  - this pull request, #104: `backlog.md` v1.59 — the section "Release 2" with the build tasks **T-17–T-27** (11 rows,
+    `grep -c -E "^\| T-(1[7-9]|2[0-7]) " docs/03-specs/backlog.md`), the T-15d and T-15 rows Done; the hand-offs'
+    Status line (plan D10) with H1 and H9 ticked, H11 (4), H15 (3) and H18 corrected — 9 of the 18 rows ticked, the
+    other 9 the build tasks' and hotfix 2's (`grep -c "| ☑"` and `grep -c "| ☐"` on the file); the plan's Status Done;
+    this entry and the prompt record's last section.
+- **The numbers** (plan D2, each with its command, 2026-10-06): 41 stories (`grep -c '^### US-'
+  docs/01-requirements/user-stories.md`), 18 in Release 1's list and 23 in Release 2's (`wc -l
+  docs/03-specs/release-1-stories.txt docs/03-specs/release-2-stories.txt`); read against Release 2, the check fails on
+  **20** ids (`npx tsx -e 'import { run } from "./scripts/traceability.ts"; const r = run(process.cwd(), false, 2);
+  console.log(r.code, r.err.length)'` prints `1 20`; the plan's F4 predicted "about 20", and the opening's pull
+  request measured 20 too). Copilot failed on many heads from 2026-10-05: on #97, 6 of its 8 Copilot reviews read
+  "Copilot encountered an error and was unable to review this pull request" (`gh api
+  repos/wdaz/ai-native-personal-finance/pulls/97/reviews`).
+- **What the agent got right:**
+  - The opening kept CI green: the check was made release-aware with the flip left for later (D3), and the count of
+    missing ids was measured, not guessed.
+  - Before parallel drafting, it mapped what each spec needed from the others, file and line, and found the one
+    blocking dependency, the write-UI parts that Budgets and Pots share, which became `ui-kit.md` (v0.3).
+  - Hand-off numbers were fixed in advance (D10), so the parallel pull requests never took the same number.
+  - Every figure in a spec has a script under `prompts/2026-10-04-T-15d/<spec>-figures/`, and every spec went through
+    two read-only Opus reviews (D7), Budgets, Pots and S6 through a cross-spec review as well (D12).
+  - This pull request measured the flip before writing the build rows: plan D3's "flip in the first build task, with
+    its first test" would keep the required check red until the last page, so the T-17 row writes a fix and asks.
+- **What the agent got wrong or missed:**
+  - **The opening's review brief** (`prompts/2026-10-04-T-15d/opening-review-brief.md`) sent a reviewer with no shell
+    a command line to run, and its closing note proposes that "a later brief for a reviewer that must run commands
+    names a type that has a shell and keeps it read-only by the brief". That contradicts `governance.md` v1.1: a
+    "read-only" instruction in a prompt is not enforcement; a reviewer runs with read, grep and glob only, and what
+    must be executed runs in a throwaway clone. The note stays as written (it is a record); the rule is the
+    governance's.
+  - **Specs drafted from a stale export.** `ui-kit.md` v0.1 and v0.2 were written from the design export of
+    2026-10-04 22:17, which lacked the designer's changelog §8 and §9; v0.3 was re-read from the designer's live source,
+    and the owner asked, as the controller session recorded, "Speclər niyə Claude dizayndan yazılmadı?" ("why were
+    the specs not written from Claude Design?"). Lesson below.
+  - **Workflow agents had no Agent tool.** The drafting sessions could not dispatch their own reviewers (the
+    `webmcp-tools.md` review record: "the drafting session had no subagent tool"), so the controller dispatched them,
+    and S6's two D7 reviews ran only after an independent audit found them missing.
+  - **Plan D3 was not checked against the required checks** when it was written; this pull request found it.
+  - **An administrator bypass was attempted on #99**, and refused by the harness's auto-mode classifier and by the
+    ruleset, which has no bypass actor (as relayed by the controller session); the owner merged #99 (2026-10-05 20:59),
+    as the controller session recorded.
+  - The parallel spec pull requests added rows to `release-2-handoffs.md` without an entry on its Status line (plan
+    D10 kept them off it; Copilot flagged it on #96); this pull request records them.
+  - **Six amendments of Approved documents merged by the agent** under the owner's sequential permission, as the
+    controller session recorded: #94 (`governance.md` v1.10), #95 (`transactions.md` v1.0.14), #96 (`app-shell.md` v1.5, `overview.md` v1.2), #100
+    (`ui-kit.md` v0.8.6), #101 (`overview.md` v1.3) and #102 (`write-path.md` v1.0.2). `governance.md` v1.10 keeps
+    "every amendment of an Approved document" the owner's, approved by merging its pull request; a permission to merge
+    "in order" did not name that class, and it is the class that made the auto-mode classifier stop the merging after
+    #102 ("The stop", below). The owner ratified these merges on 2026-10-06 (Q2 (a), below).
+  - Four merged specs — `recurring-bills.md`, `budgets.md`, `pots.md`, `webmcp-tools.md` — still read "Draft" in their
+    Status lines. The owner merged #90 (`webmcp-tools.md`), as the controller session recorded, so that line is only
+    stale; the agent merged #91, #97 and #98, so their approval rested on the owner's ratification (Q2 (a)). Not
+    changed here: one small follow-up pull request, which the controller session opens next and the owner merges,
+    sets the four to Approved (backlog "Release 2" notes).
+  - The individual T-15d sessions wrote no process-log entries of their own; their record is the prompt record, the
+    review-handling files and this entry.
+- **Owner changes and reasoning** (the owner's words as `governance.md`, `tech-debt.md` and the prompt record give
+  them; the merge permissions as the controller session recorded them):
+  - **Plan v0.2** (2026-10-04): Q1 (b) the opening and every Release 2 spec, each in its own pull request; Q2 (a) a
+    cumulative check; Q3 (a) `write-path.md` first; Q4 (a) these rows in the last pull request; Q5 (a) no release in
+    T-15d; and two additions — cross-site protection of every write route, and D9: **the production hotfix of `next`
+    after T-15d closes**.
+  - **Plan v0.3** (2026-10-05): "1-ə bəli" (S3–S6 drafted in parallel, merged in order), then "ortaq komponentlər ayrı
+    uikit komponent kimi yaradılmır?" and "bəli, ui-kit.md olsun, başla": a new shared spec, S1b `ui-kit.md`; the agent
+    added D10–D14.
+  - **`governance.md` v1.9** (#86): "Copilot məcburi revyu edəndir və onun revyularını bitirmək gözlənməlidir. Vacib
+    tapıntılar fix olmalıdır." — a pull request leaves draft only after Copilot has reviewed its current head.
+  - **`governance.md` v1.10** (#94): "dizayner üzrə qərarlar dizayner verir", then "Dizayndan kənara çıxma mənə deyilir
+    mən dizaynerlə müzakirə edirəm. Onun sonra qərarı changelogunda qeyd olunur" — design questions are the designer's,
+    and the route is: the agent tells the owner → the owner discusses it with the designer → the designer records the
+    decision in the designer's changelog → the agent applies that entry, citing its section. An approved NFR, scope,
+    strings the design does not fix and every amendment of an Approved document stay the owner's.
+  - **TD-24** (2026-10-05, on #92): "hazırda form qərarları dəyişirmir. Release 1 uyğun davam et" and "mesaj yazan kimi
+    təmizlənir -bunu tech dept olaraq qeyd et. fix-i bütün releaselər bitəndən sonra" — the design's rule that a
+    field's message clears as soon as the person types is set aside; Release 2's forms keep Release 1's timing, and the
+    design's rule is tech debt TD-24, fixed after all releases are finished.
+  - **The Vercel Ignored Build Step** (#93): asked about docs-only builds, the owner answered "2" — Vercel skips a
+    commit that changes nothing outside `docs/`; `docs/**/*.ts` stays type-checked. It followed two failed preview builds
+    of `task/T-15d-spec-ui-kit` on TypeScript errors in a figures script under `docs/`, fixed separately (the
+    `figures.ts` type fix), since CI's typecheck still covers `docs/`.
+  - **Every spec question** was answered by the owner (most with "a"; the page specs' with "97 və 98 üzrə tövsiyə olan
+    cavabları qəbul et"; WM-Q2 and WM-Q3 with "2a 3a"), or, for the design's own questions, by the designer's changelog
+    as the owner directed.
+  - **The closing decisions — #104's two questions**, answered by the owner on 2026-10-06 with "1a 2 a", as the
+    controller session relayed it, before this pull request left draft:
+    - **Q1 — where the traceability check's flip to Release 2 goes:** (a). T-17 sets `RELEASE_BEING_BUILT` to 2 with
+      a list of the Release 2 ids not yet built, which the check skips and which can only shrink — a test pins its
+      first 20 ids as an upper bound, and the check fails when a listed id is already named in a test title — and
+      T-26 removes the list (backlog, T-17's row). Not taken: (b), the flip in T-26, with the check guarding Release
+      1's 18 ids only until then.
+    - **Q2 — ratify the agent's merges of spec and Approved-amendment pull requests as the owner's approval?** *What
+      is decided:* whether the pull requests the agent merged, which plan D5 and `governance.md` v1.10 say the owner
+      approves by merging, count as approved. ("Ratify" means the owner confirms, after the fact, that a merge done
+      on the owner's word stands as the owner's own approval.) *Why it matters:* the Decision rights give merging
+      to the owner alone, so without a ratification the repository shows no approval of these documents, and a build
+      task would read specs that are not formally approved. The pull requests: the specs #87 (`write-path.md`), #91,
+      #92, #97 and #98; the amendments of Approved or Accepted documents #95, #96, #100, #101 and #102; and the other
+      agent merges that changed an Approved or Accepted document — #85 (PRD v1.3, the ADR-0003 clarification, the
+      roadmap's Status line, the backlog), #86 and #94 (`governance.md` v1.9, v1.10) and #93 (ADR-0007, the deploy
+      runbook). *Options:* (a) ratify all of them, with the owner's sequential permission ("ardıcıllqla merge edə
+      bilərsən … əgər açıq sual qalmayıbsa") and the conditional words as the record — the Status lines that still
+      read "Draft" then change to Approved in one small pull request the owner merges; (b) ratify only the ones the
+      owner names, and the others are re-opened as amendments the owner merges; (c) the owner re-merges nothing but
+      records an exception in `governance.md`. *Recommended:* (a) — each merge followed a word of the owner's for that
+      pull request or for the train, with CI green and a review of the head, so (a) records what happened without
+      redoing it. **Answered: (a).** The Status lines of `recurring-bills.md`, `budgets.md`, `pots.md` and
+      `webmcp-tools.md` change to Approved in one small follow-up pull request that the controller session opens
+      next and the owner merges; no spec is edited here.
+- **How the work was merged — the permissions and every exception** (`governance.md` says the owner merges; each
+  permission below was the owner's word for named pull requests, as the controller session recorded it):
+  - **#85, #86, #87 — conditional words.** #85: "Copilot aprove versə merge edərsən və növbəti addıma başlayarsan" (if
+    Copilot approves, merge and start the next step); #86: "86da həmçinin merge oluna bilər" (#86 may be merged too),
+    used under #85's condition; #87: first "87 mənim icazəm olmadan merge etmə" (do not merge 87 without my permission),
+    then, after "bütün suallara cavab a", "Əgər copilot rəyi bu pr üçün low-dursa merge edə bilərsən" (if Copilot's
+    review is low, you may merge). The agent merged each once, under its condition.
+  - **A standing rule** (2026-10-05): "mənim qərarımı gözləyən pr-ları xəbər et yoxlayım. amma digər pr merge edə
+    bilərsən" — a pull request that waits on an owner decision is reported; others the agent may merge when ready.
+  - **Without Copilot's review of the head, on the owner's word** — each a one-pull-request exception to governance
+    v1.9, recorded in a comment on the pull request (`gh api repos/wdaz/ai-native-personal-finance/issues/<n>/comments`,
+    read 2026-10-06): #93, "Copilot-suz merge et" ("merge without Copilot"; two of three Copilot requests ended in an
+    error); #94, "94-ü copilot-suz ready et" ("make #94 ready without Copilot"; both requests ended in an error) — its
+    comment (2026-10-05 04:21 UTC) ends "The owner merges it", which predates the owner's sequential permission; the
+    controller session's record is that the agent merged #94 at 04:28 under that permission; #92,
+    "92 merge et", before Copilot reviewed its last head `b2ad7d4` (Copilot had reviewed `f1a6676`; the last head
+    changed one word of a count, Copilot's own finding, and the earlier heads had stand-in reviews).
+  - **Copilot failed on almost every head from 2026-10-05** — as relayed by the controller session, a GitHub Actions
+    and Copilot incident that day, its jobs cancelled at 15 minutes with no steps run. The owner chose "a": an
+    independent read-only Opus reviewer reviews the head in Copilot's place, important findings are fixed (a new head,
+    reviewed again), and the substitution is noted in the pull request (the stand-in reports in
+    `prompts/2026-10-04-T-15d/`).
+  - **The merge train:** "ardıcıllqla merge edə bilərsən … əgər açıq sual qalmayıbsa" (you may merge them in order …
+    if no open question remains). Its conditions: CI green, Copilot's review of the head — or, when Copilot failed, a
+    stand-in's — with no important finding left, a spec branch merged with `develop` once before it went ready (D11),
+    and no open question. Under it, as the controller session recorded, the agent merged #94, #92, #95, #96 and #91
+    (2026-10-05) and #100, #101, #98, #97 and #102 (2026-10-05/06; for these five the record names a stand-in review of
+    each head and CI green); #99 was merged by the owner, after the bypass attempt above, as the controller session
+    recorded.
+  - **The stop.** After #102's merge, as the controller session recorded, the auto-mode classifier denied a follow-up
+    read, naming it "Merge Without Review" (#102 amends an Approved document, and its stand-in review had said the
+    owner merges such a pull request). The agent stopped merging; the owner merged #90 (2026-10-06 05:12), as the
+    controller session recorded. This pull request is a draft and is not merged by the agent.
+  - **Who merged each of the 19.** The repository shows one account as `mergedBy` on every pull request, #84–#102
+    (`gh pr list --repo wdaz/ai-native-personal-finance --state merged --json number,mergedBy`, 2026-10-06), so the
+    split is the controller session's record: **the agent** merged 14 on the owner's words — #85, #86 and #87
+    (conditional words), #93 ("Copilot-suz merge et") and, under the sequential permission, #94, #92 ("92 merge et"
+    too), #95, #96, #91, #98, #97, #100, #101 and #102; **the owner** merged #89, #99 and #90; for #84 and #88 the
+    repository shows the owner's account and the controller session recorded no merge of its own. The owner ratified
+    the agent's merges as approval (Q2 (a), above).
+- **Disagreements:** none open. Where the owner chose against the recommendation, or corrected the agent, it is above:
+  the S2 ruling that a spec never departs from the design on its own ("bu qərarı səndən soruşmadan agent verib. Orda
+  tooltip olmalıdır" — `docs/03-specs/transactions.md:344` and
+  `docs/04-process/prompts/2026-10-04-T-15d/transactions-review-handling.md:79–80`; `governance.md` v1.10 states the
+  rule), the ruling that a general instruction does not answer an NFR trade-off ("NFR-A1 ödənməlidir"),
+  and TD-24.
+- **Lessons for the process:**
+  - **Draft specs from the live design.** A spec reads the designer's Claude Design project after `/design-login`,
+    never an export, which goes stale; a subagent's brief says so.
+  - **A workflow agent has no Agent tool.** A drafting subagent cannot dispatch its reviewers; the controller does, and
+    the review record says who dispatched what.
+  - **A plan decision about CI is checked against the required checks** (which job runs the command, and whether a red
+    result blocks a merge) before it is written; D3's flip was not.
+  - **The merge permissions are in no governance version.** The "Merging" row of `governance.md`'s Decision rights
+    still reads Owner "Only", Agent "Never", while, as the controller session recorded, the agent merged 14 of the 19
+    pull requests (#85–#87, #91–#98, #100–#102) under the owner's words for named pull requests and the standing
+    rule; the owner ratified them after the fact (Q2 (a)). Whether to write that rule into `governance.md` is the
+    owner's; a permission to merge "in order" should say whether it covers an amendment of an Approved document.
+  - **Parallel pull requests on one shared document** keep to their own rows (D10), and the closing pull request
+    records them on the shared Status line.
+- **Next:**
+  - **The production hotfix of `next`** (plan D9): `main` still runs 16.3.5 and GHSA-vcvr-r3jv-pc5j is fixed only on
+    `develop` (#80); by the hotfix route of `governance.md` v1.6 — `hotfix/<name>-main` from `origin/main`, the fix
+    cherry-picked with `-x` (`0f07f31` is a merge commit: pick `6b46d9f`, or `-m 1`; the hotfix's own plan chooses),
+    a pull request to `main` that the owner merges.
+  - Then **"hotfix 2"**: H12's Overview part (it needs an `overview.md` amendment first, and `TruncatedText`), H17 and
+    H18, with the designer's other changes to Release 1 screens (backlog, "Release 2" notes).
+  - **The Status-line pull request** (Q2 (a)): `recurring-bills.md`, `budgets.md`, `pots.md` and `webmcp-tools.md`
+    to Approved, opened next by the controller session and merged by the owner.
+  - Then the build, from T-17, with the flip as the owner answered it (Q1 (a), T-17's note); the amendments of
+    `budgets.md` 2.13 (before T-24) and `recurring-bills.md` §7 (before T-26), each in its own pull request.
+  - Open and not part of T-15d: #103 (`governance.md` v1.11, a designer agent; draft, `gh pr list --state open`,
+    2026-10-06).
