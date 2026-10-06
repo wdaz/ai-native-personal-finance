@@ -102,3 +102,8 @@ names the new check for `recurring-bills.md` §7's row and for H11 (4)" is met b
   last page's build, as `webmcp-tools.md` §7 does; an amendment of a merged spec in its own pull request.
 - WM-Q2/WM-Q3 answered 2026-10-06, applied in v1.0.12 / #102: nothing in `user-stories.md` changes (US-40's header
   is read as `write-path.md` v1.0.2 §6 says).
+- Carried forward from the list above (the stand-in review of `d209820` found them missing here): `budgets.md` 2.13's
+  `delete_budget` description says `busy` "if a dialog is already open", narrower than `ui-kit.md` 2.3 item 2;
+  `release-2-handoffs.md` H1 and H9 have every resolver merged but are still ☐; H15 (3) says `--duration-preview` is
+  "each added once as in (1)" while H16 says it is Pots only; H18's "`INNER_SCALE` follows" should read "follow". The
+  `write-path.md` §6 `id` wording of the list above is done by #102.
