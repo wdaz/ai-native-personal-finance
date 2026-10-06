@@ -60,8 +60,10 @@ It runs in two modes, and the second needs the owner's approval named in its pro
 4. **The designer agent applies, in *apply* mode.** Only after "OWNER APPROVED: <the decision>" it makes
    the smallest change in the designer's Claude Design project and records the decision in the designer's
    changelog, stated as a decision. It returns the changelog section and the files changed. Only the
-   designer agent writes to the designer's Claude Design project; the tool that holds the agent enforces
-   this by refusing the write calls of every other agent.
+   designer agent writes to the designer's Claude Design project: the mod that holds the agent refuses
+   every Claude Design tool that changes the project (a write, a delete, a copy, a sharing or member
+   change) from any other agent, and one added later until it is listed as read-only. It does not hold
+   the owner's own `/design-sync`, which stays outside it.
 5. **The agent cites the answer**, naming the changelog's section (for example "the designer's
    changelog §8a"), in the spec, the pull request and the code. A changelog entry that is a proposal, an
    option or a note to discuss, not stated as a decision, is not yet the answer, and the question stays

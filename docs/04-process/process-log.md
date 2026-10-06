@@ -6432,19 +6432,23 @@ them too").
   `build-workflow.md` v1.4 (a rule of thumb for the build); this entry. Outside the repository, on the
   owner's machine: the mod `designer-agent` (`~/.claude/dev-mods/…/designer-agent/`) — a `designer`
   subagent type with a two-mode prompt (*propose* writes nothing; *apply* only after "OWNER APPROVED:"), a
-  session rule telling the main chat when to ask it, and a `tool.call` guard that refuses
-  `write_files`, `delete_files` and `copy_files` on the Claude Design project from every agent but the
-  designer. Its seven tests pass (`claude plugin test`); the project id is a `userConfig` field, not in the
-  mod's source.
+  session rule telling the main chat when to ask it, and a `tool.call` guard that refuses every Claude
+  Design tool except a short read-only list (so a write, a delete, a copy, a sharing or member change, and a
+  tool added later) from every agent but the designer. Its thirteen tests pass (`claude plugin test`); the
+  project id is a `userConfig` field, not in the mod's source.
 - **What the agent got right:** it read `governance.md` v1.10 first and saw that the owner's choice changes
   its steps 1 and 2 ("tells the owner, does not put the question to the designer"), so it raised the
   conflict in the design it showed, and did not write a mod that broke the rule; it kept the owner's four
   reservations (NFR, scope, strings the design does not fix, Approved documents) unchanged.
 - **What the agent got wrong or missed:** not yet known; for the owner's review. Not verified in a live
-  session: that the persona's tool allowlist reaches the Claude Design tools (they are deferred tools in
-  this session), that `SendMessage` resumes the persona between *propose* and *apply*, and that a
-  subagent's brief carries the session rule (the rule is written for the main chat; a subagent's brief
-  carries `DESIGN-Q` by the controller's hand).
+  session: that the persona can load the Claude Design tools (they are deferred; its allowlist has
+  `ToolSearch` and its prompt loads them first, which no test reaches), that `SendMessage` resumes the
+  persona between *propose* and *apply*, and that a subagent's brief carries the session rule (the rule is
+  written for the main chat; a subagent's brief carries `DESIGN-Q` by the controller's hand). The mod
+  also needs the owner's setup before any session loads it: the project id in the plugin's settings and a
+  folder that every session reads (the folder it was written in belongs to the session that wrote it).
+  The first draft of this text claimed a guard of three tools; the agent's own review found the others
+  (sharing, members, conversation) unguarded, and the guard now covers all but a read-only list.
 - **Owner changes and reasoning:** the three answers above.
 - **Disagreements:** none.
 - **Lessons for the process:** "apply only after the owner approved" is held by the persona's prompt and the
