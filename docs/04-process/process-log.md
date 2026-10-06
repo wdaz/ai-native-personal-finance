@@ -6447,16 +6447,23 @@ them too").
   written for the main chat; a subagent's brief carries `DESIGN-Q` by the controller's hand). The mod
   is installed at the user scope from a local marketplace on the owner's machine (the owner's choice:
   "Local marketplace"; the owner noted that such a marketplace is reachable on this computer only, so
-  another computer needs the same install), with the project id set through `claude plugin configure`. It
-  loads from the next session on; a session already running does not have the agent type, so the live
-  *propose* test has not run yet.
+  another computer needs the same install), with the project id set through `claude plugin configure`. A
+  read-only *propose* smoke test then ran in the same session once the agent type appeared: the persona
+  loaded the Claude Design tools with `ToolSearch`, read the designer's changelog (its latest section was
+  §16) and listed the project's files; the controller compared the etag of all 47 files before and after,
+  and none changed. What that test did not reach: `write_files` (the persona reports that the tool asks
+  for a one-time project write approval at the first write, so the first *apply* may stop there), and
+  `SendMessage` resuming the persona.
   The first draft of this text claimed a guard of three tools; the agent's own review found the others
   (sharing, members, conversation) unguarded, and the guard now covers all but a read-only list.
 - **Owner changes and reasoning:** the three answers above.
 - **Disagreements:** none.
 - **Lessons for the process:** "apply only after the owner approved" is held by the persona's prompt and the
   controller's call, not by the tool: the guard knows *who* writes, not *which mode* it is in. A write by the
-  designer agent in *propose* mode would pass it.
+  designer agent in *propose* mode would pass it. The check that catches it is after the fact: compare
+  the etags of the project's files (`list_files`) before and after a *propose* run, as the smoke test did.
+  A guard that makes the owner's approval a condition of the write, not a line in a prompt, is not built;
+  it is offered to the owner.
 - **Next:**
   - The owner reviews the draft pull request and merges it if the route is right; an open question for the
     owner: may the owner still take a question to the human designer in person (the pull request says yes,
