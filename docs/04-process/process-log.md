@@ -6443,7 +6443,7 @@ them too").
     (`135daf7`), `overview.md` v1.3 (the donut) #101 (`fe8ad80`), `write-path.md` v1.0.2 (WM-Q2 (a)) #102 (`ec29cdc`);
   - process: `governance.md` v1.9 #86 (`06d012e`) and v1.10 #94 (`5c79948`); outside the task, the Vercel Ignored Build
     Step #93 (`738f301`; its own entry, 2026-10-05);
-  - this pull request, #NNN: `backlog.md` v1.59 — the section "Release 2" with the build tasks **T-17–T-27** (11 rows,
+  - this pull request, #104: `backlog.md` v1.59 — the section "Release 2" with the build tasks **T-17–T-27** (11 rows,
     `grep -c -E "^\| T-(1[7-9]|2[0-7]) " docs/03-specs/backlog.md`), the T-15d and T-15 rows Done; the hand-offs'
     Status line (plan D10) with H1 and H9 ticked, H11 (4), H15 (3) and H18 corrected — 9 of the 18 rows ticked, the
     other 9 the build tasks' and hotfix 2's (`grep -c "| ☑"` and `grep -c "| ☐"` on the file); the plan's Status Done;
