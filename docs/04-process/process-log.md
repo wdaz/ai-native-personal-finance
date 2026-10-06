@@ -6408,3 +6408,53 @@ them too").
     designer's changelog as the answer to a design question), `docs/templates/user-story.md` (Figma frame names),
     `docs/04-process/build-workflow.md` step 2 ("design is fixed in `docs/`"; "the owner answers questions"), and
     the T-15d plan's D14 ("reading the designer's changelog is not approval to adopt it").
+
+## 2026-10-06 — Phase 4–6: the designer agent decides design questions in every phase (governance v1.11)
+
+- **Phase:** 4–6 (Specs & plan, Build); a process change in its own pull request
+  (`docs/governance-designer-agent`), with a Claude Code mod that carries it out.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5.5, a background session)
+- **Trigger:** the owner's request "I want to create a designer agent mode", then, after the agent's
+  questions: the designer's decisions are needed when a spec is written, and each time Claude Design has to
+  change; the persona is to take the designer's role and report the decisions to the main chat. Two
+  answers: "Özü qərar verir, sən təsdiqləyirsən" ("it decides itself, you confirm") and "bu həmçinin kod
+  yazma prosesindədə çıxan qərarlarda iştirak edir. Nə zaman dizayn qərarı lazımdırsa. Tək spec yazarkən
+  yox. Bütün proses vaxtı" ("it also takes part in the decisions that come up while code is written:
+  whenever a design decision is needed, not only when a spec is written, but during the whole process").
+  The owner chose a mod over an agent file in the repository ("mod"), and chose to include this governance
+  change in the same work ("2 daxil").
+- **Prompt(s):** the conversation in this session (not saved under `prompts/`); the owner's words are
+  quoted above.
+- **Produced:** `governance.md` v1.11 (the "Design questions" section is now a five-step route through the
+  designer agent in every phase; the v1.10 route stays for where the agent is not available or the owner
+  takes a question to the designer in person; an implementer subagent returns `DESIGN-Q` instead of
+  choosing; a decision that contradicts an Approved spec goes to an amendment pull request first);
+  `build-workflow.md` v1.4 (a rule of thumb for the build); this entry. Outside the repository, on the
+  owner's machine: the mod `designer-agent` (`~/.claude/dev-mods/…/designer-agent/`) — a `designer`
+  subagent type with a two-mode prompt (*propose* writes nothing; *apply* only after "OWNER APPROVED:"), a
+  session rule telling the main chat when to ask it, and a `tool.call` guard that refuses
+  `write_files`, `delete_files` and `copy_files` on the Claude Design project from every agent but the
+  designer. Its seven tests pass (`claude plugin test`); the project id is a `userConfig` field, not in the
+  mod's source.
+- **What the agent got right:** it read `governance.md` v1.10 first and saw that the owner's choice changes
+  its steps 1 and 2 ("tells the owner, does not put the question to the designer"), so it raised the
+  conflict in the design it showed, and did not write a mod that broke the rule; it kept the owner's four
+  reservations (NFR, scope, strings the design does not fix, Approved documents) unchanged.
+- **What the agent got wrong or missed:** not yet known; for the owner's review. Not verified in a live
+  session: that the persona's tool allowlist reaches the Claude Design tools (they are deferred tools in
+  this session), that `SendMessage` resumes the persona between *propose* and *apply*, and that a
+  subagent's brief carries the session rule (the rule is written for the main chat; a subagent's brief
+  carries `DESIGN-Q` by the controller's hand).
+- **Owner changes and reasoning:** the three answers above.
+- **Disagreements:** none.
+- **Lessons for the process:** "apply only after the owner approved" is held by the persona's prompt and the
+  controller's call, not by the tool: the guard knows *who* writes, not *which mode* it is in. A write by the
+  designer agent in *propose* mode would pass it.
+- **Next:**
+  - The owner reviews the draft pull request and merges it if the route is right; an open question for the
+    owner: may the owner still take a question to the human designer in person (the pull request says yes,
+    as the v1.10 route)?
+  - Still describing the earlier route, each for its own pull request: AGENTS.md §2 "Never fabricate" (names
+    "the Figma file"), `docs/templates/feature-spec.md` and `user-story.md`, and the T-15d plan's D14.
+  - Try the mod in a live session after the hot-reload question is answered, with one real design question,
+    before it is relied on.
