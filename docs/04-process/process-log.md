@@ -6445,8 +6445,11 @@ them too").
   `ToolSearch` and its prompt loads them first, which no test reaches), that `SendMessage` resumes the
   persona between *propose* and *apply*, and that a subagent's brief carries the session rule (the rule is
   written for the main chat; a subagent's brief carries `DESIGN-Q` by the controller's hand). The mod
-  also needs the owner's setup before any session loads it: the project id in the plugin's settings and a
-  folder that every session reads (the folder it was written in belongs to the session that wrote it).
+  is installed at the user scope from a local marketplace on the owner's machine (the owner's choice:
+  "Local marketplace"; the owner noted that such a marketplace is reachable on this computer only, so
+  another computer needs the same install), with the project id set through `claude plugin configure`. It
+  loads from the next session on; a session already running does not have the agent type, so the live
+  *propose* test has not run yet.
   The first draft of this text claimed a guard of three tools; the agent's own review found the others
   (sharing, members, conversation) unguarded, and the guard now covers all but a read-only list.
 - **Owner changes and reasoning:** the three answers above.
