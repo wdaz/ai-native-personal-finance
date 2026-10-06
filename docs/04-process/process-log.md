@@ -6475,8 +6475,8 @@ them too").
     governance's.
   - **Specs drafted from a stale export.** `ui-kit.md` v0.1 and v0.2 were written from the design export of
     2026-10-04 22:17, which lacked the designer's changelog §8 and §9; v0.3 was re-read from the designer's live source,
-    and the owner asked "Speclər niyə Claude dizayndan yazılmadı?" ("why were the specs not written from Claude
-    Design?"). Lesson below.
+    and the owner asked, as the controller session recorded, "Speclər niyə Claude dizayndan yazılmadı?" ("why were
+    the specs not written from Claude Design?"). Lesson below.
   - **Workflow agents had no Agent tool.** The drafting sessions could not dispatch their own reviewers (the
     `webmcp-tools.md` review record: "the drafting session had no subagent tool"), so the controller dispatched them,
     and S6's two D7 reviews ran only after an independent audit found them missing.
@@ -6525,24 +6525,30 @@ them too").
     review is low, you may merge). The agent merged each once, under its condition.
   - **A standing rule** (2026-10-05): "mənim qərarımı gözləyən pr-ları xəbər et yoxlayım. amma digər pr merge edə
     bilərsən" — a pull request that waits on an owner decision is reported; others the agent may merge when ready.
-  - **#93 and #92 merged without Copilot, on the owner's word** ("Copilot-suz merge et" for #93): Copilot's review of
-    their heads ended in an error, a one-pull-request exception to governance v1.9 each.
+  - **Without Copilot's review of the head, on the owner's word** — each a one-pull-request exception to governance
+    v1.9, recorded in a comment on the pull request (`gh api repos/wdaz/ai-native-personal-finance/issues/<n>/comments`,
+    read 2026-10-06): #93, "Copilot-suz merge et" ("merge without Copilot"; two of three Copilot requests ended in an
+    error); #94, "94-ü copilot-suz ready et" ("make #94 ready without Copilot"; both requests ended in an error); #92,
+    "92 merge et", before Copilot reviewed its last head `b2ad7d4` (Copilot had reviewed `f1a6676`; the last head
+    changed one word of a count, Copilot's own finding, and the earlier heads had stand-in reviews).
   - **Copilot failed on almost every head from 2026-10-05** — as relayed by the controller session, a GitHub Actions
     and Copilot incident that day, its jobs cancelled at 15 minutes with no steps run. The owner chose "a": an
     independent read-only Opus reviewer reviews the head in Copilot's place, important findings are fixed (a new head,
     reviewed again), and the substitution is noted in the pull request (the stand-in reports in
     `prompts/2026-10-04-T-15d/`).
   - **The merge train:** "ardıcıllqla merge edə bilərsən … əgər açıq sual qalmayıbsa" (you may merge them in order …
-    if no open question remains). Under it the agent merged #94, #92, #95, #96 and #91 (2026-10-05) and #100, #101,
-    #98, #97 and #102 (2026-10-05/06), each with CI green, one merge of `develop` before it went ready (D11), and a
-    stand-in review of its head; #99 was merged by the owner, after the bypass attempt above.
+    if no open question remains). Its conditions: CI green, Copilot's review of the head — or, when Copilot failed, a
+    stand-in's — with no important finding left, a spec branch merged with `develop` once before it went ready (D11),
+    and no open question. Under it, as the controller session recorded, the agent merged #94, #92, #95, #96 and #91
+    (2026-10-05) and #100, #101, #98, #97 and #102 (2026-10-05/06; for these five the record names a stand-in review of
+    each head and CI green); #99 was merged by the owner, after the bypass attempt above.
   - **The stop.** After #102's merge the auto-mode classifier denied a follow-up read, naming it "Merge Without Review"
     (#102 amends an Approved document, and its stand-in review had said the owner merges such a pull request). The
     agent stopped merging; the owner merged #90 (2026-10-06 05:12). This pull request is a draft and is not merged by
     the agent.
 - **Disagreements:** none open. Where the owner chose against the recommendation, or corrected the agent, it is above:
   the S2 ruling that a spec never departs from the design on its own ("bu qərarı səndən soruşmadan agent verib. Orda
-  tooltip olmalıdır"), the ruling that a general instruction does not answer an NFR trade-off ("NFR-A1 ödənməlidir"),
+  tooltip olmalıdır", as the controller session recorded it; `governance.md` v1.10 states the rule), the ruling that a general instruction does not answer an NFR trade-off ("NFR-A1 ödənməlidir"),
   and TD-24.
 - **Lessons for the process:**
   - **Draft specs from the live design.** A spec reads the designer's Claude Design project after `/design-login`,
