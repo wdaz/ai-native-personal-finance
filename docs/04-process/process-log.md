@@ -6487,8 +6487,8 @@ them too").
     as the controller session recorded.
   - The parallel spec pull requests added rows to `release-2-handoffs.md` without an entry on its Status line (plan
     D10 kept them off it; Copilot flagged it on #96); this pull request records them.
-  - **Five amendments of Approved documents merged by the agent** under the owner's sequential permission, as the
-    controller session recorded: #95 (`transactions.md` v1.0.14), #96 (`app-shell.md` v1.5, `overview.md` v1.2), #100
+  - **Six amendments of Approved documents merged by the agent** under the owner's sequential permission, as the
+    controller session recorded: #94 (`governance.md` v1.10), #95 (`transactions.md` v1.0.14), #96 (`app-shell.md` v1.5, `overview.md` v1.2), #100
     (`ui-kit.md` v0.8.6), #101 (`overview.md` v1.3) and #102 (`write-path.md` v1.0.2). `governance.md` v1.10 keeps
     "every amendment of an Approved document" the owner's, approved by merging its pull request; a permission to merge
     "in order" did not name that class, and it is the class that made the auto-mode classifier stop the merging after
