@@ -1,0 +1,21 @@
+/*
+ * SPEC-transactions 2.9 (the designer's changelog §17a, §17f): one white card, 12 px radius,
+ * padding 32 px (24 px 20 px below 768 px), 24 px between the toolbar, the results and the
+ * pagination. The card is a size container: the table's column tracks follow its width.
+ */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  min-inline-size: 0;
+  padding: var(--spacing-300) var(--spacing-250);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+  container-type: inline-size;
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--spacing-400);
+  }
+}
