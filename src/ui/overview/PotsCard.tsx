@@ -2,6 +2,7 @@ import { formatMoney } from "@/src/shared/money";
 import { COPY } from "@/src/shared/copy";
 import type { Theme } from "@/src/shared/enums";
 import { JarIcon } from "../icons/JarIcon";
+import { TruncatedText } from "../TruncatedText";
 import { CardLink } from "./CardLink";
 import { ThemeBar } from "./ThemeBar";
 import styles from "./PotsCard.module.css";
@@ -13,7 +14,8 @@ const GRID_CELLS = 4;
 /**
  * SPEC-overview §2.3, US-05: the total-saved tile and the first four pots. §2.7: with 1–3
  * pots the grid keeps its four cells and the unused ones stay blank; with none, the grid is
- * replaced by an empty-state message and a link to create one.
+ * replaced by an empty-state message and a link to create one. §2.3 v1.4 (H12): a pot's name
+ * stays on one line, cut with an ellipsis and its tooltip (`TruncatedText`).
  */
 export function PotsCard({ total, items }: { total: number; items: readonly PotItem[] }) {
   return (
@@ -34,7 +36,9 @@ export function PotsCard({ total, items }: { total: number; items: readonly PotI
               pot ? (
                 <li key={pot.id} className={styles.cell}>
                   <ThemeBar theme={pot.theme} />
-                  <p className={`text-preset-5 ${styles.name}`}>{pot.name}</p>
+                  <p className={`text-preset-5 ${styles.name}`}>
+                    <TruncatedText text={pot.name} />
+                  </p>
                   <p className={`text-preset-4-bold ${styles.value}`}>{formatMoney(pot.total)}</p>
                 </li>
               ) : (

@@ -35,9 +35,14 @@
   }
 }
 
-@media (min-width: 1024px) {
+/*
+ * SPEC-overview §6 v1.2 (H17): two columns once `<main>`'s content box (SPEC-app-shell §2.9)
+ * is 1060 px — the design's 608 px left column + 24 px gap + 428 px right column — not at a
+ * window width, so the cards stack while the expanded sidebar leaves too little room.
+ */
+@container (min-width: 1060px) {
   .grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: 608px minmax(0, 1fr);
     grid-template-rows: repeat(3, auto);
   }
 

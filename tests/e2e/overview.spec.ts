@@ -48,6 +48,35 @@ function cardLink(page: Page, heading: string, label: string) {
  */
 const FIGURES = seedFigures();
 
+/** The names `TruncatedText` renders in each card (SPEC-overview §2.3, §2.4 v1.4, H12). */
+const CARD_NAMES: Record<string, readonly string[]> = {
+  Pots: FIGURES.pots.items.slice(0, 4).map((pot) => pot.name),
+  Transactions: FIGURES.transactions.map((transaction) => transaction.name),
+};
+
+/**
+ * H12: a cut name is a tab stop after its card's link (SPEC-overview §2.3, §2.4 v1.4). Which
+ * names are cut depends on the width and the engine's font metrics (at 375 px on Chromium,
+ * two pots; at 1440 px none), so the layout is read here — `scrollWidth > clientWidth`, the
+ * component's own test — and each cut name is awaited as a focus stop, which also waits for
+ * the component to have measured itself after hydration.
+ */
+async function cutNames(page: Page, heading: string) {
+  const cut = [];
+  for (const name of CARD_NAMES[heading] ?? []) {
+    const text = page
+      .getByRole("heading", { name: heading, exact: true })
+      .locator("../..")
+      .getByText(name, { exact: true });
+    if (await text.evaluate((element) => element.scrollWidth > element.clientWidth)) {
+      const target = text.locator("..");
+      await expect(target).toHaveAttribute("tabindex", "0");
+      cut.push(target);
+    }
+  }
+  return cut;
+}
+
 async function seedVariant(request: import("@playwright/test").APIRequestContext, variant: string) {
   const response = await request.post("/api/test/seed", { data: { variant } });
   expect(response.status()).toBe(200);
@@ -218,6 +247,7 @@ test("US-32 AC1 AC3 keyboard walkthrough: the four card links, each reachable an
 
   for (const { heading, label } of CARD_LINKS) {
     await tabTo(page, cardLink(page, heading, label));
+    for (const name of await cutNames(page, heading)) await tabTo(page, name);
   }
 
   await cardLink(page, "Recurring Bills", "See Details ›").focus();
@@ -247,6 +277,7 @@ test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the four car
 
   for (const { heading, label } of CARD_LINKS) {
     await tabTo(page, cardLink(page, heading, label));
+    for (const name of await cutNames(page, heading)) await tabTo(page, name);
   }
 
   const bottomNav = page.getByRole("navigation", { name: "Main" });
@@ -254,6 +285,226 @@ test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the four car
 
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(`${baseURL}/overview`);
+});
+
+/** A card's own box: its heading sits in the card's `.header`, a child of the card. */
+function card(page: Page, heading: string) {
+  return page.getByRole("heading", { name: heading, exact: true }).locator("../..");
+}
+
+async function box(page: Page, heading: string) {
+  const rect = await card(page, heading).boundingBox();
+  if (rect === null) throw new Error(`no box for the ${heading} card`);
+  return rect;
+}
+
+/** SPEC-app-shell §2.9: `<main>`'s content-box width, what the grid's container query reads. */
+async function contentWidth(page: Page): Promise<number> {
+  return page.getByRole("main").evaluate((main) => {
+    const style = getComputedStyle(main);
+    return main.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  });
+}
+
+async function expectTwoColumns(page: Page) {
+  const [pots, transactions, budgets, bills] = await Promise.all(
+    ["Pots", "Transactions", "Budgets", "Recurring Bills"].map((name) => box(page, name)),
+  );
+  expect(budgets!.y).toBe(pots!.y);
+  expect(budgets!.x).toBeGreaterThan(pots!.x);
+  expect(bills!.x).toBeGreaterThan(transactions!.x);
+  expect(pots!.width).toBe(608);
+  return { pots: pots!, budgets: budgets! };
+}
+
+async function expectOneColumn(page: Page) {
+  const boxes = await Promise.all(
+    ["Pots", "Transactions", "Budgets", "Recurring Bills"].map((name) => box(page, name)),
+  );
+  for (let i = 1; i < boxes.length; i++) {
+    expect(boxes[i]!.x).toBe(boxes[0]!.x);
+    expect(boxes[i]!.y).toBeGreaterThan(boxes[i - 1]!.y);
+  }
+}
+
+test.describe("US-33 layout (SPEC-overview §6 v1.2, H17): two columns from a 1060 px content width", () => {
+  test("sidebar expanded: two columns at 1440 px (608 + 24 + 428), one column at 1439, 1100, 1024 and 768 px", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/overview");
+    await expect.poll(() => contentWidth(page)).toBe(1060);
+    const { pots, budgets } = await expectTwoColumns(page);
+    expect(budgets.x - (pots.x + pots.width)).toBe(24);
+    expect(budgets.width).toBe(428);
+
+    await page.setViewportSize({ width: 1439, height: 900 });
+    await expect.poll(() => contentWidth(page)).toBe(1059);
+    await expectOneColumn(page);
+
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await expect.poll(() => contentWidth(page)).toBe(720);
+    await expectOneColumn(page);
+    // The designer's changelog §14: at 1100 px the donut and legend overflowed the Budgets card.
+    const budgetsCard = await box(page, "Budgets");
+    const label = `Spent ${formatMoney(FIGURES.budgets.spent)} of ${formatMoney(FIGURES.budgets.limit)} limit`;
+    for (const inner of [
+      await page.getByRole("img", { name: label }).boundingBox(),
+      await card(page, "Budgets").getByRole("list").boundingBox(),
+    ]) {
+      expect(inner).not.toBeNull();
+      expect(inner!.x).toBeGreaterThanOrEqual(budgetsCard.x);
+      expect(inner!.x + inner!.width).toBeLessThanOrEqual(budgetsCard.x + budgetsCard.width);
+    }
+
+    for (const width of [1024, 768]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expectOneColumn(page);
+    }
+  });
+
+  test("sidebar collapsed: two columns at 1228 px, one at 1227 px; the left column stays 608 px at 1440 px; collapsing at 1300 px switches one column to two and back", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1300, height: 900 });
+    await page.goto("/overview");
+    await expectOneColumn(page);
+
+    await page.getByRole("button", { name: COPY.minimizeMenu }).click();
+    await expect.poll(() => contentWidth(page)).toBe(1132);
+    await expectTwoColumns(page);
+
+    await page.setViewportSize({ width: 1228, height: 900 });
+    await expect.poll(() => contentWidth(page)).toBe(1060);
+    await expectTwoColumns(page);
+
+    await page.setViewportSize({ width: 1227, height: 900 });
+    await expect.poll(() => contentWidth(page)).toBe(1059);
+    await expectOneColumn(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect.poll(() => contentWidth(page)).toBe(1272);
+    await expectTwoColumns(page);
+
+    await page.setViewportSize({ width: 1300, height: 900 });
+    await page.getByRole("button", { name: COPY.expandMenu }).click();
+    await expect.poll(() => contentWidth(page)).toBe(920);
+    await expectOneColumn(page);
+  });
+});
+
+test("US-07 AC1 AC2 donut look (SPEC-overview §4.4 v1.3, H18): inner ring 12 px at 0.75, outer 24 px; the empty ring beige-100", async ({
+  page,
+  request,
+}) => {
+  const label = `Spent ${formatMoney(FIGURES.budgets.spent)} of ${formatMoney(FIGURES.budgets.limit)} limit`;
+  await page.goto("/overview");
+  const circles = page.getByRole("img", { name: label }).locator("circle");
+  await expect(circles).toHaveCount(1 + FIGURES.budgets.items.length * 2);
+  const looks = await circles.evaluateAll((all) =>
+    all.map((circle) => {
+      const style = getComputedStyle(circle);
+      return { strokeWidth: style.strokeWidth, opacity: style.opacity };
+    }),
+  );
+  const count = FIGURES.budgets.items.length;
+  for (const inner of looks.slice(1, 1 + count)) {
+    expect(inner).toEqual({ strokeWidth: "12px", opacity: "0.75" });
+  }
+  for (const outer of looks.slice(1 + count)) expect(outer.strokeWidth).toBe("24px");
+
+  await seedVariant(request, "empty-budgets");
+  await loginViaApi(page);
+  await page.goto("/overview");
+  const empty = page.getByRole("img", { name: "Spent $0.00 of $0.00 limit" }).locator("circle");
+  await expect(empty).toHaveCount(1);
+  await expect(empty).toHaveCSS("stroke", "rgb(248, 244, 240)");
+});
+
+/**
+ * H12 (SPEC-overview §2.3, §2.4 v1.4; `TruncatedText`, SPEC-transactions 2.9). No seed name is
+ * cut at 1440 px, the width this block runs at (measured 2026-10-10), so the test narrows a
+ * name's own box through `element.style` (CSP-safe) and lets the component's `ResizeObserver`
+ * find it cut.
+ */
+async function cutName(page: Page, heading: string, name: string) {
+  const text = card(page, heading).getByText(name, { exact: true });
+  await text.locator("../..").evaluate((paragraph: HTMLElement) => {
+    paragraph.style.maxInlineSize = "24px";
+  });
+  const target = text.locator("..");
+  await expect(target).toHaveAttribute("tabindex", "0");
+  return target;
+}
+
+test.describe("US-33 US-32 cut names on Overview (H12): one line, an ellipsis and the tooltip", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("a cut pot name: the whole name in the DOM, hover shows the tooltip above it, the pointer can move onto it, Escape hides it", async ({
+    page,
+  }) => {
+    const pot = FIGURES.pots.items[0]!;
+    await page.goto("/overview");
+    const name = await cutName(page, "Pots", pot.name);
+    await expect(name).toHaveText(pot.name);
+    await expect(name.getByText(pot.name, { exact: true })).toHaveCSS("text-overflow", "ellipsis");
+
+    await name.hover();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toHaveText(pot.name);
+    await expect(name).toHaveAttribute("aria-describedby", (await tooltip.getAttribute("id"))!);
+    const nameBox = (await name.boundingBox())!;
+    const tipBox = (await tooltip.boundingBox())!;
+    expect(tipBox.y + tipBox.height).toBeLessThanOrEqual(nameBox.y - 8 + 0.5);
+    await expect(tooltip).toHaveCSS("background-color", GREY_900);
+    await expect(tooltip).toHaveCSS("position", "fixed");
+
+    await page.mouse.move(tipBox.x + tipBox.width / 2, tipBox.y + tipBox.height / 2, {
+      steps: 5,
+    });
+    await expect(tooltip).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(tooltip).toHaveCount(0);
+  });
+
+  test("a cut name is a tab stop right after its card's link, opens on focus, and its tap target is at least 44 px tall", async ({
+    page,
+  }) => {
+    const transaction = FIGURES.transactions[0]!;
+    await page.goto("/overview");
+    const name = await cutName(page, "Transactions", transaction.name);
+
+    await cardLink(page, "Transactions", "View All ›").focus();
+    await tabTo(page, name);
+    await expect(page.getByRole("tooltip")).toHaveText(transaction.name);
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+    await expect(name).toBeFocused();
+
+    const box = (await name.boundingBox())!;
+    const centre = box.y + box.height / 2;
+    for (const y of [centre - 21, centre + 21]) {
+      const hit = await page.evaluate(
+        ([x, y]) => document.elementFromPoint(x!, y!)?.closest("[tabindex='0']")?.textContent,
+        [box.x + 4, y],
+      );
+      expect(hit).toBe(transaction.name);
+    }
+  });
+
+  test.describe("touch", () => {
+    test.use({ hasTouch: true });
+
+    test("a tap shows the tooltip, a tap elsewhere hides it", async ({ page }) => {
+      const pot = FIGURES.pots.items[0]!;
+      await page.goto("/overview");
+      const name = await cutName(page, "Pots", pot.name);
+      await name.tap();
+      await expect(page.getByRole("tooltip")).toHaveText(pot.name);
+      await page.getByRole("heading", { name: "Overview", level: 1 }).tap();
+      await expect(page.getByRole("tooltip")).toHaveCount(0);
+    });
+  });
 });
 
 test.describe("US-34 hover and focus states (design-tokens.md 'Component states': tertiary)", () => {
