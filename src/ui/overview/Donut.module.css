@@ -35,6 +35,26 @@
   opacity: 0.75;
 }
 
+/*
+ * SPEC-budgets 2.3 (§9 BU-Q7 (a), the designer's changelog §18c): a segment's length and start
+ * move over --duration-progress after a write; nothing changes on Overview, whose numbers do
+ * not change while the page is open. Both are CSS properties in SVG 2, so the presentation
+ * attributes' change is transitioned.
+ */
+.outerSegment,
+.innerSegment {
+  transition:
+    stroke-dasharray var(--duration-progress) ease,
+    stroke-dashoffset var(--duration-progress) ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outerSegment,
+  .innerSegment {
+    transition: none;
+  }
+}
+
 .centre {
   position: absolute;
   inset: 0;
@@ -53,4 +73,23 @@
 .limit {
   margin: 0;
   color: var(--color-grey-500);
+}
+
+/*
+ * SPEC-budgets 2.3 (BU-11 (A)): the Budgets opt-in — the text stays inside the 144 px hole
+ * (2 × (78 − 12 / 2)); the fit table keeps each line within it, and within 128 px except the
+ * spent total over a one-line limit (the designer's changelog §31a).
+ */
+.fit {
+  padding-inline: calc((240px - 144px) / 2);
+}
+
+/* An amount never breaks inside (§24a, §25d). */
+.whole {
+  white-space: nowrap;
+}
+
+.line {
+  display: block;
+  white-space: nowrap;
 }

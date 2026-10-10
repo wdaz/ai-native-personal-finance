@@ -109,6 +109,12 @@
   /* Opacity — design-tokens.md v1.6 (the designer's changelog §12a) */
   --opacity-unavailable: 0.25;
 
+  /* Budgets and Pots — design-tokens.md v1.7 (SPEC-budgets §9 BU-Q4 (a), BU-Q7 (a); hand-off
+     H15 (3); names confirmed by the designer's changelog §18a–§18c) */
+  --radius-50: 4px;
+  --color-divider-on-beige: rgba(105, 104, 104, 0.15);
+  --duration-progress: 400ms;
+
   /* Breakpoints (see the note at the top of this file) */
   --bp-tablet: 768px;
   --bp-desktop: 1024px;
