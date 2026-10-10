@@ -1,0 +1,50 @@
+/*
+ * SPEC-recurring-bills 2.6: a white card, padding 20 px at every width, 20 px between the
+ * heading and the rows; each row 16 px above and below, a 1 px grey-100 line between rows. A row
+ * wraps when its value does not fit, and the value moves whole to the right (§18e, BU-5).
+ */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-250);
+  min-inline-size: 0;
+  padding: var(--spacing-250);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+  color: var(--color-grey-900);
+}
+
+.title {
+  margin: 0;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-50) var(--spacing-200);
+  padding-block: var(--spacing-200);
+  border-block-end: var(--border-width) solid var(--color-grey-100);
+  color: var(--color-grey-500);
+}
+
+.row:last-child {
+  border-block-end: none;
+}
+
+.value {
+  margin: 0 0 0 auto;
+  white-space: nowrap;
+}
+
+/* 2.6: the Due Soon row, label and value, is red (4.73:1 on white). */
+.dueSoon {
+  color: var(--color-red);
+}
