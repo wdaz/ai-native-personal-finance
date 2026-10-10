@@ -18,6 +18,7 @@ import {
   type TransactionSort,
   type TransactionsQuery,
 } from "@/src/shared/transactions-query";
+import { ResultsNavContext, type ResultsNavState } from "../ResultsRegion";
 import { useDebouncedValue } from "../useDebouncedValue";
 
 /** SPEC-transactions 2.5 and 4.1 (US-10 AC1 allows at most 300 ms). */
@@ -166,7 +167,11 @@ export function TransactionsNav({
     [query, text, applySearch, flush, change, pending, changes],
   );
 
+  const results = useMemo<ResultsNavState>(() => ({ pending, changes }), [pending, changes]);
+
   return (
-    <TransactionsNavContext.Provider value={value}>{children}</TransactionsNavContext.Provider>
+    <TransactionsNavContext.Provider value={value}>
+      <ResultsNavContext.Provider value={results}>{children}</ResultsNavContext.Provider>
+    </TransactionsNavContext.Provider>
   );
 }

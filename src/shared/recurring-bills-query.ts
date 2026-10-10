@@ -78,3 +78,19 @@ export function parseRecurringBillsQuery(
 
   return { query: { q, sort, status }, issues, message: messages.join("; ") };
 }
+
+/** What the page's own controls set: the search and the sort (2.2; the page has no status). */
+export type RecurringBillsPageQuery = Pick<RecurringBillsQuery, "q" | "sort">;
+
+/**
+ * SPEC-recurring-bills 2.2: the URL the page's own controls write — `q`, `sort` in that order,
+ * by `URLSearchParams` (a space becomes `+`), each left out at its default (no search, `latest`).
+ * Parameters outside the contract, `status` included, are dropped.
+ */
+export function recurringBillsSearch(query: RecurringBillsPageQuery): string {
+  const params = new URLSearchParams();
+  if (query.q) params.set("q", query.q);
+  if (query.sort !== "latest") params.set("sort", query.sort);
+  const search = params.toString();
+  return search ? `?${search}` : "";
+}

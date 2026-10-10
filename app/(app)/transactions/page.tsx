@@ -7,7 +7,7 @@ import { getDb } from "@/src/server/db";
 import { getTransactions } from "@/src/server/transactions";
 import { PAGE_NAMES } from "@/src/ui/nav";
 import { PageHeader } from "@/src/ui/PageHeader";
-import { ResultsRegion } from "@/src/ui/transactions/ResultsRegion";
+import { ResultsRegion } from "@/src/ui/ResultsRegion";
 import { TransactionTable, type TransactionsEmpty } from "@/src/ui/transactions/TransactionTable";
 import { TransactionsError } from "@/src/ui/transactions/TransactionsError";
 import { TransactionsNav } from "@/src/ui/transactions/TransactionsNav";

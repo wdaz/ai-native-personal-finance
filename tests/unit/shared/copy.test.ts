@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { COPY, retryAfterMinutes } from "@/src/shared/copy";
 import { CATEGORIES } from "@/src/shared/enums";
+import { BILL_STATUSES } from "@/src/shared/recurring-bills-query";
 import { TRANSACTION_SORTS } from "@/src/shared/transactions-query";
 
 const repoRoot = join(import.meta.dirname, "..", "..", "..");
@@ -47,6 +48,9 @@ const SAMPLES: [string, string][] = [
   ["{m}", "5"],
   ["{label}", "Sort by"],
   ["{current}", "Latest"],
+  ["{count}", "4"],
+  ["{amount}", "$190.00"],
+  ["{ordinal day}", "2nd"],
 ];
 const fill = (text: string) => SAMPLES.reduce((out, [from, to]) => out.replaceAll(from, to), text);
 const state = (text: string) => text.replace("Agent tools: ", "");
@@ -155,6 +159,41 @@ const RENDERED: [context: string, keys: Key[], message: string][] = [
   ],
   ["Transactions", ["transactionsNoResults"], COPY.transactionsNoResults],
   ["Transactions", ["transactionsEmpty"], COPY.transactionsEmpty],
+  [
+    "Recurring Bills",
+    ["searchBillsPlaceholder", "searchBillsLabel"],
+    `${COPY.searchBillsPlaceholder} · label: ${COPY.searchBillsLabel}`,
+  ],
+  [
+    "Recurring Bills",
+    ["totalBills", "billsSummaryTitle"],
+    `${COPY.totalBills} · ${COPY.billsSummaryTitle}`,
+  ],
+  [
+    "Recurring Bills",
+    ["billsPaid", "billsTotalUpcoming", "billsDueSoon"],
+    [COPY.billsPaid, COPY.billsTotalUpcoming, COPY.billsDueSoon].join(" · "),
+  ],
+  ["Recurring Bills", ["billsCountAmount"], COPY.billsCountAmount(4, "$190.00")],
+  [
+    "Recurring Bills table",
+    ["columnBillTitle", "columnDueDate", "columnAmount"],
+    [COPY.columnBillTitle, COPY.columnDueDate, COPY.columnAmount].join(" · "),
+  ],
+  ["Recurring Bills", ["billDue"], COPY.billDue("2nd")],
+  [
+    "Recurring Bills",
+    ["billStatuses"],
+    BILL_STATUSES.map((status) => COPY.billStatuses[status]).join(" · "),
+  ],
+  ["Recurring Bills", ["billsStatus"], COPY.billsStatus(4)],
+  [
+    "Recurring Bills",
+    ["billsLoadError", "retry"],
+    `${COPY.billsLoadError} · button: ${COPY.retry}`,
+  ],
+  ["Recurring Bills", ["billsNoResults"], COPY.billsNoResults],
+  ["Recurring Bills", ["billsEmpty"], COPY.billsEmpty],
 ];
 
 const expected = RENDERED.map(([context, , message]) => [context, message]);
@@ -230,6 +269,17 @@ describe("copy with a number in it", () => {
   ])("Transactions status line, %i row(s) (SPEC-transactions 2.10)", (total, n, m, text) => {
     expect(COPY.transactionsStatus(total, n, m)).toBe(text);
   });
+
+  it.each([
+    [1, "1 bill"],
+    [2, "2 bills"],
+    [8, "8 bills"],
+  ])(
+    'Recurring Bills status line, %i bill(s) (SPEC-recurring-bills 2.10: "1 bill" for one)',
+    (n, text) => {
+      expect(COPY.billsStatus(n)).toBe(text);
+    },
+  );
 
   it("writes the indicator's tool count as given", () => {
     expect(COPY.agentToolsNative(0)).toBe("Agent tools: native · 0");

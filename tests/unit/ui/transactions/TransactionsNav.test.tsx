@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { COPY } from "@/src/shared/copy";
 import type { TransactionsQuery } from "@/src/shared/transactions-query";
-import { ResultsRegion } from "@/src/ui/transactions/ResultsRegion";
+import { ResultsRegion } from "@/src/ui/ResultsRegion";
 import { SEARCH_DEBOUNCE_MS, TransactionsNav } from "@/src/ui/transactions/TransactionsNav";
 import { TransactionsPagination } from "@/src/ui/transactions/TransactionsPagination";
 import { TransactionsToolbar } from "@/src/ui/transactions/TransactionsToolbar";
