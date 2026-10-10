@@ -9,18 +9,19 @@ name: CI
 # change with it, or the renamed check is never reported and the pull request waits forever.
 
 on:
+  # Every pull request, whatever its base: work pull requests target develop, releases and hotfixes
+  # target main (governance.md, "Branches and releases").
   pull_request:
   push:
-    # ADR-0007 names `main` as the production branch, and it is this repository's default
-    # branch (owner decision 2026-09-22, T-02a plan gate).
-    branches: [main]
+    # main is production (ADR-0007); develop is the integration branch (T-15b).
+    branches: [main, develop]
 
 permissions:
   contents: read
 
 concurrency:
-  # A pull-request run is superseded by the next push to that PR. A push to `main` never
-  # cancels another: its group is its own commit, so each merge keeps its verdict (backlog
+  # A pull-request run is superseded by the next push to that PR. A push to `main` or `develop`
+  # never cancels another: its group is its own commit, so each merge keeps its verdict (backlog
   # T-13, PR #4 — a follow-up merge used to discard the previous commit's result).
   group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -54,7 +55,7 @@ jobs:
       - name: Unit tests and the coverage gate (src/domain >= 90 % statements)
         run: npm run test:coverage
 
-      - name: Traceability (NFR-T2, Release 1 stories)
+      - name: Traceability (NFR-T2, stories up to the release being built)
         run: npm run traceability
 
   api:
@@ -123,7 +124,8 @@ jobs:
         # build time (next.config.ts), so `off` cannot be a runtime switch. ADR-0003: E2E runs on
         # Chromium, Firefox and WebKit. `off` is built once, on Chromium: it registers no tools,
         # and it was measured green on Firefox locally (T-13 plan Q3-A).
-        # All four leg names are required checks in main's ruleset (backlog v1.38); keep them.
+        # All four leg names are required checks in main's and develop's rulesets (backlog v1.38,
+        # T-15b); keep them.
         include:
           - { label: Chromium, browser: chromium, webmcp-mode: polyfill }
           - { label: Chromium, browser: chromium, webmcp-mode: "off" }

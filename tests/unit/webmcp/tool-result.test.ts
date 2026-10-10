@@ -66,7 +66,9 @@ describe("fromApiOutcome — the SPEC §2.5 status mapping", () => {
 
   it.each([
     [400, "validation"],
+    [415, "validation"],
     [401, "unauthenticated"],
+    [403, "forbidden"],
     [404, "not_found"],
     [409, "conflict"],
     [429, "rate_limited"],
@@ -103,6 +105,20 @@ describe("fromApiOutcome — the SPEC §2.5 status mapping", () => {
         unreachable,
       ),
     ).toMatchObject({ code: "rate_limited", retryAfter: 30 });
+  });
+
+  it("maps a 403 to forbidden and a 415 to validation with the body's issues, neither to server_error (SPEC-webmcp-tools §2.5, v1.0.7)", () => {
+    expect(
+      fromApiOutcome(
+        http(403, { error: "forbidden", message: "This request must be same-origin" }),
+        unreachable,
+      ),
+    ).toMatchObject({ code: "forbidden", message: "This request must be same-origin" });
+    const issues = [{ path: [], code: "invalid_format" }];
+    expect(fromApiOutcome(http(415, { error: "validation", issues }), unreachable)).toMatchObject({
+      code: "validation",
+      issues,
+    });
   });
 
   it("maps aborted to cancelled, and network and invalid_response to server_error", () => {

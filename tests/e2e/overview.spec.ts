@@ -139,11 +139,15 @@ test("US-06 AC1 AC2: Transactions card shows five rows (SPEC-overview §4.3); 'V
   await expect(page.getByText(formatSignedMoney(first.amount))).toBeVisible();
   // Scoped to the row itself: two of the seed's five latest transactions share a date
   // (§4.3, "19 Aug 2026" twice), so the date text alone is not unique on the page.
-  const firstRow = page.getByRole("img", { name: first.name }).locator("../..");
+  const firstRow = page
+    .getByText(first.name)
+    .locator("xpath=ancestor::div[contains(@class,'row')][1]");
   await expect(firstRow.getByText(formatDate(first.date))).toBeVisible();
   await expect(page.getByText(second.name)).toBeVisible();
   await expect(page.getByText(formatSignedMoney(second.amount))).toBeVisible();
-  await expect(page.getByRole("img", { name: FIGURES.transactions.at(-1)!.name })).toBeVisible();
+  await expect(page.getByText(FIGURES.transactions.at(-1)!.name)).toBeVisible();
+  // v1.5: the avatars are decorative, so the name is read once.
+  await expect(page.locator('main img:not([alt=""])')).toHaveCount(0);
 
   await cardLink(page, "Transactions", "View All ›").click();
   await expect(page).toHaveURL(`${baseURL}/transactions`);

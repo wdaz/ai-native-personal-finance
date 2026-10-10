@@ -1,0 +1,27 @@
+# What the agent did with the write-path reviews (T-15d, S1, pull request #87)
+
+The agent's own summary (not a copy of anything): the two reviews of `write-path.md` v0.1 (`789135b`) — briefs `write-path-review-1-facts-brief.md` and `write-path-review-2-spec-brief.md`, reports `write-path-review-1-facts-report.md` and `write-path-review-2-spec-report.md` beside them, copied as handed back (each file's header says exactly which formatting and redaction edits it carries) — and what became of each finding in v0.2 (`656142e`).
+Copilot then asked for the briefs and reports to be copied in full (`build-workflow.md`, "Per task" step 7: "copied"); the first version of these records condensed them, and this set replaces it.
+
+Everything in the reports that is a defect of the spec is fixed in v0.2; nothing was dismissed. In order of the findings:
+- **Blocker (both reviewers):** 2.1 and 7.4 rewritten — no `GET` handler changes data (`GET /api/admin/reset` is the one exception), a path may export `GET` beside write methods, 7.4 checks that no `GET` handler calls the wrapper, and 7.2 adds an API test that every `GET` leaves the stored rows unchanged.
+- **Mapper (review 1 finding 2, review 2 finding 2):** 2.7 says the mapper takes the schema family, gives exact input→code pairs, keeps auth's mapping unchanged and says `invalid_value` never throws; 7.1 tests every pair, failing first.
+- **Pot deletion (review 2 finding 3):** 2.8 reads the total from the delete itself; 7.2 tests a concurrent deposit and delete.
+- **Content type (review 2 finding 4):** 2.4 compares the media type exactly, requires it on every `POST`/`PUT`/`PATCH`, lets a `DELETE` omit it, drops the body-detection by headers; 7.3 adds the cases.
+- **Silent amendments, exemptions, copy (review 1 findings 4, 5, 6; review 2 findings 5, 6, 10, 12, 13):** put to the owner — nine single-choice questions (Q1 the 403 body, Q2 the validation codes, Q3 the stale-write rule, Q4 the numbers, Q5 four copy strings, Q6 the AC3 reading, Q7 the threshold form, Q8 the exemptions, Q9 the amendments to other Approved documents).
+- **401 and 404 (review 2 findings 7, 8; review 1 finding 3):** §3 and 2.9 say the client reloads on a 401, that only the 409 path meets AC3 as worded, and name the two other texts the 404 reading departs from.
+- **Logging, `Set-Cookie`, `no-store` (review 1 findings 7, 17, 18):** 2.12 says the refusal log line is new; 2.2 step 10 says the wrapper and the proxy set `no-store` and the refusals skip the cookie re-issue.
+- **L7, L3, L4, L6 (review 2 findings 9, 11, 14, 15, 16, 17):** rows in 7.5 and 7.6, the search's command and hits in Q3, plain-text names and a `<script>` test, `untrustedContentHint` on every tool that returns user text with its sources, `taken` "as another pot", the explanations in Q3, Q4, Q7.
+- **E1–E8 and the minor findings 8–25 of review 1:** each stated or fixed in the text (2.6's message strings, `apiSend` and a 204, `DELETE` without a schema, 4.4's absent/not-JSON/`{}` cases, 2.9's behaviour when the check throws, the tests that fill the database, the refusal log line, `validationErrorResponse` taking a status, the corrected citations).
+
+The agent's own slips that the reviews and Copilot found: a worked example in v0.1's 4.2 that was garbled in the first draft (fixed before the first push), "Already used" described as existing copy, the brief files claiming a verbatim copy while shortening it, and, in the opening review's records (merged in #85), a brief and a report that were also shortened — to be replaced by the verbatim texts in the pull request that closes T-15d.
+
+## Review 3 — the final spec and the amendments (`7545a04`, v1.0 → v1.0.1)
+
+Brief and report: `write-path-review-3-final-brief.md`, `write-path-review-3-final-report.md`. Nothing blocked; two important findings and ten minor. All are fixed in v1.0.1 except one, which is the owner's call:
+- **Important 1** (the rate-limit test mechanism said two things): one mechanism now — the suites run the server with a high finite limit (1,000 per window), the 429 path is tested by pre-filling `WriteAttempt` rows up to it, and the limiter's functions take the limit as an argument (2.10, §7, 7.3, 7.5).
+- **Important 2** (ADR-0005's Decision body still stated the replaced rule): the clause is struck inline with "clarification 2026-10-04", as the same ADR and ADR-0006 do for other replaced text.
+- **Minor 3–10, 12:** the broken code span in 7.6, "asks that it run as one query", US-40 AC3 quoted from its source, the path `id` validated in the pipeline, `forbidden` and `busy` as build notes, ADR-0006's attribution and both ADRs' searches widened to `docs/` with the hits listed, `WriteAttempt` named as not counted by the threshold, H6 and H8's Done cells say the ask was narrowed, the changelog newest first, `system-overview.md`'s diagram lists `WriteAttempt` (v1.0.2), "eight codes in the table", "Q7 and Q9".
+- **Minor 11, left for the owner:** US-37 AC3 and the copy appendix row "After reset | stale request" in `user-stories.md` could carry a dated note pointing to §9 Q6 (the reviewer checked it is safe for `copy.test.ts`). It edits the requirements, so the agent did not.
+
+Copilot's reviews of v1.0 added: 415 in the tool error mapping (2.11 (4)), `null` and non-string inputs in the mapper table (2.7), the hand-offs document's Status line saying it was amended by this pull request, a grammar fix in this file, and the pull request's description now says the spec is final.

@@ -1,0 +1,102 @@
+/*
+ * SPEC-ui-kit 2.4, the design's "…" menus (`Finance App.dc.html`, read 2026-10-10): the 16 px
+ * icon in a 44 × 44 px box with a −14 px margin (UI-3, the designer's changelog §21c), so the
+ * card's layout stays as drawn and the focus ring is on the box; the panel 12 px under the icon,
+ * right edges aligned, 134 px wide, by CSS alone (ADR-0006).
+ */
+.root {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.trigger {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--tap-target-min);
+  block-size: var(--tap-target-min);
+  margin: calc((var(--spacing-200) - var(--tap-target-min)) / 2);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-100);
+  background: none;
+  color: var(--color-grey-500);
+  cursor: pointer;
+  transition: color var(--duration-hover);
+}
+
+.trigger:hover {
+  color: var(--color-grey-900);
+}
+
+.panel {
+  position: absolute;
+  z-index: 20;
+  inset-block-start: calc(100% + var(--spacing-150));
+  inset-inline-end: 0;
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: column;
+  inline-size: var(--action-menu-width);
+  padding: var(--spacing-150) var(--spacing-250);
+  border-radius: var(--radius-100);
+  background: var(--color-white);
+  box-shadow: var(--shadow-popover);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .panel {
+    animation: fade-in var(--duration-popover) ease;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--spacing-100));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.item {
+  padding: var(--spacing-150) 0;
+  border: none;
+  background: none;
+  color: var(--color-grey-900);
+  text-align: start;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--duration-hover);
+}
+
+.item + .item {
+  border-block-start: var(--border-width) solid var(--color-grey-100);
+}
+
+.item:hover {
+  color: var(--color-grey-500);
+}
+
+/* UK-Q5 (a), the designer's changelog §11: still full red on hover, underlined, instantly. */
+.destructive {
+  color: var(--color-red);
+  transition: none;
+}
+
+.destructive:hover {
+  color: var(--color-red);
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger,
+  .item {
+    transition: none;
+  }
+}

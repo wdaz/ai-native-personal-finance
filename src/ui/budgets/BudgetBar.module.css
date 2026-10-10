@@ -1,0 +1,22 @@
+/* SPEC-budgets 2.4: a 32 px beige-100 track, 4 px padding, a 24 px fill; radius --radius-50 (the fill's `rx`
+   attribute holds the same 4 px: a CSS `rx` is not read by every engine). */
+.track {
+  padding: var(--spacing-50);
+  border-radius: var(--radius-50);
+  background: var(--color-beige-100);
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+}
+
+.fill {
+  transition: width var(--duration-progress) ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+}

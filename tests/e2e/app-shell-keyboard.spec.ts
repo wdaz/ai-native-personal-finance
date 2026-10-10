@@ -1,3 +1,4 @@
+import { seedOverviewInput } from "@/scripts/seed-figures";
 import { COPY } from "@/src/shared/copy";
 import { TEST_IDS } from "@/src/shared/test-ids";
 import { expect, loginViaApi, resetDemoData, tabTo, test } from "../fixtures/e2e";
@@ -92,8 +93,9 @@ test("US-35 AC1 AC2 US-32 minimised: Space toggles and focus stays; the tab orde
 
 /**
  * US-32 AC3 — the phone walkthrough (375 px): Tab → "Skip to content" → the reset banner's
- * "Dismiss notice" (it sits above the page header, T-08) → the header's "Log out" → the five
- * bottom-bar items. Enter on the last navigates.
+ * "Dismiss notice" (it sits above the page header, T-08) → the header's "Add New Pot" and "Log out"
+ * → each pot's "…", "Add Money" and "Withdraw" (SPEC-pots 2.10, T-26) → the five bottom-bar items.
+ * Enter on the last navigates.
  */
 test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the five bottom-bar items; Enter navigates", async ({
   page,
@@ -104,7 +106,13 @@ test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the five bot
 
   await tabTo(page, page.getByRole("link", { name: COPY.skipToContent }));
   await tabTo(page, page.getByRole("button", { name: COPY.dismissNotice }));
+  await tabTo(page, page.getByRole("button", { name: COPY.addNewPot }));
   await tabTo(page, page.getByRole("main").getByRole("button", { name: "Log out" }));
+  for (const { name } of seedOverviewInput().pots) {
+    await tabTo(page, page.getByRole("button", { name: `${COPY.potOptions}: ${name}` }));
+    await tabTo(page, page.getByRole("button", { name: COPY.addMoneyTo(name) }));
+    await tabTo(page, page.getByRole("button", { name: COPY.withdrawFrom(name) }));
+  }
   const nav = page.getByRole("navigation", { name: "Main" });
   for (const name of NAMES) await tabTo(page, nav.getByRole("link", { name, exact: true }));
 

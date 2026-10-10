@@ -1,0 +1,9 @@
+/* SPEC-ui-kit 2.7: the error area — preset 5, red, as a field error; no space while empty. */
+.error {
+  margin: 0;
+  color: var(--color-red);
+}
+
+.error:empty {
+  display: none;
+}

@@ -1,6 +1,6 @@
 # Build workflow (Phase 5–6) — working with Claude Code
 
-Status: Approved (owner, 2026-09-20; v1.1 same day after T-01; v1.2 — 2026-09-24, owner decisions after T-13: scratch verification is allowed before the plan gate, and the worktree bootstrap is a rule of thumb)
+Status: Approved (owner, 2026-09-20; v1.1 same day after T-01; v1.2 — 2026-09-24, owner decisions after T-13: scratch verification is allowed before the plan gate, and the worktree bootstrap is a rule of thumb; v1.3 — 2026-10-03, owner decision at the T-15c retrospective: two rules of thumb — `gh pr view --json state` before a push to a branch that has or had a pull request, and a plan answered in place is read once for tense; v1.4 — 2026-10-06, owner decision: a design question that comes up in the build goes to the designer agent, and a subagent returns `DESIGN-Q` instead of choosing)
 
 Claude Code reads `CLAUDE.md` → `AGENTS.md` automatically when started in the repo root, so every session begins with the same context as this document set. The loop below is one task from `docs/03-specs/backlog.md` per session.
 
@@ -16,6 +16,12 @@ Claude Code reads `CLAUDE.md` → `AGENTS.md` automatically when started in the 
 
 ## Rules of thumb
 - If the agent wants to touch a spec, ADR or story, it says so first (AGENTS.md §2).
+- A design question that comes up while code is written or reviewed (a look, a value, a size, a token, a
+  drawn behaviour) is not decided in the code. The controller asks the designer agent and takes its
+  proposal to the owner (`governance.md`, "Design questions are decided by the designer"). A subagent
+  that implements or reviews UI has this line in its brief: "If you meet a design question, stop that
+  part and return `DESIGN-Q: <question, file, component>`. Do not choose." The pull request and the code
+  cite the designer's changelog section that answered it (owner decision, 2026-10-06).
 - A fresh git worktree has no `node_modules` and no generated Prisma client. Set it up from the
   worktree root with `npm ci --ignore-scripts`, then `npx prisma generate`. Never symlink another
   checkout's `node_modules` (the Prisma client is generated per checkout, so tests then fail to
@@ -32,3 +38,15 @@ Claude Code reads `CLAUDE.md` → `AGENTS.md` automatically when started in the 
   `.Provider` included — directly off a context object imported from one. jsdom unit tests
   cannot catch the resulting crash, since they never cross the real RSC boundary — only a
   `next dev`/`next build` run in an actual browser does (T-11 lesson).
+- Before any push to a branch that already has, or had, a pull request, run `gh pr view --json state`
+  on that branch (it reads the branch's own pull request; pass `<number>` to read another one). A branch
+  that has never had a pull request needs no check: `gh pr view` then says there is none, and the push
+  is the first. If the pull request
+  has merged or closed, do not push: with the repository's `delete_branch_on_merge` setting on, a
+  merged pull request's branch is deleted, and a push to its name re-creates it outside any pull
+  request; a closed one may still exist, but no pull request reads it. Open a new branch from
+  `origin/develop` instead (T-06, ADR-0006's follow-up and T-13d's follow-up; T-15c retrospective, P4).
+- When a plan is answered in place (v0.1 → v0.2), read the whole text once for sentences about the
+  state before the answers — "waiting", "asks", "nothing has been changed" — and bring them up to
+  date. A question's own text may stay as it was asked if the Status line says so (T-15b; T-15c
+  retrospective, P8).

@@ -8,10 +8,10 @@ import { expect, loginViaApi, resetDemoData, seriousA11yViolations, test } from 
 /** SPEC-app-shell §2.2, §2.5: the five pages, their names (nav label = `<h1>` = title). */
 const PAGES = [
   { path: "/overview", name: "Overview", release2: false },
-  { path: "/transactions", name: "Transactions", release2: true },
-  { path: "/budgets", name: "Budgets", release2: true },
-  { path: "/pots", name: "Pots", release2: true },
-  { path: "/recurring-bills", name: "Recurring Bills", release2: true },
+  { path: "/transactions", name: "Transactions", release2: false },
+  { path: "/budgets", name: "Budgets", release2: false },
+  { path: "/pots", name: "Pots", release2: false },
+  { path: "/recurring-bills", name: "Recurring Bills", release2: false },
 ] as const;
 
 const GREY_300 = "rgb(179, 179, 179)";

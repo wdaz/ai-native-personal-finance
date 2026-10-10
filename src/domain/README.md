@@ -16,6 +16,8 @@ Pure functions: money, budgets, pots, bills, sorting, paging, clock (ADR-0002).
 | `money.ts`        | `toCents`, `sumCents` — integer cents                                                     |
 | `types.ts`        | The rows the functions read: money in cents, dates as `Date`, extra fields passed through |
 | `transactions.ts` | `compareLatest` (US-11 Latest), `latestTransactions`                                      |
-| `budgets.ts`      | `budgetSpent`                                                                             |
+| `budgets.ts`      | `budgetSpent`, `latestSpending`, `budgetRemaining`, `budgetsSummary` (SPEC-budgets 4.1)   |
+| `variants.ts`     | `applyVariant` and the seed variants (moved from `src/server` in T-23)                    |
+| `pots.ts`         | `potPercent`, `potFill`, `moneyPreview`, `isPotNameTaken`, `firstFreeTheme` (SPEC-pots)   |
 | `bills.ts`        | `recurringBills`, `billsSummary`                                                          |
 | `overview.ts`     | `overviewSummary` — every figure SPEC-overview shows                                      |

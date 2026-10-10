@@ -1,0 +1,18 @@
+/* SPEC-budgets 2.12: the cards' look and padding; 14 px grey-500, centred. */
+.card {
+  padding: var(--spacing-300) var(--spacing-250);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+  text-align: center;
+}
+
+.text {
+  margin: 0;
+  color: var(--color-grey-500);
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--spacing-400);
+  }
+}

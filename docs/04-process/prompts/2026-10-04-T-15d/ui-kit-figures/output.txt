@@ -1,0 +1,97 @@
+
+=== SEED RECORDS ===
+budgets: 4 | Entertainment Green 5000, Bills Cyan 75000, Dining Out Yellow 7500, Personal Care Navy 10000
+pots: 5 | Savings Green target 200000 total 15900, Concert Ticket Navy target 15000 total 11000, Gift Cyan target 15000 total 11000, New Laptop Yellow target 100000 total 1000, Holiday Purple target 144000 total 53100
+
+=== ALREADY USED (add forms) ===
+categories used: 4 Entertainment, Bills, Dining Out, Personal Care
+categories free: 6 Groceries, Transportation, Education, Lifestyle, Shopping, General
+budget themes used: 4 Green, Cyan, Yellow, Navy
+budget themes free: 11 first free: Red
+pot themes used: 5 Green, Navy, Cyan, Yellow, Purple
+pot themes free: 10 first free: Red
+first free category: Groceries
+
+=== ALREADY USED (edit forms: the record's own value stays selectable) ===
+edit budget Entertainment: disabled categories 3 (Bills, Dining Out, Personal Care), disabled themes 3 (Cyan, Yellow, Navy)
+edit budget Bills: disabled categories 3 (Entertainment, Dining Out, Personal Care), disabled themes 3 (Green, Yellow, Navy)
+edit budget Dining Out: disabled categories 3 (Entertainment, Bills, Personal Care), disabled themes 3 (Green, Cyan, Navy)
+edit budget Personal Care: disabled categories 3 (Entertainment, Bills, Dining Out), disabled themes 3 (Green, Cyan, Yellow)
+edit pot Savings: disabled themes 4 (Navy, Cyan, Yellow, Purple)
+edit pot Concert Ticket: disabled themes 4 (Green, Cyan, Yellow, Purple)
+edit pot Gift: disabled themes 4 (Green, Navy, Yellow, Purple)
+edit pot New Laptop: disabled themes 4 (Green, Navy, Cyan, Purple)
+edit pot Holiday: disabled themes 4 (Green, Navy, Cyan, Yellow)
+
+=== DELETE DIALOG TITLES (the design's pattern, curly quotes U+2018 U+2019) ===
+Delete ‘Entertainment’? | Delete ‘Bills’? | Delete ‘Dining Out’? | Delete ‘Personal Care’?
+Delete ‘Savings’? | Delete ‘Concert Ticket’? | Delete ‘Gift’? | Delete ‘New Laptop’? | Delete ‘Holiday’?
+longest seed pot name: 14 characters; pot name limit 30
+
+=== AMOUNT GRAMMAR (the spec's reading of US-15 AC2, written here by hand; no repository code yet) ===
+"" -> required
+"   " -> required
+"0.01" -> 1 cents
+"1" -> 100 cents
+"42" -> 4200 cents
+" 42 " -> 4200 cents
+"007" -> 700 cents
+"75.5" -> 7550 cents
+"75.50" -> 7550 cents
+".5" -> 50 cents
+"5." -> invalid_format
+"$1,234.50" -> 123450 cents
+"1,234.5" -> 123450 cents
+"1234.50" -> 123450 cents
+"12,345,678" -> 1234567800 cents
+"$999,999,999.99" -> 99999999999 cents
+"999999999.99" -> 99999999999 cents
+"1,000,000,000" -> too_large
+"1000000000" -> too_large
+"99999999999999999999" -> too_large
+"0" -> too_small
+"0.00" -> too_small
+"$0" -> too_small
+"-5" -> too_small
+"-$5" -> too_small
+"-0" -> too_small
+"$-5" -> invalid_format
+"1.234" -> invalid_format
+"1,23" -> invalid_format
+"1,2345" -> invalid_format
+"12,34.5" -> invalid_format
+"0,500" -> invalid_format
+"0,123" -> invalid_format
+"01,234" -> invalid_format
+"$ 5" -> invalid_format
+"$$5" -> invalid_format
+"$" -> invalid_format
+"-" -> invalid_format
+"1e3" -> invalid_format
+"0x10" -> invalid_format
+"Infinity" -> invalid_format
+"NaN" -> invalid_format
+"5 000" -> invalid_format
+"５" -> invalid_format
+"−5" -> invalid_format
+"USD 5" -> invalid_format
+
+=== PRE-FILL (edit forms: whole dollars as digits, otherwise two decimals; no $ and no separators) ===
+budget maximums: 50, 750, 75, 100
+pot targets: 2000, 150, 150, 1000, 1440
+1 cents -> "0.01" -> parses back to 1 cents | formatMoney $0.01
+7550 cents -> "75.50" -> parses back to 7550 cents | formatMoney $75.50
+123450 cents -> "1234.50" -> parses back to 123450 cents | formatMoney $1,234.50
+99999999999 cents -> "999999999.99" -> parses back to 99999999999 cents | formatMoney $999,999,999.99
+
+=== CONTRAST (WCAG 2.1 relative luminance; opacity composited over white) ===
+grey-300 on white (the … icon at rest, as exported): 2.10:1
+grey-500 on white: 5.55:1
+grey-900 on white: 16.37:1
+beige-500 on white (the $ prefix, as exported): 3.14:1
+red on white (Delete menu item): 4.73:1
+red at 70 % on white (Delete menu item, hover, as exported): 2.93:1
+white on red (Yes, Confirm Deletion): 4.73:1
+white on red at 80 % (Yes, Confirm Deletion, hover): 3.44:1
+white on grey-900 (primary button): 16.37:1
+white on grey-500 (primary button, hover): 5.55:1

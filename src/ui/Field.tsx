@@ -1,4 +1,5 @@
 import type { ReactNode, Ref } from "react";
+import { cx } from "./cx";
 import styles from "./Field.module.css";
 
 export type FieldProps = {
@@ -17,6 +18,12 @@ export type FieldProps = {
   inputRef?: Ref<HTMLInputElement>;
   /** A control inside the input's end edge — PasswordField's toggle. */
   trailing?: ReactNode;
+  /** SPEC-ui-kit 2.5: a decorative mark inside the start edge — `AmountField`'s "$". */
+  leading?: ReactNode;
+  placeholder?: string;
+  inputMode?: "text" | "decimal";
+  /** An edit form's pre-fill; the input stays uncontrolled (SPEC-ui-kit 2.5). */
+  defaultValue?: string;
 };
 
 /**
@@ -42,6 +49,10 @@ export function Field({
   disabled,
   inputRef,
   trailing,
+  leading,
+  placeholder,
+  inputMode,
+  defaultValue,
 }: FieldProps) {
   const errorId = `${id}-error`;
   const helperId = `${id}-helper`;
@@ -53,14 +64,26 @@ export function Field({
         {label}
       </label>
       <div className={styles.control}>
+        {leading ? (
+          <span className={`text-preset-4 ${styles.leading}`} aria-hidden="true">
+            {leading}
+          </span>
+        ) : null}
         <input
           ref={inputRef}
           id={id}
           name={name}
           type={type}
-          className={trailing ? `${styles.input} ${styles.withTrailing}` : styles.input}
+          className={cx(
+            styles.input,
+            trailing ? styles.withTrailing : null,
+            leading ? styles.withLeading : null,
+          )}
           autoComplete={autoComplete}
           maxLength={maxLength}
+          placeholder={placeholder}
+          inputMode={inputMode}
+          defaultValue={defaultValue}
           disabled={disabled}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}

@@ -1,0 +1,12 @@
+/* SPEC-pots 2.5 (`Finance App.dc.html`, the pot modal): the fields 16 px apart, the submit 20 px below. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-250);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+}

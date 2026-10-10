@@ -1,15 +1,24 @@
 /* SPEC-app-shell §2.4–2.5 and the design export: the title and the actions spread apart, 24 px
-   between them, 8 px above and below. */
+   between them, 8 px above and below. SPEC-ui-kit 2.8 (UI-5, the designer's changelog §21e):
+   when they do not fit on one line, the actions wrap below the title, right-aligned, 16 px down. */
 .header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-300);
+  gap: var(--spacing-200) var(--spacing-300);
   padding-block: var(--spacing-100);
 }
 
 .title {
   margin: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-200);
+  margin-inline-start: auto;
 }
 
 /* Below 1024 px the sidebar footer's actions move here (§2.4). */

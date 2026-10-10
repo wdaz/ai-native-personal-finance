@@ -1,0 +1,6 @@
+/* SPEC-ui-kit 2.3: the two buttons, 20 px apart, as drawn. */
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-250);
+}

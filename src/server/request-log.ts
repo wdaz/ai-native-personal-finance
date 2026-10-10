@@ -4,7 +4,16 @@ import { isTestEnv, type Env } from "./env";
 /** SPEC-webmcp-tools §5: a ring buffer of 200 in test mode; structured stdout otherwise. */
 export const REQUEST_LOG_CAPACITY = 200;
 
-export type ViaLogEntry = { requestId: string; via: typeof VIA_WEBMCP; route: string };
+/**
+ * `method` is the request's HTTP method as the server receives it (SPEC-write-path 2.12,
+ * SPEC-webmcp-tools §2.8 v1.0.7): a read and a write on one path differ only in it.
+ */
+export type ViaLogEntry = {
+  requestId: string;
+  via: typeof VIA_WEBMCP;
+  method: string;
+  route: string;
+};
 
 // proxy.ts and the route handlers are compiled as separate bundles, so a module-level
 // buffer written by one would not be the one the other reads. Like the Prisma client
@@ -19,12 +28,13 @@ const holder = globalThis as typeof globalThis & { __pfViaLog?: Map<string, ViaL
 export function recordViaRequest(
   via: string | null,
   requestId: string,
+  method: string,
   route: string,
   env: Env = process.env,
   write: (line: string) => void = console.log,
 ): void {
   if (via !== VIA_WEBMCP) return;
-  const entry: ViaLogEntry = { requestId, via: VIA_WEBMCP, route };
+  const entry: ViaLogEntry = { requestId, via: VIA_WEBMCP, method, route };
   if (!isTestEnv(env)) {
     write(JSON.stringify(entry));
     return;

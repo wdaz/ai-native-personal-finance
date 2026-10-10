@@ -1,0 +1,70 @@
+/*
+ * SPEC-recurring-bills 2.13 (§9 RB-Q9 (b); the designer's changelog §14, §16c, §20a RB-1). The
+ * page picks its columns by the content width — `<main>`'s content box, a size container
+ * (SPEC-app-shell §2.9, H17) — not by the window:
+ * - below 768 px (a window query): one column, Total Bills, Summary, the list card;
+ * - from 768 px: the summary column a row, Total Bills and Summary side by side, equal widths;
+ * - from a 961 px content width (337 + 24 + 600, §14): two columns, the summary column 337 px
+ *   on the left, its cards one above the other, each its own height, top-aligned (§20a).
+ * 961 px is the design's number, not a token (§14: breakpoint tokens are a separate decision).
+ */
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  min-inline-size: 0;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  min-inline-size: 0;
+}
+
+/* 2.9: one white card, 12 px radius, padding 32 px (24 px 20 px below 768 px), 24 px gap. */
+.card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  min-inline-size: 0;
+  padding: var(--spacing-300) var(--spacing-250);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}
+
+@media (min-width: 768px) {
+  .summary {
+    flex-direction: row;
+  }
+
+  /*
+   * §20a: the one arrangement where the two cards share the row. Equal widths (2.13): each
+   * starts at half the row less half the gap, so neither grows nor shrinks — with `flex: 1`
+   * alone their different paddings would make Total Bills 24 px wider.
+   */
+  .summary > * {
+    flex: 0 0 calc((100% - var(--spacing-300)) / 2);
+  }
+
+  .card {
+    padding: var(--spacing-400);
+  }
+}
+
+@container (min-width: 961px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .summary {
+    flex: 0 0 337px;
+    flex-direction: column;
+  }
+
+  .summary > * {
+    flex: 0 0 auto;
+  }
+}

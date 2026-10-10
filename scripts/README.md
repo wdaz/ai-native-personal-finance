@@ -21,6 +21,13 @@ needs a migrated database (`npm run db:reset` first); run it with `npm run db:dr
 `tests/api/schema-drift.spec.ts` runs it against the real schema and proves it reports drift
 in both directions, with a schema that has an extra model and one that lacks a migrated table.
 
+`vercel-ignore-build.sh` (ADR-0007, amendment 2026-10-05) is Vercel's Ignored Build Step
+(`vercel.json` `ignoreCommand`), POSIX shell, no imports. It exits 0 — Vercel skips the build —
+only when every path changed since the branch's last successful deployment
+(`VERCEL_GIT_PREVIOUS_SHA`) is under `docs/`, and 1 — Vercel builds — otherwise, including
+whenever it cannot tell. `tests/unit/vercel-ignore-build.test.ts` runs it against temporary git
+repositories.
+
 ## Secret guard (T-02a, NFR-S5)
 
 POSIX shell, no imports. `tests/unit/secret-guard.test.ts` proves each part fails on

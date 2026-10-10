@@ -1,0 +1,57 @@
+/*
+ * SPEC-ui-kit 2.6, the design's Budget Category and Theme fields (`Finance App.dc.html`, read
+ * 2026-10-10): the swatch 12 px before its label (UI-8, the designer's changelog §21h); "Already
+ * used" (preset 5, grey-500) and the green check at the option's end; the message under the
+ * field in red, as `Field`'s.
+ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-50);
+}
+
+.value {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-150);
+  min-inline-size: 0;
+}
+
+.label {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-150);
+}
+
+.used {
+  flex-shrink: 0;
+  color: var(--color-grey-500);
+  font-weight: 400;
+}
+
+.check {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--color-green);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-red);
+}
+
+.visuallyHidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

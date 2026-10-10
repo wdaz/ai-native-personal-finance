@@ -1,0 +1,102 @@
+/*
+ * SPEC-pots 2.6 (`Finance App.dc.html`, the money modal; the designer's changelog §19e, §19f,
+ * §25f): "New Amount" 16 px above the bar, the bar 13 px above its text row; the bar in two
+ * segments 2 px apart (`--spacing-25`) — the part that stays, grey-900, then the part that moves,
+ * green for an addition and red for a withdrawal. The bar's two outer ends are rounded
+ * `--radius-50` (the track rounds the staying segment's left end; the moving segment is a rounded
+ * `rect`), its two inner edges square (the staying `rect` has no radius; a square copy of the
+ * moving `rect`, clipped to its first 4 px, squares the moving segment's left end).
+ */
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+}
+
+.barGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-bar-text);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-100) var(--spacing-200);
+  margin: 0;
+}
+
+.amount,
+.end {
+  min-inline-size: 0;
+  margin-inline-start: auto;
+  text-align: end;
+}
+
+.amount {
+  color: var(--color-grey-900);
+}
+
+.muted {
+  color: var(--color-grey-500);
+}
+
+.track {
+  overflow: hidden;
+  block-size: var(--spacing-100);
+  border-radius: var(--radius-50);
+  background: var(--color-beige-100);
+}
+
+.track svg {
+  display: block;
+}
+
+.staying {
+  fill: var(--color-grey-900);
+  transition: width var(--duration-preview) ease;
+}
+
+/* The moving segment follows the staying one's end, 2 px after it; `x` and `width` both move. */
+.moving {
+  rx: var(--radius-50);
+  transform: translateX(var(--spacing-25));
+  transition:
+    x var(--duration-preview) ease,
+    width var(--duration-preview) ease;
+}
+
+.square {
+  rx: 0;
+}
+
+.innerEdge {
+  transform: translateX(var(--spacing-25));
+  transition: x var(--duration-preview) ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .staying,
+  .moving,
+  .innerEdge {
+    transition: none;
+  }
+}
+
+.add {
+  color: var(--color-green);
+  fill: var(--color-green);
+}
+
+.withdraw {
+  color: var(--color-red);
+  fill: var(--color-red);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-250);
+}

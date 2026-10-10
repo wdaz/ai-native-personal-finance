@@ -1,0 +1,7 @@
+// route: app/api/pots/route.ts — the control: `export { local as POST }` that goes through guardedWrite.
+import { guardedWrite } from "@/src/server/write";
+
+const create = (request: Request) =>
+  guardedWrite(request, { now: new Date(), run: async () => ({ kind: "ok", status: 204 }) });
+
+export { create as POST };

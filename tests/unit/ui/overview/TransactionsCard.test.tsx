@@ -21,7 +21,11 @@ const row = (over: Partial<TransactionItem> = {}): TransactionItem => ({
 describe("TransactionsCard (US-06, SPEC-overview §2.4)", () => {
   it("AC1: avatar, name, signed coloured amount, date", () => {
     render(<TransactionsCard items={[row()]} />);
-    const avatar = screen.getByRole("img", { name: "Emma Richardson" });
+    // Decorative (SPEC-overview §2.4, v1.5): `alt=""` takes the image out of the accessibility
+    // tree, so it has no `img` role and the name is read once, from the text beside it.
+    expect(screen.queryByRole("img")).toBeNull();
+    const avatar = document.querySelector("img")!;
+    expect(avatar.getAttribute("alt")).toBe("");
     expect(avatar.getAttribute("src")).toBe("/avatars/emma-richardson.jpg");
     const amount = screen.getByText("+$75.50");
     expect(amount).toBeTruthy();
@@ -37,7 +41,7 @@ describe("TransactionsCard (US-06, SPEC-overview §2.4)", () => {
 
   it("AC3: fewer than five rows — only the given ones render", () => {
     render(<TransactionsCard items={[row(), row({ id: "2", name: "Daniel Carter" })]} />);
-    expect(screen.getAllByRole("img")).toHaveLength(2);
+    expect(document.querySelectorAll("img")).toHaveLength(2);
   });
 
   it("AC3: none — the empty message, no rows", () => {

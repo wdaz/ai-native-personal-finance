@@ -1,0 +1,3 @@
+// route: app/api/pots/route.ts — an OPTIONS handler the proxy treats as a read, on a path
+// that is not exempt (7.4 rule 1).
+export const OPTIONS = async (): Promise<Response> => new Response(null, { status: 204 });

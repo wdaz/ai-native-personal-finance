@@ -1,0 +1,36 @@
+/*
+ * SPEC-pots 2.4 (PO-Q7 (a); the designer's changelog §19a, PO-1): the cards 24 px apart, one
+ * column, and two equal columns from a 644 px content width — `<main>`'s content box, a size
+ * container (SPEC-app-shell §2.9, H17) — never by the window. 644 px is the design's number, not a
+ * token (§14: breakpoint tokens are a separate decision).
+ */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--spacing-300);
+}
+
+@container (min-width: 644px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 2.9 (PO-Q3 (a), §19k; the look of §18f, BU-6): one white card, the text centred, no button. */
+.empty {
+  padding: var(--spacing-300) var(--spacing-250);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+  color: var(--color-grey-500);
+  text-align: center;
+}
+
+.empty p {
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .empty {
+    padding: var(--spacing-300);
+  }
+}

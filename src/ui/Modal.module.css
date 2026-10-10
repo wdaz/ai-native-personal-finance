@@ -1,0 +1,121 @@
+/*
+ * SPEC-ui-kit 2.2, the design's modal (`Finance App.dc.html`, read 2026-10-10): the full-screen
+ * layer is the backdrop and scrolls when the panel is taller than the window (UK-Q10, the
+ * designer's changelog §16b); the panel never scrolls or clips, so an options panel that reaches
+ * past its bottom is reached by scrolling the layer. No shadow: the backdrop sets it apart.
+ */
+.layer {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: flex;
+  box-sizing: border-box;
+  justify-content: center;
+  padding: var(--spacing-500);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--color-backdrop);
+}
+
+/* Centred when it fits (`margin-block: auto`); at the top padding when it does not. */
+.panel {
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--spacing-250);
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: var(--modal-max-width);
+  margin-block: auto;
+  padding: var(--spacing-400);
+  overflow: visible;
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}
+
+.panel:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .panel {
+    animation: fade-in var(--duration-modal) ease;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--spacing-100));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-200);
+}
+
+/* UI-1 (the designer's changelog §21a): a 30-character name wraps, an unbroken word too. */
+.title {
+  min-inline-size: 0;
+  margin: 0;
+  font: var(--text-preset-1);
+  overflow-wrap: anywhere;
+}
+
+/* UI-4 (§21d): a 44 × 44 px box around the 32 px icon, with a −6 px margin, so the title row keeps
+   its drawn height and the focus ring is on the box. */
+.close {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: var(--tap-target-min);
+  block-size: var(--tap-target-min);
+  margin: calc((var(--spacing-400) - var(--tap-target-min)) / 2);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-100);
+  background: none;
+  color: var(--color-grey-500);
+  cursor: pointer;
+  transition: color var(--duration-hover);
+}
+
+.close:hover {
+  color: var(--color-grey-900);
+}
+
+.description {
+  margin: 0;
+  color: var(--color-grey-500);
+}
+
+@media (max-width: 767.98px) {
+  .layer {
+    padding: var(--spacing-200);
+  }
+
+  .panel {
+    padding: var(--spacing-300) var(--spacing-250);
+  }
+
+  .title {
+    font: var(--text-preset-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .close {
+    transition: none;
+  }
+}

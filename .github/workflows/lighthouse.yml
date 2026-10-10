@@ -12,6 +12,9 @@
 # only `timespan` mode (`supportedModes` in lighthouse 12's interaction-to-next-paint.js), and
 # `lhci autorun` runs `navigation` mode. Owner decision, 2026-09-26: it stays unasserted;
 # total-blocking-time, the usual lab proxy, is read from the first production run (plan 8.6) first.
+# T-27 (Release 2's release) adds /budgets: `budgets.md` §7 asks only that its avatars are sized
+# (CLS <= 0.1, NFR-P2) and sets no score, since Budgets is not a PRD M6 page — so lighthouserc.json
+# asserts it through its own row of `assertMatrix`; /overview and /transactions keep all three.
 name: Lighthouse
 
 on:
@@ -64,7 +67,7 @@ jobs:
             exit 1
           fi
 
-      - name: Sign in as the demo account and warm up both pages
+      - name: Sign in as the demo account and warm up the measured pages
         env:
           DEMO_EMAIL: ${{ vars.DEMO_EMAIL }}
           DEMO_PASSWORD: ${{ vars.DEMO_PASSWORD }}
@@ -77,8 +80,14 @@ jobs:
             | tr -d '\r' | sed -n 's/^[Ss]et-[Cc]ookie: \(pf_session=[^;]*\).*/\1/p')
           test -n "$cookie"
           echo "::add-mask::$cookie"
-          for page in overview transactions; do
-            curl -sS -o /dev/null -H "Cookie: $cookie" "$BASE_URL/$page"
+          # Each page must answer 200 to the session: a 302 to /login would be measured as /login,
+          # whose URL matches no row of lighthouserc.json's assertMatrix, and pass unasserted.
+          for page in overview transactions budgets; do
+            status=$(curl -sS -o /dev/null -w '%{http_code}' -H "Cookie: $cookie" "$BASE_URL/$page")
+            if [ "$status" != "200" ]; then
+              echo "::error::$BASE_URL/$page answered $status, not 200, to the signed-in session."
+              exit 1
+            fi
           done
           echo "LHCI_EXTRA_HEADERS={\"Cookie\":\"$cookie\"}" >> "$GITHUB_ENV"
 
@@ -87,6 +96,7 @@ jobs:
           npx --yes @lhci/cli@0.15.1 autorun
           --collect.url="$BASE_URL/overview"
           --collect.url="$BASE_URL/transactions"
+          --collect.url="$BASE_URL/budgets"
           --collect.settings.extraHeaders="$LHCI_EXTRA_HEADERS"
 
       # Every report records the request headers it was measured with, the session cookie among

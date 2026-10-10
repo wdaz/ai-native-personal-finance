@@ -20,22 +20,22 @@ export function evaluateThreshold(
 }
 
 /**
- * SPEC-reset-and-test-support §2.4. "Rows" are the user-created ones (US-37 AC1): non-seed
- * transactions, budgets and pots — never `ResetLog` or `LoginAttempt`, so failed-login spam
- * cannot force a reset (T-08 plan D3). Release 1 wires this but nothing calls it yet: the
- * write endpoints that will call it after every write arrive in Release 2.
+ * SPEC-reset-and-test-support §2.4 (v1.8), SPEC-write-path 2.9: called by the write wrapper
+ * after every write commits, as **one query** (§9 Q7). "Rows" are the user-created ones (US-37
+ * AC1): non-seed transactions, budgets and pots — never `ResetLog`, `LoginAttempt` or
+ * `WriteAttempt`, so failed-login or write-limiter traffic cannot force a reset by rows (T-08
+ * plan D3); it can still grow the database toward the byte threshold.
  */
 export async function checkThreshold(db: Db, env: Env = process.env): Promise<ThresholdResult> {
-  const [transactions, budgets, pots, size] = await Promise.all([
-    db.transaction.count({ where: { seeded: false } }),
-    db.budget.count({ where: { seeded: false } }),
-    db.pot.count({ where: { seeded: false } }),
-    db.$queryRaw<{ bytes: bigint }[]>`SELECT pg_database_size(current_database()) AS bytes`,
-  ]);
-  const bytes = Number(size[0]?.bytes ?? 0n);
+  const [counts] = await db.$queryRaw<{ rows: bigint; bytes: bigint }[]>`
+    SELECT
+      (SELECT count(*) FROM "Transaction" WHERE seeded = false)
+      + (SELECT count(*) FROM "Budget" WHERE seeded = false)
+      + (SELECT count(*) FROM "Pot" WHERE seeded = false) AS rows,
+      pg_database_size(current_database()) AS bytes`;
   return evaluateThreshold(
-    transactions + budgets + pots,
-    bytes,
+    Number(counts?.rows ?? 0n),
+    Number(counts?.bytes ?? 0n),
     resetRowThreshold(env),
     resetBytesThreshold(env),
   );

@@ -115,6 +115,16 @@ export function resetBytesThreshold(env: Env = process.env): number {
   return positiveInt("RESET_BYTES_THRESHOLD", env.RESET_BYTES_THRESHOLD, 52_428_800);
 }
 
+/** SPEC-write-path 2.10: writes per window per IP (§9 Q4: 30). The test suites run with 1,000. */
+export function writeRateLimitMax(env: Env = process.env): number {
+  return positiveInt("WRITE_RATE_LIMIT_MAX", env.WRITE_RATE_LIMIT_MAX, 30);
+}
+
+/** SPEC-write-path 2.10: the write limiter's window in seconds (§9 Q4: 60). */
+export function writeRateLimitWindowSeconds(env: Env = process.env): number {
+  return positiveInt("WRITE_RATE_LIMIT_WINDOW_SECONDS", env.WRITE_RATE_LIMIT_WINDOW_SECONDS, 60);
+}
+
 /**
  * SPEC-reset-and-test-support §2.2: the operator's Bearer secret for `POST /api/admin/reset`.
  * `null`, never `""`, when unset: an unset secret matches nothing, so the route fails closed

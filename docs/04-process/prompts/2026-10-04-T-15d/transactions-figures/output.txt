@@ -1,0 +1,394 @@
+
+=== TOTALS ===
+transactions: 49 budgets: 4 pots: 5 balance: {"current":483600,"income":381425,"expenses":170050}
+budgets: Entertainment 5000, Bills 75000, Dining Out 7500, Personal Care 10000
+pots: Savings target 200000 total 15900, Concert Ticket target 15000 total 11000, Gift target 15000 total 11000, New Laptop target 100000 total 1000, Holiday target 144000 total 53100
+pages at 10/page: 5 pages, last page 9 rows
+
+=== CATEGORY COUNTS all ten + pages ===
+Entertainment: 3 -> 1 pages, last page 3 rows
+Bills: 7 -> 1 pages, last page 7 rows
+Groceries: 3 -> 1 pages, last page 3 rows
+Dining Out: 8 -> 1 pages, last page 8 rows
+Transportation: 6 -> 1 pages, last page 6 rows
+Personal Care: 3 -> 1 pages, last page 3 rows
+Education: 2 -> 1 pages, last page 2 rows
+Lifestyle: 3 -> 1 pages, last page 3 rows
+Shopping: 3 -> 1 pages, last page 3 rows
+General: 11 -> 2 pages, last page 1 rows
+sum: 49
+
+=== DATE RANGE ===
+min: 2026-07-02T09:25:51Z 2 Jul 2026 | max: 2026-08-19T20:23:11Z 19 Aug 2026
+distinct timestamps: 49 distinct UTC dates: 41
+distinct times of day: 47
+
+=== SORTS first 5 and last 5 ===
+## Latest first five
+1. Savory Bites Bistro | Dining Out | 19 Aug 2026 (2026-08-19T20:23:11Z) | -5550 cents | -$55.50
+2. Emma Richardson | General | 19 Aug 2026 (2026-08-19T14:23:11Z) | 7550 cents | +$75.50
+3. Daniel Carter | General | 18 Aug 2026 (2026-08-18T09:45:32Z) | -4230 cents | -$42.30
+4. Urban Services Hub | General | 17 Aug 2026 (2026-08-17T21:08:09Z) | -6500 cents | -$65.00
+5. Sun Park | General | 17 Aug 2026 (2026-08-17T16:12:05Z) | 12000 cents | +$120.00
+## Latest last five
+45. William Harris | General | 6 Jul 2026 (2026-07-06T17:10:09Z) | 2000 cents | +$20.00
+46. Elevate Education | Education | 5 Jul 2026 (2026-07-05T11:15:22Z) | -5000 cents | -$50.00 | recurring
+47. Serenity Spa & Wellness | Personal Care | 3 Jul 2026 (2026-07-03T14:00:37Z) | -3000 cents | -$30.00 | recurring
+48. Swift Ride Share | Transportation | 2 Jul 2026 (2026-07-02T19:50:05Z) | -1650 cents | -$16.50
+49. Spark Electric Solutions | Bills | 2 Jul 2026 (2026-07-02T09:25:51Z) | -10000 cents | -$100.00 | recurring
+## Oldest first five
+1. Spark Electric Solutions | Bills | 2 Jul 2026 (2026-07-02T09:25:51Z) | -10000 cents | -$100.00 | recurring
+2. Swift Ride Share | Transportation | 2 Jul 2026 (2026-07-02T19:50:05Z) | -1650 cents | -$16.50
+3. Serenity Spa & Wellness | Personal Care | 3 Jul 2026 (2026-07-03T14:00:37Z) | -3000 cents | -$30.00 | recurring
+4. Elevate Education | Education | 5 Jul 2026 (2026-07-05T11:15:22Z) | -5000 cents | -$50.00 | recurring
+5. William Harris | General | 6 Jul 2026 (2026-07-06T17:10:09Z) | 2000 cents | +$20.00
+## Oldest last five
+45. Sun Park | General | 17 Aug 2026 (2026-08-17T16:12:05Z) | 12000 cents | +$120.00
+46. Urban Services Hub | General | 17 Aug 2026 (2026-08-17T21:08:09Z) | -6500 cents | -$65.00
+47. Daniel Carter | General | 18 Aug 2026 (2026-08-18T09:45:32Z) | -4230 cents | -$42.30
+48. Emma Richardson | General | 19 Aug 2026 (2026-08-19T14:23:11Z) | 7550 cents | +$75.50
+49. Savory Bites Bistro | Dining Out | 19 Aug 2026 (2026-08-19T20:23:11Z) | -5550 cents | -$55.50
+## A to Z first five
+1. Aqua Flow Utilities | Bills | 30 Jul 2026 (2026-07-30T13:20:14Z) | -10000 cents | -$100.00 | recurring
+2. Buzz Marketing Group | General | 26 Jul 2026 (2026-07-26T14:40:23Z) | 335800 cents | +$3,358.00
+3. ByteWise | Lifestyle | 23 Jul 2026 (2026-07-23T09:35:14Z) | -4999 cents | -$49.99 | recurring
+4. Daniel Carter | General | 18 Aug 2026 (2026-08-18T09:45:32Z) | -4230 cents | -$42.30
+5. Daniel Carter | General | 19 Jul 2026 (2026-07-19T12:45:09Z) | 5000 cents | +$50.00
+## A to Z last five
+45. Urban Services Hub | General | 17 Aug 2026 (2026-08-17T21:08:09Z) | -6500 cents | -$65.00
+46. William Harris | Personal Care | 5 Aug 2026 (2026-08-05T14:30:56Z) | -1000 cents | -$10.00
+47. William Harris | General | 6 Jul 2026 (2026-07-06T17:10:09Z) | 2000 cents | +$20.00
+48. Yuna Kim | Dining Out | 29 Jul 2026 (2026-07-29T13:51:29Z) | -2850 cents | -$28.50
+49. Yuna Kim | Dining Out | 10 Jul 2026 (2026-07-10T12:30:13Z) | -2750 cents | -$27.50
+## Z to A first five
+1. Yuna Kim | Dining Out | 29 Jul 2026 (2026-07-29T13:51:29Z) | -2850 cents | -$28.50
+2. Yuna Kim | Dining Out | 10 Jul 2026 (2026-07-10T12:30:13Z) | -2750 cents | -$27.50
+3. William Harris | Personal Care | 5 Aug 2026 (2026-08-05T14:30:56Z) | -1000 cents | -$10.00
+4. William Harris | General | 6 Jul 2026 (2026-07-06T17:10:09Z) | 2000 cents | +$20.00
+5. Urban Services Hub | General | 17 Aug 2026 (2026-08-17T21:08:09Z) | -6500 cents | -$65.00
+## Z to A last five
+45. Daniel Carter | General | 18 Aug 2026 (2026-08-18T09:45:32Z) | -4230 cents | -$42.30
+46. Daniel Carter | General | 19 Jul 2026 (2026-07-19T12:45:09Z) | 5000 cents | +$50.00
+47. ByteWise | Lifestyle | 23 Jul 2026 (2026-07-23T09:35:14Z) | -4999 cents | -$49.99 | recurring
+48. Buzz Marketing Group | General | 26 Jul 2026 (2026-07-26T14:40:23Z) | 335800 cents | +$3,358.00
+49. Aqua Flow Utilities | Bills | 30 Jul 2026 (2026-07-30T13:20:14Z) | -10000 cents | -$100.00 | recurring
+## Highest first five
+1. Buzz Marketing Group | General | 26 Jul 2026 (2026-07-26T14:40:23Z) | 335800 cents | +$3,358.00
+2. Sun Park | General | 17 Aug 2026 (2026-08-17T16:12:05Z) | 12000 cents | +$120.00
+3. Emma Richardson | General | 19 Aug 2026 (2026-08-19T14:23:11Z) | 7550 cents | +$75.50
+4. Lily Ramirez | General | 15 Jul 2026 (2026-07-15T16:35:04Z) | 7500 cents | +$75.00
+5. Liam Hughes | Groceries | 15 Aug 2026 (2026-08-15T18:20:33Z) | 6575 cents | +$65.75
+## Highest last five
+45. Harper Edwards | Shopping | 26 Jul 2026 (2026-07-26T09:43:23Z) | -8999 cents | -$89.99
+46. James Thompson | Bills | 12 Jul 2026 (2026-07-12T13:40:46Z) | -9550 cents | -$95.50
+47. Spark Electric Solutions | Bills | 2 Aug 2026 (2026-08-02T09:25:11Z) | -10000 cents | -$100.00 | recurring
+48. Aqua Flow Utilities | Bills | 30 Jul 2026 (2026-07-30T13:20:14Z) | -10000 cents | -$100.00 | recurring
+49. Spark Electric Solutions | Bills | 2 Jul 2026 (2026-07-02T09:25:51Z) | -10000 cents | -$100.00 | recurring
+## Lowest first five
+1. Spark Electric Solutions | Bills | 2 Aug 2026 (2026-08-02T09:25:11Z) | -10000 cents | -$100.00 | recurring
+2. Aqua Flow Utilities | Bills | 30 Jul 2026 (2026-07-30T13:20:14Z) | -10000 cents | -$100.00 | recurring
+3. Spark Electric Solutions | Bills | 2 Jul 2026 (2026-07-02T09:25:51Z) | -10000 cents | -$100.00 | recurring
+4. James Thompson | Bills | 12 Jul 2026 (2026-07-12T13:40:46Z) | -9550 cents | -$95.50
+5. Harper Edwards | Shopping | 26 Jul 2026 (2026-07-26T09:43:23Z) | -8999 cents | -$89.99
+## Lowest last five
+45. Liam Hughes | Groceries | 15 Aug 2026 (2026-08-15T18:20:33Z) | 6575 cents | +$65.75
+46. Lily Ramirez | General | 15 Jul 2026 (2026-07-15T16:35:04Z) | 7500 cents | +$75.00
+47. Emma Richardson | General | 19 Aug 2026 (2026-08-19T14:23:11Z) | 7550 cents | +$75.50
+48. Sun Park | General | 17 Aug 2026 (2026-08-17T16:12:05Z) | 12000 cents | +$120.00
+49. Buzz Marketing Group | General | 26 Jul 2026 (2026-07-26T14:40:23Z) | 335800 cents | +$3,358.00
+
+=== TIES per sort key ===
+## Latest/Oldest same full timestamp: 0 groups, 0 rows
+
+## A-Z/Z-A same exact name: 19 groups, 38 rows
+ key="Emma Richardson" size=2
+    Emma Richardson | General | 19 Aug 2026 (2026-08-19T14:23:11Z) | 7550 cents | +$75.50
+    Emma Richardson | General | 20 Jul 2026 (2026-07-20T17:30:55Z) | -2500 cents | -$25.00
+ key="Daniel Carter" size=2
+    Daniel Carter | General | 18 Aug 2026 (2026-08-18T09:45:32Z) | -4230 cents | -$42.30
+    Daniel Carter | General | 19 Jul 2026 (2026-07-19T12:45:09Z) | 5000 cents | +$50.00
+ key="Sun Park" size=2
+    Sun Park | General | 17 Aug 2026 (2026-08-17T16:12:05Z) | 12000 cents | +$120.00
+    Sun Park | General | 18 Jul 2026 (2026-07-18T19:20:23Z) | -3850 cents | -$38.50
+ key="Liam Hughes" size=2
+    Liam Hughes | Groceries | 15 Aug 2026 (2026-08-15T18:20:33Z) | 6575 cents | +$65.75
+    Liam Hughes | Groceries | 16 Jul 2026 (2026-07-16T10:10:51Z) | -5275 cents | -$52.75
+ key="Lily Ramirez" size=2
+    Lily Ramirez | General | 14 Aug 2026 (2026-08-14T13:05:27Z) | 5000 cents | +$50.00
+    Lily Ramirez | General | 15 Jul 2026 (2026-07-15T16:35:04Z) | 7500 cents | +$75.00
+ key="Ethan Clark" size=2
+    Ethan Clark | Dining Out | 13 Aug 2026 (2026-08-13T20:15:59Z) | -3250 cents | -$32.50
+    Ethan Clark | Dining Out | 14 Jul 2026 (2026-07-14T20:50:18Z) | -4125 cents | -$41.25
+ key="James Thompson" size=2
+    James Thompson | Entertainment | 11 Aug 2026 (2026-08-11T15:45:38Z) | -500 cents | -$5.00
+    James Thompson | Bills | 12 Jul 2026 (2026-07-12T13:40:46Z) | -9550 cents | -$95.50
+ key="Ella Phillips" size=2
+    Ella Phillips | Dining Out | 10 Aug 2026 (2026-08-10T19:22:51Z) | -4500 cents | -$45.00
+    Ella Phillips | Dining Out | 11 Jul 2026 (2026-07-11T18:05:59Z) | -3375 cents | -$33.75
+ key="Sofia Peterson" size=2
+    Sofia Peterson | Transportation | 8 Aug 2026 (2026-08-08T08:55:17Z) | -1500 cents | -$15.00
+    Sofia Peterson | Transportation | 9 Jul 2026 (2026-07-09T08:55:27Z) | -1250 cents | -$12.50
+ key="Mason Martinez" size=2
+    Mason Martinez | Lifestyle | 7 Aug 2026 (2026-08-07T17:40:29Z) | -3525 cents | -$35.25
+    Mason Martinez | Lifestyle | 8 Jul 2026 (2026-07-08T15:20:41Z) | -6500 cents | -$65.00
+ key="Sebastian Cook" size=2
+    Sebastian Cook | Transportation | 6 Aug 2026 (2026-08-06T10:05:44Z) | -2250 cents | -$22.50
+    Sebastian Cook | Transportation | 7 Jul 2026 (2026-07-07T11:45:55Z) | -2000 cents | -$20.00
+ key="William Harris" size=2
+    William Harris | Personal Care | 5 Aug 2026 (2026-08-05T14:30:56Z) | -1000 cents | -$10.00
+    William Harris | General | 6 Jul 2026 (2026-07-06T17:10:09Z) | 2000 cents | +$20.00
+ key="Elevate Education" size=2
+    Elevate Education | Education | 4 Aug 2026 (2026-08-04T11:15:22Z) | -5000 cents | -$50.00 | recurring
+    Elevate Education | Education | 5 Jul 2026 (2026-07-05T11:15:22Z) | -5000 cents | -$50.00 | recurring
+ key="Serenity Spa & Wellness" size=2
+    Serenity Spa & Wellness | Personal Care | 3 Aug 2026 (2026-08-03T14:00:37Z) | -3000 cents | -$30.00 | recurring
+    Serenity Spa & Wellness | Personal Care | 3 Jul 2026 (2026-07-03T14:00:37Z) | -3000 cents | -$30.00 | recurring
+ key="Spark Electric Solutions" size=2
+    Spark Electric Solutions | Bills | 2 Aug 2026 (2026-08-02T09:25:11Z) | -10000 cents | -$100.00 | recurring
+    Spark Electric Solutions | Bills | 2 Jul 2026 (2026-07-02T09:25:51Z) | -10000 cents | -$100.00 | recurring
+ key="Rina Sato" size=2
+    Rina Sato | Bills | 2 Aug 2026 (2026-08-02T13:31:11Z) | -5000 cents | -$50.00
+    Rina Sato | Entertainment | 13 Jul 2026 (2026-07-13T09:15:32Z) | -1000 cents | -$10.00
+ key="Swift Ride Share" size=2
+    Swift Ride Share | Transportation | 1 Aug 2026 (2026-08-01T18:40:33Z) | -1875 cents | -$18.75
+    Swift Ride Share | Transportation | 2 Jul 2026 (2026-07-02T19:50:05Z) | -1650 cents | -$16.50
+ key="Yuna Kim" size=2
+    Yuna Kim | Dining Out | 29 Jul 2026 (2026-07-29T13:51:29Z) | -2850 cents | -$28.50
+    Yuna Kim | Dining Out | 10 Jul 2026 (2026-07-10T12:30:13Z) | -2750 cents | -$27.50
+ key="Harper Edwards" size=2
+    Harper Edwards | Shopping | 26 Jul 2026 (2026-07-26T09:43:23Z) | -8999 cents | -$89.99
+    Harper Edwards | Shopping | 17 Jul 2026 (2026-07-17T14:55:37Z) | -2999 cents | -$29.99
+## A-Z/Z-A same name ignoring case: 19 groups, 38 rows
+ key="emma richardson" size=2
+    Emma Richardson | General | 19 Aug 2026 (2026-08-19T14:23:11Z) | 7550 cents | +$75.50
+    Emma Richardson | General | 20 Jul 2026 (2026-07-20T17:30:55Z) | -2500 cents | -$25.00
+ key="daniel carter" size=2
+    Daniel Carter | General | 18 Aug 2026 (2026-08-18T09:45:32Z) | -4230 cents | -$42.30
+    Daniel Carter | General | 19 Jul 2026 (2026-07-19T12:45:09Z) | 5000 cents | +$50.00
+ key="sun park" size=2
+    Sun Park | General | 17 Aug 2026 (2026-08-17T16:12:05Z) | 12000 cents | +$120.00
+    Sun Park | General | 18 Jul 2026 (2026-07-18T19:20:23Z) | -3850 cents | -$38.50
+ key="liam hughes" size=2
+    Liam Hughes | Groceries | 15 Aug 2026 (2026-08-15T18:20:33Z) | 6575 cents | +$65.75
+    Liam Hughes | Groceries | 16 Jul 2026 (2026-07-16T10:10:51Z) | -5275 cents | -$52.75
+ key="lily ramirez" size=2
+    Lily Ramirez | General | 14 Aug 2026 (2026-08-14T13:05:27Z) | 5000 cents | +$50.00
+    Lily Ramirez | General | 15 Jul 2026 (2026-07-15T16:35:04Z) | 7500 cents | +$75.00
+ key="ethan clark" size=2
+    Ethan Clark | Dining Out | 13 Aug 2026 (2026-08-13T20:15:59Z) | -3250 cents | -$32.50
+    Ethan Clark | Dining Out | 14 Jul 2026 (2026-07-14T20:50:18Z) | -4125 cents | -$41.25
+ key="james thompson" size=2
+    James Thompson | Entertainment | 11 Aug 2026 (2026-08-11T15:45:38Z) | -500 cents | -$5.00
+    James Thompson | Bills | 12 Jul 2026 (2026-07-12T13:40:46Z) | -9550 cents | -$95.50
+ key="ella phillips" size=2
+    Ella Phillips | Dining Out | 10 Aug 2026 (2026-08-10T19:22:51Z) | -4500 cents | -$45.00
+    Ella Phillips | Dining Out | 11 Jul 2026 (2026-07-11T18:05:59Z) | -3375 cents | -$33.75
+ key="sofia peterson" size=2
+    Sofia Peterson | Transportation | 8 Aug 2026 (2026-08-08T08:55:17Z) | -1500 cents | -$15.00
+    Sofia Peterson | Transportation | 9 Jul 2026 (2026-07-09T08:55:27Z) | -1250 cents | -$12.50
+ key="mason martinez" size=2
+    Mason Martinez | Lifestyle | 7 Aug 2026 (2026-08-07T17:40:29Z) | -3525 cents | -$35.25
+    Mason Martinez | Lifestyle | 8 Jul 2026 (2026-07-08T15:20:41Z) | -6500 cents | -$65.00
+ key="sebastian cook" size=2
+    Sebastian Cook | Transportation | 6 Aug 2026 (2026-08-06T10:05:44Z) | -2250 cents | -$22.50
+    Sebastian Cook | Transportation | 7 Jul 2026 (2026-07-07T11:45:55Z) | -2000 cents | -$20.00
+ key="william harris" size=2
+    William Harris | Personal Care | 5 Aug 2026 (2026-08-05T14:30:56Z) | -1000 cents | -$10.00
+    William Harris | General | 6 Jul 2026 (2026-07-06T17:10:09Z) | 2000 cents | +$20.00
+ key="elevate education" size=2
+    Elevate Education | Education | 4 Aug 2026 (2026-08-04T11:15:22Z) | -5000 cents | -$50.00 | recurring
+    Elevate Education | Education | 5 Jul 2026 (2026-07-05T11:15:22Z) | -5000 cents | -$50.00 | recurring
+ key="serenity spa & wellness" size=2
+    Serenity Spa & Wellness | Personal Care | 3 Aug 2026 (2026-08-03T14:00:37Z) | -3000 cents | -$30.00 | recurring
+    Serenity Spa & Wellness | Personal Care | 3 Jul 2026 (2026-07-03T14:00:37Z) | -3000 cents | -$30.00 | recurring
+ key="spark electric solutions" size=2
+    Spark Electric Solutions | Bills | 2 Aug 2026 (2026-08-02T09:25:11Z) | -10000 cents | -$100.00 | recurring
+    Spark Electric Solutions | Bills | 2 Jul 2026 (2026-07-02T09:25:51Z) | -10000 cents | -$100.00 | recurring
+ key="rina sato" size=2
+    Rina Sato | Bills | 2 Aug 2026 (2026-08-02T13:31:11Z) | -5000 cents | -$50.00
+    Rina Sato | Entertainment | 13 Jul 2026 (2026-07-13T09:15:32Z) | -1000 cents | -$10.00
+ key="swift ride share" size=2
+    Swift Ride Share | Transportation | 1 Aug 2026 (2026-08-01T18:40:33Z) | -1875 cents | -$18.75
+    Swift Ride Share | Transportation | 2 Jul 2026 (2026-07-02T19:50:05Z) | -1650 cents | -$16.50
+ key="yuna kim" size=2
+    Yuna Kim | Dining Out | 29 Jul 2026 (2026-07-29T13:51:29Z) | -2850 cents | -$28.50
+    Yuna Kim | Dining Out | 10 Jul 2026 (2026-07-10T12:30:13Z) | -2750 cents | -$27.50
+ key="harper edwards" size=2
+    Harper Edwards | Shopping | 26 Jul 2026 (2026-07-26T09:43:23Z) | -8999 cents | -$89.99
+    Harper Edwards | Shopping | 17 Jul 2026 (2026-07-17T14:55:37Z) | -2999 cents | -$29.99
+## Highest/Lowest same signed amount: 7 groups, 17 rows
+ key="-6500" size=2
+    Urban Services Hub | General | 17 Aug 2026 (2026-08-17T21:08:09Z) | -6500 cents | -$65.00
+    Mason Martinez | Lifestyle | 8 Jul 2026 (2026-07-08T15:20:41Z) | -6500 cents | -$65.00
+ key="5000" size=2
+    Lily Ramirez | General | 14 Aug 2026 (2026-08-14T13:05:27Z) | 5000 cents | +$50.00
+    Daniel Carter | General | 19 Jul 2026 (2026-07-19T12:45:09Z) | 5000 cents | +$50.00
+ key="-1000" size=3
+    Pixel Playground | Entertainment | 11 Aug 2026 (2026-08-11T18:45:38Z) | -1000 cents | -$10.00 | recurring
+    William Harris | Personal Care | 5 Aug 2026 (2026-08-05T14:30:56Z) | -1000 cents | -$10.00
+    Rina Sato | Entertainment | 13 Jul 2026 (2026-07-13T09:15:32Z) | -1000 cents | -$10.00
+ key="-5000" size=3
+    Elevate Education | Education | 4 Aug 2026 (2026-08-04T11:15:22Z) | -5000 cents | -$50.00 | recurring
+    Rina Sato | Bills | 2 Aug 2026 (2026-08-02T13:31:11Z) | -5000 cents | -$50.00
+    Elevate Education | Education | 5 Jul 2026 (2026-07-05T11:15:22Z) | -5000 cents | -$50.00 | recurring
+ key="-3000" size=2
+    Serenity Spa & Wellness | Personal Care | 3 Aug 2026 (2026-08-03T14:00:37Z) | -3000 cents | -$30.00 | recurring
+    Serenity Spa & Wellness | Personal Care | 3 Jul 2026 (2026-07-03T14:00:37Z) | -3000 cents | -$30.00 | recurring
+ key="-10000" size=3
+    Spark Electric Solutions | Bills | 2 Aug 2026 (2026-08-02T09:25:11Z) | -10000 cents | -$100.00 | recurring
+    Aqua Flow Utilities | Bills | 30 Jul 2026 (2026-07-30T13:20:14Z) | -10000 cents | -$100.00 | recurring
+    Spark Electric Solutions | Bills | 2 Jul 2026 (2026-07-02T09:25:51Z) | -10000 cents | -$100.00 | recurring
+ key="-2999" size=2
+    TechNova Innovations | Shopping | 25 Jul 2026 (2026-07-25T16:25:37Z) | -2999 cents | -$29.99
+    Harper Edwards | Shopping | 17 Jul 2026 (2026-07-17T14:55:37Z) | -2999 cents | -$29.99
+rows Collator-equal to the previous row in name order: 19
+same ABSOLUTE amount different sign: 5000: Lily Ramirez 5000; Elevate Education -5000; Rina Sato -5000; Daniel Carter 5000; Elevate Education -5000 || 2000: Sebastian Cook -2000; William Harris 2000
+ties surviving both keys - name+ts: 0 amount+ts: 0 name+amount: 3
+A to Z Collator order equals raw byte order: true
+
+=== NEEDLES case-insensitive substring, Latest order ===
+needle "a": 47 results (5 pages, last page 7 rows); first three: Savory Bites Bistro ; Emma Richardson ; Daniel Carter
+needle "co": 3 results (1 pages, last page 3 rows); first three: Sebastian Cook ; EcoFuel Energy ; Sebastian Cook
+needle "bill": 0 results (0 pages); first three: 
+needle "xyz": 0 results (0 pages); first three: 
+needle "EMMA": 2 results (1 pages, last page 2 rows); first three: Emma Richardson ; Emma Richardson
+needle " ": 48 results (5 pages, last page 8 rows); first three: Savory Bites Bistro ; Emma Richardson ; Daniel Carter
+needle "ä": 0 results (0 pages); first three: 
+-- combined with category
+needle "a" + Dining Out: 8 results (1 pages, last page 8 rows); first three: Savory Bites Bistro ; Ethan Clark ; Ella Phillips
+needle "a" + Bills: 6 results (1 pages, last page 6 rows); first three: Rina Sato ; Spark Electric Solutions ; Aqua Flow Utilities
+needle "co" + Entertainment: 0 results (0 pages); first three: 
+needle "bill" + Bills: 0 results (0 pages); first three: 
+needle "bill" + Dining Out: 0 results (0 pages); first three: 
+needle "a" + Education: 2 results (1 pages, last page 2 rows); first three: Elevate Education ; Elevate Education
+needle bill full: 
+needle EMMA full:
+   Emma Richardson | General | 19 Aug 2026 (2026-08-19T14:23:11Z) | 7550 cents | +$75.50
+   Emma Richardson | General | 20 Jul 2026 (2026-07-20T17:30:55Z) | -2500 cents | -$25.00
+names with a space: 48 | names with no space: ByteWise
+non-ASCII names: none
+names with punctuation or numerals: Serenity Spa & Wellness
+
+=== INCOME positive ===
+positive: 8 negative: 41 zero: 0
+positive by category: [["General",7],["Groceries",1]]
+  Emma Richardson | General | 19 Aug 2026 (2026-08-19T14:23:11Z) | 7550 cents | +$75.50
+  Sun Park | General | 17 Aug 2026 (2026-08-17T16:12:05Z) | 12000 cents | +$120.00
+  Liam Hughes | Groceries | 15 Aug 2026 (2026-08-15T18:20:33Z) | 6575 cents | +$65.75
+  Lily Ramirez | General | 14 Aug 2026 (2026-08-14T13:05:27Z) | 5000 cents | +$50.00
+  Buzz Marketing Group | General | 26 Jul 2026 (2026-07-26T14:40:23Z) | 335800 cents | +$3,358.00
+  Daniel Carter | General | 19 Jul 2026 (2026-07-19T12:45:09Z) | 5000 cents | +$50.00
+  Lily Ramirez | General | 15 Jul 2026 (2026-07-15T16:35:04Z) | 7500 cents | +$75.00
+  William Harris | General | 6 Jul 2026 (2026-07-06T17:10:09Z) | 2000 cents | +$20.00
+positive sum: 381425 net of all: 211450 max: 335800 min: -10000
+
+=== RECURRING ===
+recurring: 11 not: 38 | recurring positive: 0
+recurring by category: [["Entertainment",1],["Education",2],["Personal Care",2],["Bills",5],["Lifestyle",1]]
+
+=== NAMES appearing more than once ===
+distinct names: 30 names repeated: 19
+ Emma Richardson: x2; categories General; recurring false,false; dates 19 Aug 2026, 20 Jul 2026; amounts 7550,-2500
+ Daniel Carter: x2; categories General; recurring false,false; dates 18 Aug 2026, 19 Jul 2026; amounts -4230,5000
+ Sun Park: x2; categories General; recurring false,false; dates 17 Aug 2026, 18 Jul 2026; amounts 12000,-3850
+ Liam Hughes: x2; categories Groceries; recurring false,false; dates 15 Aug 2026, 16 Jul 2026; amounts 6575,-5275
+ Lily Ramirez: x2; categories General; recurring false,false; dates 14 Aug 2026, 15 Jul 2026; amounts 5000,7500
+ Ethan Clark: x2; categories Dining Out; recurring false,false; dates 13 Aug 2026, 14 Jul 2026; amounts -3250,-4125
+ James Thompson: x2; categories Entertainment/Bills; recurring false,false; dates 11 Aug 2026, 12 Jul 2026; amounts -500,-9550
+ Ella Phillips: x2; categories Dining Out; recurring false,false; dates 10 Aug 2026, 11 Jul 2026; amounts -4500,-3375
+ Sofia Peterson: x2; categories Transportation; recurring false,false; dates 8 Aug 2026, 9 Jul 2026; amounts -1500,-1250
+ Mason Martinez: x2; categories Lifestyle; recurring false,false; dates 7 Aug 2026, 8 Jul 2026; amounts -3525,-6500
+ Sebastian Cook: x2; categories Transportation; recurring false,false; dates 6 Aug 2026, 7 Jul 2026; amounts -2250,-2000
+ William Harris: x2; categories Personal Care/General; recurring false,false; dates 5 Aug 2026, 6 Jul 2026; amounts -1000,2000
+ Elevate Education: x2; categories Education; recurring true,true; dates 4 Aug 2026, 5 Jul 2026; amounts -5000,-5000
+ Serenity Spa & Wellness: x2; categories Personal Care; recurring true,true; dates 3 Aug 2026, 3 Jul 2026; amounts -3000,-3000
+ Spark Electric Solutions: x2; categories Bills; recurring true,true; dates 2 Aug 2026, 2 Jul 2026; amounts -10000,-10000
+ Rina Sato: x2; categories Bills/Entertainment; recurring false,false; dates 2 Aug 2026, 13 Jul 2026; amounts -5000,-1000
+ Swift Ride Share: x2; categories Transportation; recurring false,false; dates 1 Aug 2026, 2 Jul 2026; amounts -1875,-1650
+ Yuna Kim: x2; categories Dining Out; recurring false,false; dates 29 Jul 2026, 10 Jul 2026; amounts -2850,-2750
+ Harper Edwards: x2; categories Shopping; recurring false,false; dates 26 Jul 2026, 17 Jul 2026; amounts -8999,-2999
+
+=== NAME LENGTHS ===
+longest 6:
+  24 chars: Spark Electric Solutions | Bills | -10000
+  23 chars: Serenity Spa & Wellness | Personal Care | -3000
+  20 chars: Buzz Marketing Group | General | 335800
+  20 chars: TechNova Innovations | Shopping | -2999
+  19 chars: Aqua Flow Utilities | Bills | -10000
+  19 chars: Nimbus Data Storage | Bills | -999
+shortest 6:
+  8 chars: Yuna Kim | Dining Out | -2750
+  8 chars: Sun Park | General | -3850
+  8 chars: ByteWise | Lifestyle | -4999
+  9 chars: Rina Sato | Entertainment | -1000
+  11 chars: Liam Hughes | Groceries | -5275
+  11 chars: Ethan Clark | Dining Out | -4125
+longest signed amount text: +$3,358.00
+
+=== PAGES per category via Latest, the See All link ===
+## Dining Out: 8 total, 1 pages, last page 8 rows
+ page 1:
+1. Savory Bites Bistro | Dining Out | 19 Aug 2026 | -$55.50
+2. Ethan Clark | Dining Out | 13 Aug 2026 | -$32.50
+3. Ella Phillips | Dining Out | 10 Aug 2026 | -$45.00
+4. Yuna Kim | Dining Out | 29 Jul 2026 | -$28.50
+5. Flavor Fiesta | Dining Out | 27 Jul 2026 | -$42.75
+6. Ethan Clark | Dining Out | 14 Jul 2026 | -$41.25
+7. Ella Phillips | Dining Out | 11 Jul 2026 | -$33.75
+8. Yuna Kim | Dining Out | 10 Jul 2026 | -$27.50
+## Entertainment: 3 total, 1 pages, last page 3 rows
+ page 1:
+1. Pixel Playground | Entertainment | 11 Aug 2026 | -$10.00
+2. James Thompson | Entertainment | 11 Aug 2026 | -$5.00
+3. Rina Sato | Entertainment | 13 Jul 2026 | -$10.00
+
+=== FULL LATEST ORDER with page ===
+p1 #1 Savory Bites Bistro | Dining Out | 19 Aug 2026 (2026-08-19T20:23:11Z) | -5550 cents | -$55.50
+p1 #2 Emma Richardson | General | 19 Aug 2026 (2026-08-19T14:23:11Z) | 7550 cents | +$75.50
+p1 #3 Daniel Carter | General | 18 Aug 2026 (2026-08-18T09:45:32Z) | -4230 cents | -$42.30
+p1 #4 Urban Services Hub | General | 17 Aug 2026 (2026-08-17T21:08:09Z) | -6500 cents | -$65.00
+p1 #5 Sun Park | General | 17 Aug 2026 (2026-08-17T16:12:05Z) | 12000 cents | +$120.00
+p1 #6 Liam Hughes | Groceries | 15 Aug 2026 (2026-08-15T18:20:33Z) | 6575 cents | +$65.75
+p1 #7 Lily Ramirez | General | 14 Aug 2026 (2026-08-14T13:05:27Z) | 5000 cents | +$50.00
+p1 #8 Ethan Clark | Dining Out | 13 Aug 2026 (2026-08-13T20:15:59Z) | -3250 cents | -$32.50
+p1 #9 Pixel Playground | Entertainment | 11 Aug 2026 (2026-08-11T18:45:38Z) | -1000 cents | -$10.00 | recurring
+p1 #10 James Thompson | Entertainment | 11 Aug 2026 (2026-08-11T15:45:38Z) | -500 cents | -$5.00
+p2 #11 Ella Phillips | Dining Out | 10 Aug 2026 (2026-08-10T19:22:51Z) | -4500 cents | -$45.00
+p2 #12 Sofia Peterson | Transportation | 8 Aug 2026 (2026-08-08T08:55:17Z) | -1500 cents | -$15.00
+p2 #13 Mason Martinez | Lifestyle | 7 Aug 2026 (2026-08-07T17:40:29Z) | -3525 cents | -$35.25
+p2 #14 Sebastian Cook | Transportation | 6 Aug 2026 (2026-08-06T10:05:44Z) | -2250 cents | -$22.50
+p2 #15 Green Plate Eatery | Groceries | 6 Aug 2026 (2026-08-06T08:25:44Z) | -7850 cents | -$78.50
+p2 #16 William Harris | Personal Care | 5 Aug 2026 (2026-08-05T14:30:56Z) | -1000 cents | -$10.00
+p2 #17 Elevate Education | Education | 4 Aug 2026 (2026-08-04T11:15:22Z) | -5000 cents | -$50.00 | recurring
+p2 #18 Serenity Spa & Wellness | Personal Care | 3 Aug 2026 (2026-08-03T14:00:37Z) | -3000 cents | -$30.00 | recurring
+p2 #19 Rina Sato | Bills | 2 Aug 2026 (2026-08-02T13:31:11Z) | -5000 cents | -$50.00
+p2 #20 Spark Electric Solutions | Bills | 2 Aug 2026 (2026-08-02T09:25:11Z) | -10000 cents | -$100.00 | recurring
+p3 #21 Swift Ride Share | Transportation | 1 Aug 2026 (2026-08-01T18:40:33Z) | -1875 cents | -$18.75
+p3 #22 Aqua Flow Utilities | Bills | 30 Jul 2026 (2026-07-30T13:20:14Z) | -10000 cents | -$100.00 | recurring
+p3 #23 Yuna Kim | Dining Out | 29 Jul 2026 (2026-07-29T13:51:29Z) | -2850 cents | -$28.50
+p3 #24 EcoFuel Energy | Bills | 29 Jul 2026 (2026-07-29T11:55:29Z) | -3500 cents | -$35.00 | recurring
+p3 #25 Flavor Fiesta | Dining Out | 27 Jul 2026 (2026-07-27T20:15:06Z) | -4275 cents | -$42.75
+p3 #26 Buzz Marketing Group | General | 26 Jul 2026 (2026-07-26T14:40:23Z) | 335800 cents | +$3,358.00
+p3 #27 Harper Edwards | Shopping | 26 Jul 2026 (2026-07-26T09:43:23Z) | -8999 cents | -$89.99
+p3 #28 TechNova Innovations | Shopping | 25 Jul 2026 (2026-07-25T16:25:37Z) | -2999 cents | -$29.99
+p3 #29 ByteWise | Lifestyle | 23 Jul 2026 (2026-07-23T09:35:14Z) | -4999 cents | -$49.99 | recurring
+p3 #30 Nimbus Data Storage | Bills | 21 Jul 2026 (2026-07-21T10:05:42Z) | -999 cents | -$9.99 | recurring
+p4 #31 Emma Richardson | General | 20 Jul 2026 (2026-07-20T17:30:55Z) | -2500 cents | -$25.00
+p4 #32 Daniel Carter | General | 19 Jul 2026 (2026-07-19T12:45:09Z) | 5000 cents | +$50.00
+p4 #33 Sun Park | General | 18 Jul 2026 (2026-07-18T19:20:23Z) | -3850 cents | -$38.50
+p4 #34 Harper Edwards | Shopping | 17 Jul 2026 (2026-07-17T14:55:37Z) | -2999 cents | -$29.99
+p4 #35 Liam Hughes | Groceries | 16 Jul 2026 (2026-07-16T10:10:51Z) | -5275 cents | -$52.75
+p4 #36 Lily Ramirez | General | 15 Jul 2026 (2026-07-15T16:35:04Z) | 7500 cents | +$75.00
+p4 #37 Ethan Clark | Dining Out | 14 Jul 2026 (2026-07-14T20:50:18Z) | -4125 cents | -$41.25
+p4 #38 Rina Sato | Entertainment | 13 Jul 2026 (2026-07-13T09:15:32Z) | -1000 cents | -$10.00
+p4 #39 James Thompson | Bills | 12 Jul 2026 (2026-07-12T13:40:46Z) | -9550 cents | -$95.50
+p4 #40 Ella Phillips | Dining Out | 11 Jul 2026 (2026-07-11T18:05:59Z) | -3375 cents | -$33.75
+p5 #41 Yuna Kim | Dining Out | 10 Jul 2026 (2026-07-10T12:30:13Z) | -2750 cents | -$27.50
+p5 #42 Sofia Peterson | Transportation | 9 Jul 2026 (2026-07-09T08:55:27Z) | -1250 cents | -$12.50
+p5 #43 Mason Martinez | Lifestyle | 8 Jul 2026 (2026-07-08T15:20:41Z) | -6500 cents | -$65.00
+p5 #44 Sebastian Cook | Transportation | 7 Jul 2026 (2026-07-07T11:45:55Z) | -2000 cents | -$20.00
+p5 #45 William Harris | General | 6 Jul 2026 (2026-07-06T17:10:09Z) | 2000 cents | +$20.00
+p5 #46 Elevate Education | Education | 5 Jul 2026 (2026-07-05T11:15:22Z) | -5000 cents | -$50.00 | recurring
+p5 #47 Serenity Spa & Wellness | Personal Care | 3 Jul 2026 (2026-07-03T14:00:37Z) | -3000 cents | -$30.00 | recurring
+p5 #48 Swift Ride Share | Transportation | 2 Jul 2026 (2026-07-02T19:50:05Z) | -1650 cents | -$16.50
+p5 #49 Spark Electric Solutions | Bills | 2 Jul 2026 (2026-07-02T09:25:51Z) | -10000 cents | -$100.00 | recurring

@@ -7,8 +7,10 @@
 # It enforces nothing by itself: GitHub only requires a code-owner review when a branch
 # ruleset's "Require review from Code Owners" setting is also on. Read from GitHub's API on
 # 2026-09-25 (`gh api repos/wdaz/ai-native-personal-finance/rules/branches/main`): that setting
-# (`require_code_owner_review`) is off in the `main` ruleset. Leave it off: the only code owner
-# is also the author of every pull request, and GitHub does not count an author's approval of
-# their own pull request (GitHub's documented rule; not tested here), so with no bypass actor in
-# the ruleset (none today) turning it on would block every merge.
+# (`require_code_owner_review`) is off in the `main` ruleset, now "main: pull request, Copilot,
+# CodeQL", and in its copy for develop, "develop: pull request, Copilot, CodeQL" (T-15b). (Copilot review has been off for develop since 2026-10-10; the
+# main name is as read on 2026-09-25, the develop one dates from T-15b.) Leave the code-owner setting off in both: the only code owner is also the author of every pull request, and GitHub does
+# not count an author's approval of their own pull request (GitHub's documented rule; not tested
+# here), so with no bypass actor in either ruleset (none today) turning it on would block every
+# merge.
 * @wdaz

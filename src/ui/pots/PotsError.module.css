@@ -1,0 +1,10 @@
+/* SPEC-pots 2.9 (§18g, BU-7): the Overview error card's look (overview.md 2.8). */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-200);
+  padding: var(--spacing-300);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}

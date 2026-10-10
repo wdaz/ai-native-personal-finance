@@ -1,6 +1,6 @@
 # User stories
 
-Status: **Approved** (v1.4 — 2026-09-23 amendment, owner decision at the T-06 plan gate (Q1 (c)): sign-up's failure rows — "Something went wrong. Try again" on a server error only, a network failure its own message; v1.3 — 2026-09-23: a not-found row for the 404 page, plan T-06 finding F1 — approved by the owner, who merged PR #15; v1.2 — 2026-09-23 amendments, owner decisions at the T-04 plan gate: the copy appendix's demo banner takes the configured interval (`{days}`), and three R1 additions give the sign-up maxima their messages; v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · Author(s): Agent (draft) · Date: 2026-09-08
+Status: **Approved** (v1.10 — 2026-10-10: the copy appendix's sixth "R2 additions" table, the Pots page's strings the owner approved with SPEC-pots (§9 PO-Q1 and PO-Q4, 2026-10-06) and the design's strings of its 2.15, added by T-26 together with `COPY` (`release-2-handoffs.md` H16 (1)); the form strings Pots shares ("Save Changes", "Theme", "e.g. 2000") are T-24's rows; "1 character left" joins the singular note; approved by its merge under the owner's Release 2 delegation; v1.9 — 2026-10-10: the copy appendix's fifth "R2 additions" table, the Budgets page's strings — the design's of `budgets.md` 2.17 and the two the owner approved with it (§9 BU-Q1 (a), 2026-10-06) — added by T-24 together with `COPY` (`release-2-handoffs.md` H15 (1)), approved by its merge under the owner's Release 2 delegation; v1.8 — 2026-10-10: the copy appendix's fourth "R2 additions" table, the shared write parts' strings the owner approved with SPEC-ui-kit (§9 UK-Q1, 2026-10-05) and the design's strings of its 2.12, added by T-22 together with `COPY` (`release-2-handoffs.md` H13 (2)), approved by its merge under the owner's Release 2 delegation; v1.7 — 2026-10-10: the copy appendix's third "R2 additions" table, the Recurring Bills page's strings the owner approved with SPEC-recurring-bills (§9 RB-Q1 and RB-Q2, 2026-10-05) and the design's and stories' strings of its 2.15, added by T-21 together with `COPY` (`release-2-handoffs.md` H14 (1)), approved by the owner's merge of its pull request; v1.6 — 2026-10-10: the copy appendix's second "R2 additions" table, the Transactions page's strings the owner approved with SPEC-transactions (§9 Q1 and Q4, 2026-10-04) and the design's and stories' strings of its 2.16, added by T-19 together with `COPY` (`release-2-handoffs.md` H11 (1)), approved by the owner's merge of its pull request; v1.5 — 2026-10-10: the copy appendix's "R2 additions" table, the four messages the owner approved with SPEC-write-path (§9 Q5, 2026-10-04), added by T-17 together with `COPY` (`release-2-handoffs.md` H10), approved by the owner's merge of its pull request; v1.4 — 2026-09-23 amendment, owner decision at the T-06 plan gate (Q1 (c)): sign-up's failure rows — "Something went wrong. Try again" on a server error only, a network failure its own message; v1.3 — 2026-09-23: a not-found row for the 404 page, plan T-06 finding F1 — approved by the owner, who merged PR #15; v1.2 — 2026-09-23 amendments, owner decisions at the T-04 plan gate: the copy appendix's demo banner takes the configured interval (`{days}`), and three R1 additions give the sign-up maxima their messages; v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · Author(s): Agent (draft) · Date: 2026-09-08
 Source: `../00-discovery/inputs/challenge-brief.md` (brief), `../00-discovery/problem-statement.md` (PS), `../00-discovery/inputs/design/` (design; visual reference only)
 Conventions: ids are stable; priorities Must/Should/Could; every story lists ≥1 error or boundary criterion; "Agent tool" names the WebMCP tool the story implies (final set decided in NFR-W / ADR). Business "today" is **19 Aug 2026** and the current month is **August 2026** (OQ-4); seed dates are shifted +2 years at seed time. **Where the design and `data.json` differ, `data.json` wins** (owner decision R-01). Every budget and pot has a server-generated `id`; tools take and return ids (R-26). Validation copy: see the copy table at the end of this document (R-07). Money is USD, shown with two decimals and a sign as in the design.
 
@@ -310,4 +310,92 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | Sign-up | server error (5xx, or an answer the client cannot read) | Something went wrong. Try again |
 | Sign-up | network error (no response) | Can't reach the server. Check your connection and try again |
 
-`{N}` and `{days}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 day").
+### R2 additions (2026-10-04, owner-approved with SPEC-write-path, §9 Q5; added by T-17)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Budget | record gone (404) | This budget no longer exists |
+| Pot | record gone (404) | This pot no longer exists |
+| Any write | rate limited (429) | Too many changes. Try again in {N} seconds |
+| Category or theme | already used by another budget or pot | Already used |
+
+### R2 additions (2026-10-04, owner-approved with SPEC-transactions, §9 Q1 and Q4; added by T-19)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Transactions | search field: placeholder · hidden label | Search transaction · label: Search transactions |
+| Transactions | menu labels | Sort by · Category |
+| Transactions sort menu | options | Latest · Oldest · A to Z · Z to A · Highest · Lowest |
+| Transactions category menu | options | All Transactions · Entertainment · Bills · Groceries · Dining Out · Transportation · Personal Care · Education · Lifestyle · Shopping · General |
+| Menu trigger | accessible name | {label}: {current} |
+| Transactions table | column headers | Recipient / Sender · Category · Transaction Date · Amount |
+| Pagination | landmark · buttons (visible · name) · page button name | Pagination · Prev · Previous page · Next · Next page · Page {n} |
+| Transactions | status line after a change | {total} transactions, page {n} of {m} |
+| Transactions | load error | Couldn't load your transactions · button: Retry |
+| Transactions | no results, or a category with no rows and no search (US-19 AC2) | No transactions match your search |
+| Transactions | no transactions at all | No transactions yet |
+
+### R2 additions (2026-10-05, owner-approved with SPEC-recurring-bills, §9 RB-Q1 and RB-Q2; added by T-21)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Recurring Bills | search field: placeholder · hidden label | Search bills · label: Search bills |
+| Recurring Bills | summary cards | Total Bills · Summary |
+| Recurring Bills | summary labels (also Overview's bills card) | Paid Bills · Total Upcoming · Due Soon |
+| Recurring Bills | summary value | {count} ({amount}) |
+| Recurring Bills table | column headers | Bill Title · Due Date · Amount |
+| Recurring Bills | due text | Monthly - {ordinal day} |
+| Recurring Bills | hidden status of a row | Paid · Due soon · Upcoming |
+| Recurring Bills | status line after a change | {count} bills |
+| Recurring Bills | load error | Couldn't load your recurring bills · button: Retry |
+| Recurring Bills | no results | No bills match your search |
+| Recurring Bills | no recurring bills at all | No recurring bills yet |
+
+### R2 additions (2026-10-05, owner-approved with SPEC-ui-kit, §9 UK-Q1, and the design's strings of its 2.12; added by T-22)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Modal | close button (heard) | Close |
+| Delete dialog | title | Delete ‘{name}’? |
+| Delete dialog | buttons | Yes, Confirm Deletion · No, Go Back |
+| Delete dialog and forms | confirm and submit while pending | Deleting… · Saving… |
+| "…" menu | button's name (heard) | Budget options: {name} · Pot options: {name} |
+| "…" menu | items | Edit Budget · Delete Budget · Edit Pot · Delete Pot |
+| Budgets and Pots | header button (the "+" is not heard) | + Add New Budget · + Add New Pot |
+
+### R2 additions (2026-10-06, owner-approved with SPEC-budgets, §9 BU-Q1 (a), and the design's strings of its 2.17; added by T-24)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Budgets | summary card's heading | Spending Summary |
+| Budgets summary row | a budget's maximum | of {maximum} |
+| Budget card | labels | Maximum of {maximum} · Spent · Remaining |
+| Budget card panel | heading · link | Latest Spending · See All |
+| "See All" link | name (heard) | See All {category} transactions |
+| Budget card panel | no transactions in the category | No transactions in this category yet. |
+| Budget forms | descriptions (add · edit) | Choose a category to set a spending budget. These categories can help you monitor spending. · As your budgets change, feel free to update your spending limits. |
+| Budget and Pot forms | field labels · amount placeholder | Budget Category · Maximum Spend · Theme · e.g. 2000 |
+| Budget and Pot forms | submit (add · edit) | Add Budget · Save Changes |
+| Budgets | load error | Couldn't load your budgets · button: Retry |
+
+### R2 additions (2026-10-06, owner-approved with SPEC-pots, §9 PO-Q1 and PO-Q4, and the design's strings of its 2.15; added by T-26)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Pots card | labels | Total Saved · Target of {amount} |
+| Pots card | money buttons (the "+" is not heard) | + Add Money · Withdraw |
+| Pots card | money buttons (heard) | Add Money to {name} · Withdraw from {name} |
+| Pot form | add: description · submit | Create a pot to set savings targets. These can help keep you on track as you save for special purchases. · button: Add Pot |
+| Pot form | edit: description | If your saving targets change, feel free to update your pots. |
+| Pot form | fields | Pot Name · e.g. Rainy Days · Target |
+| Pot form | name counter | {N} characters left |
+| Pot form | Theme, every theme used | All themes already have a pot |
+| Money modal | titles | Add to ‘{name}’ · Withdraw from ‘{name}’ |
+| Money modal | add: description | Add money to your pot to keep it separate from your main balance. As soon as you add this money, it will be deducted from your current balance. |
+| Money modal | withdraw: description | Withdraw from your pot to put money back in your main balance. This will reduce the amount you have in this pot. |
+| Money modal | field labels | Amount to Add · Amount to Withdraw |
+| Money modal | preview | New Amount |
+| Money modal | submit | Confirm Addition · Confirm Withdrawal |
+| Pots | load error | Couldn't load your pots · button: Retry |
+
+`{N}`, `{days}`, `{total}`, `{n}`, `{m}` and `{count}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 second", "1 day", "1 transaction", "1 bill", "1 character left"). `{amount}` is a `formatMoney` amount ("$190.00"); `{ordinal day}` a day of the month with its English ordinal ("2nd", "11th", "21st"). `{name}` is a budget's category or a pot's name, as stored. `{maximum}` is a `formatMoney` amount ("$50.00"); `{category}` one of the ten categories.

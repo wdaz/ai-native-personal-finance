@@ -1,0 +1,10 @@
+/* SPEC-transactions 2.10: one card in place of the list card (the Overview pattern, §2.8). */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-200);
+  padding: var(--spacing-300);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}

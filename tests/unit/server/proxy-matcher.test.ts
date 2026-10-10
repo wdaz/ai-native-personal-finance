@@ -39,6 +39,11 @@ const MUST_RUN = [
   "/api/overview",
   "/api/overview.json",
   "/api/auth/session",
+  // T-17 review: a path under /api that ends like a static file still reaches a route handler
+  // (`app/api/pots/[id]/route.ts` with id `<uuid>.png`), so it needs the 401, 403 and 415 checks.
+  "/api/pots/6f1d3c1e-8a2b-4c3d-9e4f-5a6b7c8d9e0f.png",
+  "/api/budgets/6f1d3c1e-8a2b-4c3d-9e4f-5a6b7c8d9e0f.svg",
+  "/api/pots/x.txt",
 ];
 
 /** Static assets: the proxy has nothing to say about them (review finding M6). */
@@ -89,6 +94,9 @@ describe("proxy.ts's matcher (TD-19)", () => {
       "skips /overview.segments/(app)/overview/__PAGE__.segment.rsc",
       "skips /transactions.rsc",
       "skips /api/overview.json",
+      "skips /api/pots/6f1d3c1e-8a2b-4c3d-9e4f-5a6b7c8d9e0f.png",
+      "skips /api/budgets/6f1d3c1e-8a2b-4c3d-9e4f-5a6b7c8d9e0f.svg",
+      "skips /api/pots/x.txt",
     ]);
   });
 

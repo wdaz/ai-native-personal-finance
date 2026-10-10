@@ -51,12 +51,13 @@ describe("test-support routes (SPEC-reset-and-test-support §2.7)", () => {
       });
 
     it("answers 200 with the recorded entry", async () => {
-      recordViaRequest("webmcp", "abc-123", "/api/overview", { APP_ENV: "test" });
+      recordViaRequest("webmcp", "abc-123", "GET", "/api/overview", { APP_ENV: "test" });
       const response = await get("?requestId=abc-123");
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual({
         requestId: "abc-123",
         via: "webmcp",
+        method: "GET",
         route: "/api/overview",
       });
     });

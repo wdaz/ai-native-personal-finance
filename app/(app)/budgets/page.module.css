@@ -1,0 +1,51 @@
+/*
+ * SPEC-budgets 2.2 (the designer's changelog §14, §16c): one column, the summary on top, then the
+ * cards; from a 952 px content width (428 + 24 + 500, §14) two columns, the summary 428 px wide
+ * and sticky 32 px from the top. `<main>` is the size container (SPEC-app-shell §2.9, H17); 952 px
+ * is the design's number, not a token (§14).
+ */
+.body {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+/* 2.12: the notice sits above both columns; empty, it takes no space and adds no gap. */
+.notice:has([role="status"]:not(:empty)) {
+  margin-block-end: var(--spacing-400);
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  min-inline-size: 0;
+}
+
+.summary {
+  min-inline-size: 0;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  min-inline-size: 0;
+}
+
+@container (min-width: 952px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .summary {
+    position: sticky;
+    inset-block-start: var(--spacing-400);
+    flex: 0 0 428px;
+  }
+
+  .cards {
+    flex: 1 1 0;
+  }
+}

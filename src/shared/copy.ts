@@ -1,6 +1,6 @@
 /**
  * Every message of the copy appendix in docs/01-requirements/user-stories.md ("Appendix —
- * validation and message copy (R-07)", its "R1 additions" table included). The Definition
+ * validation and message copy (R-07)", its "R1 additions" and "R2 additions" tables included). The Definition
  * of Done makes this the only source of user-visible copy. tests/unit/shared/copy.test.ts
  * renders every entry and compares it with the appendix, row by row and in order. The
  * appendix's placeholders (`<email>`, `<date>`, `{N}`, `{days}`) are parameters here.
@@ -73,4 +73,149 @@ export const COPY = {
   // error only (owner decision); a request that got no answer says so.
   signupFailed: "Something went wrong. Try again",
   signupUnreachable: "Can't reach the server. Check your connection and try again",
+
+  // R2 additions (SPEC-write-path §3, §9 Q5; release-2-handoffs.md H10)
+  budgetGone: "This budget no longer exists",
+  potGone: "This pot no longer exists",
+  writeRateLimited: (seconds: number) =>
+    `Too many changes. Try again in ${count(seconds, "second", "seconds")}`,
+  alreadyUsed: "Already used",
+
+  // R2 additions (SPEC-transactions 2.16, §9 Q1 and Q4; release-2-handoffs.md H11 (1))
+  searchTransactionsPlaceholder: "Search transaction",
+  searchTransactionsLabel: "Search transactions",
+  sortBy: "Sort by",
+  category: "Category",
+  /** SPEC-transactions 2.4: the menu's labels, by slug (`TRANSACTION_SORTS`). */
+  transactionSorts: {
+    latest: "Latest",
+    oldest: "Oldest",
+    "a-to-z": "A to Z",
+    "z-to-a": "Z to A",
+    highest: "Highest",
+    lowest: "Lowest",
+  },
+  /** The category menu's first option; the ten others are `CATEGORIES` (`enums.ts`). */
+  allTransactions: "All Transactions",
+  /** SPEC-transactions 2.8: a menu trigger's one accessible name, at every width. */
+  menuTriggerName: (label: string, current: string) => `${label}: ${current}`,
+  columnRecipient: "Recipient / Sender",
+  columnCategory: "Category",
+  columnDate: "Transaction Date",
+  columnAmount: "Amount",
+  pagination: "Pagination",
+  prev: "Prev",
+  previousPage: "Previous page",
+  next: "Next",
+  nextPage: "Next page",
+  pageNumber: (n: number) => `Page ${n}`,
+  transactionsStatus: (total: number, page: number, pageCount: number) =>
+    `${count(total, "transaction", "transactions")}, page ${page} of ${pageCount}`,
+  transactionsLoadError: "Couldn't load your transactions",
+
+  // R2 additions (SPEC-recurring-bills 2.15, §9 RB-Q1 and RB-Q2; release-2-handoffs.md H14 (1))
+  searchBillsPlaceholder: "Search bills",
+  searchBillsLabel: "Search bills",
+  totalBills: "Total Bills",
+  billsSummaryTitle: "Summary",
+  /** Also the Overview bills card's three labels (SPEC-overview §2.6). */
+  billsPaid: "Paid Bills",
+  billsTotalUpcoming: "Total Upcoming",
+  billsDueSoon: "Due Soon",
+  /** US-28 AC1: "4 ($190.00)"; the amount comes formatted (`formatMoney`). */
+  billsCountAmount: (n: number, amount: string) => `${n} (${amount})`,
+  columnBillTitle: "Bill Title",
+  columnDueDate: "Due Date",
+  /** US-27 AC1: the due text, `formatDueDay`'s words ("Monthly - 2nd"). */
+  billDue: (ordinalDay: string) => `Monthly - ${ordinalDay}`,
+  /** 2.9: a row's visually hidden status, by `BILL_STATUSES`. */
+  billStatuses: {
+    paid: "Paid",
+    dueSoon: "Due soon",
+    upcoming: "Upcoming",
+  },
+  billsStatus: (n: number) => count(n, "bill", "bills"),
+  billsLoadError: "Couldn't load your recurring bills",
+  billsEmpty: "No recurring bills yet",
+
+  // R2 additions (SPEC-ui-kit 2.12, §9 UK-Q1; release-2-handoffs.md H13 (2))
+  /** 2.2: the modal's close button, heard (the design's `aria-label`). */
+  close: "Close",
+  /** 2.3: the delete dialog's title, with the design's curly quotes (U+2018, U+2019). */
+  deleteTitle: (name: string) => `Delete ‘${name}’?`,
+  confirmDeletion: "Yes, Confirm Deletion",
+  goBack: "No, Go Back",
+  /** 2.3, 2.7: the confirm and the submit button while their request is pending (UK-Q1). */
+  deleting: "Deleting…",
+  saving: "Saving…",
+  /** 2.4: the "…" button's name is `menuTriggerName(budgetOptions, name)` (UK-Q1). */
+  budgetOptions: "Budget options",
+  potOptions: "Pot options",
+  editBudget: "Edit Budget",
+  deleteBudget: "Delete Budget",
+  editPot: "Edit Pot",
+  deletePot: "Delete Pot",
+  /** 2.8: the header buttons' names; the visible "+" before them is drawn `aria-hidden`. */
+  addNewBudget: "Add New Budget",
+  addNewPot: "Add New Pot",
+
+  // R2 additions (SPEC-budgets 2.17, §9 BU-Q1 (a); release-2-handoffs.md H15 (1))
+  spendingSummary: "Spending Summary",
+  /** 2.3: a summary row's right part; the maximum comes formatted (`formatMoney`). */
+  budgetOfMaximum: (maximum: string) => `of ${maximum}`,
+  /** 2.4: under a card's title. */
+  budgetMaximumOf: (maximum: string) => `Maximum of ${maximum}`,
+  budgetSpent: "Spent",
+  budgetRemaining: "Remaining",
+  latestSpending: "Latest Spending",
+  seeAll: "See All",
+  /** 2.5: the "See All" link's name, heard (BU-Q1 (a) #3). */
+  seeAllCategory: (category: string) => `See All ${category} transactions`,
+  budgetNoTransactions: "No transactions in this category yet.",
+  addBudgetDescription:
+    "Choose a category to set a spending budget. These categories can help you monitor spending.",
+  editBudgetDescription: "As your budgets change, feel free to update your spending limits.",
+  budgetCategory: "Budget Category",
+  maximumSpend: "Maximum Spend",
+  /** The Theme field of the Budgets and Pots forms. */
+  theme: "Theme",
+  /** The amount fields' placeholder, Budgets' Maximum Spend and Pots' Target (the design's). */
+  amountPlaceholder: "e.g. 2000",
+  addBudgetSubmit: "Add Budget",
+  /** The edit forms' submit, Budgets and Pots. */
+  saveChanges: "Save Changes",
+  budgetsLoadError: "Couldn't load your budgets",
+  // R2 additions (SPEC-pots 2.15, §9 PO-Q1 (a), PO-Q3 (a), PO-Q4 (a); release-2-handoffs.md H16 (1))
+  totalSaved: "Total Saved",
+  /** 2.2: "Target of $2,000.00"; the amount comes formatted (`formatMoney`, PO-Q8 (a) #2). */
+  targetOf: (amount: string) => `Target of ${amount}`,
+  /** 2.2: the money buttons as seen; the "+" before "Add Money" is drawn `aria-hidden`. */
+  addMoney: "Add Money",
+  withdraw: "Withdraw",
+  /** 2.2: the money buttons as heard (PO-Q1 (a) #4–#5). */
+  addMoneyTo: (name: string) => `Add Money to ${name}`,
+  withdrawFrom: (name: string) => `Withdraw from ${name}`,
+  addPotDescription:
+    "Create a pot to set savings targets. These can help keep you on track as you save for special purchases.",
+  editPotDescription: "If your saving targets change, feel free to update your pots.",
+  addPotSubmit: "Add Pot",
+  potName: "Pot Name",
+  potNamePlaceholder: "e.g. Rainy Days",
+  target: "Target",
+  /** US-22 AC1: the name's counter, singular at 1 (PO-Q1 (a) #6). */
+  charactersLeft: (n: number) => `${count(n, "character", "characters")} left`,
+  allThemesUsed: "All themes already have a pot",
+  /** 2.6: the money modals' titles, with the design's curly quotes (U+2018, U+2019). */
+  addToPotTitle: (name: string) => `Add to ‘${name}’`,
+  withdrawFromPotTitle: (name: string) => `Withdraw from ‘${name}’`,
+  addMoneyDescription:
+    "Add money to your pot to keep it separate from your main balance. As soon as you add this money, it will be deducted from your current balance.",
+  withdrawDescription:
+    "Withdraw from your pot to put money back in your main balance. This will reduce the amount you have in this pot.",
+  amountToAdd: "Amount to Add",
+  amountToWithdraw: "Amount to Withdraw",
+  newAmount: "New Amount",
+  confirmAddition: "Confirm Addition",
+  confirmWithdrawal: "Confirm Withdrawal",
+  potsLoadError: "Couldn't load your pots",
 } as const;

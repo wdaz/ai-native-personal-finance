@@ -1,0 +1,5 @@
+// route: app/api/pots/[id]/route.ts — a write handler exported by name that skips guardedWrite
+// (7.4 rule 2, the `export { local as POST }` form).
+const handler = async (request: Request): Promise<Response> => Response.json(await request.json());
+
+export { handler as PATCH };

@@ -2,6 +2,13 @@
   Task id and title · spec sections · story ids (DoD, "Scope and traceability").
   Tick every box (an agent never ticks "Owner reviewed and merged"), and paste commands and their
   output from the run, not from memory (governance.md).
+  Base: `develop` for work. Base `main` only for a release (head `develop`) or a hotfix (head
+  `hotfix/<name>-main`) (governance.md, "Branches and releases").
+  Open the PR as a draft. Take it out of draft only when it is finished, CI is green, and the
+  /code-review skill (run by a new Opus subagent) has reviewed the current head and no important finding is left
+  unfixed (Copilot review is off for develop): the owner merges every PR that is not a
+  draft, and a ready PR gets no more pushes (governance.md, "Branches and releases", "Draft until
+  ready").
 -->
 
 ## What and why
@@ -18,6 +25,7 @@
 
 - [ ] The PR names the task id, the spec sections and the story ids it implements; nothing outside the task is changed (drive-by fixes go to a new task).
 - [ ] No Accepted ADR is contradicted; if a decision was needed, a new ADR or an amendment with a process-log entry exists.
+- [ ] If the PR amends an ADR, the other ADRs are searched (`grep`) for the changed term and the result is in the PR description.
 - [ ] If the spec was wrong or incomplete, the spec is amended in the same PR (version bump and a changelog line under the header; §9 stays empty) — the code never silently diverges.
 
 ### Code
@@ -37,6 +45,7 @@
 - [ ] axe passes on every page/modal the task touches.
 - [ ] WebMCP: tools touched have unit + E2E coverage in polyfill and off modes.
 - [ ] `npm run test:all` green locally and in the CI jobs that exist at that point of the backlog (minimal CI from T-01; API/E2E jobs from T-05/T-06; full matrix from T-13).
+- [ ] The PR lists the result of each of the three browser engines (Chromium, Firefox, WebKit), and says which one could not run locally and where it was checked instead.
 
 ### Accessibility and design
 
@@ -48,4 +57,6 @@
 
 - [ ] Process-log entry: what was asked, what the agent produced, what it got wrong, what the owner changed, lessons (template `process-log-entry.md`).
 - [ ] Prompts used for the task saved under `docs/04-process/prompts/`.
+- [ ] The pull request that finishes the task also sets the plan's Status line to Done.
+- [ ] The pull request that finishes the task also marks the task's backlog row Done, with the pull request numbers.
 - [ ] Owner reviewed and merged (agents never merge).

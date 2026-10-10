@@ -19,7 +19,7 @@ const issuesOf = (schema: z.ZodType, input: unknown) => {
 };
 
 describe("ErrorEnvelope (SPEC-auth §2.10)", () => {
-  it("has exactly the seven codes of §2.10", () => {
+  it("has exactly the eight codes of §2.10 (v1.0.10 adds forbidden, SPEC-write-path 2.6)", () => {
     expect(ERROR_CODES).toEqual([
       "validation",
       "invalid_credentials",
@@ -27,8 +27,16 @@ describe("ErrorEnvelope (SPEC-auth §2.10)", () => {
       "unauthenticated",
       "not_found",
       "conflict",
+      "forbidden",
       "server_error",
     ]);
+  });
+
+  it("accepts the 403 of a cross-site write and the 415 of a refused content type (SPEC-write-path 2.6)", () => {
+    expect(valid({ error: "forbidden", message: "This request must be same-origin" })).toBe(true);
+    expect(valid({ error: "validation", issues: [{ path: [], code: "invalid_format" }] })).toBe(
+      true,
+    );
   });
 
   it("accepts a 400 validation body with no message — owner decision, T-04 plan gate finding 3", () => {
@@ -77,7 +85,7 @@ describe("ErrorEnvelope (SPEC-auth §2.10)", () => {
   });
 
   it("refuses an unknown code, an empty message, and unlisted fields", () => {
-    expect(valid({ error: "forbidden", message: "No" })).toBe(false);
+    expect(valid({ error: "not_allowed", message: "No" })).toBe(false);
     expect(valid({ error: "not_found", message: "" })).toBe(false);
     expect(valid({ error: "not_found", message: "Gone", stack: "at …" })).toBe(false);
   });
@@ -93,8 +101,18 @@ describe("ErrorEnvelope (SPEC-auth §2.10)", () => {
 });
 
 describe("ErrorIssueSchema — path and code only (owner decision, T-04 plan gate finding 3)", () => {
-  it(`is exactly one of the four codes: ${VALIDATION_ISSUE_CODES.join(", ")}`, () => {
-    expect(VALIDATION_ISSUE_CODES).toEqual(["required", "invalid_format", "too_short", "too_long"]);
+  it(`is exactly one of the nine codes: ${VALIDATION_ISSUE_CODES.join(", ")}`, () => {
+    expect(VALIDATION_ISSUE_CODES).toEqual([
+      "required",
+      "invalid_format",
+      "too_short",
+      "too_long",
+      "too_small",
+      "too_large",
+      "exceeds_balance",
+      "exceeds_total",
+      "taken",
+    ]);
   });
 
   it("refuses a message or any other field — no Zod strings, no echoed values", () => {
@@ -108,7 +126,7 @@ describe("ErrorIssueSchema — path and code only (owner decision, T-04 plan gat
     ).toBe(false);
   });
 
-  it("refuses a code outside the four", () => {
+  it("refuses a code outside the nine", () => {
     expect(ErrorIssueSchema.safeParse({ path: ["email"], code: "invalid_type" }).success).toBe(
       false,
     );
@@ -165,10 +183,15 @@ describe("toErrorIssues — every case SignupSchema can produce (measured, T-04 
     ]);
   });
 
-  it("throws on a Zod issue code it has no mapping for, rather than mis-report it", () => {
+  it("maps a value outside an enum to invalid_format and never throws on it (SPEC-write-path 2.7)", () => {
     const schema = z.object({ kind: z.enum(["a", "b"]) });
-    expect(() => issuesOf(schema, { kind: "c" })).toThrow(
-      'No validation code mapped for Zod issue code "invalid_value"',
+    expect(issuesOf(schema, { kind: "c" })).toEqual([{ path: ["kind"], code: "invalid_format" }]);
+  });
+
+  it("throws on any other Zod issue code it has no mapping for, rather than mis-report it", () => {
+    const schema = z.strictObject({});
+    expect(() => issuesOf(schema, { extra: 1 })).toThrow(
+      'No validation code mapped for Zod issue code "unrecognized_keys"',
     );
   });
 });

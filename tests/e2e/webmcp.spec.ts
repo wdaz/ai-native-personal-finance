@@ -1,7 +1,12 @@
 import { seedFigures } from "@/scripts/seed-figures";
 import { COPY } from "@/src/shared/copy";
 import { formatMoney } from "@/src/shared/money";
-import { OverviewDtoSchema } from "@/src/shared/schemas";
+import {
+  OverviewDtoSchema,
+  RecurringBillsDtoSchema,
+  TransactionsDtoSchema,
+} from "@/src/shared/schemas";
+import { BILL_STATUSES } from "@/src/shared/recurring-bills-query";
 import { PAGE_NAMES } from "@/src/ui/nav";
 import { expect, loginViaApi, resetDemoData, test } from "../fixtures/e2e";
 import { RUN_MODE, callTool, expectToolsReady, listTools } from "../fixtures/webmcp";
@@ -151,7 +156,12 @@ test("US-38 SPEC-webmcp-tools §2.8: the tool's own API request carries X-Via: w
   expect(requestId).toBeTruthy();
   const log = await request.get("/api/test/log", { params: { requestId } });
   expect(log.status()).toBe(200);
-  expect(await log.json()).toEqual({ requestId, via: "webmcp", route: "/api/overview" });
+  expect(await log.json()).toEqual({
+    requestId,
+    via: "webmcp",
+    method: "GET",
+    route: "/api/overview",
+  });
 });
 
 test("US-41: the indicator reads 'polyfill · 2' on Overview", async ({ page }) => {
@@ -170,22 +180,30 @@ test("US-38 AC1 US-41: leaving Overview by client navigation unregisters the too
     (window as unknown as { __clientNav?: boolean }).__clientNav = true;
   });
 
-  await mainNav(page).getByRole("link", { name: PAGE_NAMES.transactions, exact: true }).click();
-  await expect(page).toHaveURL(/\/transactions$/);
-  await expect(page.locator("html")).not.toHaveAttribute("data-webmcp", "ready");
-  expect(await listTools(page)).toEqual([]);
-  await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(0) })).toBeVisible();
+  // SPEC-pots 2.13: Pots swaps Overview's two tools for its six, with no reload in between.
+  await mainNav(page).getByRole("link", { name: PAGE_NAMES.pots, exact: true }).click();
+  await expect(page).toHaveURL(/\/pots$/);
+  await expect
+    .poll(async () => (await listTools(page)).map((tool) => tool.name).sort())
+    .toEqual([
+      "add_money_to_pot",
+      "add_pot",
+      "delete_pot",
+      "edit_pot",
+      "list_pots",
+      "withdraw_from_pot",
+    ]);
+  await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(6) })).toBeVisible();
   expect(
     await page.evaluate(() => (window as unknown as { __clientNav?: boolean }).__clientNav),
     "the navigation was a full page load, not a client navigation",
   ).toBe(true);
 
+  // WM-Q3 (a): `data-webmcp` stays "ready" between two built pages, so the list is polled.
   await mainNav(page).getByRole("link", { name: PAGE_NAMES.overview, exact: true }).click();
-  await expectToolsReady(page);
-  expect((await listTools(page)).map((tool) => tool.name)).toEqual([
-    "get_balance",
-    "get_overview_summary",
-  ]);
+  await expect
+    .poll(async () => (await listTools(page)).map((tool) => tool.name))
+    .toEqual(["get_balance", "get_overview_summary"]);
   await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(2) })).toBeVisible();
 });
 
@@ -221,4 +239,282 @@ test("US-38 US-41: when the runtime refuses every registration the page says so 
     /get_balance: SecurityError/,
   );
   await expect.poll(() => warnings.join("\n")).toContain('could not register tool "get_balance"');
+});
+
+/**
+ * SPEC-transactions 2.14 and §7's WebMCP row: `list_transactions`, the Transactions page's one
+ * tool. What it returns is compared with what `GET /api/transactions` returns for the same
+ * query and with what the page shows, never with typed figures.
+ */
+test.describe("list_transactions on Transactions (US-38 AC1, US-39 AC2–AC4)", () => {
+  const apiList = async (page: import("@playwright/test").Page, search: string) =>
+    TransactionsDtoSchema.parse(
+      await (await page.request.get(`/api/transactions${search}`)).json(),
+    );
+  const pageNames = (page: import("@playwright/test").Page) =>
+    page
+      .getByRole("table", { name: PAGE_NAMES.transactions })
+      .locator("tbody")
+      .getByRole("row")
+      .locator("td:first-child");
+
+  test("the page registers exactly list_transactions, read-only and untrusted, its description at most 200 characters; the indicator reads 'polyfill · 1'", async ({
+    page,
+  }) => {
+    await page.goto("/transactions");
+    await expectToolsReady(page);
+    const tools = await listTools(page);
+    expect(tools.map((tool) => tool.name)).toEqual(["list_transactions"]);
+    expect(tools[0]!.annotations).toEqual({ readOnlyHint: true, untrustedContentHint: true });
+    expect(tools[0]!.description.length).toBeLessThanOrEqual(200);
+    await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(1) })).toBeVisible();
+  });
+
+  test("no input returns the first page the person sees and the API returns, with ids", async ({
+    page,
+  }) => {
+    await page.goto("/transactions");
+    await expectToolsReady(page);
+    const api = await apiList(page, "");
+
+    const result = await callTool(page, "list_transactions");
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toEqual({ ...api, currency: "USD", unit: "cents" });
+    await expect(pageNames(page)).toHaveText(api.items.map((item) => item.name));
+    for (const item of api.items) expect(item.id).toBeTruthy();
+  });
+
+  test("search, category, sort and page together, and a page past the end (clamped), equal the API", async ({
+    page,
+  }) => {
+    await page.goto("/transactions");
+    await expectToolsReady(page);
+
+    const filtered = await callTool(page, "list_transactions", {
+      search: "a",
+      category: "General",
+      sort: "a-to-z",
+      page: 2,
+    });
+    expect(filtered.structuredContent).toEqual({
+      ...(await apiList(page, "?q=a&category=General&sort=a-to-z&page=2")),
+      currency: "USD",
+      unit: "cents",
+    });
+
+    const beyond = await callTool(page, "list_transactions", { page: 99 });
+    const last = await apiList(page, "?page=99");
+    expect(beyond.structuredContent).toEqual({ ...last, currency: "USD", unit: "cents" });
+    expect(last.page).toBe(last.pageCount);
+  });
+
+  test("a sort outside the list is a validation error naming the allowed values; page 0 is `required`; the page the person sees is unchanged", async ({
+    page,
+  }) => {
+    await page.goto("/transactions?sort=oldest");
+    await expectToolsReady(page);
+    const shown = await pageNames(page).allTextContents();
+
+    const badSort = await callTool(page, "list_transactions", { sort: "newest" });
+    expect(badSort).toMatchObject({ isError: true, code: "validation" });
+    expect(badSort.message).toContain("latest");
+    expect(badSort.structuredContent).toBeUndefined();
+
+    const badCategory = await callTool(page, "list_transactions", { category: "Food" });
+    expect(badCategory).toMatchObject({ isError: true, code: "validation" });
+    expect(badCategory.message).toContain("Dining Out");
+
+    const pageZero = await callTool(page, "list_transactions", { page: 0 });
+    expect(pageZero).toMatchObject({ isError: true, code: "validation" });
+    expect(pageZero.issues).toEqual([{ path: ["page"], code: "required" }]);
+
+    await expect(page).toHaveURL(/\/transactions\?sort=oldest$/);
+    await expect(pageNames(page)).toHaveText(shown);
+  });
+
+  test("after the session ends the tool returns unauthenticated and no data", async ({ page }) => {
+    await page.goto("/transactions");
+    await expectToolsReady(page);
+    await page.context().clearCookies();
+
+    const result = await callTool(page, "list_transactions");
+
+    expect(result).toMatchObject({ isError: true, code: "unauthenticated" });
+    expect(result.structuredContent).toBeUndefined();
+  });
+
+  test("the call carries X-Via: webmcp and is on the server's record", async ({
+    page,
+    request,
+  }) => {
+    await page.goto("/transactions");
+    await expectToolsReady(page);
+    const listResponse = page.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname === "/api/transactions" &&
+        r.request().headers()["x-via"] === "webmcp",
+    );
+
+    await callTool(page, "list_transactions", { search: "co" });
+
+    const response = await listResponse;
+    const requestId = response.headers()["x-request-id"]!;
+    const log = await request.get("/api/test/log", { params: { requestId } });
+    expect(await log.json()).toEqual({
+      requestId,
+      via: "webmcp",
+      method: "GET",
+      route: "/api/transactions",
+    });
+  });
+});
+
+/**
+ * SPEC-recurring-bills 2.12 and §7's WebMCP row: `list_recurring_bills`, the Recurring Bills
+ * page's one tool. What it returns is compared with what `GET /api/recurring-bills` returns for
+ * the same query and with what the page shows, never with typed figures.
+ */
+test.describe("list_recurring_bills on Recurring Bills (US-38 AC1, US-39 AC2–AC4)", () => {
+  const apiBills = async (page: import("@playwright/test").Page, search: string) =>
+    RecurringBillsDtoSchema.parse(
+      await (await page.request.get(`/api/recurring-bills${search}`)).json(),
+    );
+  const pageNames = (page: import("@playwright/test").Page) =>
+    page
+      .getByRole("table", { name: PAGE_NAMES.recurringBills })
+      .locator("tbody")
+      .getByRole("row")
+      .locator("td:first-child");
+  const withUnits = <T extends object>(dto: T) => ({ ...dto, currency: "USD", unit: "cents" });
+
+  test("the page registers exactly list_recurring_bills, read-only and untrusted, its description at most 200 characters; the indicator reads 'polyfill · 1'", async ({
+    page,
+  }) => {
+    await page.goto("/recurring-bills");
+    await expectToolsReady(page);
+    const tools = await listTools(page);
+    expect(tools.map((tool) => tool.name)).toEqual(["list_recurring_bills"]);
+    expect(tools[0]!.annotations).toEqual({ readOnlyHint: true, untrustedContentHint: true });
+    expect(tools[0]!.description.length).toBeLessThanOrEqual(200);
+    await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(1) })).toBeVisible();
+  });
+
+  test("no input, and a search with a sort, return what the page shows and the API returns", async ({
+    page,
+  }) => {
+    await page.goto("/recurring-bills");
+    await expectToolsReady(page);
+    const all = await apiBills(page, "");
+    expect((await callTool(page, "list_recurring_bills")).structuredContent).toEqual(
+      withUnits(all),
+    );
+    await expect(pageNames(page)).toHaveText(all.items.map((item) => item.name));
+
+    await page.goto("/recurring-bills?q=e&sort=highest");
+    await expectToolsReady(page);
+    const sorted = await apiBills(page, "?q=e&sort=highest");
+    expect(
+      (await callTool(page, "list_recurring_bills", { search: "e", sort: "highest" }))
+        .structuredContent,
+    ).toEqual(withUnits(sorted));
+    await expect(pageNames(page)).toHaveText(sorted.items.map((item) => item.name));
+  });
+
+  test("each status returns the page's rows of that status, in order, with the summary over all bills", async ({
+    page,
+  }) => {
+    await page.goto("/recurring-bills?sort=highest");
+    await expectToolsReady(page);
+    const shown = await apiBills(page, "?sort=highest");
+    for (const status of BILL_STATUSES) {
+      const result = await callTool(page, "list_recurring_bills", { status, sort: "highest" });
+      expect(result.structuredContent).toEqual(
+        withUnits(await apiBills(page, `?sort=highest&status=${status}`)),
+      );
+      const dto = RecurringBillsDtoSchema.parse({
+        items: (result.structuredContent as { items: unknown }).items,
+        summary: (result.structuredContent as { summary: unknown }).summary,
+      });
+      expect(dto.items).toEqual(shown.items.filter((item) => item.status === status));
+      expect(dto.summary).toEqual(shown.summary);
+    }
+  });
+
+  test("a sort or status outside the list is a validation error naming the allowed values; the page the person sees is unchanged", async ({
+    page,
+  }) => {
+    await page.goto("/recurring-bills?sort=oldest");
+    await expectToolsReady(page);
+    const shown = await pageNames(page).allTextContents();
+
+    const badSort = await callTool(page, "list_recurring_bills", { sort: "newest" });
+    expect(badSort).toMatchObject({ isError: true, code: "validation" });
+    expect(badSort.message).toContain("latest");
+    expect(badSort.structuredContent).toBeUndefined();
+
+    const badStatus = await callTool(page, "list_recurring_bills", { status: "late" });
+    expect(badStatus).toMatchObject({ isError: true, code: "validation" });
+    expect(badStatus.message).toContain("dueSoon");
+
+    await expect(page).toHaveURL(/\/recurring-bills\?sort=oldest$/);
+    await expect(pageNames(page)).toHaveText(shown);
+  });
+
+  test("after the session ends the tool returns unauthenticated and no data", async ({ page }) => {
+    await page.goto("/recurring-bills");
+    await expectToolsReady(page);
+    await page.context().clearCookies();
+
+    const result = await callTool(page, "list_recurring_bills");
+
+    expect(result).toMatchObject({ isError: true, code: "unauthenticated" });
+    expect(result.structuredContent).toBeUndefined();
+  });
+
+  test("the call carries X-Via: webmcp and is on the server's record", async ({
+    page,
+    request,
+  }) => {
+    await page.goto("/recurring-bills");
+    await expectToolsReady(page);
+    const listResponse = page.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname === "/api/recurring-bills" &&
+        r.request().headers()["x-via"] === "webmcp",
+    );
+
+    await callTool(page, "list_recurring_bills", { status: "paid" });
+
+    const response = await listResponse;
+    const requestId = response.headers()["x-request-id"]!;
+    const log = await request.get("/api/test/log", { params: { requestId } });
+    expect(await log.json()).toEqual({
+      requestId,
+      via: "webmcp",
+      method: "GET",
+      route: "/api/recurring-bills",
+    });
+  });
+
+  test("leaving Recurring Bills by client navigation swaps its tool for Overview's two (WM-Q3 (a))", async ({
+    page,
+  }) => {
+    await page.goto("/recurring-bills");
+    await expectToolsReady(page);
+    await page.evaluate(() => {
+      (window as unknown as { __clientNav?: boolean }).__clientNav = true;
+    });
+
+    await mainNav(page).getByRole("link", { name: PAGE_NAMES.overview, exact: true }).click();
+    await expect(page).toHaveURL(/\/overview$/);
+    await expect
+      .poll(async () => (await listTools(page)).map((tool) => tool.name))
+      .toEqual(["get_balance", "get_overview_summary"]);
+    await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(2) })).toBeVisible();
+    expect(
+      await page.evaluate(() => (window as unknown as { __clientNav?: boolean }).__clientNav),
+      "the navigation was a full page load, not a client navigation",
+    ).toBe(true);
+  });
 });

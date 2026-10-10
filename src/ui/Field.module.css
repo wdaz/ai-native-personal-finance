@@ -28,6 +28,12 @@
   font: var(--text-preset-4);
 }
 
+/* SPEC-ui-kit 2.5 (the design's `input::placeholder`, the designer's changelog §8a #3). */
+.input::placeholder {
+  color: var(--color-grey-500);
+  opacity: 1;
+}
+
 .input:hover:not(:disabled) {
   border-color: var(--color-grey-500);
 }
@@ -43,6 +49,22 @@
 /* Room for a trailing control: its inset, its width, the gap before the text. */
 .withTrailing {
   padding-inline-end: calc(var(--spacing-250) + var(--spacing-200) * 2);
+}
+
+/* SPEC-ui-kit 2.5 (UI-7, the designer's changelog §21g): the "$" 20 px inside the start edge,
+   grey-500; with it the typed text starts 40 px from the edge. */
+.leading {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--spacing-250);
+  display: flex;
+  align-items: center;
+  color: var(--color-grey-500);
+  pointer-events: none;
+}
+
+.withLeading {
+  padding-inline-start: var(--spacing-500);
 }
 
 .helper {

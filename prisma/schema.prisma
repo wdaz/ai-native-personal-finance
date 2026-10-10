@@ -126,3 +126,16 @@ model LoginAttempt {
 
   @@index([ip, at])
 }
+
+/// SPEC-write-path 2.10 (data-model.md v1.2): one row per write request the write rate limit
+/// counts; pruned by the check itself, emptied by a reset, not counted by the threshold.
+model WriteAttempt {
+  id        String   @id @default(uuid()) @db.Uuid
+  ip        String
+  at        DateTime @default(now()) @db.Timestamptz(3)
+  seeded    Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([ip, at])
+}

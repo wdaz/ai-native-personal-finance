@@ -6,7 +6,7 @@ import { ErrorEnvelopeSchema, type ErrorEnvelope } from "./schemas";
  * authenticated API as the UI. It never throws: every way a request can end is a value, so a
  * caller (a tool's `execute`) maps it once. It keeps no opinion about tool error codes — that
  * mapping is `src/webmcp/tool-result.ts`. The login and signup forms keep their own `fetch`
- * (moving them here is a separate change).
+ * (moving them here is a separate change). Writes go through `apiSend` (SPEC-write-path 2.11 (2)).
  */
 export type ApiOutcome<T> =
   | { ok: true; data: T }
@@ -40,7 +40,49 @@ export async function apiGet<T>(
   } catch (error) {
     return isAbort(error) ? { ok: false, kind: "aborted" } : { ok: false, kind: "network" };
   }
+  return readOutcome(response, schema);
+}
 
+export type WriteMethod = "POST" | "PUT" | "PATCH" | "DELETE";
+
+export interface ApiSendOptions extends ApiGetOptions {
+  /** Sent as JSON; a `DELETE` sends none (SPEC-write-path 2.2 step 6). */
+  body?: unknown;
+}
+
+/**
+ * SPEC-write-path 2.11 (2): the write client. The method is sent upper-case (Node answers any
+ * other spelling 400 before the proxy runs, 7.3 v1.0.3); `POST`, `PUT` and `PATCH` declare
+ * `Content-Type: application/json` (2.4); a 204 is a success with no body, where `apiGet`'s
+ * reading would call it an invalid response. Like `apiGet`, it never throws.
+ */
+export async function apiSend<T>(
+  method: WriteMethod,
+  path: string,
+  schema: z.ZodType<T>,
+  options: ApiSendOptions = {},
+): Promise<ApiOutcome<T | null>> {
+  const verb = method.toUpperCase() as WriteMethod;
+  const hasBody = verb !== "DELETE";
+  let response: Response;
+  try {
+    response = await fetch(path, {
+      method: verb,
+      headers: hasBody
+        ? { ...options.headers, "Content-Type": "application/json" }
+        : options.headers,
+      body: hasBody ? JSON.stringify(options.body ?? {}) : undefined,
+      signal: options.signal,
+      credentials: "same-origin",
+    });
+  } catch (error) {
+    return isAbort(error) ? { ok: false, kind: "aborted" } : { ok: false, kind: "network" };
+  }
+  if (response.status === 204) return { ok: true, data: null };
+  return readOutcome(response, schema);
+}
+
+async function readOutcome<T>(response: Response, schema: z.ZodType<T>): Promise<ApiOutcome<T>> {
   let body: unknown;
   try {
     body = await response.json();

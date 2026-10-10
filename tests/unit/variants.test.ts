@@ -54,6 +54,18 @@ describe("seed variants", () => {
     expect(input).toEqual(seedRows());
   });
 
+  it("T-23: the domain's rules read Date rows as they read the server's ISO text (SPEC-budgets §4)", () => {
+    const toDates = (rows: typeof seed) => ({
+      ...rows,
+      transactions: rows.transactions.map((t) => ({ ...t, date: new Date(t.date) })),
+    });
+    for (const variant of SEED_VARIANTS) {
+      expect(applyVariant(toDates(seed), variant), variant).toEqual(
+        toDates(applyVariant(seed, variant)),
+      );
+    }
+  });
+
   it("accepts exactly the six variant names", () => {
     expect(SEED_VARIANTS).toEqual([
       "seed",

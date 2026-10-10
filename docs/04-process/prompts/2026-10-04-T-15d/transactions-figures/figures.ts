@@ -1,0 +1,97 @@
+import { seedRows } from "@/src/server/seed";
+import { compareLatest } from "@/src/domain/transactions";
+import { formatDate } from "@/src/shared/dates";
+import { formatSignedMoney } from "@/src/shared/money";
+
+const rows: any = seedRows();
+const tx: any[] = rows.transactions.map((t: any, i: number) => ({ ...t, date: new Date(t.date), iso: t.date, i }));
+const names = new Intl.Collator("en");
+const ts = (a: any, b: any) => b.date.getTime() - a.date.getTime();
+const sorts: any = Object.fromEntries([
+  ["Latest", (a: any, b: any) => compareLatest(a, b)],
+  ["Oldest", (a: any, b: any) => a.date.getTime() - b.date.getTime() || names.compare(a.name, b.name)],
+  ["A to Z", (a: any, b: any) => names.compare(a.name, b.name) || ts(a, b)],
+  ["Z to A", (a: any, b: any) => names.compare(b.name, a.name) || ts(a, b)],
+  ["Highest", (a: any, b: any) => b.amount - a.amount || ts(a, b)],
+  ["Lowest", (a: any, b: any) => a.amount - b.amount || ts(a, b)],
+]);
+const catLabel = new Map([["DiningOut", "Dining Out"], ["PersonalCare", "Personal Care"]]);
+const cat = (c: string) => catLabel.get(c) ?? c;
+const line = (t: any) => t.name + " | " + cat(t.category) + " | " + formatDate(t.iso) + " (" + t.iso + ") | " + t.amount + " cents | " + formatSignedMoney(t.amount) + (t.recurring ? " | recurring" : "");
+const H = (s: string) => console.log("\n=== " + s + " ===");
+const pages = (n: number) => Math.ceil(n / 10) + " pages, last page " + (n % 10 === 0 ? 10 : n % 10) + " rows";
+H("TOTALS");
+console.log("transactions:", tx.length, "budgets:", rows.budgets.length, "pots:", rows.pots.length, "balance:", JSON.stringify(rows.balance));
+console.log("budgets:", rows.budgets.map((b: any) => cat(b.category) + " " + b.maximum).join(", "));
+console.log("pots:", rows.pots.map((p: any) => p.name + " target " + p.target + " total " + p.total).join(", "));
+console.log("pages at 10/page:", pages(tx.length));
+H("CATEGORY COUNTS all ten + pages");
+const cats = ["Entertainment","Bills","Groceries","Dining Out","Transportation","Personal Care","Education","Lifestyle","Shopping","General"];
+const countOf = (c: string) => tx.filter((t) => cat(t.category) === c).length;
+cats.forEach((c) => console.log(c + ": " + countOf(c) + " -> " + (countOf(c) === 0 ? "0 pages (empty state)" : pages(countOf(c)))));
+console.log("sum:", cats.reduce((s, c) => s + countOf(c), 0));
+H("DATE RANGE");
+const dates = tx.map((t) => t.date.getTime());
+const mn = tx.find((t) => t.date.getTime() === Math.min(...dates));
+const mx = tx.find((t) => t.date.getTime() === Math.max(...dates));
+console.log("min:", mn.iso, formatDate(mn.iso), "| max:", mx.iso, formatDate(mx.iso));
+console.log("distinct timestamps:", new Set(dates).size, "distinct UTC dates:", new Set(tx.map((t) => t.iso.slice(0, 10))).size);
+console.log("distinct times of day:", Array.from(new Set(tx.map((t) => t.iso.slice(11)))).length);
+H("SORTS first 5 and last 5");
+const firstLast = (k: string) => [...tx].sort(sorts[k]);
+const numbered = (list: any[], from: number) => list.map((t, n) => (from + n) + ". " + line(t)).join("\n");
+const showSort = (k: string) => console.log("## " + k + " first five\n" + numbered(firstLast(k).slice(0, 5), 1) + "\n## " + k + " last five\n" + numbered(firstLast(k).slice(-5), tx.length - 4));
+Object.keys(sorts).forEach(showSort);
+H("TIES per sort key");
+const groupBy = (key: (t: any) => string) => Array.from(tx.reduce((m: Map<string, any[]>, t) => m.set(key(t), (m.get(key(t)) ?? []).concat([t])), new Map()).entries()).filter((e: any) => e[1].length !== 1) as [string, any[]][];
+const showGroups = (label: string, g: [string, any[]][], f: any) => console.log("## " + label + ": " + g.length + " groups, " + g.reduce((s, e) => s + e[1].length, 0) + " rows\n" + g.map((e) => " key=" + JSON.stringify(e[0]) + " size=" + e[1].length + "\n" + [...e[1]].sort(f).map((t) => "    " + line(t)).join("\n")).join("\n"));
+showGroups("Latest/Oldest same full timestamp", groupBy((t) => String(t.date.getTime())), sorts["Latest"]);
+showGroups("A-Z/Z-A same exact name", groupBy((t) => t.name), sorts["A to Z"]);
+showGroups("A-Z/Z-A same name ignoring case", groupBy((t) => t.name.toLowerCase()), sorts["A to Z"]);
+showGroups("Highest/Lowest same signed amount", groupBy((t) => String(t.amount)), sorts["Highest"]);
+const byName = [...tx].sort((a, b) => names.compare(a.name, b.name));
+const collEqual = byName.filter((t, i) => i !== 0 && names.compare(byName[i - 1].name, t.name) === 0).length;
+console.log("rows Collator-equal to the previous row in name order:", collEqual);
+console.log("same ABSOLUTE amount different sign:", groupBy((t) => String(Math.abs(t.amount))).filter((e) => new Set(e[1].map((t) => t.amount)).size !== 1).map((e) => e[0] + ": " + e[1].map((t) => t.name + " " + t.amount).join("; ")).join(" || ") || "none");
+console.log("ties surviving both keys - name+ts:", groupBy((t) => t.name + "|" + t.date.getTime()).length, "amount+ts:", groupBy((t) => t.amount + "|" + t.date.getTime()).length, "name+amount:", groupBy((t) => t.name + "|" + t.amount).length);
+const byteCmp = (a: string, b: string) => Buffer.compare(Buffer.from(a), Buffer.from(b));
+console.log("A to Z Collator order equals raw byte order:", [...tx].sort((a, b) => byteCmp(a.name, b.name) || ts(a, b)).map((t) => t.i).join() === [...tx].sort(sorts["A to Z"]).map((t) => t.i).join());
+H("NEEDLES case-insensitive substring, Latest order");
+const search = (needle: string, c?: string) => tx.filter((t) => t.name.toLowerCase().includes(needle.toLowerCase()) && (!c || cat(t.category) === c)).sort(sorts["Latest"]);
+const needleLine = (n: string, c?: string) => "needle " + JSON.stringify(n) + (c ? " + " + c : "") + ": " + search(n, c).length + " results (" + (search(n, c).length ? pages(search(n, c).length) : "0 pages") + "); first three: " + search(n, c).slice(0, 3).map((t) => t.name).join(" ; ");
+["a", "co", "bill", "xyz", "EMMA", " ", "ä"].forEach((n) => console.log(needleLine(n)));
+console.log("-- combined with category");
+([["a", "Dining Out"], ["a", "Bills"], ["co", "Entertainment"], ["bill", "Bills"], ["bill", "Dining Out"], ["a", "Education"]] as [string, string][]).forEach((p) => console.log(needleLine(p[0], p[1])));
+console.log("needle bill full:", search("bill").map((t) => t.name).join(" ; "));
+console.log("needle EMMA full:\n   " + search("EMMA").map(line).join("\n   "));
+console.log("names with a space:", tx.filter((t) => t.name.includes(" ")).length, "| names with no space:", tx.filter((t) => !t.name.includes(" ")).map((t) => t.name).join(";"));
+console.log("non-ASCII names:", tx.filter((t) => /[^\x00-\x7F]/.test(t.name)).map((t) => t.name).join(";") || "none");
+console.log("names with punctuation or numerals:", Array.from(new Set(tx.map((t) => t.name).filter((n) => /[^A-Za-z ]/.test(n)))).join(" ; ") || "none");
+H("INCOME positive");
+const pos = tx.filter((t) => t.amount !== 0 && t.amount === Math.abs(t.amount));
+console.log("positive:", pos.length, "negative:", tx.filter((t) => t.amount !== Math.abs(t.amount)).length, "zero:", tx.filter((t) => t.amount === 0).length);
+const tally = (list: any[]) => JSON.stringify(Array.from(list.reduce((m: Map<string, number>, t) => m.set(cat(t.category), (m.get(cat(t.category)) ?? 0) + 1), new Map()).entries()));
+console.log("positive by category:", tally(pos));
+console.log([...pos].sort(sorts["Latest"]).map((t) => "  " + line(t)).join("\n"));
+console.log("positive sum:", pos.reduce((s, t) => s + t.amount, 0), "net of all:", tx.reduce((s, t) => s + t.amount, 0), "max:", Math.max(...tx.map((t) => t.amount)), "min:", Math.min(...tx.map((t) => t.amount)));
+H("RECURRING");
+const rec = tx.filter((t) => t.recurring);
+console.log("recurring:", rec.length, "not:", tx.length - rec.length, "| recurring positive:", rec.filter((t) => t.amount === Math.abs(t.amount)).length);
+console.log("recurring by category:", tally(rec));
+H("NAMES appearing more than once");
+const dup = groupBy((t) => t.name);
+console.log("distinct names:", new Set(tx.map((t) => t.name)).size, "names repeated:", dup.length);
+console.log(dup.map((e) => " " + e[0] + ": x" + e[1].length + "; categories " + Array.from(new Set(e[1].map((t) => cat(t.category)))).join("/") + "; recurring " + e[1].map((t) => t.recurring).join(",") + "; dates " + e[1].map((t) => formatDate(t.iso)).join(", ") + "; amounts " + e[1].map((t) => t.amount).join(",")).join("\n"));
+H("NAME LENGTHS");
+const byLen = Array.from(new Map(tx.map((t) => [t.name, t])).values()).sort((a, b) => b.name.length - a.name.length || names.compare(a.name, b.name));
+const lenLine = (t: any) => "  " + t.name.length + " chars: " + t.name + " | " + cat(t.category) + " | " + t.amount;
+console.log("longest 6:\n" + byLen.slice(0, 6).map(lenLine).join("\n"));
+console.log("shortest 6:\n" + byLen.slice(-6).reverse().map(lenLine).join("\n"));
+console.log("longest signed amount text:", tx.map((t) => formatSignedMoney(t.amount)).sort((a, b) => b.length - a.length)[0]);
+H("PAGES per category via Latest, the See All link");
+const rowText = (c: string, from: number, t: any, n: number) => (from + n) + ". " + t.name + " | " + c + " | " + formatDate(t.iso) + " | " + formatSignedMoney(t.amount);
+const catPages = (c: string) => tx.filter((t) => cat(t.category) === c).sort(sorts["Latest"]);
+const pageText = (c: string) => "## " + c + ": " + catPages(c).length + " total, " + pages(catPages(c).length) + "\n page 1:\n" + catPages(c).slice(0, 10).map((t, n) => rowText(c, 1, t, n)).join("\n") + (catPages(c).length > 10 ? "\n page 2:\n" + catPages(c).slice(10, 20).map((t, n) => rowText(c, 11, t, n)).join("\n") : "");
+["Dining Out", "Entertainment"].forEach((c) => console.log(pageText(c)));
+H("FULL LATEST ORDER with page");
+console.log([...tx].sort(sorts["Latest"]).map((t, n) => "p" + (Math.floor(n / 10) + 1) + " #" + (n + 1) + " " + line(t)).join("\n"));

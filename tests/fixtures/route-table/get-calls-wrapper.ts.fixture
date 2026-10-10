@@ -1,0 +1,6 @@
+// route: app/api/pots/route.ts — a GET that writes through guardedWrite (7.4 rule 3).
+import { guardedWrite } from "@/src/server/write";
+
+export async function GET(request: Request): Promise<Response> {
+  return guardedWrite(request, { now: new Date(), run: async () => ({ kind: "ok", status: 204 }) });
+}

@@ -15,12 +15,31 @@ describe("errorResponse", () => {
 });
 
 describe("validationErrorResponse", () => {
-  it("is always 400 validation with issues and no message", async () => {
+  it("is 415 when told so (SPEC-write-path 2.6), with the same body", async () => {
+    const response = validationErrorResponse([{ path: [], code: "invalid_format" }], 415);
+    expect(response.status).toBe(415);
+    expect(await response.json()).toEqual({
+      error: "validation",
+      issues: [{ path: [], code: "invalid_format" }],
+    });
+  });
+
+  it("is 400 validation by default, with issues and no message", async () => {
     const response = validationErrorResponse([{ path: ["email"], code: "required" }]);
     expect(response.status).toBe(400);
     const body = (await response.json()) as ErrorEnvelope;
     expect(body).toEqual({ error: "validation", issues: [{ path: ["email"], code: "required" }] });
     expect(body.message).toBeUndefined();
+  });
+  it("carries a message beside the issues when given one (SPEC-transactions 2.13)", async () => {
+    const issues = [{ path: ["sort"], code: "invalid_format" as const }];
+    const response = validationErrorResponse(issues, 400, "sort must be one of: latest");
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: "validation",
+      message: "sort must be one of: latest",
+      issues,
+    });
   });
 });
 
@@ -31,5 +50,15 @@ describe("rateLimitedResponse", () => {
     expect(response.headers.get("Retry-After")).toBe("300");
     const body = (await response.json()) as ErrorEnvelope;
     expect(body).toEqual({ error: "rate_limited", message: "Too many attempts", retryAfter: 300 });
+  });
+});
+
+describe("every helper's answer is no-store (SPEC-write-path 2.2 step 10)", () => {
+  it.each([
+    ["errorResponse", errorResponse(404, "not_found", "Not found")],
+    ["validationErrorResponse", validationErrorResponse([])],
+    ["rateLimitedResponse", rateLimitedResponse("Too many changes", 1)],
+  ])("%s", (_name, response) => {
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
   });
 });

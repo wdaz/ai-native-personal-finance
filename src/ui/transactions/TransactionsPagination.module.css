@@ -1,0 +1,119 @@
+/*
+ * SPEC-transactions 2.7, 2.12 (the designer's changelog §17f TX-6, §17i TX-9, §8a): one row,
+ * Previous at the start, the numbers in the middle, Next at the end; 40 px buttons, numbers
+ * 8 px apart; 24 px above the row (48 px below the results with the card's gap).
+ */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-100);
+  padding-block-start: var(--spacing-300);
+}
+
+.numbers {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-100);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.narrow {
+  display: none;
+}
+
+.button {
+  display: inline-flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-200);
+  block-size: 40px;
+  border: var(--border-width) solid var(--color-beige-500);
+  border-radius: var(--radius-100);
+  background: var(--color-white);
+  color: var(--color-grey-900);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-hover),
+    border-color var(--duration-hover),
+    color var(--duration-hover);
+}
+
+.end {
+  padding: 0 var(--spacing-200);
+}
+
+.number {
+  inline-size: 40px;
+  padding: 0;
+}
+
+/* 2.12 (§8a): beige-100 with grey-900 text and border on hover — 15:1, not white on beige-500. */
+.button:hover:not(:disabled, [aria-current="page"]) {
+  border-color: var(--color-grey-900);
+  background: var(--color-beige-100);
+  color: var(--color-grey-900);
+}
+
+.number[aria-current="page"] {
+  border-color: var(--color-grey-900);
+  background: var(--color-grey-900);
+  color: var(--color-white);
+  cursor: default;
+}
+
+/* US-34 AC2: a disabled end keeps its look under the pointer, at half opacity as drawn. */
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.flip {
+  display: flex;
+  transform: rotate(180deg);
+}
+
+.gap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 40px;
+  color: var(--color-grey-500);
+}
+
+/*
+ * US-09 AC3: below 768 px at most three numbers, and Prev and Next show only their caret. So
+ * that "… 2 3 4 …" fits a 320 px window (US-33 AC3; 248 px inside the card), Prev and Next are
+ * 40 × 40 px squares like the numbers, the items are 4 px apart and an ellipsis is 12 px wide
+ * (the T-19 plan's Q4).
+ */
+@media (max-width: 767.98px) {
+  .pagination,
+  .numbers {
+    gap: var(--spacing-50);
+  }
+
+  .wide {
+    display: none;
+  }
+
+  .narrow {
+    display: flex;
+  }
+
+  .end {
+    inline-size: 40px;
+    padding: 0;
+  }
+
+  .endText {
+    display: none;
+  }
+
+  .gap {
+    inline-size: 12px;
+  }
+}
