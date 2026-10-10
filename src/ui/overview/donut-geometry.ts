@@ -1,9 +1,12 @@
 import type { Theme } from "@/src/shared/enums";
 
-/** SPEC-overview §4.4: SVG 240 px, ring 24 px, flush with the canvas edge. */
+/**
+ * SPEC-overview §4.4 v1.3 (H18 / OV-Q1 (a)): SVG 240 px, ring 24 px at radius 96, so the ring
+ * runs from 84 to 108 and leaves 12 px of canvas round it (the design's own geometry).
+ */
 export const DONUT_SIZE = 240;
 export const DONUT_STROKE = 24;
-export const DONUT_RADIUS = DONUT_SIZE / 2 - DONUT_STROKE / 2;
+export const DONUT_RADIUS = 96;
 
 export type DonutSegment = { theme: Theme; strokeDasharray: string; strokeDashoffset: number };
 

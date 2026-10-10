@@ -362,6 +362,34 @@ test.describe("US-33 layout (SPEC-overview §6 v1.2, H17): two columns from a 10
   });
 });
 
+test("US-07 AC1 AC2 donut look (SPEC-overview §4.4 v1.3, H18): inner ring 12 px at 0.75, outer 24 px; the empty ring beige-100", async ({
+  page,
+  request,
+}) => {
+  const label = `Spent ${formatMoney(FIGURES.budgets.spent)} of ${formatMoney(FIGURES.budgets.limit)} limit`;
+  await page.goto("/overview");
+  const circles = page.getByRole("img", { name: label }).locator("circle");
+  await expect(circles).toHaveCount(1 + FIGURES.budgets.items.length * 2);
+  const looks = await circles.evaluateAll((all) =>
+    all.map((circle) => {
+      const style = getComputedStyle(circle);
+      return { strokeWidth: style.strokeWidth, opacity: style.opacity };
+    }),
+  );
+  const count = FIGURES.budgets.items.length;
+  for (const inner of looks.slice(1, 1 + count)) {
+    expect(inner).toEqual({ strokeWidth: "12px", opacity: "0.75" });
+  }
+  for (const outer of looks.slice(1 + count)) expect(outer.strokeWidth).toBe("24px");
+
+  await seedVariant(request, "empty-budgets");
+  await loginViaApi(page);
+  await page.goto("/overview");
+  const empty = page.getByRole("img", { name: "Spent $0.00 of $0.00 limit" }).locator("circle");
+  await expect(empty).toHaveCount(1);
+  await expect(empty).toHaveCSS("stroke", "rgb(248, 244, 240)");
+});
+
 test.describe("US-34 hover and focus states (design-tokens.md 'Component states': tertiary)", () => {
   test("all four card links go grey-500 to grey-900 on hover and focus", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
