@@ -6722,7 +6722,7 @@ them too").
 - **Prompt(s):** conversational — "Bu project üçün hədəf yazmaq istəyirəm" ("I want to write a goal for
   this project").
 - **Produced:** `roadmap.md`, new section "Release 2 goal": one goal with a soft target date of
-  2026-12-31 and six outcomes, each tied to a PRD goal (G1–G4) and to a "done when" test.
+  2026-12-31 and seven outcomes, each tied to a PRD goal (G1–G4) and to a "done when" test.
 - **What the agent got right:** after the owner's correction it read the goals already in the repository
   (`problem-statement.md` §4 S1–S4, `prd.md` §2 G1–G4), saw that they lack a time and an end point, and
   offered three readings; the owner chose "a goal for the next stage". It noticed that `roadmap.md` says it
@@ -6731,7 +6731,7 @@ them too").
   reading the repository, and restated G1–G4 as if they were new; the owner asked "Repoda hədəf olmalıdır.
   Onu oxudun?" ("There should be a goal in the repo. Did you read it?").
 - **Owner changes and reasoning:** chose option 1 (a goal for Release 2 and Phase 7, built on G1–G4) and
-  "Bəli əlavə et" ("yes, add it") to the soft date and to adding it to `roadmap.md`.
+  "Bəli əlavə et" ("yes, add it") to the soft date and to adding it to `roadmap.md`. Then: "Sprint tasklarına başlamazdan öncə dizayn uyğunlaşması etmək lazımdır ... Bu yalnız bu release 2 ilə veriləcək" ("before starting the sprint tasks a design alignment is needed ... it will ship only with this Release 2"); the agent added it as outcome 1.
 - **Disagreements:** none.
 - **Lessons for the process:** read the repository's own goal documents before drafting a goal; a status
   summary is not the source.
