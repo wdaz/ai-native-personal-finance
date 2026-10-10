@@ -182,6 +182,9 @@ describe("T-01 scaffold", () => {
       "RESET_INTERVAL_DAYS",
       "RESET_ROW_THRESHOLD",
       "RESET_BYTES_THRESHOLD",
+      // SPEC-write-path 2.10 (T-17)
+      "WRITE_RATE_LIMIT_MAX",
+      "WRITE_RATE_LIMIT_WINDOW_SECONDS",
     ];
 
     it.each(required)("declares %s", (name) => {

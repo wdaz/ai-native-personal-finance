@@ -10,6 +10,8 @@ export const TOOL_ERROR_CODES = [
   "conflict",
   "rate_limited",
   "cancelled",
+  // SPEC-write-path 2.11 (4), SPEC-webmcp-tools §2.5 (v1.0.7): a write refused as cross-site.
+  "forbidden",
   "server_error",
 ] as const;
 export type ToolErrorCode = (typeof TOOL_ERROR_CODES)[number];
@@ -22,6 +24,8 @@ export const DEFAULT_TOOL_MESSAGE: Record<ToolErrorCode, string> = {
   conflict: "The data changed; try again",
   rate_limited: "Too many requests; try again later",
   cancelled: "The request was cancelled",
+  // The 403 body's own message (SPEC-write-path 2.6), so no new text (SPEC-webmcp-tools §2.5).
+  forbidden: "This request must be same-origin",
   server_error: "Something went wrong",
 };
 
@@ -54,10 +58,14 @@ export function toolError(
 
 function codeForStatus(status: number): ToolErrorCode {
   switch (status) {
+    // 415: a refused content type answers `validation` with its `issues` (SPEC-write-path 2.6).
     case 400:
+    case 415:
       return "validation";
     case 401:
       return "unauthenticated";
+    case 403:
+      return "forbidden";
     case 404:
       return "not_found";
     case 409:

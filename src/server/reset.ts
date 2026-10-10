@@ -15,6 +15,7 @@ export const RESET_TABLES = [
   "Pot",
   "ResetLog",
   "LoginAttempt",
+  "WriteAttempt",
 ] as const;
 
 /** SPEC-reset-and-test-support §4: "reset never runs concurrently". */
@@ -27,7 +28,7 @@ export type ResetResult = { at: Date; rows: number };
  * write the `ResetLog` row. `at` is filled by Prisma's runtime from the server's clock when
  * the row is created (`@default(now())`) — operational time, not the fixed business clock —
  * so this module itself reads no clock (ADR-0005). `rows` counts the seed rows inserted;
- * `LoginAttempt` is emptied by the truncation.
+ * `LoginAttempt` and `WriteAttempt` are emptied by the truncation (SPEC-write-path 2.10).
  */
 export async function resetToSeed(
   db: Db,

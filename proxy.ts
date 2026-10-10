@@ -6,6 +6,14 @@ import { recordViaRequest } from "@/src/server/request-log";
 import { latestResetAt } from "@/src/server/reset";
 import { stripTransportSuffix } from "@/src/server/transport-path";
 import {
+  FORBIDDEN_BODY,
+  UNSUPPORTED_TYPE_BODY,
+  isContentTypeRefused,
+  isCrossSite,
+  isWriteRequest,
+  logRefusal,
+} from "@/src/server/write-rules";
+import {
   SESSION_COOKIE_NAME,
   SESSION_TTL_SECONDS,
   isSessionValid,
@@ -31,9 +39,11 @@ import { VIA_HEADER } from "@/src/shared/via";
 // exclusion swallows that suffix — on Vercel the proxy then never ran for `/overview.segments/*` or
 // `/api/overview.json` (TD-19). `tests/unit/server/proxy-matcher.test.ts` compiles this pattern
 // with Next's own function and pins both halves.
+// The static-file exclusion does not apply under `api/` (T-17 review): `/api/pots/<uuid>.png`
+// reaches `app/api/pots/[id]/route.ts`, and a write there must get the 401, 403 and 415 checks.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|txt|xml)$).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|(?!api/).*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|txt|xml)$).*)",
   ],
 };
 
@@ -86,7 +96,9 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const isApi = pathname.startsWith("/api/");
   // SPEC-webmcp-tools §2.8: an API request a WebMCP tool made is recorded under this
   // response's request id — before the auth branch below, so a 401 is on record too.
-  if (isApi) recordViaRequest(request.headers.get(VIA_HEADER), requestId, pathname);
+  if (isApi) {
+    recordViaRequest(request.headers.get(VIA_HEADER), requestId, request.method, pathname);
+  }
   // TD-19: a page's `.rsc`, `.segments/*` and `.json` forms are the page, for the route matrix.
   // An API path is matched as requested — `/api/meta.json` is not the public `/api/meta`, so it
   // meets the session check and fails closed.
@@ -110,11 +122,16 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const resetInvalidated = payload !== null && !authenticated && isSessionValid(payload, now, null);
   const logoutFallback = isLogoutFallback(request);
   const crossSiteLogout =
-    pathname === "/api/auth/logout" &&
-    request.method === "POST" &&
-    request.headers.get("sec-fetch-site") === "cross-site";
+    pathname === "/api/auth/logout" && request.method === "POST" && isCrossSite(request.headers);
+  // SPEC-write-path 2.2 steps 3–4, 2.3–2.5: every write path, after the 401 branch below.
+  const isWrite = isWriteRequest(request.method, pathname);
+  const crossSiteWrite = isWrite && isCrossSite(request.headers);
+  const refusedType =
+    isWrite && !crossSiteWrite && isContentTypeRefused(request.method, request.headers);
 
   let response: NextResponse;
+  /** The request goes on to its page or route (the last branch), not answered here. */
+  let passedOn = false;
 
   if (isRoot) {
     response = NextResponse.redirect(
@@ -136,6 +153,15 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       loginUrl.searchParams.set("next", next);
       response = NextResponse.redirect(loginUrl, 302);
     }
+  } else if (crossSiteWrite || refusedType) {
+    // SPEC-write-path 2.3–2.6: a write path refuses a cross-site request (403) and a body that
+    // is not declared JSON (415) before any handler runs, so a new route cannot forget it.
+    // Nothing is written, the refusal is not rate-limited (2.10), and one line is logged (2.12).
+    const status = crossSiteWrite ? 403 : 415;
+    response = NextResponse.json(crossSiteWrite ? FORBIDDEN_BODY : UNSUPPORTED_TYPE_BODY, {
+      status,
+    });
+    logRefusal({ requestId, status, method: request.method, route: pathname });
   } else if (!isApi && AUTH_PAGES.test(routePath) && authenticated && !logoutFallback) {
     response = NextResponse.redirect(new URL("/overview", request.url), 302);
   } else if (crossSiteLogout) {
@@ -144,9 +170,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     // cross-site request (a hostile page auto-submitting a form to it) at all, relying only on
     // SameSite=Lax. A same-origin fetch (this app's own logOut(), or a client with no Fetch
     // Metadata support) still passes: only an explicit Sec-Fetch-Site: cross-site is refused.
-    // Not run through ErrorEnvelope/SPEC-auth §2.10 — logout has no documented error shape,
-    // and this is a proxy-level rejection, not a route-handler answer.
-    response = NextResponse.json({ message: "This request must be same-origin" }, { status: 403 });
+    // Since SPEC-auth v1.0.10 it answers the ErrorEnvelope's `forbidden` (SPEC-write-path 2.6).
+    response = NextResponse.json(FORBIDDEN_BODY, { status: 403 });
   } else {
     // Next 16 takes the nonce it puts on its own inline scripts and styles from the *request's*
     // Content-Security-Policy header (next/dist/server/app-render/app-render.js:209-210) — set
@@ -165,13 +190,19 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     forwardedHeaders.delete(LAST_RESET_AT_HEADER);
     if (resetAt) forwardedHeaders.set(LAST_RESET_AT_HEADER, resetAt.toISOString());
     response = NextResponse.next({ request: { headers: forwardedHeaders } });
+    passedOn = true;
   }
 
   // Skip the reissue on logout (and login, which seals its own fresh cookie) — otherwise an
   // old-enough session sends two Set-Cookie headers in one response, and only header-merge
   // order happens to make the clear win (review finding M5).
+  // A refused write (SPEC-write-path 2.2 step 10) gets no Set-Cookie either.
   const skipsReissue =
-    pathname === "/api/auth/logout" || pathname === "/api/auth/login" || logoutFallback;
+    pathname === "/api/auth/logout" ||
+    pathname === "/api/auth/login" ||
+    logoutFallback ||
+    crossSiteWrite ||
+    refusedType;
   if (!skipsReissue && authenticated && payload && shouldReissue(payload, now)) {
     const secure = request.url.startsWith("https://");
     const resealed = await sealSession({
@@ -192,7 +223,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   }
 
   response.headers.set("X-Request-Id", requestId);
-  if (!isApi && authenticated) {
+  // An answer the proxy builds itself for an API path — its 401, a write's 403 or 415, logout's
+  // 403 — is no-store too (SPEC-write-path 2.2 step 10; T-17 plan F8). A request it passes on
+  // gets its Cache-Control from the route.
+  if ((!isApi && authenticated) || (isApi && !passedOn)) {
     response.headers.set("Cache-Control", "no-store");
   }
   // ADR-0006, 2026-09-23 amendment (restored): Next's own RSC-payload scripts and inline

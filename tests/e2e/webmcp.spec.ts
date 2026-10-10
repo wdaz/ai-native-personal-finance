@@ -151,7 +151,12 @@ test("US-38 SPEC-webmcp-tools §2.8: the tool's own API request carries X-Via: w
   expect(requestId).toBeTruthy();
   const log = await request.get("/api/test/log", { params: { requestId } });
   expect(log.status()).toBe(200);
-  expect(await log.json()).toEqual({ requestId, via: "webmcp", route: "/api/overview" });
+  expect(await log.json()).toEqual({
+    requestId,
+    via: "webmcp",
+    method: "GET",
+    route: "/api/overview",
+  });
 });
 
 test("US-41: the indicator reads 'polyfill · 2' on Overview", async ({ page }) => {

@@ -6928,3 +6928,35 @@ them too").
 - **Lessons for the process:** a test that finds an element by its accessible name ties the test to a
   spec value; when that value changes, search the tests for the role query, not only the attribute.
 - **Next:** the owner's merge of this pull request.
+
+## 2026-10-10 — Phase 4 (Release 2): T-17 — the write path's shared server pipeline
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; first Release 2 build task.
+- **Participants:** Owner (Ruslan), Agent (Claude Code, started from the project thread "Release 2 build
+  T-17"; one Opus 5.5 code-review subagent).
+- **Trigger:** the coordinator's brief to work Release 2 in roadmap order after outcomes 0 and 1.
+- **Prompt(s):** `prompts/2026-10-10-T-17/` (the review brief). The plan `plans/2026-10-10-T-17.md`
+  went to the owner at the plan gate with three questions; the owner answered "a", then "hamısı üçün":
+  Q1 (a) a lower-case method is answered 400 by Node, so it is unit-tested and the spec amended
+  (`write-path.md` v1.0.3); Q2 (a) the refusal log line is tested at unit level; Q3 (a) one pull
+  request, one commit per task.
+- **Produced** (pull request #120, `develop`):
+  - A: `forbidden` in `ErrorEnvelope`, the write issue mapper by schema family, `apiSend`, the tool
+    mapping of 403 and 415, the four R2 copy strings (H10).
+  - B: the proxy's cross-site 403 and content-type 415, with no cookie re-issue and one log line.
+  - C: `WriteAttempt` and its migration, the write limiter, `checkThreshold` as one query.
+  - D: `guardedWrite`, tested directly (no write route exists before T-23).
+  - E: the route-table guard and a violating fixture per rule.
+  - F: `RELEASE_BEING_BUILT` = 2, `NOT_YET_BUILT` with 19 ids, ADR-0003's dated line (H4).
+- **What went well:**
+  - Each rule was shown red before its code (the saved red runs are quoted in the pull request).
+  - The API test of `guardedWrite` found a real defect: through the pg driver adapter a unique
+    violation names only the index (`Pot_name_key`), so `taken` came back with an empty path; the
+    field is now read from Prisma's index name.
+- **Disagreements:** none.
+- **Exception to v1.9:** Copilot's review (weekly limit until 2026-10-12): by the owner's rule of
+  2026-10-10, if it errors the pull request does not wait for it once CI is green.
+- **Not done here:** `write-path.md` 7.2's rows (they need a real write route: T-23 and T-25); 7.5 and
+  7.6 (the pages: T-24, T-26). `tests/unit/install-scripts.test.ts` fails on a machine with npm 10
+  (it needs npm 11); CI runs npm 11.
+- **Next:** the owner's merge of #120; then T-18 (Transactions, server and API).

@@ -23,3 +23,11 @@ locally). Each test resets it; it holds demo data only.
   (`scripts/schema-drift.sh`, `npm run db:drift`); needs a migrated database (`npm run db:reset`
   first), and a schema with an extra model, and one with the `LoginAttempt` model removed, must
   each be reported as drift (exit 2, naming the model).
+- `write-refusals.spec.ts` (T-17) — the proxy's 403 and 415 on the eight planned write paths,
+  401 first, the `Sec-Fetch-Site` and content-type cases, DELETE, the exempt routes, logout's
+  403 envelope, and a lower-case method answered 400 by Node (SPEC-write-path 7.3)
+- `write-limit.spec.ts` (T-17) — the write limiter against real `WriteAttempt` rows: per IP,
+  pruned, emptied by a reset, `retryAfter` (2.10)
+- `write-wrapper.spec.ts` (T-17) — `guardedWrite` called directly (no write route exists
+  before T-23): the order of 2.2 steps 5–10, `taken` from a unique violation, the threshold's
+  409, a throwing check, `X-Request-Id` and `no-store` on every answer

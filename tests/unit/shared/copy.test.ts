@@ -8,7 +8,7 @@ const read = (path: string) => readFileSync(join(repoRoot, path), "utf8");
 
 /**
  * `[context, message]` for every row of the tables under "## Appendix — validation and
- * message copy" (its "R1 additions" table included), in order. Throws when there is no
+ * message copy" (its "R1 additions" and "R2 additions" tables included), in order. Throws when there is no
  * appendix, so a renamed section fails instead of comparing nothing with nothing.
  */
 function appendixRows(markdown: string): [string, string][] {
@@ -101,6 +101,10 @@ const RENDERED: [context: string, keys: Key[], message: string][] = [
   ["Any page", ["notFound"], COPY.notFound],
   ["Sign-up", ["signupFailed"], COPY.signupFailed],
   ["Sign-up", ["signupUnreachable"], COPY.signupUnreachable],
+  ["Budget", ["budgetGone"], COPY.budgetGone],
+  ["Pot", ["potGone"], COPY.potGone],
+  ["Any write", ["writeRateLimited"], COPY.writeRateLimited(2)],
+  ["Category or theme", ["alreadyUsed"], COPY.alreadyUsed],
 ];
 
 const expected = RENDERED.map(([context, , message]) => [context, message]);
@@ -159,6 +163,14 @@ describe("copy with a number in it", () => {
     [10, "Demo data resets every 10 days · last reset 3 Oct 2026"],
   ])("reset banner, %i day(s)", (days, text) => {
     expect(COPY.resetBanner(days, "3 Oct 2026")).toBe(text);
+  });
+
+  it.each([
+    [1, "Too many changes. Try again in 1 second"],
+    [2, "Too many changes. Try again in 2 seconds"],
+    [60, "Too many changes. Try again in 60 seconds"],
+  ])('write rate limit, %i second(s) (SPEC-write-path §3: 1 is "1 second")', (seconds, text) => {
+    expect(COPY.writeRateLimited(seconds)).toBe(text);
   });
 
   it("writes the indicator's tool count as given", () => {

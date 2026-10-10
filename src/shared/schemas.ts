@@ -86,6 +86,7 @@ export const ERROR_CODES = [
   "unauthenticated",
   "not_found",
   "conflict",
+  "forbidden",
   "server_error",
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -104,6 +105,12 @@ export const VALIDATION_ISSUE_CODES = [
   "invalid_format",
   "too_short",
   "too_long",
+  // SPEC-write-path 2.7 (auth.md v1.0.10): the write routes' codes.
+  "too_small",
+  "too_large",
+  "exceeds_balance",
+  "exceeds_total",
+  "taken",
 ] as const;
 export type ValidationIssueCode = (typeof VALIDATION_ISSUE_CODES)[number];
 
@@ -125,6 +132,7 @@ export const ErrorEnvelopeSchema = z.strictObject({
 export type ErrorEnvelope = z.infer<typeof ErrorEnvelopeSchema>;
 
 /**
+ * The auth family's mapping (SPEC-auth §2.10, unchanged by SPEC-write-path 2.7).
  * Every Zod issue `LoginSchema`/`SignupSchema` can produce, given their fields' checks (each
  * field's chain `stop()`s at its first failure, so one issue per field): a missing or
  * wrong-typed value (`invalid_type`); an empty string (`too_small`, `minimum: 1` — `.min(1)`);
@@ -143,6 +151,9 @@ function validationIssueCode(issue: z.core.$ZodIssue): ValidationIssueCode {
       return "too_long";
     case "invalid_format":
       return "invalid_format";
+    // SPEC-write-path 2.7: a value outside an enum never throws (it answered 500 before).
+    case "invalid_value":
+      return "invalid_format";
     default:
       throw new Error(`No validation code mapped for Zod issue code "${issue.code}"`);
   }
@@ -158,6 +169,59 @@ export const toErrorIssues = (error: z.ZodError): ErrorIssue[] =>
     path: issue.path.map((key) => (typeof key === "symbol" ? String(key) : key)),
     code: validationIssueCode(issue),
   }));
+
+// ---------------------------------------------------------------------------------------
+// Writes — SPEC-write-path 2.7, 4.1, 4.4 (NFR-S3); the page specs build their bodies from these
+
+/** NFR-S3: "cents `1 ≤ x ≤ 99,999,999,999`". */
+export const AMOUNT_MAX_CENTS = 99_999_999_999;
+export const POT_NAME_MAX = 30;
+
+/** Money in a write body: integer cents (the client converts the typed text first, 2.7). */
+export const AmountCentsSchema = z.int().min(1).max(AMOUNT_MAX_CENTS);
+/** A pot name: trimmed, 1–30 UTF-16 code units (JS `.length`, what the live counter counts). */
+export const PotNameSchema = z.string().trim().min(1).max(POT_NAME_MAX);
+/** A record id in a path or a tool input; `.max` gives a tool its `maxLength` (2.7). */
+export const RecordIdSchema = z.uuid().max(36);
+
+/** The value at `path` in `input`, or `undefined` when a step of the path is missing. */
+function valueAt(input: unknown, path: readonly PropertyKey[]): unknown {
+  let value = input;
+  for (const key of path) {
+    if (value === null || typeof value !== "object") return undefined;
+    value = (value as Record<PropertyKey, unknown>)[key];
+  }
+  return value;
+}
+
+/**
+ * The write family's mapping, exactly SPEC-write-path 2.7's table. Zod's issues carry no input
+ * (T-17 plan F2) and a missing enum reports `invalid_value` like a wrong one, so absent or `null`
+ * is read from the input itself. The size codes take their kind from `origin`. A body that is
+ * not an object is `invalid_format` on `[]` (4.4). Never throws.
+ */
+function writeIssueCode(issue: z.core.$ZodIssue, input: unknown): ValidationIssueCode {
+  if (issue.path.length === 0) return "invalid_format";
+  const value = valueAt(input, issue.path);
+  if (value === undefined || value === null) return "required";
+  if (issue.code === "too_small") return issue.origin === "string" ? "required" : "too_small";
+  if (issue.code === "too_big") return issue.origin === "string" ? "too_long" : "too_large";
+  return "invalid_format";
+}
+
+/** A failed write parse's issues, one per path (the first: `2 ** 60` gives two on one field). */
+export function toWriteIssues(error: z.ZodError, input: unknown): ErrorIssue[] {
+  const seen = new Set<string>();
+  const issues: ErrorIssue[] = [];
+  for (const issue of error.issues) {
+    const path = issue.path.map((key) => (typeof key === "symbol" ? String(key) : key));
+    const key = JSON.stringify(path);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    issues.push({ path, code: writeIssueCode(issue, input) });
+  }
+  return issues;
+}
 
 // ---------------------------------------------------------------------------------------
 // Overview — SPEC-overview §6 ("cents; dates ISO-8601 UTC")

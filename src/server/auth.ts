@@ -1,6 +1,7 @@
 import * as bcrypt from "bcryptjs";
 import { COPY } from "@/src/shared/copy";
 import { LoginSchema, SignupSchema, toErrorIssues } from "@/src/shared/schemas";
+import { clientIp } from "./client-ip";
 import { getDb } from "./db";
 import { demoPasswordHash } from "./env";
 import { errorResponse, rateLimitedResponse, validationErrorResponse } from "./http";
@@ -15,15 +16,6 @@ import {
   sealSession,
   sessionCookieHeader,
 } from "./session";
-
-function clientIp(request: Request): string {
-  // Vercel overwrites this header rather than trusting an inbound one, so it's safe to read
-  // there (a self-hosted deployment behind a different proxy would need the same guarantee —
-  // review finding M4). Locally, next start supplies a loopback address, not undefined, so
-  // the "local" fallback below only fires when the header is genuinely absent (e.g. a direct,
-  // non-proxied connection this project doesn't otherwise exercise).
-  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-}
 
 export async function login(request: Request, now: Date): Promise<Response> {
   const db = getDb();

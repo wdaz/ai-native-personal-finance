@@ -82,7 +82,9 @@ export default defineConfig({
     // readiness probe never treats as ready (it wants a 2xx) — /api/auth/session answers
     // 200 regardless of session state and needs no auth (SPEC-auth §2.10's public list).
     url: `${baseURL}/api/auth/session`,
-    env: { APP_ENV: "test" },
+    // SPEC-write-path 2.10: every test comes from one IP, so the suites run with a high finite
+    // write limit and reach the 429 only by pre-filling WriteAttempt rows (T-17 plan F5).
+    env: { APP_ENV: "test", WRITE_RATE_LIMIT_MAX: "1000" },
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     stdout: "pipe",
