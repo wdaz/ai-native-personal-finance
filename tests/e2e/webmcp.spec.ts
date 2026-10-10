@@ -1,7 +1,7 @@
 import { seedFigures } from "@/scripts/seed-figures";
 import { COPY } from "@/src/shared/copy";
 import { formatMoney } from "@/src/shared/money";
-import { OverviewDtoSchema } from "@/src/shared/schemas";
+import { OverviewDtoSchema, TransactionsDtoSchema } from "@/src/shared/schemas";
 import { PAGE_NAMES } from "@/src/ui/nav";
 import { expect, loginViaApi, resetDemoData, test } from "../fixtures/e2e";
 import { RUN_MODE, callTool, expectToolsReady, listTools } from "../fixtures/webmcp";
@@ -175,8 +175,9 @@ test("US-38 AC1 US-41: leaving Overview by client navigation unregisters the too
     (window as unknown as { __clientNav?: boolean }).__clientNav = true;
   });
 
-  await mainNav(page).getByRole("link", { name: PAGE_NAMES.transactions, exact: true }).click();
-  await expect(page).toHaveURL(/\/transactions$/);
+  // H11 (4): Pots is the Release 2 page built last, so it registers no tools until then.
+  await mainNav(page).getByRole("link", { name: PAGE_NAMES.pots, exact: true }).click();
+  await expect(page).toHaveURL(/\/pots$/);
   await expect(page.locator("html")).not.toHaveAttribute("data-webmcp", "ready");
   expect(await listTools(page)).toEqual([]);
   await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(0) })).toBeVisible();
@@ -226,4 +227,133 @@ test("US-38 US-41: when the runtime refuses every registration the page says so 
     /get_balance: SecurityError/,
   );
   await expect.poll(() => warnings.join("\n")).toContain('could not register tool "get_balance"');
+});
+
+/**
+ * SPEC-transactions 2.14 and §7's WebMCP row: `list_transactions`, the Transactions page's one
+ * tool. What it returns is compared with what `GET /api/transactions` returns for the same
+ * query and with what the page shows, never with typed figures.
+ */
+test.describe("list_transactions on Transactions (US-38 AC1, US-39 AC2–AC4)", () => {
+  const apiList = async (page: import("@playwright/test").Page, search: string) =>
+    TransactionsDtoSchema.parse(
+      await (await page.request.get(`/api/transactions${search}`)).json(),
+    );
+  const pageNames = (page: import("@playwright/test").Page) =>
+    page
+      .getByRole("table", { name: PAGE_NAMES.transactions })
+      .locator("tbody")
+      .getByRole("row")
+      .locator("td:first-child");
+
+  test("the page registers exactly list_transactions, read-only and untrusted, its description at most 200 characters; the indicator reads 'polyfill · 1'", async ({
+    page,
+  }) => {
+    await page.goto("/transactions");
+    await expectToolsReady(page);
+    const tools = await listTools(page);
+    expect(tools.map((tool) => tool.name)).toEqual(["list_transactions"]);
+    expect(tools[0]!.annotations).toEqual({ readOnlyHint: true, untrustedContentHint: true });
+    expect(tools[0]!.description.length).toBeLessThanOrEqual(200);
+    await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(1) })).toBeVisible();
+  });
+
+  test("no input returns the first page the person sees and the API returns, with ids", async ({
+    page,
+  }) => {
+    await page.goto("/transactions");
+    await expectToolsReady(page);
+    const api = await apiList(page, "");
+
+    const result = await callTool(page, "list_transactions");
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toEqual({ ...api, currency: "USD", unit: "cents" });
+    await expect(pageNames(page)).toHaveText(api.items.map((item) => item.name));
+    for (const item of api.items) expect(item.id).toBeTruthy();
+  });
+
+  test("search, category, sort and page together, and a page past the end (clamped), equal the API", async ({
+    page,
+  }) => {
+    await page.goto("/transactions");
+    await expectToolsReady(page);
+
+    const filtered = await callTool(page, "list_transactions", {
+      search: "a",
+      category: "General",
+      sort: "a-to-z",
+      page: 2,
+    });
+    expect(filtered.structuredContent).toEqual({
+      ...(await apiList(page, "?q=a&category=General&sort=a-to-z&page=2")),
+      currency: "USD",
+      unit: "cents",
+    });
+
+    const beyond = await callTool(page, "list_transactions", { page: 99 });
+    const last = await apiList(page, "?page=99");
+    expect(beyond.structuredContent).toEqual({ ...last, currency: "USD", unit: "cents" });
+    expect(last.page).toBe(last.pageCount);
+  });
+
+  test("a sort outside the list is a validation error naming the allowed values; page 0 is `required`; the page the person sees is unchanged", async ({
+    page,
+  }) => {
+    await page.goto("/transactions?sort=oldest");
+    await expectToolsReady(page);
+    const shown = await pageNames(page).allTextContents();
+
+    const badSort = await callTool(page, "list_transactions", { sort: "newest" });
+    expect(badSort).toMatchObject({ isError: true, code: "validation" });
+    expect(badSort.message).toContain("latest");
+    expect(badSort.structuredContent).toBeUndefined();
+
+    const badCategory = await callTool(page, "list_transactions", { category: "Food" });
+    expect(badCategory).toMatchObject({ isError: true, code: "validation" });
+    expect(badCategory.message).toContain("Dining Out");
+
+    const pageZero = await callTool(page, "list_transactions", { page: 0 });
+    expect(pageZero).toMatchObject({ isError: true, code: "validation" });
+    expect(pageZero.issues).toEqual([{ path: ["page"], code: "required" }]);
+
+    await expect(page).toHaveURL(/\/transactions\?sort=oldest$/);
+    await expect(pageNames(page)).toHaveText(shown);
+  });
+
+  test("after the session ends the tool returns unauthenticated and no data", async ({ page }) => {
+    await page.goto("/transactions");
+    await expectToolsReady(page);
+    await page.context().clearCookies();
+
+    const result = await callTool(page, "list_transactions");
+
+    expect(result).toMatchObject({ isError: true, code: "unauthenticated" });
+    expect(result.structuredContent).toBeUndefined();
+  });
+
+  test("the call carries X-Via: webmcp and is on the server's record", async ({
+    page,
+    request,
+  }) => {
+    await page.goto("/transactions");
+    await expectToolsReady(page);
+    const listResponse = page.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname === "/api/transactions" &&
+        r.request().headers()["x-via"] === "webmcp",
+    );
+
+    await callTool(page, "list_transactions", { search: "co" });
+
+    const response = await listResponse;
+    const requestId = response.headers()["x-request-id"]!;
+    const log = await request.get("/api/test/log", { params: { requestId } });
+    expect(await log.json()).toEqual({
+      requestId,
+      via: "webmcp",
+      method: "GET",
+      route: "/api/transactions",
+    });
+  });
 });

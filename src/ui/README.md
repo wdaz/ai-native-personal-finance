@@ -43,3 +43,14 @@ T-11: `agent-tools-indicator.ts` — a `ReactNode` slot context (`sidebar`/`comp
 Component for the `useContext` call. `Sidebar.module.css` gains `.indicatorCollapsed`
 (centres the indicator's compact dot in the 88 px collapsed rail — no design source for this
 placement, T-11 plan D5).
+
+T-19: `Menu` (SPEC-transactions 2.8) — choosing one value from a list: a button trigger with one
+name, "{label}: {current}", a `role="listbox"` panel that holds focus and names its highlighted
+option with `aria-activedescendant`, positioned by CSS alone (no inline `style`, ADR-0006);
+the trigger is as wide as its longest option (hidden sizers in one grid cell, v1.0.18). Later
+uses (the forms' category and theme) add what `ui-kit.md` 2.6 lists. `useDebouncedValue`
+(a value and its `flush`). `transactions/` — the page's parts: `TransactionsNav` (the one
+intended query and every navigation), `TransactionsToolbar`, `ResultsRegion` (`aria-busy` and
+the status line), `TransactionTable` (a server component), `TransactionsPagination` and
+`TransactionsError`. `icons/` gains `SearchIcon`, `CaretDownIcon`, `CaretRightIcon`, `SortIcon`
+and `FilterIcon`, their paths copied from the owner's design export (Phosphor, MIT).
