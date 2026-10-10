@@ -7259,7 +7259,7 @@ them too").
 - **Trigger:** the coordinator's brief to build T-25, which depends only on T-17.
 - **Prompt(s):** `prompts/2026-10-10-T-25/` (the review brief, report and handling). The plan
   `plans/2026-10-10-T-25.md` raised no question: `pots.md` v0.6 and `write-path.md` answered every behaviour.
-- **Produced** (pull request #PRNUM, `develop`):
+- **Produced** (pull request #133, `develop`):
   - A: `potPercent`, `potFill`, `moneyPreview`, `isPotNameTaken`, `firstFreeTheme`; `formatPercent`; the pot
     schemas and the strict DTOs.
   - B: `src/server/pots.ts` and the six routes of `pots.md` 2.12; every money move and a deletion as
