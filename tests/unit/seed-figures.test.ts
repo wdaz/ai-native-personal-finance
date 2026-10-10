@@ -7,6 +7,8 @@ import {
   budgetFigures,
   budgetTable,
   latestText,
+  percentSpaced,
+  potFigures,
   seedVariantInput,
   billFigures,
   billSorts,
@@ -32,7 +34,8 @@ import { formatDate, ordinalDay } from "@/src/shared/dates";
 import { CATEGORIES, THEMES } from "@/src/shared/enums";
 import { budgetFillPercent } from "@/src/shared/budgets";
 import { AMOUNT_MAX_CENTS } from "@/src/shared/schemas";
-import { formatMoney, formatSignedMoney } from "@/src/shared/money";
+import { formatMoney, formatPercent, formatSignedMoney } from "@/src/shared/money";
+import { potPercent } from "@/src/domain/pots";
 
 const repoRoot = join(import.meta.dirname, "..", "..");
 const read = (path: string) => readFileSync(join(repoRoot, path), "utf8");
@@ -533,6 +536,144 @@ describe("SPEC-budgets 4.2 and 4.4–4.7 are generated, never typed (H15 (2))", 
     const d133 = figures.writes.diningOut133.items.find((b) => b.category === "Dining Out")!;
     expect(flat).toContain(
       `Spent equal to the maximum (${formatMoney(d133.spent)} of ${formatMoney(d133.maximum)}): remaining ${formatMoney(d133.remaining)}, bar ${barText(d133.spent, d133.maximum)}.`,
+    );
+  });
+});
+
+describe("SPEC-pots 4.2–4.6 are generated, never typed (H16 (2))", () => {
+  const flat = read("docs/03-specs/pots.md").replace(/\n\s*/g, " ");
+  const figures = potFigures((hex) => THEME_LABEL.get(themeFromHex(hex))!);
+  const { seed } = figures;
+  const $ = formatMoney;
+  const pct = formatPercent;
+  const sp = percentSpaced;
+  const totalOf = (pots: readonly { total: number }[]) => pots.reduce((s, p) => s + p.total, 0);
+  const potOf = (pots: readonly { name: string; total: number; target: number }[], name: string) =>
+    pots.find((p) => p.name === name)!;
+
+  it("US-21 AC1 4.2: each seed pot, the sums and the longest name", () => {
+    for (const [index, p] of seed.pots.entries()) {
+      expect(flat).toContain(
+        `${p.name}, ${THEME_LABEL.get(themeFromHex(p.theme))}, ${$(p.total)} of ${$(p.target)}, **${pct(potPercent(p.total, p.target))}**`,
+      );
+      expect(p.seq).toBe(index + 1);
+    }
+    expect(flat).toContain(`Pots total ${$(figures.potsTotal)} (Overview's "Total Saved"`);
+    expect(flat).toContain(`Current Balance ${$(seed.balance)};`);
+    expect(flat).toContain(
+      `**balance + pots = ${$(figures.sum)} (${figures.sum.toLocaleString("en-US")} cents)**`,
+    );
+    expect(flat).toContain(`no pot's Total Saved can ever exceed ${$(figures.sum)}`);
+    expect(flat).toContain(
+      `The longest seed name has ${figures.longestName.length} characters (${figures.longestName})`,
+    );
+    expect(flat).toContain(
+      `(the largest numerator, 2 · ${figures.sum.toLocaleString("en-US")} · 10,000 + 99,999,999,999, is ${figures.largestNumerator.toLocaleString("en-US")}`,
+    );
+    expect(Number.isSafeInteger(figures.largestNumerator)).toBe(true);
+  });
+
+  it("US-25 US-26 US-24 4.3: the chain conserves the sum, step by step", () => {
+    const { deposit, withdrawal, deletion } = figures.chain;
+    const after = (state: { balance: number; pots: { total: number }[] }) =>
+      `the balance ${$(state.balance)}, pots ${$(totalOf(state.pots))}`;
+    expect(flat).toContain(
+      `Add to ‘Savings’ $100.00 — preview New Amount ${$(deposit.preview.newTotal)}, ${sp(deposit.preview.percent)} in green, the bar ${sp(deposit.preview.staying)} dark + ${sp(deposit.preview.moving)} green; after it ${after(deposit.after)}, sum ${$(figures.sum)}.`,
+    );
+    expect(flat).toContain(
+      `Withdraw from ‘Concert Ticket’ $30.00 — preview ${$(withdrawal.preview.newTotal)}, ${sp(withdrawal.preview.percent)} in red, the bar ${sp(withdrawal.preview.staying)} dark + ${sp(withdrawal.preview.moving)} red; after it ${after(withdrawal.after)}, sum ${$(figures.sum)}.`,
+    );
+    expect(flat).toContain(
+      `delete New Laptop — ${$(deletion.refund)} back, ${after(deletion.after)} (${deletion.after.pots.map((p) => p.name).join(", ")}), sum ${$(figures.sum)}.`,
+    );
+    for (const state of [deposit.after, withdrawal.after, deletion.after]) {
+      expect(state.balance + totalOf(state.pots)).toBe(figures.sum);
+    }
+  });
+
+  it("US-25 AC1 AC3 US-26 AC1 US-23 AC2 4.3: past the target, all of a pot, the whole balance, deletions, edits", () => {
+    const { concert, concertBar, gift } = figures.pastTarget;
+    expect(flat).toContain(
+      `Add to ‘Concert Ticket’ $50.00 → New Amount ${$(concert.newTotal)}, **${pct(concert.percent)}**, the bar ${sp(concert.staying)} + ${sp(concert.moving)} (full); the card's bar afterwards ${concertBar / 100} %. Add to ‘Gift’ $40.00 → ${$(gift.newTotal)}, ${pct(gift.percent)}.`,
+    );
+    const holiday = figures.allOfHoliday;
+    expect(flat).toContain(
+      `Withdraw from ‘Holiday’ ${$(holiday.preview.moved)} → ${$(holiday.preview.newTotal)}, ${pct(holiday.preview.percent)}, the bar ${holiday.preview.staying / 100} % + ${sp(holiday.preview.moving)} red; the balance ${$(holiday.after.balance)}. ${$(holiday.preview.moved + 1)} → \`exceeds_total\`; the preview clamps to ${$(holiday.clamped.moved)}.`,
+    );
+    const whole = figures.wholeBalance;
+    expect(flat).toContain(
+      `Add to ‘Savings’ ${$(seed.balance)} → allowed; ${$(whole.preview.newTotal)}, **${pct(whole.preview.percent)}**, the bar ${sp(whole.preview.staying)} + ${sp(whole.preview.moving)} (full); the balance **${$(whole.after.balance)}**. ${$(seed.balance + 1)} → \`exceeds_balance\`; the preview clamps to ${$(whole.clamped.moved)}.`,
+    );
+    const d = figures.deletions;
+    expect(flat).toContain(
+      `Holiday → the balance ${$(d.Holiday.balance)} and the pots total ${$(totalOf(d.Holiday.pots))}; Savings → ${$(d.Savings.balance)}; New Laptop → ${$(d["New Laptop"].balance)}.`,
+    );
+    expect(flat).toContain(
+      `After deleting Savings, Overview's first four pots are ${d.Savings.pots
+        .slice(0, 4)
+        .map((p) => `${p.name} ${$(p.total)}`)
+        .join(", ")}.`,
+    );
+    const holidayTotal = potOf(seed.pots, "Holiday").total;
+    const savingsTotal = potOf(seed.pots, "Savings").total;
+    expect(figures.edits.holidayFill).toBe(10_000);
+    expect(flat).toContain(
+      `Holiday's target to $500.00 (below its ${$(holidayTotal)}) → **${pct(figures.edits.holiday500)}**, the bar full (US-23 AC2); Savings' target to ${$(savingsTotal)} → ${pct(figures.edits.savingsAtTotal)}.`,
+    );
+  });
+
+  it("US-04 AC2 AC3 4.3: Overview after a deposit and a withdrawal; income and expenses unchanged", () => {
+    const { afterSavings100, afterHoliday31 } = figures.overview;
+    const { income, expenses } = figures.input.balance;
+    expect(flat).toContain(
+      `after Add to ‘Savings’ $100.00 — Current Balance ${$(afterSavings100.balance)}, Pots ${$(totalOf(afterSavings100.pots))}, Income ${$(income)} and Expenses ${$(expenses)} unchanged; after Withdraw from ‘Holiday’ $31.00 — ${$(afterHoliday31.balance)} and ${$(totalOf(afterHoliday31.pots))}.`,
+    );
+  });
+
+  it("US-21 AC1 4.4: the edges and the three float ties", () => {
+    expect(flat).toContain(
+      `0 / any target → ${pct(potPercent(0, 1))}; 1/3 → ${pct(potPercent(1, 3))}; 2/3 → ${pct(potPercent(2, 3))}; 1 cent of ${$(AMOUNT_MAX_CENTS)} → ${pct(potPercent(1, AMOUNT_MAX_CENTS))}; the largest the data allows, ${$(figures.sum)} of a 1-cent target → ${pct(potPercent(figures.sum, 1))}`,
+    );
+    const ties = [3, 7, 9];
+    const target = 20_000;
+    expect(flat).toContain(
+      `half up gives ${ties.map((t) => pct(potPercent(t, target))).join(", ")}, while \`toFixed(2)\` on the float gives ${ties.map((t) => `${((t / target) * 100).toFixed(2)}%`).join(", ")}`,
+    );
+    expect(flat).toContain(`cents of a ${$(target)} target`);
+  });
+
+  it("US-25 AC2 US-22 4.5: the zero balance and the fifteen pots", () => {
+    const { afterDeposit, giftWithdrawal } = figures.zeroBalance;
+    expect(flat).toContain(
+      `\`POST /api/pots/<Savings>/deposit { amount: ${seed.balance} }\` → the balance ${$(afterDeposit.balance)} (Savings ${$(potOf(afterDeposit.pots, "Savings").total)})`,
+    );
+    expect(flat).toContain(
+      `(Withdraw from ‘Gift’ $10.00 → the balance ${$(giftWithdrawal.balance)})`,
+    );
+    expect(flat).toContain(
+      `the seed uses ${figures.usedThemes.slice(0, -1).join(", ")} and ${figures.usedThemes.at(-1)}; the add form opens on **${figures.firstFree}**`,
+    );
+    expect(figures.freeThemes).toHaveLength(THEMES.length - seed.pots.length);
+    expect(flat).toContain(
+      `ten \`POST /api/pots\`, one per free theme in \`THEMES\` order (${figures.freeThemes.join(", ")}), make 15 pots`,
+    );
+    expect(figures.budgetThemes.every((t) => figures.usedThemes.includes(t))).toBe(true);
+    expect(flat).toContain(
+      `The seed's four budget themes (${figures.budgetThemes.join(", ")}) are all also pot themes`,
+    );
+  });
+
+  it("US-22 AC2 US-23 AC1 4.6: the taken names", () => {
+    const { names } = figures;
+    expect([
+      names.paddedLower,
+      names.upper,
+      names.savings2,
+      names.ownName,
+      names.giftToHoliday,
+    ]).toEqual([true, true, false, false, true]);
+    expect(flat).toContain(
+      `"  savings  " and "SAVINGS" are taken (Savings); "Savings 2" is free; editing Savings to "savings" is allowed (its own name); editing Gift to "Holiday" is taken.`,
     );
   });
 });
