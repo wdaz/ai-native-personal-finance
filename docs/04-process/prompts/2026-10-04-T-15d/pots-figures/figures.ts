@@ -181,7 +181,7 @@ H("POT NAME (trimmed; counted in UTF-16 code units, as JS .length and maxLength 
     const n = Math.max(0, 30 - raw.length);
     return `${n} ${n === 1 ? "character" : "characters"} left`;
   };
-  const thirty = "A".repeat(30), thirtyOne = "A".repeat(31);
+  const thirty = "A".repeat(30);
   console.log(`counter: "" → ${left("")}; "Savings" → ${left("Savings")}; 29 characters → ${left("B".repeat(29))}; 30 → ${left(thirty)}`);
   console.log(`"${thirty}" (30) → accepted; 31 characters → too_long (API and tools only: the input's maxLength is 30)`);
   console.log(`"  savings  " on add → ${taken("  savings  ") ? "taken" : "free"}; "SAVINGS" → ${taken("SAVINGS") ? "taken" : "free"}; "Savings 2" → ${taken("Savings 2") ? "taken" : "free"}; editing Savings to "savings" → ${taken("savings", "Savings") ? "taken" : "free (its own name)"}; editing Gift to "Holiday" → ${taken("Holiday", "Gift") ? "taken" : "free"}`);
