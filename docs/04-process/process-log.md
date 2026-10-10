@@ -6827,7 +6827,8 @@ them too").
 - **Disagreements:** none.
 - **Exception to v1.9:** Copilot reviewed #109 up to `5527e30` (its two findings fixed) and then stopped at its
   weekly rate limit (resets 2026-10-12); the owner chose to take #109 out of draft on that review. #111 carries
-  the same commits. `github-advanced-security` failed on GitHub's side on both pull requests ("model not
+  the same commits. This close-out (#107, Markdown only) has no Copilot review either: the owner chose
+  "Without Copilot" on 2026-10-10, so it leaves draft on green CI. `github-advanced-security` failed on GitHub's side on both pull requests ("model not
   available"); CodeQL's own analysis was green.
 - **Lessons for the process:** a plan's prediction about layout (which names are cut) is a guess until a browser
   measures it after hydration; a test that depends on it reads it at run time.
