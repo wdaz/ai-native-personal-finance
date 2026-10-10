@@ -123,8 +123,9 @@ export type ErrorIssue = z.infer<typeof ErrorIssueSchema>;
 
 export const ErrorEnvelopeSchema = z.strictObject({
   error: z.enum(ERROR_CODES),
-  /** Present for every code this schema has a fixed banner/notice for (401, 429, …); a 400
-   * validation error has none — its `issues` carry the codes the client renders instead. */
+  /** Present for every code this schema has a fixed banner/notice for (401, 429, …). A 400
+   * validation error's `issues` carry the codes the client renders; only a route whose spec says
+   * so adds a `message` (SPEC-transactions 2.13: the allowed values, for an agent). */
   message: z.string().min(1).optional(),
   issues: z.array(ErrorIssueSchema).optional(),
   /** Seconds, as in the `Retry-After` header (SPEC-auth §4). */

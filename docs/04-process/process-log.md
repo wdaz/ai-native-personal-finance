@@ -6960,3 +6960,38 @@ them too").
   7.6 (the pages: T-24, T-26). `tests/unit/install-scripts.test.ts` fails on a machine with npm 10
   (it needs npm 11); CI runs npm 11.
 - **Next:** the owner's merge of #120; then T-18 (Transactions, server and API).
+
+## 2026-10-10 — Phase 4 (Release 2): T-18 — Transactions, server and API
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; second Release 2 build task.
+- **Participants:** Owner (Ruslan), Agent (Claude Code, started from the project thread "Transactions
+  server and API"; one code-review subagent).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-17's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-18/` (the review brief and report). The plan
+  `plans/2026-10-10-T-18.md` went to the owner at the plan gate with three questions; the owner answered
+  "1.a 2.a.3a": Q1 (a) several invalid fields join their messages with "; "; Q2 (a) the 500 is tested at
+  unit level, since no row the database accepts makes the list fail; Q3 (a) no inverse of
+  `CATEGORY_LABEL`, as 2.4 filters in the domain. All three are `transactions.md` v1.0.17.
+- **Produced** (pull request #123, `develop`):
+  - B: `parseTransactionsQuery` (lenient for the page, strict for the API), the sort slugs,
+    `TRANSACTIONS_PAGE_SIZE`, `TransactionsDtoSchema`; `validationErrorResponse` takes a `message`.
+  - A: `sortTransactions` (six orders, every tie rule, the final `id`), `filterTransactions`, `paginate`,
+    `transactionsPage` in `src/domain`.
+  - C: `getTransactions`, `toTransactionsDto`, `GET /api/transactions`; the API suite against an
+    independent oracle for every seed variant and the views of 4.3–4.6.
+  - D: H11 (3) — `seedTransactions`, `sortExtremes` and `transactionFigures` in
+    `scripts/seed-figures.ts`; 4.3's table held to them with a violation fixture, and the prose figures
+    of 4.2 and 4.5–4.7 too; US-09, US-10 and US-12 left `NOT_YET_BUILT` (16 ids remain).
+- **What went well:** re-running T-15d's figures script before the gate showed 4.2–4.7 still held, so
+  the figures moved into code unchanged. The API oracle caught its own mistake on the first run:
+  `seedRows()` holds Prisma's category keys, which the oracle now maps as `overview.spec.ts` does.
+- **What the agent got wrong or missed:** a seed-figures test title first named US-19 (a Budgets
+  story), which the traceability check refused ("already named"); the title now names the section only.
+- **Owner changes and reasoning:** the owner took the three recommended options. During the build the
+  owner also said that questions meant for them go to the coordinator session, which answers from the
+  project's goals, so threads do not wait.
+- **Disagreements:** none.
+- **Not done here:** everything on the page (T-19). `tests/unit/install-scripts.test.ts` fails on a
+  machine with npm 10, as recorded for T-17; CI runs npm 11. The E2E suite was not run locally (no
+  browser stack in the session); this task changes no page, and CI runs it.
+- **Next:** the owner's merge of #123; then T-19 (Transactions, UI and `list_transactions`).

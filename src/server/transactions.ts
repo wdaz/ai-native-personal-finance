@@ -42,7 +42,9 @@ export function toTransactionsDto(page: TransactionsPage<TransactionRow>): Trans
  * domain's filter compares display names (v1.0.17: no inverse of `CATEGORY_LABEL`).
  */
 export async function getTransactions(db: Db, query: TransactionsQuery): Promise<TransactionsDto> {
-  const rows = await db.transaction.findMany();
+  const rows = await db.transaction.findMany({
+    select: { id: true, name: true, avatar: true, category: true, date: true, amount: true },
+  });
   return toTransactionsDto(
     transactionsPage(
       rows.map((row) => ({

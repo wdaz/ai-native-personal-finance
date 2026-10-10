@@ -5,7 +5,6 @@ import { toCents } from "@/src/domain/money";
 import { overviewSummary } from "@/src/domain/overview";
 import {
   filterTransactions,
-  paginate,
   sortTransactions,
   transactionsPage,
 } from "@/src/domain/transactions";
@@ -131,8 +130,8 @@ export function seedTransactions() {
 
 type SeedTransaction = ReturnType<typeof seedTransactions>[number];
 
-const view = (query: Partial<TransactionsQuery>) =>
-  transactionsPage(seedTransactions(), {
+const view = (query: Partial<TransactionsQuery>, rows = seedTransactions()) =>
+  transactionsPage(rows, {
     q: undefined,
     category: undefined,
     sort: "latest",
@@ -166,15 +165,49 @@ export function sortExtremes(): string[][] {
   ];
 }
 
+/** The groups of two or more rows sharing `key`. */
+function groups<T>(rows: readonly T[], key: (row: T) => string): T[][] {
+  const byKey = new Map<string, T[]>();
+  for (const row of rows) byKey.set(key(row), [...(byKey.get(key(row)) ?? []), row]);
+  return [...byKey.values()].filter((group) => group.length > 1);
+}
+
+type ListRow = Parameters<typeof sortTransactions>[0][number];
+
+/**
+ * 4.4: "the final `id` key never decides". For each sort, each neighbouring pair is sorted again
+ * with its ids swapped; if the pair's order flips, only the id kept them apart. The API oracle and
+ * `seedTransactions` stand in their own ids for the database's, which is sound only while this
+ * holds for the rows they use.
+ */
+export function idNeverDecides(rows: readonly ListRow[]): boolean {
+  return TRANSACTION_SORTS.every((sort) => {
+    const sorted = sortTransactions(rows, sort);
+    return sorted.every((row, index) => {
+      const next = sorted[index + 1];
+      if (next === undefined) return true;
+      const pair = sortTransactions(
+        [
+          { ...next, id: "a" },
+          { ...row, id: "b" },
+        ],
+        sort,
+      );
+      return pair[0]!.id === "b";
+    });
+  });
+}
+
 /** SPEC-transactions 4.2 and 4.4–4.7: what the tests of the list read instead of typing. */
 export function transactionFigures() {
   const rows = seedTransactions();
-  const all = paginate(sortTransactions(rows, "latest"), 1);
-  const count = (query: Partial<TransactionsQuery>) => view(query).total;
+  const all = view({}, rows);
+  const lastPage = view({ page: all.pageCount }, rows).items;
+  const count = (query: Partial<TransactionsQuery>) => view(query, rows).total;
   return {
     total: all.total,
     pageCount: all.pageCount,
-    lastPageSize: view({ page: all.pageCount }).items.length,
+    lastPageSize: lastPage.length,
     distinctNames: new Set(rows.map((t) => t.name)).size,
     income: rows.filter((t) => t.amount > 0),
     spending: rows.filter((t) => t.amount < 0),
@@ -187,11 +220,11 @@ export function transactionFigures() {
     ),
     /** 4.2: the default view, page 1 and the last page. */
     defaultPage: all.items,
-    lastPage: view({ page: all.pageCount }).items,
+    lastPage,
     /** 4.5: the search and filter examples. */
     search: {
       a: count({ q: "a" }),
-      co: view({ q: "co" }).items,
+      co: view({ q: "co" }, rows).items,
       emma: count({ q: "EMMA" }),
       bill: count({ q: "bill" }),
       xyz: count({ q: "xyz" }),
@@ -200,8 +233,26 @@ export function transactionFigures() {
       coEntertainment: count({ q: "co", category: "Entertainment" }),
     },
     /** 4.6: the Budgets links. */
-    diningOut: view({ category: "Dining Out" }).items,
-    entertainment: view({ category: "Entertainment" }).items,
+    diningOut: view({ category: "Dining Out" }, rows).items,
+    entertainment: view({ category: "Entertainment" }, rows).items,
+    dates: {
+      first: sortTransactions(rows, "oldest")[0]!.date,
+      last: sortTransactions(rows, "latest")[0]!.date,
+      distinct: new Set(rows.map((t) => t.date.getTime())).size,
+    },
+    generalPages: view({ category: "General" }, rows).pageCount,
+    generalLastPage: view({ category: "General", page: 2 }, rows).items.length,
+    aPages: view({ q: "a" }, rows).pageCount,
+    aLastPage: view({ q: "a", page: view({ q: "a" }, rows).pageCount }, rows).items.length,
+    withoutA: rows.filter((t) => !t.name.toLowerCase().includes("a")).map((t) => t.name),
+    /** 4.5: what an untrimmed single space would match (2.5: the needle is trimmed). */
+    untrimmedSpace: rows.filter((t) => t.name.includes(" ")).length,
+    /** 4.4: the repeated sort keys, as groups of rows. */
+    ties: {
+      names: groups(rows, (t) => t.name),
+      amounts: groups(rows, (t) => String(t.amount)),
+      timestamps: groups(rows, (t) => String(t.date.getTime())),
+    },
     /** 4.7: the longest name and the widest amount. */
     longestName: rows.reduce((a, b) => (b.name.length > a.name.length ? b : a)).name,
     widestAmount: rows.reduce((a, b) =>

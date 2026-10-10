@@ -79,7 +79,12 @@ export function parseTransactionsQuery(
       refuse("q", "too_long", `q must be at most ${TRANSACTIONS_Q_MAX} characters`);
       q = undefined;
     } else {
-      q = q.slice(0, TRANSACTIONS_Q_MAX);
+      // v1.0.17: cut, then trimmed again, so the query never ends in a space; the limit counts
+      // UTF-16 units (the field's `maxLength`), and a cut never keeps half a surrogate pair.
+      q = q
+        .slice(0, TRANSACTIONS_Q_MAX)
+        .replace(/[\uD800-\uDBFF]$/, "")
+        .trimEnd();
     }
   }
 

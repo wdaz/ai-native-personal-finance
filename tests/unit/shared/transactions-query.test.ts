@@ -67,13 +67,17 @@ describe("SPEC-transactions 2.2–2.3: parseTransactionsQuery", () => {
     expect(strict("q=%20%20Emma%20Rich%20%20").query.q).toBe("Emma Rich");
   });
 
-  it("US-12 AC2 reads + and %20 as the same space", () => {
-    expect(lenient("category=Dining+Out").query.category).toBe("Dining Out");
-    expect(lenient("category=Dining%20Out").query.category).toBe("Dining Out");
+  it("US-12 AC2 reads + and %20 as the same space, in both modes", () => {
+    for (const parse of [lenient, strict]) {
+      expect(parse("category=Dining+Out").query.category).toBe("Dining Out");
+      expect(parse("category=Dining%20Out").query.category).toBe("Dining Out");
+    }
   });
 
   it("reads a repeated parameter as its first value, from URLSearchParams and from a record", () => {
     expect(lenient("sort=oldest&sort=highest").query.sort).toBe("oldest");
+    // The first value decides, even when it is empty: absent, so the default, never the second.
+    expect(strict("sort=&sort=nope")).toMatchObject({ query: { sort: "latest" }, issues: [] });
     expect(
       parseTransactionsQuery(
         { sort: ["oldest", "highest"], category: ["Bills", "General"], page: ["2", "3"] },
@@ -105,6 +109,16 @@ describe("SPEC-transactions 2.2–2.3: parseTransactionsQuery", () => {
         expect(result.issues).toEqual([]);
       },
     );
+
+    it("US-10 trims again after the cut, so the search never ends in a space (v1.0.17)", () => {
+      const cut = lenient(`q=${"a".repeat(TRANSACTIONS_Q_MAX - 1)}%20b`).query.q;
+      expect(cut).toBe("a".repeat(TRANSACTIONS_Q_MAX - 1));
+    });
+
+    it("US-10 never keeps half of a surrogate pair at the cut (60 UTF-16 units)", () => {
+      const cut = lenient(new URLSearchParams({ q: `${"a".repeat(59)}😀x` }).toString()).query.q;
+      expect(cut).toBe("a".repeat(59));
+    });
 
     it("US-10 cuts a search longer than 60 characters to 60", () => {
       const result = lenient(`q=${"a".repeat(TRANSACTIONS_Q_MAX + 1)}`);

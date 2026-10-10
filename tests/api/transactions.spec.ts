@@ -78,7 +78,7 @@ async function getList(request: APIRequestContext, search: string) {
   return TransactionsDtoSchema.parse(await response.json());
 }
 
-test("US-39 AC4 SPEC-transactions 2.10: without a session the API answers 401 unauthenticated", async ({
+test("US-39 AC4 SPEC-transactions 2.13: without a session the API answers 401 unauthenticated", async ({
   request,
 }) => {
   expect((await request.post("/api/test/reset")).status()).toBe(200);

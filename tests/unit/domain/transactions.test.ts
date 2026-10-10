@@ -123,8 +123,8 @@ describe("sortTransactions (SPEC-transactions 2.4, US-11 AC1)", () => {
 
   it("US-11 compares the full timestamp, not the calendar day", () => {
     const sameDay = [
-      row("1", { name: "Amy", date: "2026-08-17T09:00:00Z" }),
-      row("2", { name: "Zed", date: "2026-08-17T21:00:00Z" }),
+      row("1", { name: "Amy", date: "2026-03-05T09:00:00Z" }),
+      row("2", { name: "Zed", date: "2026-03-05T21:00:00Z" }),
     ];
     expect(ids(sortTransactions(sameDay, "latest"))).toEqual(["2", "1"]);
     expect(ids(sortTransactions(sameDay, "oldest"))).toEqual(["1", "2"]);
@@ -143,8 +143,8 @@ describe("sortTransactions (SPEC-transactions 2.4, US-11 AC1)", () => {
 
   it("US-11 A to Z and Z to A break equal names by timestamp, newest first in both", () => {
     const same = [
-      row("1", { name: "Emma", date: "2026-07-20T12:00:00Z" }),
-      row("2", { name: "Emma", date: "2026-08-19T12:00:00Z" }),
+      row("1", { name: "Kai", date: "2026-02-11T12:00:00Z" }),
+      row("2", { name: "Kai", date: "2026-04-23T12:00:00Z" }),
     ];
     expect(ids(sortTransactions(same, "a-to-z"))).toEqual(["2", "1"]);
     expect(ids(sortTransactions(same, "z-to-a"))).toEqual(["2", "1"]);
@@ -152,9 +152,9 @@ describe("sortTransactions (SPEC-transactions 2.4, US-11 AC1)", () => {
 
   it("US-11 Highest and Lowest break equal amounts by timestamp, newest first in both", () => {
     const equal = [
-      row("1", { amount: -10_000, date: "2026-07-02T12:00:00Z" }),
-      row("2", { amount: -10_000, date: "2026-08-02T12:00:00Z" }),
-      row("3", { amount: -10_000, date: "2026-07-30T12:00:00Z" }),
+      row("1", { amount: -777, date: "2026-01-04T12:00:00Z" }),
+      row("2", { amount: -777, date: "2026-05-14T12:00:00Z" }),
+      row("3", { amount: -777, date: "2026-03-27T12:00:00Z" }),
     ];
     expect(ids(sortTransactions(equal, "highest"))).toEqual(["2", "3", "1"]);
     expect(ids(sortTransactions(equal, "lowest"))).toEqual(["2", "3", "1"]);

@@ -6,6 +6,8 @@ import {
   markdownTable,
   seedFigures,
   seedOverviewInput,
+  idNeverDecides,
+  seedTransactions,
   sortExtremes,
   transactionFigures,
   workedExample,
@@ -13,6 +15,7 @@ import {
 import { fixedClock } from "@/src/domain/clock";
 import { overviewSummary } from "@/src/domain/overview";
 import { CATEGORY_BY_NAME, seedRows } from "@/src/server/seed";
+import { applyVariant, SEED_VARIANTS } from "@/src/server/variants";
 import { formatDate } from "@/src/shared/dates";
 import { CATEGORIES } from "@/src/shared/enums";
 import { formatSignedMoney } from "@/src/shared/money";
@@ -162,8 +165,15 @@ describe("SPEC-transactions 4.2–4.7 are generated, never typed (H11 (3))", () 
   const figures = transactionFigures();
 
   it("US-09 4.2: the counts, the pages and the categories", () => {
+    const fullPages = Array.from({ length: figures.pageCount - 1 }, () => 10).join(", ");
     expect(spec).toContain(
-      `- ${figures.total} transactions; ${figures.pageCount} pages: 10, 10, 10, 10 and ${figures.lastPageSize} rows. ${figures.distinctNames} distinct names; ${figures.income.length} positive amounts (sum ${figures.income.reduce((sum, t) => sum + t.amount, 0).toLocaleString("en-US")} cents, the balance's income) and ${figures.spending.length} negative; ${figures.recurring} \`recurring\``,
+      `- ${figures.total} transactions; ${figures.pageCount} pages: ${fullPages} and ${figures.lastPageSize} rows. ${figures.distinctNames} distinct names; ${figures.income.length} positive amounts (sum ${figures.income.reduce((sum, t) => sum + t.amount, 0).toLocaleString("en-US")} cents, the balance's income) and ${figures.spending.length} negative; ${figures.recurring} \`recurring\``,
+    );
+    expect(spec).toContain(
+      `Dates from ${formatDate(figures.dates.first)} (${figures.dates.first.toISOString().slice(11, 19)}Z) to ${formatDate(figures.dates.last)} (${figures.dates.last.toISOString().slice(11, 19)}Z); ${figures.dates.distinct} distinct timestamps.`,
+    );
+    expect(spec).toContain(
+      `**General: ${figures.generalPages === 2 ? "two" : figures.generalPages} pages** (page 2 has ${figures.generalLastPage === 1 ? "one row" : `${figures.generalLastPage} rows`})`,
     );
     expect(spec).toContain(
       `By category: ${CATEGORIES.map((c) => `${c} ${figures.byCategory[c]!.length}`).join(", ")} (sum ${figures.total}).`,
@@ -174,20 +184,25 @@ describe("SPEC-transactions 4.2–4.7 are generated, never typed (H11 (3))", () 
     const row = (t: (typeof figures.defaultPage)[number]) =>
       `${t.name}, ${t.category}, ${formatDate(t.date)}, ${formatSignedMoney(t.amount)}`;
     expect(spec.replace(/\n\s*/g, " ")).toContain(figures.defaultPage.map(row).join(" · "));
+    const [firstOfLast, lastOfAll] = [figures.lastPage[0]!, figures.lastPage.at(-1)!];
     expect(spec).toContain(
-      `Page 5 runs from ${figures.lastPage[0]!.name}, ${formatDate(figures.lastPage[0]!.date)}, ${formatSignedMoney(figures.lastPage[0]!.amount)}`,
+      `Page ${figures.pageCount} runs from ${firstOfLast.name}, ${formatDate(firstOfLast.date)}, ${formatSignedMoney(firstOfLast.amount)} (number ${figures.total - figures.lastPageSize + 1}) to ${lastOfAll.name}, ${formatDate(lastOfAll.date)}, ${formatSignedMoney(lastOfAll.amount)} (number ${figures.total}).`,
     );
   });
 
   it("US-10 US-12 4.5: the search and filter examples", () => {
     const { search } = figures;
-    expect(spec).toContain(`\`a\` → ${search.a} results`);
+    expect(spec).toContain(
+      `\`a\` → ${search.a} results, ${figures.aPages} pages (${figures.aLastPage} rows on the last; only ${figures.withoutA.join(" and ")} have no \`a\`)`,
+    );
     expect(spec).toContain(
       `\`co\` → ${search.co.length}: ${search.co.map((t) => `${t.name} (${formatDate(t.date)})`).join(", ")}`,
     );
     expect(spec).toContain(`\`EMMA\` → ${search.emma}`);
     expect(spec).toContain(`\`bill\` → ${search.bill} and \`xyz\` → ${search.xyz}`);
-    expect(search.space).toBe(figures.total);
+    expect(spec.replace(/\n/g, " ")).toContain(
+      `one space → ${figures.untrimmedSpace} untrimmed, so **trimmed it is empty and filters nothing (${search.space})**`,
+    );
     expect(spec).toContain(`\`a\` with Dining Out → ${search.aDiningOut}`);
     expect(spec).toContain(`\`co\` with Entertainment → ${search.coEntertainment}`);
   });
@@ -201,6 +216,32 @@ describe("SPEC-transactions 4.2–4.7 are generated, never typed (H11 (3))", () 
     expect(spec).toContain(
       `shows ${figures.entertainment.length}: ${cells(figures.entertainment)}.`,
     );
+  });
+
+  it("US-11 4.4: the repeated keys, and the final id never decides, for every seed variant", () => {
+    const { ties } = figures;
+    expect(ties.timestamps).toEqual([]);
+    expect(spec).toContain(
+      `${ties.names.length} names appear twice (${ties.names.flat().length} rows)`,
+    );
+    expect(ties.names.every((group) => group.length === 2)).toBe(true);
+    expect(spec).toContain(
+      `${ties.amounts.length} amounts repeat (${ties.amounts.flat().length} rows)`,
+    );
+    expect(idNeverDecides(seedTransactions())).toBe(true);
+    for (const variant of SEED_VARIANTS) {
+      const rows = applyVariant(seedRows(), variant).transactions.map((t, index) => ({
+        ...t,
+        id: String(index),
+        date: new Date(t.date),
+      }));
+      expect(idNeverDecides(rows), variant).toBe(true);
+    }
+  });
+
+  it("would report a full tie, where only the id decides (violation fixture)", () => {
+    const [first] = seedTransactions();
+    expect(idNeverDecides([first!, { ...first!, id: "zz" }])).toBe(false);
   });
 
   it("4.7: the page clamp, the longest name and the widest amount", () => {
