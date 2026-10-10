@@ -7186,3 +7186,34 @@ them too").
 - **Not done here:** Firefox and WebKit E2E ran only in CI. `tests/unit/install-scripts.test.ts` fails on
   a machine with npm 10, as recorded for T-17.
 - **Next:** the merge of #129; then T-22.
+
+## 2026-10-10 — Phase 4 (Release 2): T-22 — Budgets and Pots, the shared write-UI parts
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; sixth Release 2 build task.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "T-22"; one read-only review subagent, the `/code-review` skill on
+  Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-21's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-22/` (the review brief, report and handling). The plan
+  `plans/2026-10-10-T-22.md` raised no question: the spec (`ui-kit.md` v0.8.7) answered every behaviour,
+  and the designer's changelog §27 had drawn every part.
+- **Produced** (pull request #PRNUM, `develop`):
+  - A: `parseAmountInput` and `formatAmountInput` (4.1's examples as the unit test), `writeAnswer`
+    (`write-path.md` §3's messages on the client), the strings of 2.12 and UK-Q1 (a fourth appendix
+    table and `COPY`), the tokens of UK-Q4 (`design-tokens.md` v1.6), `busy` and the delete bus.
+  - B: `Field`, `Button` (variants, no hover while `aria-disabled`), `PageHeader` (`primaryAction`) and
+    `Menu` (a field variant; its Escape stops at the menu).
+  - C: `Modal`, `ModalSlot`, `ConfirmDeleteDialog`, `ActionMenu`, `AmountField`, `SelectField`,
+    `FormFooter`, `Notice`, `ThemeSwatch` and the `dots-three-outline` icon.
+  - D: `app/(app)/_write/use-delete-flow.ts`, the page's join of the dialog and the bus, with §7's
+    "dialog with the bus" test.
+- **What went well:** the spec's 2.2–2.12 were detailed enough that each part was written once against
+  its section; T-19's `Menu` took the field variant as options, so the two list pages' menus are unchanged.
+- **What the agent got wrong or missed:** two `react-hooks/set-state-in-effect` errors (the dialog's reset
+  on open, the notice's delayed text) were rewritten as state derived during render; a modal's Escape
+  first closed both an open menu and the modal under it, until the menu stopped the event.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied.
+- **Disagreements:** none.
+- **Not done here:** no page uses the parts yet (T-24 and T-26), so there is no E2E row.
+  `tests/unit/install-scripts.test.ts` fails on a machine with npm 10, as recorded for T-17.
+- **Next:** the merge of #PRNUM; then T-23.
