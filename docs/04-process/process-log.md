@@ -6998,3 +6998,33 @@ them too").
   machine with npm 10, as recorded for T-17; CI runs npm 11. The E2E suite was not run locally (no
   browser stack in the session); this task changes no page, and CI runs it.
 - **Next:** the owner's merge of #123; then T-19 (Transactions, UI and `list_transactions`).
+
+## 2026-10-10 — Phase 4 (Release 2): the design files catch up, and the design folder becomes the design source
+
+- **Phase:** 4 (Release 2), design alignment.
+- **Participants:** Owner / Agent (Claude Code, cloud thread)
+- **Trigger:** the owner asked that every Release 2 design change be reflected in the design itself
+  before Release 2 closes ("Release 2 bağlamazdan öncə design və kod bir birini tamamlamalıdır" —
+  "before Release 2 closes, the design and the code must complete each other"), and chose the design
+  export in the project's shared design folder, with its published preview, as the design source
+  instead of Claude Design (option 1).
+- **Prompt(s):** the owner's thread message; no prompt file.
+- **Produced:**
+  - In the design folder (not in this repository): every change the designer's changelog §17–§26 had
+    marked "Drawing pending" is now drawn in `Finance App.dc.html` and `Style Guide.dc.html`, and
+    recorded as the designer's changelog §27 (27a the app, 27b the style guide, 27c T-19's toolbar
+    triggers sized to their longest option, the drawn width as the minimum, `transactions.md` 2.6).
+    The preview was republished to the same link.
+  - `governance.md` v1.14: the design folder is the design source; the designer agent works on it in
+    any session that has it.
+  - `.claude/agents/designer.md`: reads and, in apply mode, edits the design folder; no Claude Design
+    tools.
+- **What the agent got right:** each drawing was checked by rendering the page at desktop, tablet and
+  mobile widths, with no console errors, before the files were copied to the shared folder.
+- **What the agent got wrong or missed:** the first T-19 trigger width left out the 2px border and still
+  cut "All Transactions"; the render caught it.
+- **Owner changes and reasoning:** none beyond the two decisions above.
+- **Disagreements:** none.
+- **Lessons for the process:** a design change that the code takes before the design draws it should be
+  drawn in the same task, now that a cloud session can edit the design.
+- **Next:** keep the design in step with T-20 to T-27 as they land.
