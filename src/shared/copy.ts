@@ -80,4 +80,36 @@ export const COPY = {
   writeRateLimited: (seconds: number) =>
     `Too many changes. Try again in ${count(seconds, "second", "seconds")}`,
   alreadyUsed: "Already used",
+
+  // R2 additions (SPEC-transactions 2.16, §9 Q1 and Q4; release-2-handoffs.md H11 (1))
+  searchTransactionsPlaceholder: "Search transaction",
+  searchTransactionsLabel: "Search transactions",
+  sortBy: "Sort by",
+  category: "Category",
+  /** SPEC-transactions 2.4: the menu's labels, by slug (`TRANSACTION_SORTS`). */
+  transactionSorts: {
+    latest: "Latest",
+    oldest: "Oldest",
+    "a-to-z": "A to Z",
+    "z-to-a": "Z to A",
+    highest: "Highest",
+    lowest: "Lowest",
+  },
+  /** The category menu's first option; the ten others are `CATEGORIES` (`enums.ts`). */
+  allTransactions: "All Transactions",
+  /** SPEC-transactions 2.8: a menu trigger's one accessible name, at every width. */
+  menuTriggerName: (label: string, current: string) => `${label}: ${current}`,
+  columnRecipient: "Recipient / Sender",
+  columnCategory: "Category",
+  columnDate: "Transaction Date",
+  columnAmount: "Amount",
+  pagination: "Pagination",
+  prev: "Prev",
+  previousPage: "Previous page",
+  next: "Next",
+  nextPage: "Next page",
+  pageNumber: (n: number) => `Page ${n}`,
+  transactionsStatus: (total: number, page: number, pageCount: number) =>
+    `${count(total, "transaction", "transactions")}, page ${page} of ${pageCount}`,
+  transactionsLoadError: "Couldn't load your transactions",
 } as const;

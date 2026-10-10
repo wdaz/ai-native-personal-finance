@@ -93,6 +93,12 @@
   --duration-sidebar: 200ms;
   --duration-hover: 150ms;
 
+  /* Menus and popovers — design-tokens.md v1.5 (SPEC-transactions 2.8; hand-off H11) */
+  --duration-popover: 150ms;
+  --filter-menu-max-height: 360px;
+  /* For popovers and dropdown menus only — not for cards or modals (design-tokens.md, "Shadow") */
+  --shadow-popover: 0 4px 24px rgba(0, 0, 0, 0.25);
+
   /* Breakpoints (see the note at the top of this file) */
   --bp-tablet: 768px;
   --bp-desktop: 1024px;

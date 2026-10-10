@@ -1,6 +1,6 @@
 # Design tokens
 
-Status: **Approved** (v1.4 — 2026-09-24: Public Sans is served by `next/font/local` from committed files, TD-11, owner decision "a"; v1.3 — 2026-09-23: the close-circle icon, T-08; v1.2 — 2026-09-23: app shell tokens and the sign-out icon, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
+Status: **Approved** (v1.5 — 2026-10-10: T-19, hand-off H11 (2), (6)–(8): a "Shadow" table with `--shadow-popover` and the owner's note (SPEC-transactions §9 Q2), `--duration-popover` and `--filter-menu-max-height` (the designer's changelog §10, §12b), beige-500 for borders only (the designer's changelog §8a), and three Phosphor icons for the Transactions toolbar and pagination (T-19 plan Q1 (a), pending the designer's check); approved by the owner's merge of its pull request; v1.4 — 2026-09-24: Public Sans is served by `next/font/local` from committed files, TD-11, owner decision "a"; v1.3 — 2026-09-23: the close-circle icon, T-08; v1.2 — 2026-09-23: app shell tokens and the sign-out icon, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
 Changelog: v1.4 (2026-09-24, T-13c, owner decision "a" on TD-11) — the Typography section names
 `next/font/local` instead of `next/font/google`. The Google loader downloads the font while
 `next build` runs, and a Google Fonts outage failed CI builds (PR #36). The two files, their
@@ -19,7 +19,7 @@ Source: `../00-discovery/inputs/design/style-guide.html` (Claude Design export o
 
 | Token | Name | HEX | RGB | Use |
 |-------|------|-----|-----|-----|
-| `--color-beige-500` | Beige 500 | `#98908B` | 152, 144, 139 | input borders, placeholder text |
+| `--color-beige-500` | Beige 500 | `#98908B` | 152, 144, 139 | input and control borders only — never text, never under white text (3.14:1; placeholders are grey-500, the designer's changelog §8a) |
 | `--color-beige-100` | Beige 100 | `#F8F4F0` | 248, 244, 240 | page background, secondary button |
 | `--color-grey-900` | Grey 900 | `#201F24` | 32, 31, 36 | primary text, sidebar, primary button |
 | `--color-grey-500` | Grey 500 | `#696868` | 105, 104, 104 | secondary text |
@@ -117,9 +117,26 @@ Source: the design export, read 2026-09-23 at the T-07 plan gate — the sidebar
 | `--duration-sidebar` | 200ms | sidebar width and caret transition |
 | `--duration-hover` | 150ms | colour transition on navigation items and controls |
 
+## Menus and popovers (v1.5)
+
+Source: SPEC-transactions 2.8 (v1.0.14, v1.0.15) and the designer's changelog §10 ("Layout and motion tokens (UK-Q4)") and §12b; added by T-19 (hand-off H11 (7), (8)).
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--duration-popover` | 150ms | a menu panel's fade-in (`fadeIn .15s ease`); never for colour changes, which use `--duration-hover` |
+| `--filter-menu-max-height` | 360px | the Category filter menu's panel, which scrolls past it |
+
+## Shadow (v1.5)
+
+Source: the prototype's popover panels and the designer's style guide of 2026-10-04 ("Shadow", the designer's changelog §5); the owner's answer to SPEC-transactions §9 Q2. Added by T-19 (hand-off H11 (2)).
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--shadow-popover` | `0 4px 24px rgba(0, 0, 0, 0.25)` | for popovers and dropdown menus only — not for cards or modals (cards are flat; a modal is set apart by its dark backdrop): the Sort by and Category menus and the pot "…" menu |
+
 ## Icons
 
-Phosphor Icons (27 used, listed in the style guide, plus `sign-out` (fill) added by T-07 as a project addition — the design has no logout control; MIT-licensed, taken from `github.com/phosphor-icons/core`: arrow-fat-lines-left, arrows-down-up, barbell, book-open-text, caret-down/right/up, chart-donut, check-circle, dots-three-outline, eye, eye-slash, filter, house, jar-fill, list-bullets, magnifying-glass, music-note, network, potted-plant, receipt, shield-plus, sort, video, warehouse, warning-circle, wrench). The five navigation icons and the minimise caret are the challenge's starter SVGs (`icon-nav-*.svg`, `icon-minimize-menu.svg`), the same Phosphor glyphs. `close-circle` (T-08) is the prototype's own modal close control, drawn inline in `app-prototype.html` and not among the 27, reused for the reset banner's dismiss button. `jar-fill` (T-10) is the Pots card's left tile (SPEC-overview §2.3), fetched from `github.com/phosphor-icons/core`'s own `assets/fill/jar-fill.svg` — the real Phosphor asset the design already names, rather than a substitute drawn without the (unavailable to this session) design export. Inlined as SVG components in `src/ui/icons/` with `aria-hidden` unless interactive.
+Phosphor Icons (27 used, listed in the style guide, plus `sign-out` (fill) added by T-07 as a project addition — the design has no logout control; MIT-licensed, taken from `github.com/phosphor-icons/core`: arrow-fat-lines-left, arrows-down-up, barbell, book-open-text, caret-down/right/up, chart-donut, check-circle, dots-three-outline, eye, eye-slash, filter, house, jar-fill, list-bullets, magnifying-glass, music-note, network, potted-plant, receipt, shield-plus, sort, video, warehouse, warning-circle, wrench). The five navigation icons and the minimise caret are the challenge's starter SVGs (`icon-nav-*.svg`, `icon-minimize-menu.svg`), the same Phosphor glyphs. `close-circle` (T-08) is the prototype's own modal close control, drawn inline in `app-prototype.html` and not among the 27, reused for the reset banner's dismiss button. `jar-fill` (T-10) is the Pots card's left tile (SPEC-overview §2.3), fetched from `github.com/phosphor-icons/core`'s own `assets/fill/jar-fill.svg` — the real Phosphor asset the design already names, rather than a substitute drawn without the (unavailable to this session) design export. `sort-ascending` (fill), `funnel-simple` (fill) and `caret-left` (fill) (T-19) are the Transactions page's mobile Sort and Category triggers and its mobile Prev button: the style guide names "sort", "filter" and a left caret, which have no Phosphor file of those names, so the nearest Phosphor fill glyphs were taken from `github.com/phosphor-icons/core`'s `assets/fill/` (T-19 plan Q1 (a)), pending the designer's check against `Finance App.dc.html`. Inlined as SVG components in `src/ui/icons/` with `aria-hidden` unless interactive.
 
 ## Component states (style guide)
 

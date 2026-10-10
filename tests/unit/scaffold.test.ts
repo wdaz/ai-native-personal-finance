@@ -57,6 +57,15 @@ describe("T-01 scaffold", () => {
       if (token && value) documentedPixels.set(token, value);
     }
 
+    // Shadows (v1.5): | `--shadow-x` | `0 4px 24px rgba(…)` | use |
+    const documentedShadows = new Map<string, string>();
+    for (const match of tokensDoc.matchAll(
+      /^\|\s*`(--shadow-[a-z0-9-]+)`\s*\|\s*`([^`]+)`\s*\|/gm,
+    )) {
+      const [, token, value] = match;
+      if (token && value) documentedShadows.set(token, value);
+    }
+
     // Typography: | `--text-preset-1` | Text Preset 1 | 700 | 32px | 120% |
     const documentedPresets = new Map<string, { weight: string; px: number; lineHeight: string }>();
     for (const match of tokensDoc.matchAll(
@@ -79,14 +88,16 @@ describe("T-01 scaffold", () => {
       expect(documentedColours.size).toBe(22);
       expect(documentedPresets.size).toBe(7);
       // 11 spacings + 8 radii/layout/breakpoints (v1.0) + 7 auth layout and lines (v1.1)
-      // + 9 app shell values, two of them durations (v1.2).
-      expect(documentedPixels.size).toBe(35);
+      // + 9 app shell values, two of them durations (v1.2) + 2 menu values, one a duration (v1.5).
+      expect(documentedPixels.size).toBe(37);
+      expect(documentedShadows.size).toBe(1);
       // Nothing documented may escape the three value checks below — a new table in the
       // document has to be given a parser here rather than silently going unchecked.
       const valued = new Set([
         ...documentedColours.keys(),
         ...documentedPixels.keys(),
         ...documentedPresets.keys(),
+        ...documentedShadows.keys(),
       ]);
       expect([...documentedTokens].filter((token) => !valued.has(token))).toEqual([]);
     });
@@ -96,6 +107,10 @@ describe("T-01 scaffold", () => {
     });
 
     it.each([...documentedPixels])("declares %s as %s", (token, value) => {
+      expect(declaredTokens.get(token)).toBe(value);
+    });
+
+    it.each([...documentedShadows])("declares %s as %s", (token, value) => {
       expect(declaredTokens.get(token)).toBe(value);
     });
 
