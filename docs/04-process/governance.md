@@ -72,8 +72,11 @@ It runs in two modes, and the second needs the owner's approval named in its pro
    records the decision in the designer's changelog, stated as a decision. It returns the changelog
    section and the files changed. Only the designer agent writes to the designer's Claude Design project,
    and only for a decision the owner approved; without the quoted approval it writes nothing and answers
-   `APPROVAL-MISSING`. No tool enforces this any more (v1.12): it is a rule of the agent's prompt and of
-   this document. The owner's own `/design-sync` and the owner's own writes in Claude Design stay outside
+   `APPROVAL-MISSING`. In a session without the mod, no tool enforces this (v1.12): it is a rule of the
+   agent's prompt and of this document. The mod stays installed on the owner's Mac (owner decision,
+   2026-10-10, "Saxla" — "keep it"); in a session that loads it, its guard still refuses Claude Design
+   writes from any agent but `designer-agent:designer`, so there the write goes through the mod's agent
+   and the owner's `/designer-approve`. The owner's own `/design-sync` and the owner's own writes in Claude Design stay outside
    it.
 5. **The agent cites the answer**, naming the changelog's section (for example "the designer's
    changelog §8a"), in the spec, the pull request and the code. A changelog entry that is a proposal, an

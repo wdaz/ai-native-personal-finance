@@ -6764,6 +6764,6 @@ them too").
   that does both.
 - **Lessons for the process:** a check that lives in a local mod does not travel to remote or cloud
   sessions; a rule that must hold everywhere belongs in the repository.
-- **Next:** if the mod stays installed, its write guard refuses Claude Design writes from any agent but
-  `designer-agent:designer`, so the new agent's APPLY needs the mod disabled; the owner decides. Then run
-  outcome 1's comparison with the new agent in a session on the Mac.
+- **Next:** asked whether to disable the mod, whose write guard refuses Claude Design writes from any
+  agent but `designer-agent:designer`, the owner chose "Saxla" ("keep it"): where the mod is loaded, writes
+  still go through it. Then run outcome 1's comparison with the new agent in a session on the Mac.

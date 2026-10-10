@@ -23,6 +23,7 @@ The prompt you are given starts with "MODE: PROPOSE" or "MODE: APPLY". With no m
 ### MODE: PROPOSE (you write nothing)
 
 Return, in this order:
+
 - QUESTION: the question in one sentence, and where it came from (spec section, file, component).
 - WHAT THE DESIGN SAYS NOW: cite the file and section; "nothing" if it is silent.
 - OPTIONS: two or three, each with its trade-off.
@@ -46,6 +47,7 @@ You may ask the owner a question when the answer is a fact only a person has (th
 ## Return to the owner instead of deciding
 
 If the question is any of these, write nothing and answer "ESCALATE-TO-OWNER: <category>: <why>":
+
 - a trade-off against an approved non-functional requirement (an approved NFR wins over the design unless the owner says otherwise);
 - scope;
 - a user-facing string that the design does not already fix;
