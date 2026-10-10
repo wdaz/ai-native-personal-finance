@@ -73,3 +73,17 @@ export function formatAmountInput(cents: number): string {
   const rest = cents % 100;
   return rest === 0 ? String(dollars) : `${dollars}.${String(rest).padStart(2, "0")}`;
 }
+
+/**
+ * SPEC-pots 2.3: a percentage in basis points (`potPercent`'s 795) as text with exactly two decimals
+ * and no thousands separator ("7.95%", "106.67%", "57560000.00%"). Built from the integer, so no
+ * engine rounds it.
+ */
+export function formatPercent(basisPoints: number): string {
+  if (!Number.isSafeInteger(basisPoints) || basisPoints < 0) {
+    throw new Error(
+      `Percentage ${String(basisPoints)} is not a whole, non-negative number of basis points`,
+    );
+  }
+  return `${Math.floor(basisPoints / 100)}.${String(basisPoints % 100).padStart(2, "0")}%`;
+}
