@@ -68,18 +68,19 @@ It runs in two modes, and the second needs the owner's approval named in its pro
    agent yarat" — "that agent is a mod and attaches at session time; create a new agent for this"); an
    agent file cannot hold such a guard, so the owner chose to rely on the quoted approval.
 4. **The designer agent applies, in *apply* mode.** Only after "OWNER APPROVED: <the decision>", quoting
-   the owner's own approval, it makes the smallest change in the designer's Claude Design project and
+   the owner's own approval, it makes the smallest change in the design folder (before v1.14, the
+   designer's Claude Design project) and
    records the decision in the designer's changelog, stated as a decision. It returns the changelog
-   section and the files changed. Only the designer agent writes to the designer's Claude Design project,
-   and only for a decision the owner approved; Claude Design takes the write only with a plan from its
-   `finalize_plan` tool, which the agent calls for exactly the approved changes (v1.13, owner decision
+   section and the files changed. Only the designer agent writes the design, and only for a decision the
+   owner approved. Before v1.14, Claude Design took the write only with a plan from its
+   `finalize_plan` tool, which the agent called for exactly the approved changes (v1.13, owner decision
    2026-10-10, "Aləti əlavə et" — "add the tool"); without the quoted approval it writes nothing and answers
    `APPROVAL-MISSING`. In a session without the mod, no tool enforces this (v1.12): it is a rule of the
-   agent's prompt and of this document. The mod stays installed on the owner's Mac (owner decision,
-   2026-10-10, "Saxla" — "keep it"); in a session that loads it, its guard still refuses Claude Design
-   writes from any agent but `designer-agent:designer`, so there the write goes through the mod's agent
-   and the owner's `/designer-approve`. The owner's own `/design-sync` and the owner's own writes in Claude Design stay outside
-   it.
+   agent's prompt and of this document. Before v1.14 the mod stayed installed on the owner's Mac (owner decision,
+   2026-10-10, "Saxla" — "keep it"), and in a session that loaded it, its guard refused Claude Design
+   writes from any agent but `designer-agent:designer`. From v1.14 nothing is written to Claude Design;
+   a change the owner still makes there, or by `/design-sync`, reaches the design only once it is copied
+   into the design folder with a changelog section.
 5. **The agent cites the answer**, naming the changelog's section (for example "the designer's
    changelog §8a"), in the spec, the pull request and the code. A changelog entry that is a proposal, an
    option or a note to discuss, not stated as a decision, is not yet the answer, and the question stays
@@ -100,11 +101,13 @@ main design source, and Claude Design is no longer updated). The design folder i
 shared folder `/mnt/project-files/design/`: `Finance App.dc.html`, `Style Guide.dc.html`, the
 designer's changelog `CHANGELOG.md`, `components/`, `assets/` and `support.js`. From v1.14:
 
-- Where this document says "the designer's Claude Design project", read the design folder; "the
-  designer's changelog" is its `CHANGELOG.md`, and its numbering carries on.
+- Where this document, a spec or another process document says "the designer's Claude Design
+  project" (or names a Figma file as the source of design values), read the design folder; "the
+  designer's changelog" is its `CHANGELOG.md`, and its numbering carries on. Those documents are
+  amended when they are next changed, not in bulk.
 - The designer agent reads and, in *apply* mode, edits the design folder (`.claude/agents/designer.md`).
-  Steps 1 to 5 and the owner's approval are unchanged; `finalize_plan` and the mod's guard in step 4 no
-  longer apply, because nothing is written to Claude Design. That the designer agent edits only the
+  Steps 1 to 5 and the owner's approval are unchanged. A session outside the project's containers (for
+  example on the owner's Mac) names its local copy of the design folder in the designer agent's prompt. That the designer agent edits only the
   design folder, and only in *apply* mode, is a rule of its prompt and of this document; no tool
   enforces it (as for the approval, v1.12). Its modes and this section win over the design folder's
   own `CLAUDE.md`.

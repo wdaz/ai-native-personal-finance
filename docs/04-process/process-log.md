@@ -7019,8 +7019,10 @@ them too").
     folder's `assets/vendor/` instead of unpkg.com, so a cloud session can render the pages (the
     owner asked how a cloud session could open them; byte-identical files, same SRI hashes).
   - §27 and §28 were written by the thread itself, not the designer agent (which had no design-folder
-    route until this pull request): §27 on the owner's thread message above, §28 on the owner's
-    question, relayed by the coordinator session.
+    route until this pull request), as an exception under the owner's Release 2 delegation: §27 draws
+    what the changelog already decided (§17–§26) and what `transactions.md` 2.6 already decided for
+    T-19 (27c makes no new decision), on the owner's thread message above; §28 changes only how the
+    pages load their scripts, on the owner's question relayed by the coordinator session.
   - `governance.md` v1.14: the design folder is the design source; the designer agent works on it in
     any session that has it.
   - `.claude/agents/designer.md`: reads and, in apply mode, edits the design folder; no Claude Design
