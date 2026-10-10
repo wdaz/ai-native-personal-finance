@@ -50,7 +50,7 @@ It runs in two modes, and the second needs the owner's approval named in its pro
    `DESIGN-Q: <question, file, component>` to the controller, which asks; it does not choose
    (`build-workflow.md`, rules of thumb).
 2. **The designer agent proposes.** It reads the designer's changelog, the app design and the style
-   guide live, not an older export, and the repository's documents the question touches. It returns the
+   guide from the design folder (v1.14), not an older copy, and the repository's documents the question touches. It returns the
    design as it stands, two or three options with their trade-offs, the decision it takes, the files and
    sections it would change, and a draft changelog entry. In this mode it writes nothing. Where the answer
    is a fact only a person has (the intent behind a screen, which of two uses matters more) and neither
@@ -88,8 +88,8 @@ It runs in two modes, and the second needs the owner's approval named in its pro
 **The designer agent is the only route** (owner decision, 2026-10-10: "yol 2 ancaq" — "route 2 only").
 The v1.10 route, in which the owner took a question to the human designer, who recorded the decision in
 the designer's changelog for the agent to read, is retired: an entry written that way after v1.11 is not
-an answer. Where the designer agent is not available (a session without the Claude Design tools, such as
-a cloud session, where it answers `DESIGNER-UNAVAILABLE`), the agent
+an answer. Where the designer agent is not available (before v1.14, a session without the Claude Design
+tools; from v1.14, a session without the design folder, where it answers `DESIGNER-UNAVAILABLE`), the agent
 does not decide a design question and does not look for one in the changelog: it tells the owner in the
 spec's §9 and the pull request, as for any open question, and the question stays open until the designer
 agent can be asked.
@@ -104,7 +104,10 @@ designer's changelog `CHANGELOG.md`, `components/`, `assets/` and `support.js`. 
   designer's changelog" is its `CHANGELOG.md`, and its numbering carries on.
 - The designer agent reads and, in *apply* mode, edits the design folder (`.claude/agents/designer.md`).
   Steps 1 to 5 and the owner's approval are unchanged; `finalize_plan` and the mod's guard in step 4 no
-  longer apply, because nothing is written to Claude Design.
+  longer apply, because nothing is written to Claude Design. That the designer agent edits only the
+  design folder, and only in *apply* mode, is a rule of its prompt and of this document; no tool
+  enforces it (as for the approval, v1.12). Its modes and this section win over the design folder's
+  own `CLAUDE.md`.
 - A cloud session that has the project's shared folder can ask the designer agent, so
   `DESIGNER-UNAVAILABLE` now means only a session without the design folder.
 - After a change is applied, the session that asked checks it renders and republishes the preview to

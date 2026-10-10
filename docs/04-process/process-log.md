@@ -7002,7 +7002,7 @@ them too").
 ## 2026-10-10 — Phase 4 (Release 2): the design files catch up, and the design folder becomes the design source
 
 - **Phase:** 4 (Release 2), design alignment.
-- **Participants:** Owner / Agent (Claude Code, cloud thread)
+- **Participants:** Owner (Ruslan), Agent (Claude Code, Opus 5.5, cloud thread "Release 2 design sync")
 - **Trigger:** the owner asked that every Release 2 design change be reflected in the design itself
   before Release 2 closes ("Release 2 bağlamazdan öncə design və kod bir birini tamamlamalıdır" —
   "before Release 2 closes, the design and the code must complete each other"), and chose the design
@@ -7015,6 +7015,12 @@ them too").
     recorded as the designer's changelog §27 (27a the app, 27b the style guide, 27c T-19's toolbar
     triggers sized to their longest option, the drawn width as the minimum, `transactions.md` 2.6).
     The preview was republished to the same link.
+  - The designer's changelog §28: `support.js` loads React, ReactDOM and Babel from the design
+    folder's `assets/vendor/` instead of unpkg.com, so a cloud session can render the pages (the
+    owner asked how a cloud session could open them; byte-identical files, same SRI hashes).
+  - §27 and §28 were written by the thread itself, not the designer agent (which had no design-folder
+    route until this pull request): §27 on the owner's thread message above, §28 on the owner's
+    question, relayed by the coordinator session.
   - `governance.md` v1.14: the design folder is the design source; the designer agent works on it in
     any session that has it.
   - `.claude/agents/designer.md`: reads and, in apply mode, edits the design folder; no Claude Design
