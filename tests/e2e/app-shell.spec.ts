@@ -250,6 +250,34 @@ test.describe("US-34 hover states (SPEC-app-shell §2.2, design-tokens 'Componen
   });
 });
 
+/** SPEC-app-shell §2.9: the width of `<main>`'s content box — what a page's container query reads. */
+async function contentWidth(page: Page): Promise<number> {
+  return page.getByRole("main").evaluate((main) => {
+    const style = getComputedStyle(main);
+    return main.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  });
+}
+
+test("US-33 SPEC-app-shell §2.9 content width: <main> is an inline-size container, 1060 / 1272 / 688 / 343 px (H17)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/overview");
+  await expect(page.getByRole("main")).toHaveCSS("container-type", "inline-size");
+  await expect.poll(() => contentWidth(page)).toBe(1060);
+
+  await page.getByRole("button", { name: COPY.minimizeMenu }).click();
+  await expect.poll(async () => (await sidebar(page).boundingBox())?.width).toBe(88);
+  await expect.poll(() => contentWidth(page)).toBe(1272);
+  await page.getByRole("button", { name: COPY.expandMenu }).click();
+  await expect.poll(async () => (await sidebar(page).boundingBox())?.width).toBe(300);
+
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await expect.poll(() => contentWidth(page)).toBe(688);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect.poll(() => contentWidth(page)).toBe(343);
+});
+
 test("SPEC-app-shell §2.1 no origin-trial meta tag in the test environment (WEBMCP_ORIGIN_TRIAL_TOKEN unset)", async ({
   page,
 }) => {
