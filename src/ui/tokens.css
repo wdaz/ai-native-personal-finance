@@ -99,6 +99,16 @@
   /* For popovers and dropdown menus only — not for cards or modals (design-tokens.md, "Shadow") */
   --shadow-popover: 0 4px 24px rgba(0, 0, 0, 0.25);
 
+  /* Modals and forms — design-tokens.md v1.6 (SPEC-ui-kit §9 UK-Q4; hand-off H13 (3)) */
+  --color-backdrop: rgba(0, 0, 0, 0.5);
+  --modal-max-width: 560px;
+  --action-menu-width: 134px;
+  --field-menu-max-height: 300px;
+  --duration-modal: 200ms;
+
+  /* Opacity — design-tokens.md v1.6 (the designer's changelog §12a) */
+  --opacity-unavailable: 0.25;
+
   /* Breakpoints (see the note at the top of this file) */
   --bp-tablet: 768px;
   --bp-desktop: 1024px;

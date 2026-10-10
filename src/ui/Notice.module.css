@@ -1,0 +1,46 @@
+/*
+ * SPEC-ui-kit 2.9: the reset banner's card (`ResetBanner.module.css`, SPEC-app-shell §2.6) — a
+ * white card, radius 12 px, text preset 4 in grey-900, the close-circle "Dismiss notice" button in
+ * a 44 px box, grey-500, grey-900 on hover. Empty, the region takes no space.
+ */
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-200);
+  padding: var(--spacing-50) var(--spacing-50) var(--spacing-50) var(--spacing-200);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}
+
+.text {
+  margin: 0;
+  color: var(--color-grey-900);
+  font: var(--text-preset-4);
+}
+
+.dismiss {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--tap-target-min);
+  block-size: var(--tap-target-min);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-100);
+  background: none;
+  color: var(--color-grey-500);
+  cursor: pointer;
+  transition: color var(--duration-hover);
+}
+
+.dismiss:hover {
+  color: var(--color-grey-900);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dismiss {
+    transition: none;
+  }
+}

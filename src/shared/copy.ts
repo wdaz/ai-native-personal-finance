@@ -137,4 +137,25 @@ export const COPY = {
   billsStatus: (n: number) => count(n, "bill", "bills"),
   billsLoadError: "Couldn't load your recurring bills",
   billsEmpty: "No recurring bills yet",
+
+  // R2 additions (SPEC-ui-kit 2.12, §9 UK-Q1; release-2-handoffs.md H13 (2))
+  /** 2.2: the modal's close button, heard (the design's `aria-label`). */
+  close: "Close",
+  /** 2.3: the delete dialog's title, with the design's curly quotes (U+2018, U+2019). */
+  deleteTitle: (name: string) => `Delete ‘${name}’?`,
+  confirmDeletion: "Yes, Confirm Deletion",
+  goBack: "No, Go Back",
+  /** 2.3, 2.7: the confirm and the submit button while their request is pending (UK-Q1). */
+  deleting: "Deleting…",
+  saving: "Saving…",
+  /** 2.4: the "…" button's name is `menuTriggerName(budgetOptions, name)` (UK-Q1). */
+  budgetOptions: "Budget options",
+  potOptions: "Pot options",
+  editBudget: "Edit Budget",
+  deleteBudget: "Delete Budget",
+  editPot: "Edit Pot",
+  deletePot: "Delete Pot",
+  /** 2.8: the header buttons' names; the visible "+" before them is drawn `aria-hidden`. */
+  addNewBudget: "Add New Budget",
+  addNewPot: "Add New Pot",
 } as const;

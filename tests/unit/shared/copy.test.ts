@@ -51,6 +51,7 @@ const SAMPLES: [string, string][] = [
   ["{count}", "4"],
   ["{amount}", "$190.00"],
   ["{ordinal day}", "2nd"],
+  ["{name}", "Savings"],
 ];
 const fill = (text: string) => SAMPLES.reduce((out, [from, to]) => out.replaceAll(from, to), text);
 const state = (text: string) => text.replace("Agent tools: ", "");
@@ -194,6 +195,28 @@ const RENDERED: [context: string, keys: Key[], message: string][] = [
   ],
   ["Recurring Bills", ["billsNoResults"], COPY.billsNoResults],
   ["Recurring Bills", ["billsEmpty"], COPY.billsEmpty],
+  ["Modal", ["close"], COPY.close],
+  ["Delete dialog", ["deleteTitle"], COPY.deleteTitle("Savings")],
+  ["Delete dialog", ["confirmDeletion", "goBack"], `${COPY.confirmDeletion} · ${COPY.goBack}`],
+  ["Delete dialog and forms", ["deleting", "saving"], `${COPY.deleting} · ${COPY.saving}`],
+  [
+    '"…" menu',
+    ["budgetOptions", "potOptions"],
+    [
+      COPY.menuTriggerName(COPY.budgetOptions, "Savings"),
+      COPY.menuTriggerName(COPY.potOptions, "Savings"),
+    ].join(" · "),
+  ],
+  [
+    '"…" menu',
+    ["editBudget", "deleteBudget", "editPot", "deletePot"],
+    [COPY.editBudget, COPY.deleteBudget, COPY.editPot, COPY.deletePot].join(" · "),
+  ],
+  [
+    "Budgets and Pots",
+    ["addNewBudget", "addNewPot"],
+    `+ ${COPY.addNewBudget} · + ${COPY.addNewPot}`,
+  ],
 ];
 
 const expected = RENDERED.map(([context, , message]) => [context, message]);
@@ -280,6 +303,11 @@ describe("copy with a number in it", () => {
       expect(COPY.billsStatus(n)).toBe(text);
     },
   );
+
+  it("writes the delete dialog's title with curly quotes around a name of any length (SPEC-ui-kit 2.3, US-17 AC1, US-24 AC1)", () => {
+    expect(COPY.deleteTitle("Entertainment")).toBe("Delete \u2018Entertainment\u2019?");
+    expect(COPY.deleteTitle("x".repeat(30))).toBe(`Delete \u2018${"x".repeat(30)}\u2019?`);
+  });
 
   it("writes the indicator's tool count as given", () => {
     expect(COPY.agentToolsNative(0)).toBe("Agent tools: native · 0");
