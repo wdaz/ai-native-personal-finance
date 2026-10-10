@@ -6786,6 +6786,9 @@ them too").
 - **Owner changes and reasoning:** chose "Aləti əlavə et" ("add the tool") over applying the changes by
   hand.
 - **Disagreements:** none.
+- **Exception to v1.9:** Copilot's review of this pull request stopped at its weekly rate limit (resets
+  2026-10-12). The owner chose "Without Copilot": the pull request leaves draft on green CI without
+  Copilot's review, once, for this change only.
 - **Lessons for the process:** check a new agent's tool list against one real call of each mode before
   relying on it.
 - **Next:** after the merge, rerun outcome 1's *apply* in a session on the Mac started from `develop`.
