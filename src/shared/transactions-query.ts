@@ -112,3 +112,18 @@ export function parseTransactionsQuery(
 
   return { query: { q, category, sort, page }, issues, message: messages.join("; ") };
 }
+
+/**
+ * SPEC-transactions 2.2: the URL the page's own controls write — `q`, `category`, `sort`,
+ * `page` in that order, by `URLSearchParams` (a space becomes `+`), each left out at its default
+ * (no search, "All Transactions", `latest`, page 1). Parameters outside the contract are dropped.
+ */
+export function transactionsSearch(query: TransactionsQuery): string {
+  const params = new URLSearchParams();
+  if (query.q) params.set("q", query.q);
+  if (query.category) params.set("category", query.category);
+  if (query.sort !== "latest") params.set("sort", query.sort);
+  if (query.page > 1) params.set("page", String(query.page));
+  const search = params.toString();
+  return search ? `?${search}` : "";
+}
