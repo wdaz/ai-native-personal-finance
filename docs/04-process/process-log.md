@@ -7217,3 +7217,34 @@ them too").
 - **Not done here:** no page uses the parts yet (T-24 and T-26), so there is no E2E row.
   `tests/unit/install-scripts.test.ts` fails on a machine with npm 10, as recorded for T-17.
 - **Next:** the merge of #130; then T-23.
+
+## 2026-10-10 — Phase 4 (Release 2): T-23 — Budgets, server and API
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; seventh Release 2 build task.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "T-23"; one read-only review subagent, the `/code-review` skill on
+  Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-22's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-23/` (the review brief, report and handling). The plan
+  `plans/2026-10-10-T-23.md` raised no question: `budgets.md` v0.8 and `write-path.md` answered every
+  behaviour. The coordinator asked once whether T-24 could start before T-23 finished; the answer was no
+  (T-24 depends on T-23's schemas, server and routes, and both touch `schemas.ts` and `seed-figures.ts`).
+- **Produced** (pull request #131, `develop`):
+  - A: `latestSpending`, `budgetRemaining`, `budgetsSummary`; `budgetFillPercent` in integers; the
+    schemas and the strict DTOs; `applyVariant` moved into `src/domain/variants.ts`.
+  - B: `src/server/budgets.ts` and the routes `GET`/`POST /api/budgets`, `PATCH`/`DELETE
+    /api/budgets/:id`; `tests/api/budgets.spec.ts` with `write-path.md` 7.2's rows on a real route.
+  - C: `budgetFigures()` in `scripts/seed-figures.ts` and the spec's 4.2 and 4.4–4.7 held to it (H15 (2));
+    US-14, US-18 and US-20 left `NOT_YET_BUILT` (1 id remains).
+- **What went well:** `guardedWrite` from T-17 made each route a few lines; the seed figures of T-15d
+  matched the domain's output on the first run.
+- **What the agent got wrong or missed:** two test expectations in `budgetFillPercent`'s table were wrong
+  (the half-way point of 0.01 % is 1 cent of 20,000, not of 200,000); the review found the edit's
+  read-then-update race that answered 500 instead of 404, fixed with a conditional update.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none. Two review nits were kept, with reasons in the handling file.
+- **Not done here:** the page, the tools, the copy and the tokens (T-24); the donut centre's fit table
+  stays with T-24. The throwing threshold check runs the route's handler in the test process, since the
+  API server's environment is fixed (plan F4).
+- **Next:** the merge of #131; then T-24.
