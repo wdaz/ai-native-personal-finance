@@ -1,5 +1,6 @@
 import type { ToolDefinition } from "../types";
 import { overviewTools } from "./overview";
+import { potsTools } from "./pots";
 import { recurringBillsTools } from "./recurring-bills";
 import { transactionsTools } from "./transactions";
 
@@ -12,4 +13,5 @@ export const PAGE_TOOLS = {
   overview: overviewTools,
   transactions: transactionsTools,
   recurringBills: recurringBillsTools,
+  pots: potsTools,
 } as const satisfies Record<string, ToolDefinition[]>;
