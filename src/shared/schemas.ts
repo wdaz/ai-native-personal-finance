@@ -352,6 +352,78 @@ export const RecurringBillsDtoSchema = z.strictObject({
 export type RecurringBillsDto = z.infer<typeof RecurringBillsDtoSchema>;
 
 // ---------------------------------------------------------------------------------------
+// Budgets — SPEC-budgets 2.10, 2.11
+
+/** SPEC-budgets 2.10: at most ten budgets, one per category. */
+export const BUDGETS_MAX = CATEGORIES.length;
+/** SPEC-budgets 2.5, US-18 AC1: a card's Latest Spending holds at most three rows. */
+export const BUDGET_LATEST_MAX = 3;
+
+/**
+ * `POST /api/budgets`: the category (one of the ten), the maximum (integer cents) and the theme
+ * (one of the fifteen), all required. Unknown keys are stripped (SPEC-write-path 2.7).
+ */
+export const BudgetCreateSchema = z.object({
+  category: CategorySchema,
+  maximum: AmountCentsSchema,
+  theme: ThemeSchema,
+});
+export type BudgetCreateInput = z.infer<typeof BudgetCreateSchema>;
+
+/**
+ * `PATCH /api/budgets/:id`: the same three fields, all required, as the edit form sends them
+ * (2.10; partial edits are out of scope, §8). Named for `edit_budget` and "Edit Budget".
+ */
+export const BudgetEditSchema = z.object({
+  category: CategorySchema,
+  maximum: AmountCentsSchema,
+  theme: ThemeSchema,
+});
+export type BudgetEditInput = z.infer<typeof BudgetEditSchema>;
+
+/**
+ * One budget as the card shows it, with its id (US-39 AC2) and the latest rows' avatar keys. No
+ * `seq` (the order of `items` is the order) and no bar percentage (the client's, 2.1).
+ */
+export const BudgetItemDtoSchema = z.strictObject({
+  id: z.uuid(),
+  category: CategorySchema,
+  theme: ThemeSchema,
+  maximum: z.int().positive(),
+  /** `budgetSpent`: August 2026, negative rows only (R-11). */
+  spent: NonNegativeCents,
+  /** `max(0, maximum − spent)`. */
+  remaining: NonNegativeCents,
+  /** US-11 Latest, any month and any sign. */
+  latest: z
+    .array(
+      z.strictObject({
+        id: z.uuid(),
+        name: z.string().min(1).max(NAME_MAX),
+        avatar: z.string().regex(AVATAR_KEY),
+        date: UtcDateTime,
+        amount: Cents,
+      }),
+    )
+    .max(BUDGET_LATEST_MAX),
+});
+export type BudgetItemDto = z.infer<typeof BudgetItemDtoSchema>;
+
+/** `GET /api/budgets`: every budget in creation order, with the totals over all of them. */
+export const BudgetsDtoSchema = z.strictObject({
+  items: z.array(BudgetItemDtoSchema).max(BUDGETS_MAX),
+  /** Σ items.spent, equal to Overview's `budgets.spent` (US-20 AC1). */
+  spent: NonNegativeCents,
+  /** Σ items.maximum. */
+  limit: NonNegativeCents,
+});
+export type BudgetsDto = z.infer<typeof BudgetsDtoSchema>;
+
+/** The create's and the edit's answer: the record under its noun (2.10, as `pots.md` 2.12). */
+export const BudgetWriteDtoSchema = z.strictObject({ budget: BudgetItemDtoSchema });
+export type BudgetWriteDto = z.infer<typeof BudgetWriteDtoSchema>;
+
+// ---------------------------------------------------------------------------------------
 // Meta — SPEC-app-shell §5
 
 export const MetaDtoSchema = z.strictObject({
