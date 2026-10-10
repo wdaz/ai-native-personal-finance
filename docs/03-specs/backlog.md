@@ -1,6 +1,10 @@
 # Backlog — Release 1 (vertical slice: Auth + Overview) and Release 2 (Transactions, Recurring Bills, Budgets, Pots)
 
-Status: **Approved** (v1.60 — 2026-10-10: T-24 aligned with the designer's Release 2 decisions, approved by the owner on 2026-10-10 (the designer's changelog §17–§25): BU-11 (A)'s Budgets-only centre-text fit as a `Donut` option, with BU-Q9 (a)'s length table at server render, and the token names confirmed (§18); T-19 and T-26 need no change (TX-1 adds no token, §25a; T-26 already lists `--spacing-bar-text` for Pots only, §25c); and a new section "Outside a release" with **T-28**, the Overview counterpart of BU-11 (A) — whether Overview's donut passes the same centre-text fit, an `overview.md` 4.4 amendment the designer is asked about first and the owner approves — added on the owner's answer of 2026-10-10, "Backlog-a yaz", outside Release 2 and after T-24; v1.59 — 2026-10-06: **T-15d is done, and with it T-15** — the Release 2 specs are merged
+Status: **Approved** (v1.61 — 2026-10-10: T-24 aligned with the designer's Release 2 decisions, approved by the owner on 2026-10-10 (the designer's changelog §17–§25): BU-11 (A)'s Budgets-only centre-text fit as a `Donut` option, with BU-Q9 (a)'s length table at server render, and the token names confirmed (§18); T-19 and T-26 need no change (TX-1 adds no token, §25a; T-26 already lists `--spacing-bar-text` for Pots only, §25c); and a new section "Outside a release" with **T-28**, the Overview counterpart of BU-11 (A) — whether Overview's donut passes the same centre-text fit, an `overview.md` 4.4 amendment the designer is asked about first and the owner approves — added on the owner's answer of 2026-10-10, "Backlog-a yaz", outside Release 2 and after T-24;
+v1.60 — 2026-10-10: **hotfix 1 and hotfix 2 are done** (the "Release 2" notes, "Before the
+build"): hotfix 1, `next` on `main` (#106); hotfix 2, H12's Overview part, H17 and H18 (`develop` #109, `main` #111,
+the plan `plans/2026-10-10-hotfix-2.md`); T-17 is next once the Release 2 design alignment (the Release 2 goal's
+outcome 1) is done; v1.59 — 2026-10-06: **T-15d is done, and with it T-15** — the Release 2 specs are merged
 (`write-path.md` #87, `transactions.md` #88, `ui-kit.md` #92, `recurring-bills.md` #91, `budgets.md` #98, `pots.md`
 #97, `webmcp-tools.md` §4 #90; the amendments #95, #96, #99–#102), and T-15d's last pull request (#104, plan Q4 (a)) adds the
 section "Release 2" below — the build tasks T-17 to T-27, each pointing to its spec sections and naming the hand-offs
@@ -484,6 +488,10 @@ Release 2 notes
   docs/03-specs/overview.md` finds none, 2026-10-06), so H12's Overview part needs that amendment first, as H12 says;
   and `TruncatedText` (`transactions.md` 2.9) is built by T-19, so hotfix 2 either builds it first (and T-19 reuses
   it) or leaves H12's Overview part until after T-19.
+  **Both are done (2026-10-10):** hotfix 1 — `next` on `main`, #106 (`8529395`); hotfix 2 — the plan
+  `plans/2026-10-10-hotfix-2.md` (#107), `develop` #109 (`c0c585a`: the `overview.md` v1.4 amendment, H17, H18, and
+  H12's Overview part with `TruncatedText` built first, which T-19 reuses), `main` #111 (`435bdb2`: the code and
+  test commits only). `release-2-handoffs.md` H17 and H18 are ticked; H12 stays open for T-19, T-21, T-24 and T-26.
 - **The flip** (H4) is T-17's note: the owner answered (a) on 2026-10-06 — T-17 flips with a shrink-only list of
   the ids not yet built, and T-26 removes it.
 - **Merged specs that need an amendment before a task** (each in its own pull request, approved by the owner's
