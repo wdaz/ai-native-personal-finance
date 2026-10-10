@@ -39,9 +39,11 @@ import { VIA_HEADER } from "@/src/shared/via";
 // exclusion swallows that suffix — on Vercel the proxy then never ran for `/overview.segments/*` or
 // `/api/overview.json` (TD-19). `tests/unit/server/proxy-matcher.test.ts` compiles this pattern
 // with Next's own function and pins both halves.
+// The static-file exclusion does not apply under `api/` (T-17 review): `/api/pots/<uuid>.png`
+// reaches `app/api/pots/[id]/route.ts`, and a write there must get the 401, 403 and 415 checks.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|txt|xml)$).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|(?!api/).*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|txt|xml)$).*)",
   ],
 };
 

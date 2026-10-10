@@ -263,3 +263,12 @@ test("SPEC-write-path 2.2 step 10: a refused write does not re-issue an old sess
   const read = await request.get("/api/auth/session", { headers: cookie });
   expect(read.headers()["set-cookie"]).toContain(`${SESSION_COOKIE_NAME}=`);
 });
+
+test("SPEC-write-path 2.2: a write path that ends like a static file still gets the proxy's checks (T-17 review)", async ({
+  request,
+}) => {
+  const path = `/api/pots/${ID}.png`;
+  const anonymous = await send(request, "DELETE", path, { "sec-fetch-site": "cross-site" });
+  expect(anonymous.status()).toBe(401);
+  expect(anonymous.headers()["x-request-id"]).toMatch(/^[0-9a-f-]{36}$/);
+});
