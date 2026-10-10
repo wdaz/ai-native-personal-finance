@@ -65,7 +65,38 @@ function isExported(node: ts.Node): boolean {
 export function handlersOf(source: string): Handler[] {
   const file = ts.createSourceFile("route.ts", source, ts.ScriptTarget.Latest, true);
   const handlers: Handler[] = [];
+  // Top-level function and const declarations by name, for `export { local as POST }`.
+  const local = new Map<string, ts.Node>();
   for (const statement of file.statements) {
+    if (ts.isFunctionDeclaration(statement) && statement.name !== undefined) {
+      local.set(statement.name.text, statement);
+    } else if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name)) local.set(declaration.name.text, declaration);
+      }
+    }
+  }
+  for (const statement of file.statements) {
+    if (
+      ts.isExportDeclaration(statement) &&
+      statement.exportClause !== undefined &&
+      ts.isNamedExports(statement.exportClause)
+    ) {
+      for (const element of statement.exportClause.elements) {
+        if (!HTTP_METHODS.has(element.name.text)) continue;
+        // A re-export from another module (`export { POST } from "./impl"`) cannot be read
+        // here, so it counts as not calling `guardedWrite`: the guard fails it, never passes it.
+        const target =
+          statement.moduleSpecifier === undefined
+            ? local.get((element.propertyName ?? element.name).text)
+            : undefined;
+        handlers.push({
+          method: element.name.text,
+          callsGuardedWrite: target !== undefined && callsGuardedWrite(target),
+        });
+      }
+      continue;
+    }
     if (!isExported(statement)) continue;
     if (ts.isFunctionDeclaration(statement) && statement.name !== undefined) {
       const method = statement.name.text;

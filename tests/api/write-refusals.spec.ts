@@ -2,6 +2,7 @@ import { connect } from "node:net";
 import { type APIRequestContext, type APIResponse, expect, test } from "@playwright/test";
 import { createDb, type Db } from "@/src/server/db";
 import { databaseUrl } from "@/src/server/env";
+import { SESSION_COOKIE_NAME, sealSession } from "@/src/server/session";
 import { ErrorEnvelopeSchema } from "@/src/shared/schemas";
 
 /**
@@ -230,4 +231,35 @@ test("SPEC-write-path 2.3: the exempt routes are not refused for their content t
     headers: { "sec-fetch-site": "cross-site" },
   });
   expect(testReset.status()).toBe(200);
+});
+
+test("SPEC-write-path 2.2 step 10: a refused write does not re-issue an old session's cookie", async ({
+  request,
+}) => {
+  // Logging in just before gives a fresh session, which is never re-issued; this one is 61 minutes old.
+  const resetLog = await db.resetLog.findFirstOrThrow({ orderBy: { at: "desc" } });
+  const sealed = await sealSession({
+    sub: "demo",
+    iat: Date.now() - 61 * 60 * 1000,
+    resetEpoch: resetLog.at.getTime(),
+  });
+  const cookie = { Cookie: `${SESSION_COOKIE_NAME}=${sealed}` };
+
+  const crossSite = await request.post("/api/pots", {
+    headers: { ...cookie, ...JSON_TYPE, "sec-fetch-site": "cross-site" },
+    data: "{}",
+  });
+  expect(crossSite.status()).toBe(403);
+  expectRefusalHeaders(crossSite);
+
+  const wrongType = await request.post("/api/pots", {
+    headers: { ...cookie, "content-type": "text/plain" },
+    data: "{}",
+  });
+  expect(wrongType.status()).toBe(415);
+  expectRefusalHeaders(wrongType);
+
+  // The control: a read with the same session is re-issued, so the two checks above can fail.
+  const read = await request.get("/api/auth/session", { headers: cookie });
+  expect(read.headers()["set-cookie"]).toContain(`${SESSION_COOKIE_NAME}=`);
 });

@@ -58,6 +58,11 @@ describe("the route table (SPEC-write-path 7.4)", () => {
     ],
     ["get-calls-wrapper.ts.fixture", "GET /api/pots: a GET handler calls guardedWrite"],
     [
+      "reexport-without-wrapper.ts.fixture",
+      "PATCH /api/pots/[id]: a write handler without guardedWrite",
+    ],
+    ["reexport-from-module.ts.fixture", "POST /api/pots: a write handler without guardedWrite"],
+    [
       "read-method-on-write-path.ts.fixture",
       "OPTIONS /api/pots: neither a write under the proxy's predicate nor exempt",
     ],
