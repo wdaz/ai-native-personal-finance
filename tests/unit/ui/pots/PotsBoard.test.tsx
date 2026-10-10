@@ -48,7 +48,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-
 async function addMoney(text: string) {
   fireEvent.click(screen.getByRole("button", { name: "Add Money to Pot" }));
   const field = screen.getByRole("textbox", { name: COPY.amountToAdd });
