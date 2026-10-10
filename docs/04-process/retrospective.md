@@ -1,9 +1,9 @@
-# Retrospective — the whole project, Phases 0 to 6
+# Retrospective — the whole project, from the skeleton to the Release 2 build
 
 Status: **Draft** (v0.1, 2026-10-11) — for the owner's review; only the owner marks it Approved (`AGENTS.md` §3). ·
 Author(s): Agent (Claude Code, Sonnet 5.5, cloud thread "Phase 7 README") · Date: 2026-10-11
 Phase: 7 (Retrospective and portfolio narrative) · Roadmap outcome 6 (`roadmap.md`, "Release 2 goal") ·
-Evidence base: `docs/04-process/process-log.md` (120 entries) at `origin/develop` `953b9bf`; the log is append-only
+Evidence base: `docs/04-process/process-log.md` (121 entries) at `origin/develop` `953b9bf`; the log is append-only
 and is not edited here, except for this task's own entry.
 
 ## How this was made, and how far to trust it
@@ -26,13 +26,13 @@ and is not edited here, except for this task's own entry.
 | First and latest commit on `develop` | 2026-09-03 · 2026-10-11 (38 days) | `git log origin/develop --format=%ad --date=short` (full clone) |
 | Commits on `develop` | 938 | `git rev-list --count origin/develop` |
 | Release 1 pull requests (to #81) · Release 2 and after (#84–#139) | 78 merged, 2 closed unmerged (R1 retro) · 54 merged | R1 retro §1; `gh api repos/wdaz/ai-native-personal-finance/pulls?state=all` (first 100 pull requests, #41–#141), `merged_at` set |
-| Process-log entries | 120 (97 at the Release 1 retro) | `grep -c "^## 20" docs/04-process/process-log.md` |
+| Process-log entries | 121 before this task's own entry (97 at the Release 1 retro) | `git show origin/develop:docs/04-process/process-log.md \| grep -c "^## "` |
 | Implementation plans | 35 files | `ls docs/04-process/plans/*.md` |
 | Architecture decision records | 7 (ADR-0001 … 0007), most amended | `ls docs/02-architecture/adr` |
 | User stories traced to a test title | 41 of 41 (Releases 1 and 2) | `npm run traceability` |
 | Unit tests | 2156 in 135 files; 2155 pass here | `npx vitest run`, 2026-10-11: the one failure is `install-scripts.test.ts`, which needs npm 11 (this machine has 10.9.4; CI runs 11) |
 | WebMCP tools registered | 14 (2 in Release 1, 12 in Release 2) | `docs/03-specs/webmcp-tools.md` §4 |
-| API and end-to-end specs | 21 and 18 spec files | `ls tests/api tests/e2e`; **not run in this session** (no database or browsers), CI is the check |
+| API and end-to-end specs | 21 and 17 spec files | `ls tests/api/*.spec.ts tests/e2e/*.spec.ts`; **not run in this session** (no database or browsers), CI is the check |
 
 Where it stands (2026-10-11): production runs Release 1 and its two hotfixes. Release 2 (Transactions, Recurring
 Bills, Budgets, Pots and their agent tools) is built and merged into `develop`; its `develop` → `main` pull request,
@@ -48,8 +48,8 @@ a release that has run in production.
 | 3 Architecture (09-13) | Proposed ADR-0001 with alternatives, drafted ADR-0002…0007 | Accepted them (agents never mark Accepted) | log 229–266 |
 | 4 Specs and plan (09-20) | Wrote the Release 1 specs, the Definition of Done and the backlog; adversarial review; v0.2 | Approved; handed the build to Claude Code | log 267–303 |
 | 5 Build, Release 1 (09-20…10-03) | One plan and one pull request per task (T-01…T-16), plan gates, subagent review, CI hardening, deploy | Reviewed and merged every pull request; decided every fork the plan raised | R1 retro §1–§5 |
-| 4 again, Release 2 specs (10-03…10-10) | T-15c retro, then specs for Transactions, Recurring Bills, Budgets, Pots, the write path and the WebMCP tools; a *designer* agent decides every design question | Approved; set the Release 2 goal; moved to "merge on green CI" for Release 2 | log 6244–6931 |
-| 6 Build, Release 2 (10-10) | T-17…T-26: one shared write pipeline, four pages, 12 tools, each task a plan, a draft pull request, an Opus `/code-review`, fixes, merge on green | Standing rules (questions go to the coordinator session; merge on green CI) instead of per-pull-request approval | log 6932–7353 |
+| 5 and 4 again, Release 2 specs (10-03…10-10) | T-15c (Phase 5), then specs for Transactions, Recurring Bills, Budgets, Pots, the write path and the WebMCP tools; a *designer* agent decides every design question | Approved; set the Release 2 goal; moved to "merge on green CI" for Release 2 | log 6244–6931 (the log heads T-15c and the Vercel change "Phase 5", the rest "Phase 4") |
+| 4 (Release 2), the build (10-10) | T-17…T-26: one shared write pipeline, four pages, 12 tools, each task a plan, a draft pull request, an Opus `/code-review`, fixes, merge on green | Standing rules (questions go to the coordinator session; merge on green CI) instead of per-pull-request approval | log 6932–7353; the log heads these entries "Phase 4 (Release 2)", because the roadmap has no Phase 6 exit yet |
 
 The working pattern that the log shows from Phase 5 on is the same in every task: **a plan with predictions, a
 gate where the owner answers questions, an implementation, a review by a fresh agent, a log entry**. The
@@ -71,7 +71,7 @@ nothing else was handed over.
 4. **Shared parts compounded.** T-23's entry says `guardedWrite` from T-17 "made each route a few lines" (7239);
    T-26's says T-22's parts and T-25's domain "made the page an assembly" (7341). Four pages and 12 tools were built
    in one day because the write path, the UI kit and the tool adapter had already been specified and built once.
-5. **Design questions have an owner of their own.** From governance v1.10 on, an agent that meets a design question
+5. **Design questions have an owner of their own.** From governance v1.11 on (v1.10 routed it through the owner), an agent that meets a design question
    stops and asks the designer agent (*propose*) instead of guessing (6866, 6782). The cost: every design decision
    is a round trip. The gain: no spec value in Release 2 was invented by the drafting agent.
 6. **Process was changed when it failed, in a numbered, dated document.** Governance went from v1.8 to v1.15
@@ -126,12 +126,11 @@ Approved, and merging **this** pull request.
 
 ## 6. What the owner changed, and what is still the owner's to say
 
-From the log (owner against the agent's recommendation, 6291–6299, 6595, 6733, 6760, 6823, 7110): the Release 1
-retrospective written as a document of its own (T-15c Q1 (b) over the recommended (a)); the rule that a pull request that is not a draft is merge-ready;
+Owner decisions and rules recorded in the log (6291–6299, 6595, 6733, 6760, 6823, 7046, 7110); those marked "over" are overrides of the agent's recommendation, the others are new rules or choices: the Release 1
+retrospective written as a document of its own (T-15c Q1 (b) over the recommended (a), 6291); the rule that a pull request that is not a draft is merge-ready;
 "Repoda hədəf olmalıdır" — a Release 2 goal had to be in the repository (6731); one designer agent that both
-proposes and applies (6760); TD-24 fixed after all releases, not as the design's rule had it (6503); stopping
-Vercel deploys for `claude/*` branches rather than buying Pro (7046). Of 120 log entries, the non-empty
-"Disagreements" fields in the Release 2 range number five, three of them owner against agent.
+proposes and applies (6760, over the agent's recommendation to keep writes behind the mod's guard, 6763); TD-24, a form's message clearing as the person types, fixed after all releases and not as the design's rule had it (6519–6522); stopping
+Vercel deploys for `claude/*` branches rather than buying Pro (7046). In the Release 2 range, of five non-empty "Disagreements" fields, four begin "none" and only one records a disagreement (6763: the owner chose one designer agent over the agent's recommendation).
 
 **Questions for the owner** (not answered here; answer in the review of this pull request):
 

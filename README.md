@@ -16,8 +16,8 @@ A portfolio project with two deliverables:
    the first: it shows how an idea is analysed, specified and built *with*
    LLMs, not just that an app exists.
 
-> Status: **Release 2 is built; the project is in Phase 7 — Retrospective and portfolio
-> narrative.** Release 1 (Overview) runs in production. Release 2 (Transactions, Recurring Bills,
+> Status: **Release 2 is built on `develop`; the Phase 7 retrospective and this section are drafted and
+> wait for the owner's approval** (the roadmap's phase exits are the owner's to record). Release 1 (Overview) runs in production. Release 2 (Transactions, Recurring Bills,
 > Budgets, Pots and 12 more agent tools) is merged into `develop`; its `develop` → `main` release
 > pull request is the owner's to merge. The retrospective is
 > `docs/04-process/retrospective.md` (draft, awaiting the owner). The backlog is
@@ -28,7 +28,7 @@ A portfolio project with two deliverables:
 *What "AI-native" meant here, in numbers read from the repository on 2026-10-11 (sources and caveats:
 `docs/04-process/retrospective.md`, section 1).*
 
-- **38 days, 938 commits, 120 process-log entries.** From the first commit (2026-09-03) to the end of the
+- **38 days, 938 commits, 121 process-log entries.** From the first commit (2026-09-03) to the end of the
   Release 2 build: discovery, requirements, seven ADRs, specs, 35 implementation plans and the app itself.
 - **Documents were the context.** An agent starting a task read `AGENTS.md`, the roadmap, the spec and the plan;
   nothing else was handed over. The owner decided and merged; agents drafted, built, reviewed and logged.
@@ -40,7 +40,7 @@ A portfolio project with two deliverables:
   tests and drawings hid; shared parts built once made four pages and 12 tools a one-day build.
 - **Where it hurt:** claims were accepted before anything could contradict them (specs from a stale export, plans'
   predictions, tests that passed for the wrong reason), and written rules did not stop the recurrences by
-  themselves; a fresh review did. Merge authority drifted from `governance.md` until it was written down.
+  themselves; a fresh review did. Merge authority drifted from `governance.md`, and the merge-on-green rule is still in no governance version (retrospective §6, Q2).
 - **What the owner changed** is in each process-log entry's "Owner changes" and "Disagreements" fields, and
   summarised in the retrospective, sections 5 and 6.
 
