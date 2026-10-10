@@ -36,3 +36,12 @@ can 404 for a reason unrelated to the code.
 TD-20: `db-url.ts` — `withVerifiedSsl`, applied by `db.ts`'s `createDb` to the connection string:
 `sslmode=prefer|require|verify-ca` is written `verify-full` (`pg` 8 already reads them so, `pg` 9 will
 not), and one that cannot be rewritten as text is refused with an error.
+
+T-17 (SPEC-write-path): `write-rules.ts` — the proxy's pure checks (`isWriteRequest`, the exempt
+list, `isCrossSite`, `isContentTypeRefused`, the 403 and 415 bodies, `logRefusal`); it imports no
+Zod, because `proxy.ts` imports it. `write.ts` — `guardedWrite`, the one handler every write route
+runs (rate limit → path id → body → one transaction → threshold → the answer; every answer carries
+`X-Request-Id` and `no-store`). `write-limit.ts` — `checkWriteLimit` over `WriteAttempt` rows,
+pruned by the check itself. `client-ip.ts` — `clientIp`, shared with login's limiter.
+`threshold.ts`'s `checkThreshold` is now one query. A new write route must call `guardedWrite`:
+`tests/unit/route-table.test.ts` fails otherwise.
