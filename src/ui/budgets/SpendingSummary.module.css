@@ -1,0 +1,116 @@
+/*
+ * SPEC-budgets 2.2, 2.3 (BU-10, the designer's changelog §18j): a white card, padding 32 px (24 px
+ * 20 px below 768 px); the donut (8 px above and below it) and the title with the list, 32 px
+ * apart — in a column below a 644 px content width, side by side from it (§9 BU-Q8 (a), §18d;
+ * 644 px is the design's number, not a token, §14). The title and the list are 24 px apart.
+ */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-400);
+  min-inline-size: 0;
+  padding: var(--spacing-300) var(--spacing-250);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}
+
+.donut {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--spacing-100);
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  min-inline-size: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-grey-900);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * A row: the theme bar and the category; the spent and "of {maximum}" on one line at the end.
+ * When they cannot fit beside the category, the row wraps and they move whole to a second line,
+ * right-aligned (§9 BU-Q5 (a), the designer's changelog §18e).
+ */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: var(--spacing-200);
+  padding-block: var(--spacing-200);
+  border-block-end: 1px solid var(--color-grey-100);
+}
+
+.row:last-child {
+  border-block-end: none;
+}
+
+.category {
+  display: flex;
+  align-self: stretch;
+  gap: var(--spacing-200);
+  min-inline-size: 0;
+}
+
+.name {
+  color: var(--color-grey-500);
+}
+
+.amounts {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--spacing-100);
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+
+.spent {
+  color: var(--color-grey-900);
+}
+
+.of {
+  color: var(--color-grey-500);
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--spacing-400);
+  }
+}
+
+@container (min-width: 644px) {
+  .card {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .card > * {
+    flex: 1 1 0;
+  }
+}
+
+/* Two columns from a 952 px content width (2.2): the 428 px summary lays its parts in a column. */
+@container (min-width: 952px) {
+  .card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .card > * {
+    flex: none;
+  }
+}

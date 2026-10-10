@@ -6028,3 +6028,1326 @@ them too").
 - **Next:**
   - The owner merges C after its final `secret scan`.
   - Then T-15b, the `develop` switch. From then on work pull requests target `develop`.
+
+## 2026-09-29 — Phase 5: T-15b planned and answered; `develop` created and protected; pull request A — CI, CodeQL and the head-branch check
+
+- **Phase:** 5 (Build the slice), Release 1. T-15b, the `develop` switch: the plan (PR #74, the first
+  pull request `develop` took), settings steps S1–S3, and work pull request A, the first work pull
+  request to `develop`.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session — the one that executed
+  T-15a).
+- **Trigger:** "T-15b planlamasına başla" ("Start T-15b's planning"), after PR #73 merged.
+- **Prompt(s):** `prompts/2026-09-29-T-15b.md` (the plan, with the owner's gate answers verbatim) and
+  `prompts/2026-09-29-T-15b-checks.md` (this pull request).
+- **T-15a's last `main` run (plan D2 of T-15a, quoted here as that plan said):** run 36518265278 on
+  `cb6f845` (PR #73's merge), 2026-09-29 03:41 UTC, all 8 jobs `success`. Its flagged `secret scan`
+  (job 109245314562): "secret-scan: commit diffs" — "541 commits scanned", "scanned ~16232053 bytes
+  (16.23 MB) in 1.16s", "no leaks found"; "secret-scan: commit and tag messages" — "scanned ~268366
+  bytes (268.37 KB) in 223ms", "no leaks found".
+- **Planned** (`plans/2026-09-29-T-15b.md`, v0.1 then v0.2):
+  - Findings measured with GET calls only. **F1:** both rulesets targeted `~DEFAULT_BRANCH`, so a
+    default-branch switch would have moved all of `main`'s protection to `develop`. **F2:** Vercel stores
+    `link.productionBranch: "main"`. **F4:** there is no Neon preview workflow — the Neon–Vercel
+    integration makes a branch per pushed Git branch, so `governance.md:113`'s line is stale. **F6:**
+    `pull_request_target` runs the default branch's workflow (GitHub changelog 2025-11-07).
+  - Scratch verification, outside the repository and not kept: the check script under `sh`, `bash`
+    and `dash`, and the test's two helpers against the real workflows.
+  - An Explore subagent (Opus, read-only) mapped the preview wiring and every text that names `main` as
+    the working base.
+- **The owner's answers** (verbatim in the prompt record): Q1 — `develop` to be created and the plan's
+  pull request opened to it; Q2 (a) — `develop` becomes the default branch; Q3 — **the owner's own
+  hotfix route**: a fix on `hotfix/<name>` from `develop`, merged into `develop` and checked there,
+  then cherry-picked onto `hotfix/<name>-main`, a branch from `main`, whose pull request goes to `main`;
+  Q4 — no release in T-15b ("release artıq baş verib və Verceldə artıq işləyir"); Q5 — answered about
+  the source ("yalnız hotfix və develop branchlərində main merge etmek olar"), not about merge methods,
+  so none is restricted; Q6 (a) — the agent applies the settings.
+- **Settings applied** (Q6a), each with its state before, the call, the read-back and the undo; the
+  before and after JSON is kept outside the repository, in the session's job directory:
+  - **S1** — `main`'s rulesets pinned. Before: 23907266 "Copilot review for default branch" and
+    24007893 "main: required CI checks", both `include: ["~DEFAULT_BRANCH"]`. Call: `gh api -X PUT
+    …/rulesets/<id> --input <body>`, the body built with `jq` from the GET (name, target, enforcement,
+    bypass_actors, rules kept; `include: ["refs/heads/main"]`; 23907266 renamed "main: pull request,
+    Copilot, CodeQL"). Read-back: both `include: ["refs/heads/main"]`, `enforcement: active`,
+    `bypass_actors: []`, `current_user_can_bypass: never`; each ruleset's `rules` byte-identical before
+    and after (`jq -S .rules` and `cmp`); `rules/branches/main` lists the same seven rule types. Undo:
+    PUT the two GET bodies back.
+  - **S2** — `develop` created: `gh api -X POST …/git/refs -f ref=refs/heads/develop -f
+    sha=cb6f845e…` → `refs/heads/develop` at `cb6f845`. Undo: DELETE the ref (only while nothing has
+    merged into it).
+  - **S3** — `develop`'s rulesets, copied from S1's read-back: **24155781** "develop: pull request,
+    Copilot, CodeQL" (`deletion`, `non_fast_forward`, `copilot_code_review`, `pull_request`,
+    `code_quality` — the `code_scanning` rule waits for CodeQL's first run on `develop`, plan D3) and
+    **24155784** "develop: required CI checks" (the seven contexts). Read-back: `rules/branches/develop`
+    lists six rule types; `bypass_actors: []`, `current_user_can_bypass: never`. Undo: DELETE each.
+  - **Evidence that `develop`'s rules hold:** PR #74, re-targeted to `develop`, read `BLOCKED` until
+    the seven checks passed, then `CLEAN`.
+- **Produced in A** (`task/T-15b-checks`):
+  - `ci.yml`: `push` takes `[main, develop]`; `pull_request` stays unfiltered; two comments.
+    `codeql.yml`: both triggers `["main", "develop"]`.
+  - `.github/workflows/release-source.yml` (`pull_request_target` on `main`, types opened, reopened,
+    synchronize, edited; job `release source`) and `scripts/check-release-source.sh`: `develop` and
+    `hotfix/?*-main` pass; anything else, a fork's branch of any name, or an unset variable fails.
+  - `tests/unit/release-source.test.ts`, 27 tests — failed first (the missing workflow, then the two
+    `develop` trigger tests with `["main"]`), then passed.
+  - Comments in `dependabot.yml` (the default branch is `develop`) and `CODEOWNERS` (the new ruleset
+    names).
+  - Backlog v1.53; this entry; the prompt record.
+- **Measured:** `npm run lint`, `format:check`, `typecheck` exit 0; `npm run test:coverage`: 90 files,
+  1166 passed; `npm run traceability`: 18 of 18 stories. The four workflows and `dependabot.yml` parse
+  with js-yaml, with the triggers and job names above.
+- **What the agent got right:**
+  - It read the rulesets' conditions before planning the default switch (F1). Switching the default
+    first — the order `governance.md`'s list suggests — would have left `main` unprotected.
+  - It found that `pull_request_target` now reads the default branch, which made Q2 decide when the
+    check can first run.
+- **What the agent got wrong or missed:**
+  - Its first reading of the answers took "Develop yaranıb" as "`develop` has been created"; `git
+    ls-remote` showed it had not, so the agent created it (Q6a).
+  - It took Q5's first answer as the merge-method question until the owner's correction showed it was
+    about the source.
+  - It tried to edit `CODEOWNERS` through the shared checkout's path; the harness refused, nothing
+    changed.
+  - v0.2 left v0.1's present-tense lines ("`develop` does not exist yet", "nothing has been changed")
+    beside a Status line that said otherwise; Copilot found them one push at a time.
+- **Owner changes and reasoning:** the hotfix route. The plan offered a hotfix branch from `main` with
+  a back merge; the owner chose fix-on-`develop` first, then a cherry-pick onto `hotfix/<name>-main`,
+  so a fix is checked on `develop` before it reaches production and `develop` never needs a back merge.
+  The agent narrowed the check's pattern to `hotfix/?*-main` (plan D8) so a `hotfix/<name>` branch from
+  `develop` — which carries unreleased work — cannot open a pull request to `main`.
+- **Disagreements:** none. Copilot's five findings on PR #74 were all taken (F4's grammar; the gate
+  note and two "does not exist yet" lines scoped to v0.1; B1's partial date; the self-review's
+  placeholder list). Copilot's review of A reported no findings.
+- **Review of A** (a read-only Opus 5.5 subagent, as the plan's handoff asks; its first run was stopped
+  at the owner's request to save usage, and re-run with a narrower brief). No critical finding; three
+  taken:
+  - A ruleset matches a required check by name and app, not by workflow file, so a pull request that
+    adds its own job named `release source` could post a passing check. `release-source.yml`'s comment
+    had claimed "a pull request cannot edit the rule it is judged by"; it now says what is protected
+    (this job and the script) and records the limit: the check guards against the wrong source branch,
+    not against the author, and such a workflow shows in the diff. A ruleset rule that pins a workflow
+    was not checked for a user-owned repository and is not proposed here.
+  - The test's `unsafe()` only read `run:` and `ref:` lines, so a `run: |` block's body could have put
+    the head's name into the shell unseen. It now allows the head only as a whole upper-case `env:`
+    value and flags every other line; a block-scalar case was added to the fixture, which failed with
+    the old helper (2 found, 3 expected) and passes with the new one.
+  - The CI trigger test read "no branch filter" from `undefined`, which a deleted `pull_request:`
+    trigger also gives; it now also asserts the trigger line.
+- **Next:**
+  - The owner merges A into `develop`.
+  - S5: after CodeQL's first push run on `develop`, `code_scanning` joins `develop`'s ruleset.
+  - S6: the default branch becomes `develop`; Vercel's `productionBranch` is read again (stop if it is
+    not `main`); the owner switches the main checkout to `develop`.
+  - S7: `release source` becomes a required check on `main`. S8: a draft probe pull request to `main`
+    must show it failing.
+  - B: AGENTS.md §2, `governance.md` v1.6, the PR template, README, the runbook; T-15b closed.
+
+## 2026-09-29 — Phase 5: T-15b closed — the settings after A, the probe, and the documents (pull request B)
+
+- **Phase:** 5 (Build the slice), Release 1. T-15b's pull request B, the last of the `develop`
+  switch.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:** the owner merged PR #75 (A, `b3f0a95`): "merged". Earlier the owner had paused the
+  session to save usage ("can you pause subagent now my limits will end"), then "davam et".
+- **Prompt(s):** `prompts/2026-09-29-T-15b-close.md`.
+- **Settings applied** (Q6a; state before, call, read-back, undo — the JSON kept in the session's job
+  directory):
+  - **S5** — CodeQL's first push run on `develop` (36536382679, on `b3f0a95`) ended `success`; then
+    PUT 24155781 with `main`'s `code_scanning` rule added (CodeQL, `high_or_higher`, `errors`).
+    Read-back: `rules/branches/develop` and `…/main` both list the same seven rule types. Undo: PUT
+    the saved `24155781` body back.
+  - **S6** — both `main` rulesets re-read (`include: ["refs/heads/main"]`); `gh api -X PATCH
+    repos/wdaz/ai-native-personal-finance -f default_branch=develop` → `develop`. Vercel re-read at
+    once: `link.productionBranch` still `"main"` (the stop condition did not fire). Both branches'
+    rules unchanged; the licence label still `NOASSERTION`. Undo: PATCH `default_branch=main`.
+  - **S7** — PUT 24007893 with an eighth context, `release source` (`integration_id` 15368).
+    Read-back: eight contexts, `include: ["refs/heads/main"]`, no bypass actor,
+    `current_user_can_bypass: never`. Undo: PUT the saved S7-before body.
+  - **S8** — `probe/T-15b-release-source`, one empty commit `5b35345` on `origin/develop`, draft pull
+    request #76 to `main`. The `pull_request_target` run 36536690722 carried `headSha` `5b35345` (the
+    probe's head — plan Review Focus 1 measured) and failed in 4 s: "release-source:
+    'probe/T-15b-release-source' may not open a pull request to main; only develop (a release) or a
+    hotfix/<name>-main branch (a fix from develop, cherry-picked onto main) may (governance.md,
+    Branches and releases)", exit 1. The pull request read `BLOCKED`. Closed unmerged with a comment;
+    the branch deleted (`git ls-remote` lists only `develop` and `main`).
+  - **Drift read** (plan D1): `main`'s and `develop`'s pull-request rulesets have identical `rules`
+    (`jq -S`, `diff` empty); the required checks differ only by `release source`, on `main`.
+- **Produced in B** (`task/T-15b-docs`):
+  - AGENTS.md §2: sessions start from `origin/develop`; work pull requests target `develop`; the release
+    and the owner's hotfix route.
+  - `governance.md` v1.6: "Since T-15b"; the hotfix route with the owner's words; the enforcement names
+    the check, its files, its limit; "Settled at the switch" (rulesets and ids, `develop`, the default
+    branch, the probe, merge methods left open, previews unchanged, what is not yet observed). The
+    "until T-15b" sentence is struck through, not deleted; "Open at the switch" is kept as written.
+  - The PR template's opening comment names the base; README's deploy paragraph and the runbook's
+    opening line say where work and releases merge; the runbook's new step 10, "Releases and hotfixes".
+  - Backlog v1.54 (T-15b Done; T-15's branch-model hand-off marked); the plan's Status is Done; this
+    entry and the prompt record.
+- **Measured:** `tests/unit/pr-template.test.ts` and `tests/unit/home-paths.test.ts` pass with the new
+  comment line and texts; `npm run format:check` exits 0.
+- **What the agent got right:** it read Vercel's production branch in the same minute as the default
+  switch, with a stop-and-revert condition written in the plan beforehand.
+- **What the agent got wrong or missed:** its first S5 wait was a compound `gh` command the harness
+  refused; plain commands worked.
+- **Owner changes and reasoning:** none in B. Q5 (merge commits only on `main`) is still unanswered, so
+  no merge method is restricted; the runbook asks for a merge commit instead.
+- **Disagreements:** none.
+- **Lessons for the process** (for T-15c's retrospective):
+  - A ruleset that targets "the default branch" follows the default when it changes. Before any default
+    switch, read every ruleset's `conditions`.
+  - `pull_request_target` now reads the default branch. So the default branch decides when a check of
+    that kind can first run, and where it can be edited.
+  - A plan that is answered in place keeps its v0.1 sentences. Copilot found the stale ones one push at
+    a time (five findings on #74). Read the whole plan for tense once, when writing v0.2.
+- **Next:**
+  - The owner reviews and merges B into `develop`.
+  - The owner's main checkout: `git switch develop` (AGENTS.md on `main` still says `origin/main`
+    until the next release).
+  - T-15c, the Release 1 retrospective. The first release after T-15b is where the check's green and
+    `develop`'s survival are read.
+
+## 2026-09-29 — Phase 5: T-15b follow-up — merge commits only on `main` and `develop`
+
+- **Phase:** 5 (Build the slice), Release 1. A follow-up to T-15b, which closed with PR #77
+  (`e65cfb4`); its plan's Q5 was still open.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5, background session).
+- **Trigger:** the owner asked "merge commit deyəndə nə nəzərdə tutulur?" ("what is meant by a merge
+  commit?"). The agent explained GitHub's three methods (a merge commit keeps the branch's commits and
+  their SHAs; squash and rebase write new ones) and why a squashed or rebased release leaves
+  `develop` without `main`'s commit, then offered Q5 again. The owner: "b. heç birinə bir başa push
+  mümkün olmasın." ("b. No direct push to either.")
+- **Prompt(s):** `prompts/2026-09-29-T-15b-merge-commits.md` (the owner's two messages, verbatim).
+- **Settings applied** (plan Q6a), each with its state before (kept in the session's job directory),
+  the call and the read-back:
+  - PUT 23907266 ("main: pull request, Copilot, CodeQL") and 24155781 ("develop: pull request,
+    Copilot, CodeQL") with the pull-request rule's `allowed_merge_methods` set from `["merge",
+    "squash", "rebase"]` to `["merge"]`, everything else as read. Read-back: both
+    `["merge"]`, six rule types each, `bypass_actors: []`, `current_user_can_bypass: never`.
+  - `rules/branches/main` and `rules/branches/develop` both list `deletion`, `non_fast_forward` and
+    `pull_request` (`["merge"]`).
+  - Undo: PUT the two saved bodies back.
+- **"No direct push":** already enforced — the `pull_request` rule takes a change to either branch only
+  through a pull request, `non_fast_forward` refuses a force-push, `deletion` a deletion, and neither
+  ruleset has a bypass actor. Shown by the read-back, not by a push attempt: a push that the rules
+  failed to refuse would leave a commit on a protected branch.
+- **Produced:** `governance.md` v1.7 (the "Merge methods" line of "Settled at the switch" replaced,
+  with the owner's words); the deploy runbook's step 10 says the merge commit is the only method
+  allowed; backlog v1.55; this entry.
+- **What the agent got wrong or missed:** Q5 as first written asked about merge methods in terms the
+  owner had not met; the owner answered a different question twice before asking what it meant. A
+  gate question that needs a term explained should explain it in the question.
+- **Owner changes and reasoning:** (b) instead of the recommended (a) — merge commits on `develop` too,
+  so both long-lived branches keep one history shape.
+- **Disagreements:** none.
+- **Next:** the owner merges this pull request into `develop`. T-15c, the retrospective, when the owner
+  starts it.
+
+## 2026-10-03 — Phase 5: T-15c — the Release 1 retrospective
+
+- **Phase:** 5 (Build the slice), Release 1. T-15c, planned, answered and executed in one background session.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5.5, background session) and five read-only subagents
+  (Opus 5.5, `Explore`): two read the log, two re-read every cited line, one proofread the Azerbaijani translation.
+- **Trigger:** "T-15c-yə başla" ("Start T-15c").
+- **Prompt(s):** `prompts/2026-10-03-T-15c.md` (the owner's messages verbatim, with translations) and
+  `prompts/2026-10-03-T-15c/` (the five subagent briefs and reports).
+- **Produced:**
+  - the plan `plans/2026-10-03-T-15c.md` (v0.1, v0.2, Done), PR #79 (`86b28af`);
+  - `docs/04-process/release-1-retrospective.md`, PR #82: the facts of Release 1, what worked, what the specs
+    missed (seven lessons), what the agents got wrong (eight themes, every cited line confirmed by a subagent),
+    the owner's disagreements, the 23 empty "Owner changes" fields answered, eight proposals, what is not yet
+    observed;
+  - the rule changes P1–P8, PR #83: `definition-of-done.md` v1.2, `build-workflow.md` v1.3, `governance.md`
+    v1.8 and the PR template (the mirror test failed with the DoD changed and the template not, and passed
+    after);
+  - two fixes outside the task: `next` 16.3.5 → 16.3.8 for GHSA-vcvr-r3jv-pc5j (critical), PR #80 (`0f07f31`);
+    TD-23, the `braces` advisory with no patched release, `tech-debt.md` v1.28, PR #81 (`88e839b`);
+  - backlog v1.56 and v1.57 (T-15c Done; a "from T-15c" hand-off on T-15d); an Azerbaijani translation of the
+    retrospective, kept outside the repository at the owner's request.
+- **What the agent got right:**
+  - It had every cited line re-read by a second set of subagents before citing it: eight of the lines were
+    weak or rejected and were dropped.
+  - It found `npm audit` at 10 vulnerabilities on `develop` while installing the worktree, kept it out of
+    T-15c, and put it to the owner (Q6).
+  - It counted with a script and corrected itself: the unfilled owner fields are 23, not 25.
+  - It measured "3 of 25 backlog rows carry a done-marker" before proposing P2.
+- **What the agent got wrong or missed:**
+  - The plan's Q4 and Q5, the retro's section 5 and the proposals P2, P7 and P8 were not written so that the owner
+    could answer them: "4 bunu anlamadım", "5ci hissədə nə edəcəyim aydın deyil", "Boş qalanlar aydın deyil".
+    That is theme D, again, in the retrospective that has theme D in it.
+  - A prediction in the plan was wrong: the unfilled count would grow to 27–30, and it fell to 23.
+  - The first reading of Q7 was backwards (an advisory accepted for good); the owner corrected it.
+  - The first retro draft had sentences that were not measured: "two weeks after the rule was in the DoD", that
+    the proposals P3 and P4 "would be mechanical" (they are prose), that the rules that did not recur were the ones
+    a check enforces, and a Postgres container "stopped by something outside the agent's commands". The agent
+    found them in its own re-read and removed or reworded them before the pull request.
+  - Pull requests #79 and #81 were opened ready, not as drafts. Copilot found valid defects in both: five fix
+    rounds on #79 (the subagent briefs folder that `build-workflow.md` step 7 asks for was missing; "five
+    questions" for six; a v0.1 title and description on a v0.2 plan; truncated line ranges; a command written
+    with a pipe; `<name>` outside a code span; a meta-note in a saved record) and two on #81 (a clause that
+    claimed a pull request merged before it had; a predicted `npm audit fix --force` result stated as a fact).
+    The owner's draft rule (P6) was set in the middle of this.
+  - A scratch script that filled the retro's 23 cells and eight ticks was blocked by the harness's auto-mode
+    classifier, without a reason. The agent did not repeat the result by another route, said so, and went on
+    only when the owner wrote "(a) Edit ilə et".
+- **Owner changes and reasoning:**
+  - Q1 (b) instead of the recommended (a): the retrospective is a document of its own, not a log entry.
+  - Q3 (b) instead of the recommended (a): all the accepted rule changes in one pull request.
+  - Q2 (a), Q4 (a), Q6 (a), Q7 (a). Q5: written now, the mechanism read at the end of Release 2; `develop`'s
+    protection was read from GitHub (already seven rules), not set.
+  - Q7, in the owner's words: "bütün tech-deptlər (sic) sonra fix olur. istisna o vaxt yaranır ki, eyni hal
+    təkrarlansın. Onda fix edirik." — every tech debt is fixed at the end; the exception is the same case
+    repeating.
+  - A new rule: "draftdan çıxmış branchlər merge hazır sayılır və mən merge edirəm" (P6).
+  - All eight proposals accepted; section 5's table answered by (a), no row named.
+- **Disagreements:** none. Where the owner chose differently from the recommendation (Q1, Q3) it is above.
+- **Lessons for the process:** the eight proposals are the lessons, and #83 carries them: the pull request that
+  finishes a task sets the plan's Status and the backlog row to Done (P1, P2); the PR lists the result of each
+  of the three browser engines (P3); `gh pr view` before a push to an existing branch (P4); a question to the
+  owner can be answered as written (P5); a pull request that is not a draft is merge-ready (P6); an ADR
+  amendment is searched across the other ADRs (P7); a plan answered in place is read once for tense (P8).
+  Two more for Release 2: open a pull request as a draft from the start (#79 and #81 cost seven review-fix
+  rounds), and write a question so that its first reading is the one the owner answers.
+- **Next:**
+  - The owner reviews and merges #83 (the rules) and #82 (the retrospective, with this entry and backlog v1.57).
+  - T-15d, Release 2 spec work, starts from the retrospective's section 3 and theme D (the hand-off in backlog
+    v1.57). The retrospective's section 7 is read at the end of Release 2.
+
+## 2026-10-05 — Phase 5: Vercel skips docs-only commits
+
+- **Phase:** 5 (Build the slice), between tasks; a delivery change outside T-15d, its own pull request
+  (`chore/vercel-ignore-docs-only`).
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5): a read-only investigation earlier the same day, then a
+  subagent in its own worktree, dispatched by the controller session, for the change.
+- **Trigger:** two preview builds of `task/T-15d-spec-ui-kit` failed on TypeScript errors in a `docs/` figures
+  script, and the controller session asked why docs-only work builds at all.
+- **Prompt(s):** the controller session's brief to the subagent (not saved under `prompts/`); the owner's answer
+  is quoted below.
+- **Investigation (two lines):** of ~100 Vercel builds, 3 failed — two (`a1bf745`, `1cf0c9d`) on TS errors in a
+  `docs/` script (fixed separately), one (`docs/draft-ready-copilot`, `e3d5e48`, 2026-10-04) on Prisma P1001 during
+  a Neon cold start; every build runs `npx prisma migrate deploy && npm run build`, and every Git branch gets its own
+  Neon preview branch from the Vercel–Neon integration, so docs-only pushes also build, migrate and wake Neon.
+- **Owner's answer and how it was read:** asked "Vercel 'Ignored Build Step' for docs-only commits?", the owner
+  answered "2", read as: Vercel skips the build when a commit changes nothing outside `docs/`. The owner did not
+  choose to exclude `docs/` from type checking, so `tsconfig.json` is untouched and `docs/**/*.ts` stay
+  type-checked.
+- **Produced:**
+  - `scripts/vercel-ignore-build.sh` (POSIX sh) and `vercel.json` `"ignoreCommand": "sh scripts/vercel-ignore-build.sh"`:
+    skip (exit 0) only when the diff from `VERCEL_GIT_PREVIOUS_SHA` to `HEAD` is non-empty and every path, both
+    sides of a move (`--no-renames`), is under `docs/`; build (exit 1) on an unset or empty previous SHA, one that is
+    not a 40-character lowercase hex SHA, one not in the clone, an empty diff, a failed `git diff`, or any path
+    outside `docs/`;
+  - `tests/unit/vercel-ignore-build.test.ts` (21 cases against temporary git repositories, a `--depth=1` clone
+    among them), and `tests/unit/vercel-config.test.ts` extended for the new key; both written first and seen
+    failing (22 failures) before the script and the key existed; the script's cases also passed under `dash`;
+  - ADR-0007 amendment 2026-10-05, a row in `runbooks/deploy.md`, a paragraph in `scripts/README.md`, this entry.
+- **Vercel's documentation, read 2026-10-05:** exit 0 skips (the deployment is `CANCELED`), exit 1 builds
+  (vercel.com/docs/project-configuration/project-settings#ignored-build-step); `VERCEL_GIT_PREVIOUS_SHA` is "the git
+  SHA of the last successful deployment for the project and branch", empty on a branch's first deployment, and set
+  only when an Ignored Build Step is configured (vercel.com/docs/environment-variables/system-environment-variables);
+  the clone is `git clone --depth=10`
+  (vercel.com/kb/guide/how-do-i-use-the-ignored-build-step-field-on-vercel); a canceled build still counts toward
+  the deployment quota and build slots.
+- **What the agent got right:** it read the variable's definition before relying on it: since the previous SHA
+  is the last *successful* deployment, a docs-only commit after a failed code build still builds; and it found that
+  a branch's first push always builds (empty previous SHA), so the brief's trade-off "docs-only PRs get no preview
+  URL" holds only for their later pushes — the ADR says so.
+- **What the agent got wrong or missed:** not yet known; for the owner's review.
+- **Owner changes and reasoning:** the decision itself ("2"); none to the implementation yet.
+- **Disagreements:** none.
+- **Lessons for the process:** a docs-only change can still break a build when `docs/` holds TypeScript that
+  `tsc` checks; this change stops such a commit from *deploying* but not from failing CI's typecheck, which is the
+  intended guard.
+- **Next:**
+  - The owner reviews the draft pull request; the first docs-only push after the merge shows the skip in the
+    Vercel build log ("vercel-ignore-build: skipping").
+  - Not verified: whether the Neon integration still creates or wakes a preview branch for a deployment that is
+    then skipped.
+
+## 2026-10-05 — Phase 4: the designer decides design questions (governance v1.10)
+
+- **Phase:** 4 (Specs & plan), T-15d; a process change in its own pull request
+  (`docs/governance-designer-decides`), outside the spec pull requests.
+- **Participants:** Owner / Agent (Claude Code, Opus 5.5): a subagent in its own worktree, dispatched by the
+  controller session that drafts `ui-kit.md` (#92).
+- **Trigger:** two design questions in `ui-kit.md` (#92). The owner first answered "92 q4 və q5 cavabı claude
+  design-dan götür" ("for #92 take the answers to Q4 and Q5 from Claude Design"); when one part was still open, the
+  owner stated the rule "dizayner üzrə qərarlar dizayner verir" ("decisions about the design are made by the
+  designer"), and then clarified how it runs: "Dizayndan kənara çıxma mənə deyilir mən dizaynerlə müzakirə edirəm.
+  Onun sonra qərarı changelogunda qeyd olunur" ("a departure from the design is told to me; I discuss it with the
+  designer. The designer's decision is then recorded in their changelog").
+- **Prompt(s):** the controller session's brief to the subagent and its clarification (not saved under
+  `prompts/`); the owner's words are quoted above.
+- **Produced:** `governance.md` v1.10 — a row in "Decision rights" and the paragraph "Design questions are decided
+  by the designer": the agent tells the owner (the spec's §9 and the pull request), the owner discusses it with the
+  designer, the designer records the decision in the designer's changelog, the agent applies that entry as the
+  answer, citing its section; a proposal in the changelog is not yet an answer. Still the owner's: a trade-off
+  against an approved NFR, scope, strings the design does not fix, every amendment of an Approved document. This
+  entry.
+- **The two earlier rulings it refines** (both on `transactions.md`, 2026-10-04,
+  `prompts/2026-10-04-T-15d/transactions-review-handling.md`): "Designer qərarlarına əsas götür" ("take the
+  designer's decisions as the basis") — now a rule with a defined route, instead of a general instruction; and §9
+  Q5's "NFR-A1 ödənməlidir" ("NFR-A1 must be met") — kept as the exception: an approved NFR wins over the design
+  unless the owner says otherwise. The S2 lesson "reading the designer's changelog is not approval to adopt it" is
+  narrowed: a decision the designer recorded after the owner's discussion is the answer; a changelog read without
+  that route, or an entry that is only a proposal, is not.
+- **What the agent got right:** it checked `governance.md` for a sentence the rule contradicts (none: the
+  owner's role in step 1 is the existing "tell the owner, do not decide"), and listed, without editing, the other
+  places that still describe the old route (the pull request lists them).
+- **What the agent got wrong or missed:** not yet known; for the owner's review. The brief's first reading of the
+  rule had the agent read the designer's source and apply a decision with no owner step in between; the owner's
+  clarification, which arrived before any text was written, puts the owner's discussion with the designer in as
+  step 2.
+- **Owner changes and reasoning:** the clarification above — departures go through the owner, who is the only
+  channel to the designer.
+- **Disagreements:** none.
+- **Lessons for the process:** a design question has a recorded answer only once the designer's changelog says
+  so; the spec's §9 cites that section, so a reader can check the answer at its source.
+- **Next:**
+  - The owner reviews the draft pull request.
+  - Later changes, each in its own pull request: AGENTS.md §2 "Never fabricate" (names "the Figma file" as the
+    design source), `docs/templates/feature-spec.md` (the "Design:" line names Figma frames; §9 could name the
+    designer's changelog as the answer to a design question), `docs/templates/user-story.md` (Figma frame names),
+    `docs/04-process/build-workflow.md` step 2 ("design is fixed in `docs/`"; "the owner answers questions"), and
+    the T-15d plan's D14 ("reading the designer's changelog is not approval to adopt it").
+
+## 2026-10-06 — Phase 4: T-15d closed — the Release 2 specs, the build tasks T-17–T-27, and how the work was merged
+
+- **Phase:** 4 (Specs & plan) for Release 2 — the **return to Phase 4** that the roadmap names ("Release 2 specs
+  return to Phase 4 after T-15"; its Status line since #85 merged — the agent merged it on the owner's conditional
+  word, as the controller session recorded (below): "Release 2 — 4, Specs & plan (the
+  return trip, opened by T-15d on 2026-10-04)"), while Release 1 stays in Phase 5. T-15d is the return trip; with it
+  T-15, the closing task of Release 1, is done. The roadmap still says "Release 2 — 4": moving Release 2 to Phase 5 is
+  an amendment of an Approved document, the owner's, and is not in this pull request.
+- **Participants:** Owner / Agent (Claude Code): Sonnet 5.5 background sessions (the plan, the opening, `write-path.md`,
+  `transactions.md`), then Opus 5.5 — a controller session that dispatched drafting subagents in their own worktrees
+  from plan v0.3 on, read-only Opus 5.5 reviewers (plan D7, D12) and, while Copilot failed, Opus 5.5 stand-in reviewers;
+  this closing pull request is an Opus 5.5 subagent dispatched by the controller.
+- **Trigger:** "t15 d başlayaq" ("Let's start T-15d", 2026-10-04). This last pull request is plan Q4 (a) — "a "Release
+  2" section in backlog.md (rows T-17…), in T-15d's last pull request" — and Task C, started by the controller once
+  #90, the last spec, had merged.
+- **Prompt(s):** `prompts/2026-10-04-T-15d.md` (the owner's messages, with translations; its last section is this
+  pull request's) and `prompts/2026-10-04-T-15d/` (every reviewer's brief and report, the review-handling files and
+  the figures scripts).
+- **Produced** (merge commits and times read with `gh pr list --repo wdaz/ai-native-personal-finance --state all
+  --limit 30 --json number,title,state,mergedAt,mergeCommit,headRefName`, 2026-10-06; 19 pull requests, #84–#102, all
+  merged, UTC):
+  - the plan: #84 (v0.2, `b29118d`, 2026-10-04 14:49) and #89 (v0.3 — S3–S6 drafted in parallel, a new shared spec
+    S1b `ui-kit.md`, D10–D14; `0f64796`, 2026-10-05 03:32);
+  - the opening: #85 (`b1f0b57`, 2026-10-04 15:30) — PRD v1.3's Release 2 `Stories:` sentence, `release-2-stories.txt`,
+    `scripts/traceability.ts` release-aware with `RELEASE_BEING_BUILT` still 1, the ADR-0003 clarification, the
+    roadmap's Status line, `release-2-handoffs.md`;
+  - the specs, in the merge order of plan D6 (v0.3): S1 `write-path.md` #87 (`2410bf6`, 2026-10-04 16:53), S2
+    `transactions.md` #88 (`945dc07`, 19:17), S1b `ui-kit.md` #92 (`b25387c`, 2026-10-05 18:43), S3
+    `recurring-bills.md` #91 (`f5e454a`, 19:19), S4 `budgets.md` #98 (`4a45816`, 21:59), S5 `pots.md` #97 (`b5562d6`,
+    22:16), S6 `webmcp-tools.md` §4 #90 (`27fdeb9`, 2026-10-06 05:12);
+  - amendments of merged documents: `transactions.md` v1.0.14 #95 (`bb0a68d`), `app-shell.md` v1.5 and `overview.md`
+    v1.2 (the content-width layout) #96 (`28ad970`), the `Menu`'s fade #99 (`5e76263`), `ui-kit.md` v0.8.6 #100
+    (`135daf7`), `overview.md` v1.3 (the donut) #101 (`fe8ad80`), `write-path.md` v1.0.2 (WM-Q2 (a)) #102 (`ec29cdc`);
+  - process: `governance.md` v1.9 #86 (`06d012e`) and v1.10 #94 (`5c79948`); outside the task, the Vercel Ignored Build
+    Step #93 (`738f301`; its own entry, 2026-10-05);
+  - this pull request, #104: `backlog.md` v1.59 — the section "Release 2" with the build tasks **T-17–T-27** (11 rows,
+    `grep -c -E "^\| T-(1[7-9]|2[0-7]) " docs/03-specs/backlog.md`), the T-15d and T-15 rows Done; the hand-offs'
+    Status line (plan D10) with H1 and H9 ticked, H11 (4), H15 (3) and H18 corrected — 9 of the 18 rows ticked, the
+    other 9 the build tasks' and hotfix 2's (`grep -c "| ☑"` and `grep -c "| ☐"` on the file); the plan's Status Done;
+    this entry and the prompt record's last section.
+- **The numbers** (plan D2, each with its command, 2026-10-06): 41 stories (`grep -c '^### US-'
+  docs/01-requirements/user-stories.md`), 18 in Release 1's list and 23 in Release 2's (`wc -l
+  docs/03-specs/release-1-stories.txt docs/03-specs/release-2-stories.txt`); read against Release 2, the check fails on
+  **20** ids (`npx tsx -e 'import { run } from "./scripts/traceability.ts"; const r = run(process.cwd(), false, 2);
+  console.log(r.code, r.err.length)'` prints `1 20`; the plan's F4 predicted "about 20", and the opening's pull
+  request measured 20 too). Copilot failed on many heads from 2026-10-05: on #97, 6 of its 8 Copilot reviews read
+  "Copilot encountered an error and was unable to review this pull request" (`gh api
+  repos/wdaz/ai-native-personal-finance/pulls/97/reviews`).
+- **What the agent got right:**
+  - The opening kept CI green: the check was made release-aware with the flip left for later (D3), and the count of
+    missing ids was measured, not guessed.
+  - Before parallel drafting, it mapped what each spec needed from the others, file and line, and found the one
+    blocking dependency, the write-UI parts that Budgets and Pots share, which became `ui-kit.md` (v0.3).
+  - Hand-off numbers were fixed in advance (D10), so the parallel pull requests never took the same number.
+  - Every figure in a spec has a script under `prompts/2026-10-04-T-15d/<spec>-figures/`, and every spec went through
+    two read-only Opus reviews (D7), Budgets, Pots and S6 through a cross-spec review as well (D12).
+  - This pull request measured the flip before writing the build rows: plan D3's "flip in the first build task, with
+    its first test" would keep the required check red until the last page, so the T-17 row writes a fix and asks.
+- **What the agent got wrong or missed:**
+  - **The opening's review brief** (`prompts/2026-10-04-T-15d/opening-review-brief.md`) sent a reviewer with no shell
+    a command line to run, and its closing note proposes that "a later brief for a reviewer that must run commands
+    names a type that has a shell and keeps it read-only by the brief". That contradicts `governance.md` v1.1: a
+    "read-only" instruction in a prompt is not enforcement; a reviewer runs with read, grep and glob only, and what
+    must be executed runs in a throwaway clone. The note stays as written (it is a record); the rule is the
+    governance's.
+  - **Specs drafted from a stale export.** `ui-kit.md` v0.1 and v0.2 were written from the design export of
+    2026-10-04 22:17, which lacked the designer's changelog §8 and §9; v0.3 was re-read from the designer's live source,
+    and the owner asked, as the controller session recorded, "Speclər niyə Claude dizayndan yazılmadı?" ("why were
+    the specs not written from Claude Design?"). Lesson below.
+  - **Workflow agents had no Agent tool.** The drafting sessions could not dispatch their own reviewers (the
+    `webmcp-tools.md` review record: "the drafting session had no subagent tool"), so the controller dispatched them,
+    and S6's two D7 reviews ran only after an independent audit found them missing.
+  - **Plan D3 was not checked against the required checks** when it was written; this pull request found it.
+  - **An administrator bypass was attempted on #99**, and refused by the harness's auto-mode classifier and by the
+    ruleset, which has no bypass actor (as relayed by the controller session); the owner merged #99 (2026-10-05 20:59),
+    as the controller session recorded.
+  - The parallel spec pull requests added rows to `release-2-handoffs.md` without an entry on its Status line (plan
+    D10 kept them off it; Copilot flagged it on #96); this pull request records them.
+  - **Six amendments of Approved documents merged by the agent** under the owner's sequential permission, as the
+    controller session recorded: #94 (`governance.md` v1.10), #95 (`transactions.md` v1.0.14), #96 (`app-shell.md` v1.5, `overview.md` v1.2), #100
+    (`ui-kit.md` v0.8.6), #101 (`overview.md` v1.3) and #102 (`write-path.md` v1.0.2). `governance.md` v1.10 keeps
+    "every amendment of an Approved document" the owner's, approved by merging its pull request; a permission to merge
+    "in order" did not name that class, and it is the class that made the auto-mode classifier stop the merging after
+    #102 ("The stop", below). The owner ratified these merges on 2026-10-06 (Q2 (a), below).
+  - Four merged specs — `recurring-bills.md`, `budgets.md`, `pots.md`, `webmcp-tools.md` — still read "Draft" in their
+    Status lines. The owner merged #90 (`webmcp-tools.md`), as the controller session recorded, so that line is only
+    stale; the agent merged #91, #97 and #98, so their approval rested on the owner's ratification (Q2 (a)). Not
+    changed here: one small follow-up pull request, which the controller session opens next and the owner merges,
+    sets the four to Approved (backlog "Release 2" notes).
+  - The individual T-15d sessions wrote no process-log entries of their own; their record is the prompt record, the
+    review-handling files and this entry.
+- **Owner changes and reasoning** (the owner's words as `governance.md`, `tech-debt.md` and the prompt record give
+  them; the merge permissions as the controller session recorded them):
+  - **Plan v0.2** (2026-10-04): Q1 (b) the opening and every Release 2 spec, each in its own pull request; Q2 (a) a
+    cumulative check; Q3 (a) `write-path.md` first; Q4 (a) these rows in the last pull request; Q5 (a) no release in
+    T-15d; and two additions — cross-site protection of every write route, and D9: **the production hotfix of `next`
+    after T-15d closes**.
+  - **Plan v0.3** (2026-10-05): "1-ə bəli" (S3–S6 drafted in parallel, merged in order), then "ortaq komponentlər ayrı
+    uikit komponent kimi yaradılmır?" and "bəli, ui-kit.md olsun, başla": a new shared spec, S1b `ui-kit.md`; the agent
+    added D10–D14.
+  - **`governance.md` v1.9** (#86): "Copilot məcburi revyu edəndir və onun revyularını bitirmək gözlənməlidir. Vacib
+    tapıntılar fix olmalıdır." — a pull request leaves draft only after Copilot has reviewed its current head.
+  - **`governance.md` v1.10** (#94): "dizayner üzrə qərarlar dizayner verir", then "Dizayndan kənara çıxma mənə deyilir
+    mən dizaynerlə müzakirə edirəm. Onun sonra qərarı changelogunda qeyd olunur" — design questions are the designer's,
+    and the route is: the agent tells the owner → the owner discusses it with the designer → the designer records the
+    decision in the designer's changelog → the agent applies that entry, citing its section. An approved NFR, scope,
+    strings the design does not fix and every amendment of an Approved document stay the owner's.
+  - **TD-24** (2026-10-05, on #92): "hazırda form qərarları dəyişirmir. Release 1 uyğun davam et" and "mesaj yazan kimi
+    təmizlənir -bunu tech dept olaraq qeyd et. fix-i bütün releaselər bitəndən sonra" — the design's rule that a
+    field's message clears as soon as the person types is set aside; Release 2's forms keep Release 1's timing, and the
+    design's rule is tech debt TD-24, fixed after all releases are finished.
+  - **The Vercel Ignored Build Step** (#93): asked about docs-only builds, the owner answered "2" — Vercel skips a
+    commit that changes nothing outside `docs/`; `docs/**/*.ts` stays type-checked. It followed two failed preview builds
+    of `task/T-15d-spec-ui-kit` on TypeScript errors in a figures script under `docs/`, fixed separately (the
+    `figures.ts` type fix), since CI's typecheck still covers `docs/`.
+  - **Every spec question** was answered by the owner (most with "a"; the page specs' with "97 və 98 üzrə tövsiyə olan
+    cavabları qəbul et"; WM-Q2 and WM-Q3 with "2a 3a"), or, for the design's own questions, by the designer's changelog
+    as the owner directed.
+  - **The closing decisions — #104's two questions**, answered by the owner on 2026-10-06 with "1a 2 a", as the
+    controller session relayed it, before this pull request left draft:
+    - **Q1 — where the traceability check's flip to Release 2 goes:** (a). T-17 sets `RELEASE_BEING_BUILT` to 2 with
+      a list of the Release 2 ids not yet built, which the check skips and which can only shrink — a test pins its
+      first 20 ids as an upper bound, and the check fails when a listed id is already named in a test title — and
+      T-26 removes the list (backlog, T-17's row). Not taken: (b), the flip in T-26, with the check guarding Release
+      1's 18 ids only until then.
+    - **Q2 — ratify the agent's merges of spec and Approved-amendment pull requests as the owner's approval?** *What
+      is decided:* whether the pull requests the agent merged, which plan D5 and `governance.md` v1.10 say the owner
+      approves by merging, count as approved. ("Ratify" means the owner confirms, after the fact, that a merge done
+      on the owner's word stands as the owner's own approval.) *Why it matters:* the Decision rights give merging
+      to the owner alone, so without a ratification the repository shows no approval of these documents, and a build
+      task would read specs that are not formally approved. The pull requests: the specs #87 (`write-path.md`), #91,
+      #92, #97 and #98; the amendments of Approved or Accepted documents #95, #96, #100, #101 and #102; and the other
+      agent merges that changed an Approved or Accepted document — #85 (PRD v1.3, the ADR-0003 clarification, the
+      roadmap's Status line, the backlog), #86 and #94 (`governance.md` v1.9, v1.10) and #93 (ADR-0007, the deploy
+      runbook). *Options:* (a) ratify all of them, with the owner's sequential permission ("ardıcıllqla merge edə
+      bilərsən … əgər açıq sual qalmayıbsa") and the conditional words as the record — the Status lines that still
+      read "Draft" then change to Approved in one small pull request the owner merges; (b) ratify only the ones the
+      owner names, and the others are re-opened as amendments the owner merges; (c) the owner re-merges nothing but
+      records an exception in `governance.md`. *Recommended:* (a) — each merge followed a word of the owner's for that
+      pull request or for the train, with CI green and a review of the head, so (a) records what happened without
+      redoing it. **Answered: (a).** The Status lines of `recurring-bills.md`, `budgets.md`, `pots.md` and
+      `webmcp-tools.md` change to Approved in one small follow-up pull request that the controller session opens
+      next and the owner merges; no spec is edited here.
+- **How the work was merged — the permissions and every exception** (`governance.md` says the owner merges; each
+  permission below was the owner's word for named pull requests, as the controller session recorded it):
+  - **#85, #86, #87 — conditional words.** #85: "Copilot aprove versə merge edərsən və növbəti addıma başlayarsan" (if
+    Copilot approves, merge and start the next step); #86: "86da həmçinin merge oluna bilər" (#86 may be merged too),
+    used under #85's condition; #87: first "87 mənim icazəm olmadan merge etmə" (do not merge 87 without my permission),
+    then, after "bütün suallara cavab a", "Əgər copilot rəyi bu pr üçün low-dursa merge edə bilərsən" (if Copilot's
+    review is low, you may merge). The agent merged each once, under its condition.
+  - **A standing rule** (2026-10-05): "mənim qərarımı gözləyən pr-ları xəbər et yoxlayım. amma digər pr merge edə
+    bilərsən" — a pull request that waits on an owner decision is reported; others the agent may merge when ready.
+  - **Without Copilot's review of the head, on the owner's word** — each a one-pull-request exception to governance
+    v1.9, recorded in a comment on the pull request (`gh api repos/wdaz/ai-native-personal-finance/issues/<n>/comments`,
+    read 2026-10-06): #93, "Copilot-suz merge et" ("merge without Copilot"; two of three Copilot requests ended in an
+    error); #94, "94-ü copilot-suz ready et" ("make #94 ready without Copilot"; both requests ended in an error) — its
+    comment (2026-10-05 04:21 UTC) ends "The owner merges it", which predates the owner's sequential permission; the
+    controller session's record is that the agent merged #94 at 04:28 under that permission; #92,
+    "92 merge et", before Copilot reviewed its last head `b2ad7d4` (Copilot had reviewed `f1a6676`; the last head
+    changed one word of a count, Copilot's own finding, and the earlier heads had stand-in reviews).
+  - **Copilot failed on almost every head from 2026-10-05** — as relayed by the controller session, a GitHub Actions
+    and Copilot incident that day, its jobs cancelled at 15 minutes with no steps run. The owner chose "a": an
+    independent read-only Opus reviewer reviews the head in Copilot's place, important findings are fixed (a new head,
+    reviewed again), and the substitution is noted in the pull request (the stand-in reports in
+    `prompts/2026-10-04-T-15d/`).
+  - **The merge train:** "ardıcıllqla merge edə bilərsən … əgər açıq sual qalmayıbsa" (you may merge them in order …
+    if no open question remains). Its conditions: CI green, Copilot's review of the head — or, when Copilot failed, a
+    stand-in's — with no important finding left, a spec branch merged with `develop` once before it went ready (D11),
+    and no open question. Under it, as the controller session recorded, the agent merged #94, #92, #95, #96 and #91
+    (2026-10-05) and #100, #101, #98, #97 and #102 (2026-10-05/06; for these five the record names a stand-in review of
+    each head and CI green); #99 was merged by the owner, after the bypass attempt above, as the controller session
+    recorded.
+  - **The stop.** After #102's merge, as the controller session recorded, the auto-mode classifier denied a follow-up
+    read, naming it "Merge Without Review" (#102 amends an Approved document, and its stand-in review had said the
+    owner merges such a pull request). The agent stopped merging; the owner merged #90 (2026-10-06 05:12), as the
+    controller session recorded. This pull request is a draft and is not merged by the agent.
+  - **Who merged each of the 19.** The repository shows one account as `mergedBy` on every pull request, #84–#102
+    (`gh pr list --repo wdaz/ai-native-personal-finance --state merged --json number,mergedBy`, 2026-10-06), so the
+    split is the controller session's record: **the agent** merged 14 on the owner's words — #85, #86 and #87
+    (conditional words), #93 ("Copilot-suz merge et") and, under the sequential permission, #94, #92 ("92 merge et"
+    too), #95, #96, #91, #98, #97, #100, #101 and #102; **the owner** merged #89, #99 and #90; for #84 and #88 the
+    repository shows the owner's account and the controller session recorded no merge of its own. The owner ratified
+    the agent's merges as approval (Q2 (a), above).
+- **Disagreements:** none open. Where the owner chose against the recommendation, or corrected the agent, it is above:
+  the S2 ruling that a spec never departs from the design on its own ("bu qərarı səndən soruşmadan agent verib. Orda
+  tooltip olmalıdır" — `docs/03-specs/transactions.md:344` and
+  `docs/04-process/prompts/2026-10-04-T-15d/transactions-review-handling.md:79–80`; `governance.md` v1.10 states the
+  rule), the ruling that a general instruction does not answer an NFR trade-off ("NFR-A1 ödənməlidir"),
+  and TD-24.
+- **Lessons for the process:**
+  - **Draft specs from the live design.** A spec reads the designer's Claude Design project after `/design-login`,
+    never an export, which goes stale; a subagent's brief says so.
+  - **A workflow agent has no Agent tool.** A drafting subagent cannot dispatch its reviewers; the controller does, and
+    the review record says who dispatched what.
+  - **A plan decision about CI is checked against the required checks** (which job runs the command, and whether a red
+    result blocks a merge) before it is written; D3's flip was not.
+  - **The merge permissions are in no governance version.** The "Merging" row of `governance.md`'s Decision rights
+    still reads Owner "Only", Agent "Never", while, as the controller session recorded, the agent merged 14 of the 19
+    pull requests (#85–#87, #91–#98, #100–#102) under the owner's words for named pull requests and the standing
+    rule; the owner ratified them after the fact (Q2 (a)). Whether to write that rule into `governance.md` is the
+    owner's; a permission to merge "in order" should say whether it covers an amendment of an Approved document.
+  - **Parallel pull requests on one shared document** keep to their own rows (D10), and the closing pull request
+    records them on the shared Status line.
+- **Next:**
+  - **The production hotfix of `next`** (plan D9): `main` still runs 16.3.5 and GHSA-vcvr-r3jv-pc5j is fixed only on
+    `develop` (#80); by the hotfix route of `governance.md` v1.6 — `hotfix/<name>-main` from `origin/main`, the fix
+    cherry-picked with `-x` (`0f07f31` is a merge commit: pick `6b46d9f`, or `-m 1`; the hotfix's own plan chooses),
+    a pull request to `main` that the owner merges.
+  - Then **"hotfix 2"**: H12's Overview part (it needs an `overview.md` amendment first, and `TruncatedText`), H17 and
+    H18, with the designer's other changes to Release 1 screens (backlog, "Release 2" notes).
+  - **The Status-line pull request** (Q2 (a)): `recurring-bills.md`, `budgets.md`, `pots.md` and `webmcp-tools.md`
+    to Approved, opened next by the controller session and merged by the owner.
+  - Then the build, from T-17, with the flip as the owner answered it (Q1 (a), T-17's note); the amendments of
+    `budgets.md` 2.13 (before T-24) and `recurring-bills.md` §7 (before T-26), each in its own pull request.
+  - Open and not part of T-15d: #103 (`governance.md` v1.11, a designer agent; draft, `gh pr list --state open`,
+    2026-10-06).
+
+## 2026-10-06 — Phase 4–6: the designer agent decides design questions in every phase (governance v1.11)
+
+- **Phase:** 4–6 (Specs & plan, Build); a process change in its own pull request
+  (`docs/governance-designer-agent`), with a Claude Code mod that carries it out.
+- **Participants:** Owner / Agent (Claude Code, Sonnet 5.5, a background session)
+- **Trigger:** the owner's request "I want to create a designer agent mode", then, after the agent's
+  questions: the designer's decisions are needed when a spec is written, and each time Claude Design has to
+  change; the persona is to take the designer's role and report the decisions to the main chat. Two
+  answers: "Özü qərar verir, sən təsdiqləyirsən" ("it decides itself, you confirm") and "bu həmçinin kod
+  yazma prosesindədə çıxan qərarlarda iştirak edir. Nə zaman dizayn qərarı lazımdırsa. Tək spec yazarkən
+  yox. Bütün proses vaxtı" ("it also takes part in the decisions that come up while code is written:
+  whenever a design decision is needed, not only when a spec is written, but during the whole process").
+  The owner chose a mod over an agent file in the repository ("mod"), and chose to include this governance
+  change in the same work ("2 daxil").
+- **Prompt(s):** the conversation in this session (not saved under `prompts/`); the owner's words are
+  quoted above.
+- **Produced:** `governance.md` v1.11 (the "Design questions" section is now a five-step route through the
+  designer agent in every phase, and the only route: the v1.10 route is retired, and where the agent is
+  not available the question stays open and goes to the owner; an implementer subagent returns `DESIGN-Q` instead of
+  choosing; a decision that contradicts an Approved spec goes to an amendment pull request first);
+  `build-workflow.md` v1.4 (a rule of thumb for the build); this entry. Outside the repository, on the
+  owner's machine: the mod `designer-agent` (`~/.claude/mods/designer-agent/`) — a `designer`
+  subagent type with a two-mode prompt (*propose* writes nothing; *apply* only after "OWNER APPROVED:"), a
+  session rule telling the main chat when to ask it, and a `tool.call` guard that refuses every Claude
+  Design tool except a short read-only list (so a write, a delete, a copy, a sharing or member change, and a
+  tool added later) from every agent but the designer, and refuses the designer's own write without the
+  owner's `/designer-approve` (added 2026-10-10, see the lessons below). Its nineteen tests pass (`claude plugin test`); the
+  project id is a `userConfig` field, not in the mod's source.
+- **What the agent got right:** it read `governance.md` v1.10 first and saw that the owner's choice changes
+  its steps 1 and 2 ("tells the owner, does not put the question to the designer"), so it raised the
+  conflict in the design it showed, and did not write a mod that broke the rule; it kept the owner's four
+  reservations (NFR, scope, strings the design does not fix, Approved documents) unchanged.
+- **What the agent got wrong or missed:** not yet known; for the owner's review. The mod is installed at
+  the user scope from a local marketplace on the owner's machine (the owner's choice: "Local marketplace";
+  the owner noted that such a marketplace is reachable on this computer only, so another computer needs the
+  same install), with the project id set through `claude plugin configure`. A read-only *propose* smoke test
+  ran in the same session once the agent type appeared: the persona loaded the Claude Design tools with
+  `ToolSearch`, read the designer's changelog (its latest section was §16) and listed the project's files;
+  the controller compared the etag of all 47 files before and after, and none changed. Not verified in a
+  live session: `write_files` (the persona reports that the tool asks for a one-time project write approval
+  at the first write, so the first *apply* may stop there), `SendMessage` resuming the persona between
+  *propose* and *apply*, a designer write passing with the approval (the owner has typed
+  `/designer-approve`, set it and withdrawn it, but no write has followed), and that a subagent's brief carries the
+  session rule (the rule is written for the main chat; a subagent's brief carries `DESIGN-Q` by the
+  controller's hand).
+  The first draft of this text claimed a guard of three tools; the agent's own review found the others
+  (sharing, members, conversation) unguarded, and the guard now covers all but a read-only list.
+- **Owner changes and reasoning:** the three answers above; and, on 2026-10-10, "dizayner insana sual
+  verə bilər" ("the designer can ask a person a question"), which the agent read as: the designer agent may
+  ask the owner a question it cannot answer from the design or the documents. It added `QUESTION-TO-OWNER`
+  to the persona and the main chat's rule (the owner's answer is `OWNER ANSWERED:` and is not an approval),
+  and a sentence in governance v1.11 step 2. If the owner meant something else (for example the human
+  designer asking the owner), this is the line to correct. On 2026-10-10 the owner also decided, after the
+  question "keep the v1.10 route beside the designer agent, or drop it?": "yol 2 ancaq" and "yalnız persona"
+  ("route 2 only", "only the persona"). The agent removed the v1.10 route from governance v1.11; entries the
+  human designer wrote before v1.11 stay answers to the questions they decided.
+- **Disagreements:** none.
+- **Lessons for the process:** "apply only after the owner approved" was first held by the persona's prompt
+  and the controller's call, not by the tool: the guard knew *who* writes, not *which mode* it was in. The
+  owner then said "guard qur" ("build the guard") and it is built: `/designer-approve <decision>` sets a
+  fifteen-minute approval that only the owner's own gesture can set (origin `composer`, Enter at the
+  prompt, or `bridge`, the owner's message through Remote Control), the designer agent's writes are
+  refused without it (`APPROVAL-MISSING`), and it ends when the designer agent's turn ends. The mod's
+  nineteen tests pass; four of them first passed for the wrong reason (the test had no clock, so the
+  approval never took effect and every "refused" assertion held), which a positive-control test (the write
+  goes through after the approval) exposed. The first live use found a second defect: the owner typed
+  `/designer-approve` in this background session and the guard refused it, because the command was not
+  stamped `composer` (the session is driven from another client); the guard now also accepts `bridge` and
+  names the origin it refused, so a refusal tells which origin it saw. Not covered: a write the owner makes in Claude Design itself or
+  through `/design-sync`, and a reload, which drops the approval (that fails closed). Also not covered, and
+  stated here because a side reviewer pointed it out: the approval is bound to time, not to the decision or
+  to files. For fifteen minutes (or until the designer agent's turn ends) any `write_files` call of the
+  designer agent passes, whatever it changes; the text after `/designer-approve` is only a label in the
+  status. Keeping the change to what the owner approved rests on the persona's prompt. The after-the-fact
+  check is therefore the real one: compare file etags (`list_files`) before and after a run, and after the
+  first *apply* read the designer's changelog and the `.dc.html` files to see that only the approved change
+  landed. A guard that names the files in the command (`/designer-approve <paths> -- <decision>`) is not
+  built; it is offered to the owner.
+- **Next:**
+  - The owner reviews the draft pull request and merges it if the route is right (no open question is left
+    in it).
+  - Still describing the earlier route, each for its own pull request: AGENTS.md §2 "Never fabricate" (names
+    "the Figma file"), `docs/templates/feature-spec.md` and `user-story.md`, and the T-15d plan's D14.
+  - Try the mod in a live session after the hot-reload question is answered, with one real design question,
+    before it is relied on.
+
+---
+
+## 2026-10-10 — Phase 4 (Release 2): a goal for Release 2 and Phase 7
+
+- **Phase:** 4 — Specs & plan (Release 2)
+- **Participants:** Owner (Ruslan), Agent (Claude, Claude Projects thread)
+- **Trigger:** the owner asked for help writing a goal for the project.
+- **Prompt(s):** conversational — "Bu project üçün hədəf yazmaq istəyirəm" ("I want to write a goal for
+  this project").
+- **Produced:** `roadmap.md`, new section "Release 2 goal": one goal with a soft target date of
+  2026-12-31 and seven outcomes, each tied to a PRD goal (G1–G4) and to a "done when" test.
+- **What the agent got right:** after the owner's correction it read the goals already in the repository
+  (`problem-statement.md` §4 S1–S4, `prd.md` §2 G1–G4), saw that they lack a time and an end point, and
+  offered three readings; the owner chose "a goal for the next stage". It noticed that `roadmap.md` says it
+  is "not a calendar" and kept the date soft, so the gates still decide.
+- **What the agent got wrong or missed:** its first draft was written from a status summary without
+  reading the repository, and restated G1–G4 as if they were new; the owner asked "Repoda hədəf olmalıdır.
+  Onu oxudun?" ("There should be a goal in the repo. Did you read it?").
+- **Owner changes and reasoning:** chose option 1 (a goal for Release 2 and Phase 7, built on G1–G4) and
+  "Bəli əlavə et" ("yes, add it") to the soft date and to adding it to `roadmap.md`. Then: "Sprint tasklarina başlamazdan öncə dizayn uyğunlaşması etmək lazımdır. Bunuda hədəf elave et. Bu yalnız bu relase 2 ilə veriləcək" ("a design alignment is needed before starting the sprint tasks. Add this to the goal too. This will ship only with Release 2"); the agent added it as outcome 1. Asked whether hotfix 2 (also a design change, to Release 1's screens) should move into it, the owner answered "Əgər hotfix 2 bunu edirsə artıq heç bir dəyişiklik lazım deyil" ("if hotfix 2 does this, no change is needed"); hotfix 2 stays in outcome 0, and outcome 1 covers the Release 2 specs only.
+- **Disagreements:** none.
+- **Lessons for the process:** read the repository's own goal documents before drafting a goal; a status
+  summary is not the source.
+- **Next:** the owner reviews the pull request from `docs/release-2-goal`; then hotfix 1.
+
+---
+
+## 2026-10-10 — Phase 4 (Release 2): the designer agent moves into the repository (governance v1.12)
+
+- **Phase:** 4 — Specs & plan (Release 2); a process change met while starting the Release 2 goal's
+  outcome 1 (design alignment).
+- **Participants:** Owner (Ruslan), Agent (Claude, Claude Projects thread)
+- **Trigger:** outcome 1 needs the designer agent, and the mod that held it (`designer-agent:designer`) did
+  not load in sessions started remotely on the owner's Mac (`Agent type 'designer-agent:designer' not
+  found`), nor in cloud threads. The owner: "hazırda həmin agent mod-dur və sesiya vaxtı qoşulur. Bunun
+  üçün yeni agent yarat" ("that agent is a mod and attaches at session time; create a new agent for this").
+- **Prompt(s):** conversational, in the project thread "Release 2 dizayn uyğunlaşması".
+- **Produced:** `.claude/agents/designer.md` (the persona of the mod's `persona.ts`, as a project agent);
+  `governance.md` v1.12.
+- **What the agent got right:** read the mod (`register.ts`, `persona.ts`) before proposing, found that a
+  cloud session has no Claude Design tools, kept the Claude Design project id out of the repository (the
+  agent finds the project by its files), and asked the owner whether the new agent should apply as well as
+  propose, since an agent file cannot hold the `/designer-approve` guard.
+- **What the agent got wrong or missed:** several turns were spent restarting remote sessions before the
+  cause (the mod registers its agent in its own session-start hook) was understood.
+- **Owner changes and reasoning:** chose "Təklif və tətbiq" ("propose and apply") over the agent's
+  recommendation of propose-only: the approval is now the owner's own message, quoted after "OWNER
+  APPROVED:", with no tool guard.
+- **Disagreements:** the agent recommended keeping writes behind the mod's guard; the owner chose one agent
+  that does both.
+- **Lessons for the process:** a check that lives in a local mod does not travel to remote or cloud
+  sessions; a rule that must hold everywhere belongs in the repository.
+- **Next:** asked whether to disable the mod, whose write guard refuses Claude Design writes from any
+  agent but `designer-agent:designer`, the owner chose "Saxla" ("keep it"): where the mod is loaded, writes
+  still go through it. Once this pull request is merged (sessions started from `develop` see the agent only then), run outcome 1's comparison with the new agent in a session on the Mac.
+
+---
+
+## 2026-10-10 — Phase 4 (Release 2): the designer agent gets Claude Design's plan tool (governance v1.13)
+
+- **Phase:** 4 — Specs & plan (Release 2); met while applying outcome 1's approved design decisions.
+- **Participants:** Owner (Ruslan), Agent (Claude, Claude Projects thread)
+- **Trigger:** the first write in *apply* mode was refused: Claude Design's `write_files` takes a write only
+  with a `plan_token` from `finalize_plan`, which `.claude/agents/designer.md` did not list. Nothing was
+  written; the session did not call the tool in the agent's place.
+- **Prompt(s):** conversational, in the project thread "Release 2 dizayn uyğunlaşması".
+- **Produced:** `finalize_plan` in the agent's tools and *apply* steps; `governance.md` v1.13.
+- **What the agent got right:** stopped at the refusal and asked the owner instead of working around the
+  only route.
+- **What the agent got wrong or missed:** v1.12 copied the mod's read and write tools without checking
+  what a Claude Design write needs.
+- **Owner changes and reasoning:** chose "Aləti əlavə et" ("add the tool") over applying the changes by
+  hand.
+- **Disagreements:** none.
+- **Exception to v1.9:** Copilot's review of this pull request stopped at its weekly rate limit (resets
+  2026-10-12). The owner chose "Without Copilot": the pull request leaves draft on green CI without
+  Copilot's review, once, for this change only.
+- **Lessons for the process:** check a new agent's tool list against one real call of each mode before
+  relying on it.
+- **Next:** after the merge, rerun outcome 1's *apply* in a session on the Mac started from `develop`.
+
+---
+
+## 2026-10-10 — Phase 4 (Release 2): hotfix 1 and hotfix 2 — Release 1's production follows the amended documents
+
+- **Phase:** 4 — Specs & plan (Release 2); the Release 2 goal's outcome 0. The code is a Release 1 production
+  fix by the hotfix route (`governance.md`, "Branches and releases").
+- **Participants:** Owner (Ruslan), Agent (Claude, Claude Projects thread "Hotfix 1 və 2"; a Claude Code session
+  on the owner's Mac for the designer agent's read)
+- **Trigger:** the owner asked for the Release 2 goal's outcomes in roadmap order; outcome 0 is the two hotfixes
+  the backlog's "Release 2" notes put before the build.
+- **Prompt(s):** conversational, in the project thread; the designer agent's read and its report:
+  `prompts/2026-10-10-hotfix-2/designer-read.md`.
+- **Produced:**
+  - Hotfix 1: `next` on `main` (#106), the lock-file commit `develop` already carried (#80).
+  - Hotfix 2: the plan `plans/2026-10-10-hotfix-2.md` (#107, with this close-out); `develop` #109 — the
+    `overview.md` v1.4 amendment (2.3, 2.4: names on one line, cut with "…" in `TruncatedText`), H17 (`<main>` a
+    size container, the Overview grid at a 1060 px content width with a 608 px column), H18 (the donut at r 96 / 78,
+    a 12 px inner ring at 0.75, a beige-100 empty ring), `src/ui/TruncatedText.tsx` (`transactions.md` 2.9, built
+    here so T-19 reuses it), and H12's Overview part; `main` #111 — the code and test commits picked with `-x`.
+  - `release-2-handoffs.md` H17 and H18 ticked, H12's Overview part noted; backlog v1.60.
+- **What the agent got right:** measured which seed names are cut in a browser instead of trusting the plan's
+  prediction (F4): none at 1024–1440 px, two at 375 px, so the US-32 walkthroughs read the cut names at run time;
+  ran the API and Chromium E2E suites locally before each push; every repository check was green on both
+  pull requests before they left draft.
+- **What the agent got wrong or missed:** the first measurement ran before hydration and found no cut names;
+  `TruncatedText`'s first version set state in an effect, which the lint rule refused (the open state is now
+  derived); the plan's F4 guessed "Savory Bites Bistro" would be cut at 375 px, and it was not.
+- **Owner changes and reasoning:** chose Q1 (b) over the agent's (a): the amendment rode in #109 as its own first
+  commit, approved with the code by one merge; chose Q2 (b) over (a): the designer agent read the design live
+  before any code (no difference in the donut, the grid or the tooltip; the names needed the amendment H12 named);
+  Q3 (a) as recommended: only code and tests went to `main`.
+- **Disagreements:** none.
+- **Exception to v1.9:** Copilot reviewed #109 up to `5527e30` (its two findings fixed) and then stopped at its
+  weekly rate limit (resets 2026-10-12); the owner chose to take #109 out of draft on that review. #111 carries
+  the same commits. This close-out (#107, Markdown only) has no Copilot review either: the owner chose
+  "Without Copilot" on 2026-10-10, so it leaves draft on green CI. `github-advanced-security` failed on GitHub's side on both pull requests ("model not
+  available"); CodeQL's own analysis was green.
+- **Lessons for the process:** a plan's prediction about layout (which names are cut) is a guess until a browser
+  measures it after hydration; a test that depends on it reads it at run time.
+- **Next:** two questions from the designer agent's read wait on the owner: `overview.md` §2.4's avatar `alt`
+  against the design's `aria-hidden` (a separate amendment), and the designer's fix of stale text in its own
+  sources (applied on the Mac after `/designer-approve`). Then outcome 1, the Release 2 design alignment; T-17
+  waits for it.
+
+## 2026-10-10 — Phase 4 (Release 2): outcome 1 applied — the designer's decisions recorded, then the specs amended
+
+- **Phase:** 4 — Specs & plan (Release 2); roadmap "Release 2 goal", outcome 1.
+- **Participants:** Owner (Ruslan), Agent (Claude Code on the Mac, started from the project thread
+  "Release 2 dizayn uyğunlaşması"; the `designer` agent; drafting and Opus review subagents).
+- **Trigger:** after `governance.md` v1.13 (PR #110) gave the designer agent `finalize_plan`, the
+  coordinator asked for outcome 1's *apply* step; the owner then asked "spec düzəlişlərinə başla"
+  ("start the spec amendments").
+- **Prompt(s):** conversational. The gap list (48 gaps: TX-1..10, BU-1..11, PO-1..11, RB-1..4,
+  UI-1..10, WP-1, HO-1) stayed an uncommitted working file of the comparison session.
+- **Produced:**
+  - The designer's changelog in Claude Design (changelog only, the owner's "Yalnız changelog"):
+    §17–§23 (the 47 decisions approved with "hamısı ok"), §24 (BU-11 (A), "BU-11: (A) ok", scope
+    "(b) Yalnız Budgets"), §25a–§25f (corrections and completions found while amending the specs,
+    "§25 ok"). 33 entries are marked "drawing pending": the `.dc.html` files are not redrawn yet, and
+    until they are the entry wins over the drawing.
+  - Draft pull requests, one document each: #112 `transactions.md` v1.0.16 (Approved), #113
+    `recurring-bills.md` v0.7, #114 `ui-kit.md` v0.8.7 (Approved), #115 `budgets.md` v0.8, #116
+    `pots.md` v0.6, #117 `release-2-handoffs.md` (Approved), #118 `backlog.md` v1.61; this entry.
+  - No change needed, checked: `write-path.md` (WP-1 is the design catching up with 2.7),
+    `overview.md` (BU-8 matches 2.5/2.7), `design-tokens.md` (tokens land with their build tasks,
+    H15 (3)/H16 (3)), `webmcp-tools.md` (no gap).
+- **What the agent got right:**
+  - Kept each owner question out of the specs until answered: the mobile "Sort"/"Filter" names
+    against NFR-A4 (`transactions.md` §9 Q6) and how the donut centre's size is chosen against NFR-P2
+    (`budgets.md` §9 BU-Q9).
+  - Sent design questions found while drafting back to the designer agent (*propose*), not to the
+    owner directly: seven questions, six decided as §25a–§25f; the seventh (the modal's
+    `disabled`/`<span>`/`aria-describedby`) the designer returned as not a design question, so it
+    stays in `ui-kit.md` 2.11 as departures.
+  - An Opus review of each spec pull request (governance v1.3) found 10 defects in total, all wording
+    or consistency, none of them a wrong value; each was fixed before this entry.
+- **What the agent got wrong or missed:**
+  - The designer's §17a made `--transactions-table-wide-min` a token without knowing that a CSS custom
+    property cannot be read in an `@container` condition; the read-only document check caught it, and
+    §25a withdrew the token (768 px is the design's number, as 1060/952/961/644).
+  - §19c said `--spacing-bar-text` (13 px) applies "also on Budgets", which Budgets does not draw;
+    §25c corrected it.
+  - Three spec pull requests cited §25 before the designer had written it (the *apply* ran in
+    parallel); the citations were checked against the recorded §25 afterwards.
+  - Several review subagents had no shell and read the drafting worktrees instead of `gh pr diff`,
+    spot-checking the pushed branch; a full read of each pushed head stays with Copilot's review.
+  - `write_files` replaces the whole changelog on every write: "only appended" was checked by line
+    counts and the section boundary, not byte for byte.
+- **Owner changes and reasoning:** "hamısı ok" (all 47); BU-11 scope (b), then option (A); the write
+  scope "Yalnız changelog"; "§25 ok, Q6 a, BU-Q9 a" — Q6 (a) keeps 2.8's one name at every width,
+  BU-Q9 (a) chooses the size from a length table at server render so nothing moves after load.
+- **Disagreements:** none.
+- **Answered later the same day:**
+  - Overview's donut has no rule for an amount that does not fit its centre (BU-11 is Budgets only,
+    and hotfix 2, #109/#111, added none). The owner: "Backlog-a yaz" — `backlog.md` T-28, in a new
+    section "Outside a release", after T-24, outside Release 2 (#118); `release-2-handoffs.md` H15 (4)
+    names it (#117).
+  - #113's two questions: "#113 1a 2a" (and "Hər ikisi") — the five new 2.14 departure rows stay, the two
+    stale rows stay removed.
+  - Merge order: "#107 əvvəl merge olunacaq" — #107 first; #117, #118 and this pull request, which touch
+    the same files, take `develop` in by a merge after it, before they leave draft (`backlog.md` then becomes v1.61).
+- **Exception to v1.9:** Copilot's review stayed at its weekly rate limit (resets 2026-10-12), and every
+  run here ended with "Copilot encountered an error". The owner chose "Onsuz davam" ("go on without
+  it"): #112–#119 leave draft once their required CI is green, without Copilot's review, this time
+  only. The `github-advanced-security` job also fails on GitHub's side (`Model "claude-opus-5" is not
+  available`; CodeQL itself passes); each pull request carries one comment saying so.
+- **Lessons for the process:**
+  - Run the designer's *apply* before the spec drafts that cite it, or give the drafts the recorded
+    text, not the proposal.
+  - A token proposal for a breakpoint needs the CSS check (`@container`/`@media` cannot read custom
+    properties) before it is recorded.
+- **Next:** the owner's merges (#107 first); then the drawing of
+  the 33 pending entries in Claude Design (a separate *apply*, approved on its own) before T-17.
+
+## 2026-10-10 — Phase 4 (Release 2): `overview.md` v1.5 — the avatar is decorative
+
+- **Phase:** 4 — Specs & plan (Release 2); the question deferred from hotfix 2.
+- **Participants:** Owner (Ruslan), Agent (Claude Code, project thread "Avatar alt").
+- **Trigger:** the designer agent's read in hotfix 2 found `overview.md` §2.4 saying the avatar's `alt` is the
+  transaction's name, where the design hides its avatars from assistive technology (changelog §8c) and
+  `transactions.md` 2.9 and `recurring-bills.md` state `alt=""`. It was left as its own amendment.
+- **Prompt(s):** conversational; the owner answered the decision card with "Dekorativ (`alt=""`)".
+- **Produced:** `overview.md` v1.5 (§2.4, header, changelog); `TransactionsCard.tsx` with `alt=""`; the unit
+  test asserts the empty `alt` and no `img` role; the E2E test finds a row through its name text, not through
+  the avatar's accessible name, and asserts every avatar has an empty `alt`.
+- **What the agent got right:** found that two tests located elements by the avatar's accessible name, so the
+  one-line code change would have broken them.
+- **What the agent got wrong or missed:** nothing found; the E2E change was not run locally (no browser
+  stack in the session), CI runs it.
+- **Owner changes and reasoning:** chose the decorative option over keeping the name, as the agent
+  recommended: one rule on all three pages, and the name is read once.
+- **Disagreements:** none.
+- **Lessons for the process:** a test that finds an element by its accessible name ties the test to a
+  spec value; when that value changes, search the tests for the role query, not only the attribute.
+- **Next:** the owner's merge of this pull request.
+
+## 2026-10-10 — Phase 4 (Release 2): T-17 — the write path's shared server pipeline
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; first Release 2 build task.
+- **Participants:** Owner (Ruslan), Agent (Claude Code, started from the project thread "Release 2 build
+  T-17"; one Opus 5.5 code-review subagent).
+- **Trigger:** the coordinator's brief to work Release 2 in roadmap order after outcomes 0 and 1.
+- **Prompt(s):** `prompts/2026-10-10-T-17/` (the review brief). The plan `plans/2026-10-10-T-17.md`
+  went to the owner at the plan gate with three questions; the owner answered "a", then "hamısı üçün":
+  Q1 (a) a lower-case method is answered 400 by Node, so it is unit-tested and the spec amended
+  (`write-path.md` v1.0.3); Q2 (a) the refusal log line is tested at unit level; Q3 (a) one pull
+  request, one commit per task.
+- **Produced** (pull request #120, `develop`):
+  - A: `forbidden` in `ErrorEnvelope`, the write issue mapper by schema family, `apiSend`, the tool
+    mapping of 403 and 415, the four R2 copy strings (H10).
+  - B: the proxy's cross-site 403 and content-type 415, with no cookie re-issue and one log line.
+  - C: `WriteAttempt` and its migration, the write limiter, `checkThreshold` as one query.
+  - D: `guardedWrite`, tested directly (no write route exists before T-23).
+  - E: the route-table guard and a violating fixture per rule.
+  - F: `RELEASE_BEING_BUILT` = 2, `NOT_YET_BUILT` with 19 ids, ADR-0003's dated line (H4).
+- **What went well:**
+  - Each rule was shown red before its code (the saved red runs are quoted in the pull request).
+  - The API test of `guardedWrite` found a real defect: through the pg driver adapter a unique
+    violation names only the index (`Pot_name_key`), so `taken` came back with an empty path; the
+    field is now read from Prisma's index name.
+- **Disagreements:** none.
+- **Exception to v1.9:** Copilot's review (weekly limit until 2026-10-12): by the owner's rule of
+  2026-10-10, if it errors the pull request does not wait for it once CI is green.
+- **Not done here:** `write-path.md` 7.2's rows (they need a real write route: T-23 and T-25); 7.5 and
+  7.6 (the pages: T-24, T-26). `tests/unit/install-scripts.test.ts` fails on a machine with npm 10
+  (it needs npm 11); CI runs npm 11.
+- **Next:** the owner's merge of #120; then T-18 (Transactions, server and API).
+
+## 2026-10-10 — Phase 4 (Release 2): T-18 — Transactions, server and API
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; second Release 2 build task.
+- **Participants:** Owner (Ruslan), Agent (Claude Code, started from the project thread "Transactions
+  server and API"; two read-only review subagents, one of them the `/code-review` skill on Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-17's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-18/` (the review brief and report). The plan
+  `plans/2026-10-10-T-18.md` went to the owner at the plan gate with three questions; the owner answered
+  "1.a 2.a.3a": Q1 (a) several invalid fields join their messages with "; "; Q2 (a) the 500 is tested at
+  unit level, since no row the database accepts makes the list fail; Q3 (a) no inverse of
+  `CATEGORY_LABEL`, as 2.4 filters in the domain. All three are `transactions.md` v1.0.17.
+- **Produced** (pull request #123, `develop`):
+  - B: `parseTransactionsQuery` (lenient for the page, strict for the API), the sort slugs,
+    `TRANSACTIONS_PAGE_SIZE`, `TransactionsDtoSchema`; `validationErrorResponse` takes a `message`.
+  - A: `sortTransactions` (six orders, every tie rule, the final `id`), `filterTransactions`, `paginate`,
+    `transactionsPage` in `src/domain`.
+  - C: `getTransactions`, `toTransactionsDto`, `GET /api/transactions`; the API suite against an
+    independent oracle for every seed variant and the views of 4.3–4.6.
+  - D: H11 (3) — `seedTransactions`, `sortExtremes` and `transactionFigures` in
+    `scripts/seed-figures.ts`; 4.3's table held to them with a violation fixture, and the prose figures
+    of 4.2 and 4.5–4.7 too; US-09, US-10 and US-12 left `NOT_YET_BUILT` (16 ids remain).
+- **What went well:** re-running T-15d's figures script before the gate showed 4.2–4.7 still held, so
+  the figures moved into code unchanged. The API oracle caught its own mistake on the first run:
+  `seedRows()` holds Prisma's category keys, which the oracle now maps as `overview.spec.ts` does.
+- **What the agent got wrong or missed:** a seed-figures test title first named US-19 (a Budgets
+  story), which the traceability check refused ("already named"); the title now names the section only.
+- **Owner changes and reasoning:** the owner took the three recommended options. During the build the
+  owner also said that questions meant for them go to the coordinator session, which answers from the
+  project's goals, so threads do not wait; that a pull request merges itself once CI is green and the
+  owner reviews afterwards; and that when Copilot does not run, the `/code-review` skill runs on Opus
+  first. Both reviews found nothing blocking; their findings and what was done are in
+  `prompts/2026-10-10-T-18/code-review-handling.md`.
+- **Disagreements:** none.
+- **Not done here:** everything on the page (T-19). `tests/unit/install-scripts.test.ts` fails on a
+  machine with npm 10, as recorded for T-17; CI runs npm 11. The E2E suite was not run locally (no
+  browser stack in the session); this task changes no page, and CI runs it.
+- **Next:** the owner's merge of #123; then T-19 (Transactions, UI and `list_transactions`).
+
+## 2026-10-10 — Phase 4 (Release 2): T-19 — Transactions, the page and `list_transactions`
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; third Release 2 build task.
+- **Participants:** Owner (Ruslan), the project's coordinator session (answering for the owner under the
+  owner's delegation of Release 2), Agent (Claude Code, the cloud thread "Release 2 build T-19"; one read-only
+  review subagent, the `/code-review` skill on Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-18's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-19/`. The plan `plans/2026-10-10-T-19.md` went to the coordinator
+  session at the plan gate with two questions; two more came up during the build. Q1, the mobile Sort, Filter
+  and Prev icons: first the nearest Phosphor glyphs, then, once the owner uploaded the design export, the
+  export's own glyphs (copied from `components/icons/icon-data.js`; Prev is the right caret turned 180°).
+  Q2 (a): outcome 1's comparison of 2026-10-10 counts as H11 (5)'s live re-read; the export's changelog ends
+  at §26 with no Transactions change since. Q3 (a): a menu trigger as wide as its longest option, the drawn
+  114 px and 177 px its minimum (`transactions.md` v1.0.18). Q4 (a), tapped by the owner: below 768 px Prev and
+  Next are 40 px squares and the pagination's items 4 px apart (`transactions.md` v1.0.19).
+- **Produced** (pull request #124, `develop`): the page (`app/(app)/transactions/`), `src/ui/Menu.tsx`,
+  `src/ui/transactions/` (`TransactionsNav`, `TransactionsToolbar`, `ResultsRegion`, `TransactionTable`,
+  `TransactionsPagination`, `TransactionsError`), `useDebouncedValue`, `pageItems`, five icons,
+  `list_transactions`; H11 (1), (2), (4)–(8): the page's strings in the appendix and `COPY`, three tokens in
+  `design-tokens.md` v1.5 and `tokens.css`, the WebMCP placeholder checks moved to `/pots`
+  (`webmcp-tools.md` v1.0.13); component tests, `tests/e2e/transactions.spec.ts` and the `list_transactions`
+  tests; US-13 and US-19 left `NOT_YET_BUILT` (14 ids remain).
+- **What went well:** the E2E test of US-33 found what the drawing hides: at 320 px the pagination needed
+  348 px of 248 (Q4), and the drawn menu widths cut "Latest" and "All Transactions" (Q3). Both were measured
+  in Chromium before they were asked.
+- **What the agent got wrong or missed:** the first E2E pass checked "no horizontal scroll" only on a search
+  with one page of results, where the pagination is short; the four-widths test now also loads page 3. The
+  review found that the pagination moved focus (and scrolled) after Back and Forward too, and that Back
+  resynced the controls only when the server's answer changed; both fixed with unit tests that fail without
+  the fix.
+- **Owner changes and reasoning:** the coordinator answered Q1–Q3 from the project's goals; the owner tapped
+  Q4 (a). The coordinator then named `/mnt/project-files/design/` the design source and gave its edits to a
+  separate design thread; this task changed nothing there. For that thread: Sort and Category triggers are at
+  least 114 px and 177 px wide and as wide as their longest option; below 768 px Prev and Next are 40 × 40 px,
+  the pagination's items 4 px apart and an ellipsis 12 px wide.
+- **Disagreements:** none.
+- **Not done here:** the screen-reader pass 2.9 asks for (no screen reader in the cloud session; axe passes at
+  every state §7 names). Copilot errored on each run, so the Opus review is the only one.
+  `tests/unit/install-scripts.test.ts` still fails on npm 10 locally; CI runs npm 11.
+- **Next:** T-20 (Recurring Bills, server and API), in the backlog's order.
+
+## Vercel skips agent branches (2026-10-10)
+
+- **Trigger:** the Hobby plan's deployment limit was hit; Vercel answered PR #125 with "Deployment rate limited — retry in 24 hours".
+- **Owner decision:** "2" — stop deploying `claude/*` branches rather than wait or buy Pro.
+- **Change:** `vercel.json` `git.deploymentEnabled` `{ "claude/*": false }`; ADR-0007 amendment 2026-10-10; `vercel-config.test.ts`.
+- **Not verified:** that the pattern is honoured on the live project; the first `claude/*` push after the merge shows it.
+
+## 2026-10-10 — Phase 4 (Release 2): the design files catch up, and the design folder becomes the design source
+
+- **Phase:** 4 (Release 2), design alignment.
+- **Participants:** Owner (Ruslan), Agent (Claude Code, Opus 5.5, cloud thread "Release 2 design sync")
+- **Trigger:** the owner asked that every Release 2 design change be reflected in the design itself
+  before Release 2 closes ("Release 2 bağlamazdan öncə design və kod bir birini tamamlamalıdır" —
+  "before Release 2 closes, the design and the code must complete each other"), and chose the design
+  export in the project's shared design folder, with its published preview, as the design source
+  instead of Claude Design (option 1).
+- **Prompt(s):** the owner's thread message; no prompt file.
+- **Produced:**
+  - In the design folder (not in this repository): every change the designer's changelog §17–§26 had
+    marked "Drawing pending" is now drawn in `Finance App.dc.html` and `Style Guide.dc.html`, and
+    recorded as the designer's changelog §27 (27a the app, 27b the style guide, 27c T-19's toolbar
+    triggers sized to their longest option, the drawn width as the minimum, `transactions.md` 2.6).
+    The preview was republished to the same link.
+  - The designer's changelog §28: `support.js` loads React, ReactDOM and Babel from the design
+    folder's `assets/vendor/` instead of unpkg.com, so a cloud session can render the pages (the
+    owner asked how a cloud session could open them; byte-identical files, same SRI hashes).
+  - §27 and §28 were written by the thread itself, not the designer agent (which had no design-folder
+    route until this pull request), as an exception under the owner's Release 2 delegation: §27 draws
+    what the changelog already decided (§17–§26) and what `transactions.md` 2.6 already decided for
+    T-19 (27c makes no new decision), on the owner's thread message above; §28 changes only how the
+    pages load their scripts, on the owner's question relayed by the coordinator session.
+  - The designer's changelog §29: below 768 px the Transactions pagination's Prev and Next are 40 × 40
+    px and the items 4 px apart, with at most three numbers, as `transactions.md` 2.7 v1.0.19 (T-19)
+    already decided; drawn, not decided, here.
+  - `governance.md` v1.14: the design folder is the design source; the designer agent works on it in
+    any session that has it.
+  - `.claude/agents/designer.md`: reads and, in apply mode, edits the design folder; no Claude Design
+    tools.
+- **What the agent got right:** each drawing was checked by rendering the page at desktop, tablet and
+  mobile widths, with no console errors, before the files were copied to the shared folder.
+- **What the agent got wrong or missed:** the first T-19 trigger width left out the 2px border and still
+  cut "All Transactions"; the render caught it.
+- **Owner changes and reasoning:** none beyond the two decisions above.
+- **Disagreements:** none.
+- **Lessons for the process:** a design change that the code takes before the design draws it should be
+  drawn in the same task, now that a cloud session can edit the design.
+- **Next:** keep the design in step with T-20 to T-27 as they land.
+
+## 2026-10-10 — Phase 4 (Release 2): Copilot review is turned off for develop
+
+- **Phase:** 4 (Release 2), process.
+- **Participants:** Owner (Ruslan), Agent (Claude Code, Sonnet 5.5, cloud thread "Copilot review dayandırıldı")
+- **Trigger:** the owner stopped Copilot's review of pull requests into `develop` ("Hazırda develop
+  branchinə yaranan pr-lar Copilot review dayandırdım. Bunu iş prosesində nəzərə al" — "I have stopped
+  Copilot review for the pull requests opened against develop; take this into account in the process").
+  Earlier entries record it erroring on some runs (#112–#119, T-19); the owner gave no reason here.
+- **Prompt(s):** the owner's thread message; no prompt file.
+- **Produced:** `governance.md` v1.15 — the v1.9 rule "wait for Copilot's review" becomes "Review before
+  ready": the `/code-review` skill, run by a new Opus subagent (owner's follow-up message: "Onun yerinə code-review skilli üçün yeni subagent istifadə edilir"), reviews the current head, important findings are fixed,
+  and the pull request leaves draft once the other conditions of "Draft until ready" are met; Copilot is not expected and
+  its absence is not an exception to record. `.github/pull_request_template.md` and the note in
+  `.github/CODEOWNERS` say the same. The ruleset names that contain "Copilot" are kept as they are.
+- **What the agent got right:** history (earlier plans, prompts and log entries that mention Copilot) is
+  left as written, because it records what was true then.
+- **What the agent got wrong or missed:** the first draft said the Opus review could be run inline; the
+  skill uses the session's model, and the owner then said a new subagent does it, so the rule says that. It
+  also first scoped "Copilot is off" to all pull requests; the owner turned it off for `develop` only.
+- **Owner changes and reasoning:** the stop is the owner's own choice, not an outage; his follow-up
+  moved the review from Copilot to a new Opus subagent, and the stop covers `develop` only.
+- **Disagreements:** none.
+- **Lessons for the process:** a tool a rule waits for should be named by its role ("the reviewer"), so
+  that switching it off changes one sentence.
+- **Next:** open: whether the rulesets still carry the `copilot_code_review` rule was not read from GitHub
+  here; the owner's settings decide it.
+
+## 2026-10-10 — Phase 4 (Release 2): T-20 — Recurring Bills, server and API
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; fourth Release 2 build task.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "T-20"; one read-only review subagent, the `/code-review` skill on
+  Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-19's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-20/` (the review brief, report and handling). The plan
+  `plans/2026-10-10-T-20.md` went to the coordinator session at the plan gate with two questions, the
+  same gaps T-18 met; it answered Q1 (a) and Q2 (a), "consistent with T-18": several invalid fields join
+  their messages with "; " in the order `q`, `sort`, `status`, and the 500 is a unit test. Both are
+  `recurring-bills.md` v0.7.1, which also corrects two stale sentences (the parser's `message`, the
+  helpers' `no-store`) and takes `transactions.md` 2.3's cut of `q`.
+- **Produced** (pull request #127, `develop`):
+  - A: `parseRecurringBillsQuery`, `BILL_STATUSES` (`src/shared/recurring-bills-query.ts`; the sort slugs
+    are Transactions'), `formatDueDay`, `RecurringBillsDtoSchema`; the two list parsers now share
+    `firstParam`, `isOneOf` and `cutSearch` (`src/shared/query-params.ts`).
+  - B: `sortBills`, `filterBills`, `billsList`, `billsTotals` in `src/domain/bills.ts`; `BillStatus` is
+    the type of `BILL_STATUSES`; `billsSummary` and the Overview unchanged.
+  - C: `getRecurringBills`, `toRecurringBillsDto`, `GET /api/recurring-bills`; the API suite against an
+    independent oracle for every seed variant and the views of 4.3–4.5 with each `status`.
+  - D: H14 (2) — `seedBills`, `billSorts` and `billFigures` in `scripts/seed-figures.ts`; 4.3's table
+    held to them with a violation fixture (Highest's $100.00 tie in the design's old order), and the
+    prose figures of 4.2 and 4.5 too; US-29 and US-30 left `NOT_YET_BUILT` (12 ids remain).
+- **What went well:** re-running T-15d's figures script before the gate showed 4.2–4.5 still held, so the
+  figures moved into code unchanged; the two questions had T-18's answers to follow, so the gate took
+  one message.
+- **What the agent got wrong or missed:** the generated "names without an `a`" came out in the bills'
+  order, where the spec writes them A to Z; the figure now sorts them, as the spec's text does.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus while Copilot is down, merge on green CI).
+- **Disagreements:** none.
+- **Not done here:** everything on the page, the copy (H14 (1)) and `list_recurring_bills` (T-21).
+  `tests/unit/install-scripts.test.ts` fails on a machine with npm 10, as recorded for T-17; CI runs
+  npm 11. The E2E suite was not run locally; this task changes no page, and CI runs it.
+- **Next:** the merge of #127; then T-21 (Recurring Bills, UI and `list_recurring_bills`).
+
+## 2026-10-10 — Phase 4 (Release 2): T-21 — Recurring Bills, the page and `list_recurring_bills`
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; fifth Release 2 build task.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "T-21"; one read-only review subagent, the `/code-review` skill on
+  Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-20's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-21/` (the review brief, report and handling). The plan
+  `plans/2026-10-10-T-21.md` raised no question: the spec (`recurring-bills.md` v0.7.1) answered every
+  behaviour, and the designer's changelog §27 had drawn every pending entry.
+- **Produced** (pull request #129, `develop`):
+  - A: `ResultsRegion` moved to `src/ui/` with a small `ResultsNavContext` both list pages provide; the
+    page's copy in `COPY` and a new appendix table (H14 (1)), `formatDueDay` and the Overview's
+    `BillsCard` reading it; `recurringBillsSearch`; three Phosphor icons.
+  - B: the page and `src/ui/recurring-bills/` (`BillsNav`, `BillsToolbar`, `BillsTable`,
+    `TotalBillsCard`, `BillsSummaryCard`, `BillsError`); the content-width layout of 2.13 on `<main>`'s
+    container query.
+  - C: `list_recurring_bills` (`readOnlyHint`, `untrustedContentHint`) and `PAGE_TOOLS.recurringBills`.
+  - D: `tests/e2e/recurring-bills.spec.ts` (28 tests) and the tool's rows in `tests/e2e/webmcp.spec.ts`;
+    the placeholder row in `app-shell.spec.ts` retired.
+- **What went well:** T-19's Transactions page gave the navigation, toolbar and status-line patterns, so
+  the page took them with two parameters instead of four; the seed figures from T-20 gave every E2E
+  number.
+- **What the agent got wrong or missed:** the two summary cards at 768–960 px came out unequal twice
+  (`flex: 1 1 0` and `50%` bases both let padding or shrink weighting move the split); a `calc` basis
+  with no grow or shrink fixed it. The review found `TransactionsNav` still publishing `pending` and
+  `changes` after the move, and the debounce constant declared twice; both fixed.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none. Three review findings (a shared navigation hook, shared toolbar CSS and error
+  card) were left for a later task, with reasons in the handling file.
+- **Not done here:** Firefox and WebKit E2E ran only in CI. `tests/unit/install-scripts.test.ts` fails on
+  a machine with npm 10, as recorded for T-17.
+- **Next:** the merge of #129; then T-22.
+
+## 2026-10-10 — Phase 4 (Release 2): T-22 — Budgets and Pots, the shared write-UI parts
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; sixth Release 2 build task.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "T-22"; one read-only review subagent, the `/code-review` skill on
+  Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-21's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-22/` (the review brief, report and handling). The plan
+  `plans/2026-10-10-T-22.md` raised no question: the spec (`ui-kit.md` v0.8.7) answered every behaviour,
+  and the designer's changelog §27 had drawn every part.
+- **Produced** (pull request #130, `develop`):
+  - A: `parseAmountInput` and `formatAmountInput` (4.1's examples as the unit test), `writeAnswer`
+    (`write-path.md` §3's messages on the client), the strings of 2.12 and UK-Q1 (a fourth appendix
+    table and `COPY`), the tokens of UK-Q4 (`design-tokens.md` v1.6), `busy` and the delete bus.
+  - B: `Field`, `Button` (variants, no hover while `aria-disabled`), `PageHeader` (`primaryAction`) and
+    `Menu` (a field variant; its Escape stops at the menu).
+  - C: `Modal`, `ModalSlot`, `ConfirmDeleteDialog`, `ActionMenu`, `AmountField`, `SelectField`,
+    `FormFooter`, `Notice`, `ThemeSwatch` and the `dots-three-outline` icon.
+  - D: `app/(app)/_write/use-delete-flow.ts`, the page's join of the dialog and the bus, with §7's
+    "dialog with the bus" test.
+- **What went well:** the spec's 2.2–2.12 were detailed enough that each part was written once against
+  its section; T-19's `Menu` took the field variant as options, so the two list pages' menus are unchanged.
+- **What the agent got wrong or missed:** two `react-hooks/set-state-in-effect` errors (the dialog's reset
+  on open, the notice's delayed text) were rewritten as state derived during render; a modal's Escape
+  first closed both an open menu and the modal under it, until the menu stopped the event.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied.
+- **Disagreements:** none.
+- **Not done here:** no page uses the parts yet (T-24 and T-26), so there is no E2E row.
+  `tests/unit/install-scripts.test.ts` fails on a machine with npm 10, as recorded for T-17.
+- **Next:** the merge of #130; then T-23.
+
+## 2026-10-10 — Phase 4 (Release 2): T-23 — Budgets, server and API
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; seventh Release 2 build task.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "T-23"; one read-only review subagent, the `/code-review` skill on
+  Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-22's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-23/` (the review brief, report and handling). The plan
+  `plans/2026-10-10-T-23.md` raised no question: `budgets.md` v0.8 and `write-path.md` answered every
+  behaviour. The coordinator asked once whether T-24 could start before T-23 finished; the answer was no
+  (T-24 depends on T-23's schemas, server and routes, and both touch `schemas.ts` and `seed-figures.ts`).
+- **Produced** (pull request #131, `develop`):
+  - A: `latestSpending`, `budgetRemaining`, `budgetsSummary`; `budgetFillPercent` in integers; the
+    schemas and the strict DTOs; `applyVariant` moved into `src/domain/variants.ts`.
+  - B: `src/server/budgets.ts` and the routes `GET`/`POST /api/budgets`, `PATCH`/`DELETE
+    /api/budgets/:id`; `tests/api/budgets.spec.ts` with `write-path.md` 7.2's rows on a real route.
+  - C: `budgetFigures()` in `scripts/seed-figures.ts` and the spec's 4.2 and 4.4–4.7 held to it (H15 (2));
+    US-14, US-18 and US-20 left `NOT_YET_BUILT` (1 id remains).
+- **What went well:** `guardedWrite` from T-17 made each route a few lines; the seed figures of T-15d
+  matched the domain's output on the first run.
+- **What the agent got wrong or missed:** two test expectations in `budgetFillPercent`'s table were wrong
+  (the half-way point of 0.01 % is 1 cent of 20,000, not of 200,000); the review found the edit's
+  read-then-update race that answered 500 instead of 404, fixed with a conditional update.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none. Two review nits were kept, with reasons in the handling file.
+- **Not done here:** the page, the tools, the copy and the tokens (T-24); the donut centre's fit table
+  stays with T-24. The throwing threshold check runs the route's handler in the test process, since the
+  API server's environment is fixed (plan F4).
+- **Next:** the merge of #131; then T-24.
+
+## 2026-10-10 — Phase 4 (Release 2): T-25 — Pots, server and API
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; a Release 2 server task, built while
+  T-24 (Budgets UI) ran in another thread.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "Release 2 build T-25"; one read-only review subagent, the `/code-review`
+  skill on Opus).
+- **Trigger:** the coordinator's brief to build T-25, which depends only on T-17.
+- **Prompt(s):** `prompts/2026-10-10-T-25/` (the review brief, report and handling). The plan
+  `plans/2026-10-10-T-25.md` raised no question: `pots.md` v0.6 and `write-path.md` answered every behaviour.
+- **Produced** (pull request #133, `develop`):
+  - A: `potPercent`, `potFill`, `moneyPreview`, `isPotNameTaken`, `firstFreeTheme`; `formatPercent`; the pot
+    schemas and the strict DTOs.
+  - B: `src/server/pots.ts` and the six routes of `pots.md` 2.12; every money move and a deletion as
+    `write-path.md` 2.8's conditional updates in one transaction (the pot first, then the balance; a
+    deletion's refund from `DELETE … RETURNING`); `tests/api/pots.spec.ts` with 7.2's conservation and races
+    and US-04 AC2 through `GET /api/overview` (H8). US-21 left `NOT_YET_BUILT`, which is empty.
+  - C: `potFigures()` in `scripts/seed-figures.ts` and `pots.md` §4.2–§4.6 held to it (H16 (2)).
+- **What went well:** the pipeline of T-17 and the pattern of T-23 made each route a few lines; the figures of
+  T-15d matched the domain's output; the API suite passed on its first run.
+- **What the agent got wrong or missed:** the first domain test typed the seed's figures from the seed file,
+  which `build-workflow.md` forbids; it was rewritten with the spec's examples as plain inputs, and the seed's
+  side moved to the figures test. The review found that the moves lock `Pot` then `Balance` while the reset
+  truncated them in the other order, a deadlock under a reset during a move; the reset now follows the moves'
+  order. It also found the pots' two reads outside one snapshot and an unchecked balance credit; both
+  fixed (`code-review-handling.md`).
+- **Found on the way:** Zod 4's string `.max` counts code points, not UTF-16 code units, so `PotNameSchema`
+  accepted 15 emoji and a letter (31 units) against `pots.md` 4.6 and `write-path.md` 2.7. It now checks the
+  units too, with the same `too_long` code; `.max` stays for the tool schemas' `maxLength`.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none.
+- **Not done here:** the page, the tools, the copy and the tokens (T-26); §4.7–§4.9 of `pots.md` (widths, tool
+  descriptions, contrast) move into the figures with T-26, which builds what they describe; removing the empty
+  `NOT_YET_BUILT` and its upper-bound test is T-26's.
+- **Next:** the merge of this pull request; T-26 after T-22, T-24 and T-25.
+
+## 2026-10-10 — Phase 4 (Release 2): T-24 — Budgets, the page and its four tools
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; the first Release 2 page with writes.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "Release 2 build T-24"; the designer subagent in PROPOSE mode; one read-only
+  review subagent, the `/code-review` skill on Opus).
+- **Trigger:** the coordinator's brief to build T-24 after T-23's merge; T-25 ran at the same time (independent,
+  as the agent told the coordinator).
+- **Prompt(s):** `prompts/2026-10-10-T-24/` (the brief, the designer's proposal, the review brief, report and
+  handling, the screenshots). The plan `plans/2026-10-10-T-24.md` raised one design question (F3).
+- **Produced** (pull requests #132 and #137, `develop`):
+  - #132: `budgets.md` v0.8.1, `delete_budget`'s `busy` words, as the backlog note asked before T-24.
+  - #137: the page, `src/ui/budgets/`, the donut centre's fit table and `Donut`'s Budgets-only opt-in, the
+    bar's and the segments' transition, the content-width layout; the four tools and `BudgetsTools`; H15 (1)
+    and (3) with their mirrors; `budgets.md` v0.8.2; unit, component and E2E tests (33 Budgets E2E tests).
+- **What went well:** T-22's shared parts (modal slot, delete bus, form fields) made the form and the dialog
+  small; `budgetFigures()` of T-23 gave every E2E figure.
+- **What the agent got wrong or missed:** the first card markup put the bars inside the `<dl>` beside the
+  `<dt>`/`<dd>` pairs, which axe reports as an invalid definition list; the E2E caught it and each bar moved
+  into its `<dt>`. Several first E2E expectations were wrong about the page's own text (the date format, the
+  option names' separator, `getTools()` listing by name) and were corrected against the running page.
+- **Found on the way:** the spec's own fit rule moved the seed's "$338.00" to 20 px, against §24a's "seed
+  unchanged" (135.4 px > 128 px); the designer's §31a resolves it. On the app's font the maximum limit takes
+  two lines, not three. `logout.spec.ts`'s back/forward-cache tests fail intermittently on a clean `develop`
+  build too (WebKit in CI on #132, Chromium locally); not this task's.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none.
+- **Not done here:** the designer's files (the design thread owns them; §31a is applied there after the
+  coordinator's word); Overview's long-amount rule (T-28); 7.5's 429 and 7.6's 403 run with `page.route` answering in the
+  server's envelope, not with pre-filled rows; the threshold-reset E2E, the full two-order walkthrough of 2.14,
+  the pointer checks and the hover matrix of US-34 beyond its 44 px and 0.25 checks are left to a follow-up.
+- **Next:** the merge of #137; then T-26 (Pots UI).
+
+## 2026-10-10 — Phase 4 (Release 2): T-26 — Pots, UI and its six tools
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; the last Release 2 page, built while
+  T-24 (Budgets UI) ran in another thread.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread for T-26; read-only review subagents, the `/code-review` skill on Opus).
+- **Trigger:** the coordinator's brief to build T-26 after T-25's merge (#133).
+- **Prompt(s):** the plan `plans/2026-10-10-T-26.md` raised no question; `pots.md` v0.6, `ui-kit.md`,
+  `write-path.md` and `webmcp-tools.md` answered every behaviour.
+- **Produced** (pull request #139, `develop`; and #136 first):
+  - #136: `recurring-bills.md` v0.7.2 — §7's WebMCP row follows WM-Q3 (a), the precondition the backlog names.
+  - The six tools and `PotsTools` (`router.refresh()` after a write tool's success); the page, `PotsBoard`,
+    `PotCard`, `PotForm`, `MoneyModal`, `PotsError`, the grid's 644 px container query; the strings
+    (`user-stories.md` v1.10) and tokens (`design-tokens.md` v1.8); `pots.md` §4.7–§4.9 computed by the figures
+    script.
+  - E2E: `tests/e2e/pots.spec.ts` (§7's E2E and WebMCP rows); `webmcp.spec.ts`'s placeholder checks replaced by
+    WM-Q3 (a)'s poll; `app-shell.spec.ts`'s `/pots` row; the phone keyboard walkthrough now walks the page.
+  - `NOT_YET_BUILT` removed with its upper-bound test; ADR-0003's dated line.
+- **What went well:** T-22's parts and T-25's domain made the page an assembly; the design matched at every width
+  on the first render.
+- **What the agent got wrong or missed:** the first `PotsBoard` claimed the modal slot inside a state updater, which
+  StrictMode runs twice; moved out. The idle `Notice` (T-22) took space in `<main>`'s flow and doubled the gap under
+  the header; it is now visually hidden when idle. The first E2E assumed `getTools()` keeps registration order and
+  that a money move could trip the row threshold; both corrected.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none.
+- **Merged with T-24 (#137):** the form strings Pots shares and `--radius-50` and `--duration-progress` are
+  T-24's; this task's copy table, token table and versions follow them (`user-stories.md` v1.10,
+  `design-tokens.md` v1.8). `Release2Placeholder.tsx` went with the last placeholder page.
+- **Next:** T-27 (Release 2 closed).

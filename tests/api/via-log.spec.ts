@@ -30,7 +30,12 @@ test("US-38 SPEC-webmcp-tools §2.8: a request with X-Via: webmcp is on record u
 
   const log = await logged(request, requestId);
   expect(log.status()).toBe(200);
-  expect(await log.json()).toEqual({ requestId, via: "webmcp", route: "/api/overview" });
+  expect(await log.json()).toEqual({
+    requestId,
+    via: "webmcp",
+    method: "GET",
+    route: "/api/overview",
+  });
 });
 
 test("SPEC-webmcp-tools §2.8: a request without the marker, or with another value, is not recorded", async ({
@@ -54,7 +59,35 @@ test("US-39 AC4 SPEC-webmcp-tools §2.8: an unauthenticated request with the mar
   const requestId = response.headers()["x-request-id"];
   const log = await logged(request, requestId);
   expect(log.status()).toBe(200);
-  expect(await log.json()).toEqual({ requestId, via: "webmcp", route: "/api/overview" });
+  expect(await log.json()).toEqual({
+    requestId,
+    via: "webmcp",
+    method: "GET",
+    route: "/api/overview",
+  });
+});
+
+test("US-40 AC3 SPEC-write-path 2.12: a GET and a POST on one path give two entries that differ in method", async ({
+  request,
+}) => {
+  await login(request);
+  // No /api/pots route exists before T-25; the proxy records the marker before anything
+  // else (2.2 step 1), so the POST is on record whatever answers it.
+  const read = await request.get("/api/pots", { headers: { "X-Via": "webmcp" } });
+  const write = await request.post("/api/pots", {
+    headers: { "X-Via": "webmcp", "Content-Type": "application/json" },
+    data: { name: "Holiday" },
+  });
+  const entries = [];
+  for (const response of [read, write]) {
+    const log = await logged(request, response.headers()["x-request-id"]);
+    expect(log.status()).toBe(200);
+    entries.push(await log.json());
+  }
+  expect(entries.map(({ method, route }) => ({ method, route }))).toEqual([
+    { method: "GET", route: "/api/pots" },
+    { method: "POST", route: "/api/pots" },
+  ]);
 });
 
 test("SPEC-reset-and-test-support §2.7: an unknown, empty or missing requestId answers 404", async ({

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { apiGet } from "@/src/shared/api-client";
+import { apiGet, apiSend } from "@/src/shared/api-client";
 
 const Schema = z.strictObject({ value: z.int() });
 
@@ -90,5 +90,64 @@ describe("apiGet", () => {
     vi.spyOn(response, "json").mockRejectedValue(new DOMException("aborted", "AbortError"));
     stubFetch(async () => response);
     expect(await apiGet("/api/thing", Schema)).toEqual({ ok: false, kind: "aborted" });
+  });
+});
+
+describe("apiSend — the write client (SPEC-write-path 2.11 (2), 7.1)", () => {
+  it("sends a JSON body with Content-Type: application/json, the X-Via marker it is given and the signal", async () => {
+    const fetchMock = stubFetch(async () => respond({ value: 1 }, 201));
+    const controller = new AbortController();
+    const outcome = await apiSend("POST", "/api/pots", Schema, {
+      body: { name: "Holiday" },
+      headers: { "X-Via": "webmcp" },
+      signal: controller.signal,
+    });
+    expect(outcome).toEqual({ ok: true, data: { value: 1 } });
+    expect(fetchMock).toHaveBeenCalledWith("/api/pots", {
+      method: "POST",
+      headers: { "X-Via": "webmcp", "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Holiday" }),
+      signal: controller.signal,
+      credentials: "same-origin",
+    });
+  });
+
+  it("always sends the method upper-case (Node answers `patch` with 400, 7.3 v1.0.3)", async () => {
+    const fetchMock = stubFetch(async () => respond({ value: 1 }));
+    await apiSend("patch" as "PATCH", "/api/pots/1", Schema, { body: {} });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/pots/1",
+      expect.objectContaining({ method: "PATCH" }),
+    );
+  });
+
+  it("reads a 204 as success with no data, and a DELETE sends no body and no content type", async () => {
+    const fetchMock = stubFetch(async () => new Response(null, { status: 204 }));
+    expect(await apiSend("DELETE", "/api/pots/1", Schema)).toEqual({ ok: true, data: null });
+    expect(fetchMock).toHaveBeenCalledWith("/api/pots/1", {
+      method: "DELETE",
+      headers: undefined,
+      body: undefined,
+      signal: undefined,
+      credentials: "same-origin",
+    });
+  });
+
+  it("returns a 400's envelope with its issues, and never throws on a network failure", async () => {
+    const issues = [{ path: ["name"], code: "taken" }];
+    stubFetch(async () => respond({ error: "validation", issues }, 400));
+    expect(await apiSend("POST", "/api/pots", Schema, { body: {} })).toEqual({
+      ok: false,
+      kind: "http",
+      status: 400,
+      error: { error: "validation", issues },
+    });
+    stubFetch(async () => {
+      throw new TypeError("Failed to fetch");
+    });
+    expect(await apiSend("POST", "/api/pots", Schema, { body: {} })).toEqual({
+      ok: false,
+      kind: "network",
+    });
   });
 });

@@ -1,6 +1,6 @@
 # Runbook — headed native WebMCP check
 
-Status: **Draft — not yet run by a person** (T-12, 2026-09-24) · Author(s): Agent · Executed by:
+Status: **Draft — not yet run by a person** (T-12, 2026-09-24; step 8 and its record for Release 2, T-27, 2026-10-10) · Author(s): Agent · Executed by:
 the owner (a headed browser with a flag; no CI job and no agent session can do this — NFR-B2,
 US-38 AC2, ADR-0003 "native mode is a headed runbook step")
 
@@ -35,11 +35,33 @@ browser itself — needs a browser that has it, so it is checked by hand.
    each with a description and an input schema with no properties.
 7. Call each with `{}`. Expected: a result whose structured content is the Overview's figures in
    cents plus `currency: "USD"` and `unit: "cents"`.
-8. Open Transactions from the sidebar. Expected: the indicator reads _native · 0_ and the
-   inspector lists no tools; return to Overview and both are back.
+8. Release 2 (T-27): every page has tools (`webmcp-tools.md` §4) once T-26 (Pots, the last
+   page) is merged; before that Pots is a placeholder with none. Open each page from the
+   sidebar and read the indicator and the inspector's list. Expected, page by page:
+
+   | Page | Indicator | Tools listed |
+   | ---- | --------- | ------------ |
+   | Overview | native · 2 | `get_balance`, `get_overview_summary` |
+   | Transactions | native · 1 | `list_transactions` |
+   | Budgets | native · 4 | `list_budgets`, `add_budget`, `edit_budget`, `delete_budget` |
+   | Pots | native · 6 | `list_pots`, `add_pot`, `edit_pot`, `delete_pot`, `add_money_to_pot`, `withdraw_from_pot` |
+   | Recurring Bills | native · 1 | `list_recurring_bills` |
+
+   After each client navigation none of the previous page's tools may be left in the list
+   (`webmcp-tools.md` §7, WM-Q3 (a)). Call each page's `list_*` tool with `{}`: its structured
+   content is the page's list plus `currency: "USD"` and `unit: "cents"`. Call `delete_budget`
+   (or `delete_pot`) with an existing id: the page's own confirmation dialog opens and nothing
+   changes until it is confirmed (US-40 AC2) — cancel it. The add, edit and money tools are not
+   called here; CI covers them in polyfill mode (`write-path.md` 7.6).
 
 ## Record (fill in after each run)
 
 | Date | Chrome version | Flag or OT token | Indicator on Overview | Tools listed | Both calls returned | Notes |
 | ---- | -------------- | ---------------- | --------------------- | ------------ | ------------------- | ----- |
 |      |                |                  |                       |              |                     |       |
+
+Release 2 (step 8), one row per run:
+
+| Date | Chrome version | Indicator and tools match the table, every page | No tools left after navigation | Each `list_*` returned | `delete_*` stopped at the dialog | Notes |
+| ---- | -------------- | ----------------------------------------------- | ------------------------------ | ---------------------- | -------------------------------- | ----- |
+|      |                |                                                 |                                |                        |                                  |       |

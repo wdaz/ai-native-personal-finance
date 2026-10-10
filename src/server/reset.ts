@@ -6,15 +6,18 @@ import { seedRows, type SeedRows } from "./seed";
 /**
  * SPEC-reset-and-test-support §2.1: "truncates all tables" — every model of
  * prisma/schema.prisma and nothing else, so Prisma's `_prisma_migrations` survives.
- * tests/unit/reset.test.ts holds this list to the schema.
+ * tests/unit/reset.test.ts holds this list to the schema. `TRUNCATE` locks the tables in this
+ * order, so `Pot` comes before `Balance`: a pot move or deletion locks its pot row, then the
+ * balance row, and the same order here means a reset waits for it instead of deadlocking (T-25).
  */
 export const RESET_TABLES = [
+  "Pot",
   "Balance",
   "Transaction",
   "Budget",
-  "Pot",
   "ResetLog",
   "LoginAttempt",
+  "WriteAttempt",
 ] as const;
 
 /** SPEC-reset-and-test-support §4: "reset never runs concurrently". */
@@ -27,7 +30,7 @@ export type ResetResult = { at: Date; rows: number };
  * write the `ResetLog` row. `at` is filled by Prisma's runtime from the server's clock when
  * the row is created (`@default(now())`) — operational time, not the fixed business clock —
  * so this module itself reads no clock (ADR-0005). `rows` counts the seed rows inserted;
- * `LoginAttempt` is emptied by the truncation.
+ * `LoginAttempt` and `WriteAttempt` are emptied by the truncation (SPEC-write-path 2.10).
  */
 export async function resetToSeed(
   db: Db,

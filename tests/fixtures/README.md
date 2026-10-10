@@ -31,3 +31,7 @@ T-13c: `css-grid/` — two `.css.fixture` files for TD-9's Stylelint rule, a vio
 hands their text to the linter). `fonts.ts` — `fontProblems` (TD-11): the checks of `app/fonts/`
 that `tests/unit/fonts.test.ts` runs on the real directory and on broken copies. `boundaries/`
 gains the `next/font/google` violation and the `next/font/local` control.
+
+T-17: `route-table.ts` — `routeTableViolations`, `handlersOf` and `apiRouteFiles`, the reading of
+`app/api/**/route.ts` that SPEC-write-path 7.4's guard (`tests/unit/route-table.test.ts`) runs on
+the real routes; `route-table/` — one route file breaking each rule, and the control.

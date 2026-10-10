@@ -7,9 +7,10 @@ import { BottomNav } from "./BottomNav";
 import { ResetBanner } from "./ResetBanner";
 import { recheckSessionOnRestore } from "./session-recheck";
 import { Sidebar } from "./Sidebar";
+import { MAIN_CONTENT_ID } from "./main-content";
 import styles from "./Shell.module.css";
 
-export const MAIN_CONTENT_ID = "main-content";
+export { MAIN_CONTENT_ID } from "./main-content";
 
 /**
  * The frame of every authenticated page (SPEC-app-shell §2): "Skip to content" first (§2.8),

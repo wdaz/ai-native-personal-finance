@@ -1,0 +1,76 @@
+/*
+ * SPEC-ui-kit 2.10: a 16 px theme dot. Each of the 15 themes gets its own attribute-selector rule
+ * against the colour tokens, as `ThemeBar.module.css` does (no inline `style`, ADR-0006).
+ */
+.swatch {
+  display: inline-block;
+  flex-shrink: 0;
+  inline-size: var(--spacing-200);
+  block-size: var(--spacing-200);
+  border-radius: 50%;
+}
+
+/* 2.6 (UK-Q4, the designer's changelog §12a): the swatch alone, not the option's text. */
+.unavailable {
+  opacity: var(--opacity-unavailable);
+}
+
+.swatch[data-theme="Green"] {
+  background: var(--color-green);
+}
+
+.swatch[data-theme="Yellow"] {
+  background: var(--color-yellow);
+}
+
+.swatch[data-theme="Cyan"] {
+  background: var(--color-cyan);
+}
+
+.swatch[data-theme="Navy"] {
+  background: var(--color-navy);
+}
+
+.swatch[data-theme="Red"] {
+  background: var(--color-red);
+}
+
+.swatch[data-theme="Purple"] {
+  background: var(--color-purple);
+}
+
+.swatch[data-theme="Turquoise"] {
+  background: var(--color-turquoise);
+}
+
+.swatch[data-theme="Brown"] {
+  background: var(--color-brown);
+}
+
+.swatch[data-theme="Magenta"] {
+  background: var(--color-magenta);
+}
+
+.swatch[data-theme="Blue"] {
+  background: var(--color-blue);
+}
+
+.swatch[data-theme="Navy Grey"] {
+  background: var(--color-navy-grey);
+}
+
+.swatch[data-theme="Army Green"] {
+  background: var(--color-army-green);
+}
+
+.swatch[data-theme="Gold"] {
+  background: var(--color-gold);
+}
+
+.swatch[data-theme="Orange"] {
+  background: var(--color-orange);
+}
+
+.swatch[data-theme="Pink"] {
+  background: var(--color-pink);
+}

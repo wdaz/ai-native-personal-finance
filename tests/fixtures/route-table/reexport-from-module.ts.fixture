@@ -1,0 +1,3 @@
+// route: app/api/pots/route.ts — a write handler re-exported from another module, which the guard
+// cannot read and so refuses (7.4 rule 2).
+export { POST } from "./impl";

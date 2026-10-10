@@ -1,0 +1,12 @@
+Violation fixture (tests/unit/seed-figures.test.ts): Highest's $100.00 tie broken by the design's old list order, Spark Electric Solutions before Aqua Flow Utilities, not by name A to Z (§9 RB-Q8 (a)).
+
+**4.3 Each sort, all 8 rows** (output.txt "SORTS"):
+
+| Sort | Order |
+|---|---|
+| Latest | Spark Electric Solutions (2nd), Serenity Spa & Wellness (3rd), Elevate Education (4th), Pixel Playground (11th), Nimbus Data Storage (21st), ByteWise (23rd), EcoFuel Energy (29th), Aqua Flow Utilities (30th) |
+| Oldest | Aqua Flow Utilities, EcoFuel Energy, ByteWise, Nimbus Data Storage, Pixel Playground, Elevate Education, Serenity Spa & Wellness, Spark Electric Solutions |
+| A to Z | Aqua Flow Utilities, ByteWise, EcoFuel Energy, Elevate Education, Nimbus Data Storage, Pixel Playground, Serenity Spa & Wellness, Spark Electric Solutions |
+| Z to A | Spark Electric Solutions, Serenity Spa & Wellness, Pixel Playground, Nimbus Data Storage, Elevate Education, EcoFuel Energy, ByteWise, Aqua Flow Utilities |
+| Highest | Spark Electric Solutions ($100.00), Aqua Flow Utilities ($100.00), Elevate Education ($50.00), ByteWise ($49.99), EcoFuel Energy ($35.00), Serenity Spa & Wellness ($30.00), Pixel Playground ($10.00), Nimbus Data Storage ($9.99) |
+| Lowest | Nimbus Data Storage, Pixel Playground, Serenity Spa & Wellness, EcoFuel Energy, ByteWise, Elevate Education, Aqua Flow Utilities, Spark Electric Solutions |

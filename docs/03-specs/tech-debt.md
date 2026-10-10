@@ -1,6 +1,15 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.27 — 2026-09-29: **TD-22** opened by T-15a, the owner's decision of
+Status: **Approved** (v1.29 — 2026-10-05: **TD-24** opened, the owner's decision at T-15d (Task S1b,
+`ui-kit.md` v0.8, its select fields since v0.8.2, PR #92, whose merge approves this amendment): Release 2's forms
+keep Release 1's validation timing — a field's message stays until the next blur or submit, a select field's blur
+being focus leaving the field as a whole — where the design first cleared it as soon as the person typed (the
+designer's changelog §13a, and §16a as first written; `ui-kit.md` v0.8.3 found §16a since redrawn, "Release 1
+behaviour", to keep a message while the person types); clearing on typing, and on a new choice in a select field
+(`ui-kit.md`'s reading), is fixed after all releases are finished; nothing else in the file changes; v1.28 — 2026-10-03: **TD-23** opened, the owner's decision at the T-15c plan's Q7:
+`npm audit` read 10 on `develop` — 1 critical in `next`, fixed by PR #80, and 9 high that are one `braces`
+advisory with no patched release; recorded as a debt fixed with the others at the end, sooner if the same
+case repeats; nothing else in the file changes; v1.27 — 2026-09-29: **TD-22** opened by T-15a, the owner's decision of
 2026-09-26 (backlog v1.48, T-15's hand-off item 5): the `deepmerge-ts`/`mysql2` `overrides` stay until
 a stable Prisma release no longer pins the vulnerable versions; re-measured the same day, without them
 `npm audit` reads 4 high; nothing else in the file changes; v1.26 — 2026-09-26: NFR-D4's cold-start note is written, on the owner's word
@@ -72,6 +81,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Closed** (PR #64, on its merge) | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
 | TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — kept as a documented exception (owner, 2026-09-26) | T-14 (8.6) |
 | TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | nobody yet; moved from T-16 (backlog v1.48) |
+| TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) | nobody yet |
+| TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option | **Open** — fixed after all releases are finished (owner, 2026-10-05) | nobody yet |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -1004,3 +1015,109 @@ of protected pages on Vercel
   - Repeat the scratch check above: without the overrides, the audit must read 0.
   - Then remove both `overrides` and the two `"//"` lines that explain them, in the same pull request.
 - **Picked up by:** nobody yet.
+
+## TD-23 — `braces` ≤ 3.0.3 has an advisory and no patched release; three dev tools pull it in
+
+- **Found:** 2026-10-03, by the T-15c planning session: `npm ci --ignore-scripts`, then `npm audit`, on
+  `origin/develop` `110c9bc` read 10 vulnerabilities, 1 critical and 9 high. The critical one, in `next`,
+  was fixed by PR #80 (`next` 16.3.8, merged as `0f07f31`). The nine high are **one advisory**,
+  GHSA-vfj7-8cjw-p6xm: `braces` ≤ 3.0.3, stack exhaustion on deeply nested brace patterns. `npm audit`
+  lists it once on each package that depends on `braces`: `braces`, `micromatch`, `fast-glob`, `globby`,
+  `@boundaries/elements`, `eslint-plugin-boundaries`, `@next/eslint-plugin-next`, `eslint-config-next`
+  and `stylelint`. TD-22's re-measure of 2026-09-29 read only the three Prisma advisories, so this one is
+  newer than that; its publication date was not looked up.
+- **Path:** `micromatch` 4.0.8 depends on `braces` `^3.0.3` (`npm view micromatch@latest`, which is 4.0.8).
+  `npm ls braces` shows `eslint-plugin-boundaries` → `micromatch` → `braces`; `npm audit` reports
+  `eslint-config-next` through `@next/eslint-plugin-next` and `fast-glob`, and `stylelint` through
+  `fast-glob` and `globby`.
+- **Why there is no fix:** `npm view braces dist-tags` reads `latest` `3.0.3` (the package was last modified
+  2024-09-18), and the advisory's range covers it, so no unaffected `braces` release exists on the registry
+  today. An `overrides` entry, as TD-22 uses, has no version to name. `npm audit` itself offers only "fix
+  available via `npm audit fix --force`" with "Will install eslint-plugin-boundaries@1.1.1, which is a
+  breaking change" (its text on 2026-10-03; the command was not run).
+- **Owner decision:** 2026-10-03, T-15c plan Q7 (a): record it as tech debt. In the owner's words: "bütün
+  tech-deptlər (sic) sonra fix olur. istisna o vaxt yaranır ki, eyni hal təkrarlansın. Onda fix edirik." ("All
+  tech debts are fixed later. An exception arises when the same case repeats. Then we fix it.") So this
+  entry is fixed with the other debts when the project is finished, and sooner if the same case repeats.
+- **Risk:** low. It is development tooling only: `npm ls braces --omit=dev` prints `(empty)`, and the three
+  tools are in `devDependencies`. The patterns they pass to `braces` come from this repository's own
+  configuration and files, not from a request. The effect would be a lint or format run that exhausts the
+  stack, not a data exposure.
+- **Guarded meanwhile by:** the CI job `npm audit`, whose step "npm audit (high and critical, reported, not
+  blocking)" shows the advisory as a warning and does not fail the run. The owner's rule that `npm audit`
+  stays at 0 cannot hold while this entry is open; TD-22's overrides were the way to keep it at 0, and this
+  advisory has none.
+- **Trigger:** the same case repeating (the owner's rule above). The agent reads that as: a patched `braces`
+  (above 3.0.3) is published; or a second advisory arrives through the same chain; or one of the three
+  tools publishes a release that no longer needs `micromatch`. The agent's reading, not the owner's
+  definition. The check is `npm view braces version` and `npm audit`.
+- **Fix:**
+  - If a patched `braces` exists: `npm update braces micromatch` in its own pull request, then `npm audit`
+    must read 0.
+  - If not, and a tool's newer release drops `micromatch`: upgrade that tool, one tool per pull request.
+  - Otherwise: replace the tool that brings it in, or add an `overrides` entry if a patched release
+    appears.
+  - Mark this entry **Closed** with the date and the PR.
+- **Picked up by:** nobody yet; fixed with the other tech debts when the project is finished (owner).
+
+## TD-24 — Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types or chooses a new option
+
+- **Found:** 2026-10-05, T-15d Task S1b (`ui-kit.md`, PR #92). The designer's changelog §13a ("Editing a field clears
+  its message") and §16a ("When the field error clears: current design kept": "The message clears as soon as the user
+  types in the field"; "Amend the spec to match") have a field's message removed as soon as the person types in that
+  field; in the design's prototype each field's `onChange` deleted that field's error. `ui-kit.md` v0.7 applied it to
+  Release 2's forms; the owner set it aside the same day (v0.8). Re-read 2026-10-05 for `ui-kit.md` v0.8.3: §16a now
+  records the owner's decision ("When the field error clears: Release 1 behaviour"; "the error stays while typing. It
+  is re-checked on the next blur or submit"), and the prototype's `updateModal()` no longer deletes the errors
+  (`blurField()` re-checks the Pot Name and amount fields on blur, a field already showing a message only); its Budget
+  Category and Theme fields have no message at all, and a choice in them only sets the value. So the live design no
+  longer clears a message on typing, though it gives a field that shows none no message on blur (`ui-kit.md` 2.11);
+  this entry keeps the owner's target as recorded.
+- **Owner decision:** 2026-10-05, on PR #92, in two lines, in this order: "hazırda form qərarları dəyişirmir. Release 1
+  uyğun davam et" ("form decisions do not change now; continue in line with Release 1"), and "mesaj yazan kimi
+  təmizlənir -bunu tech dept olaraq qeyd et. fix-i bütün releaselər bitəndən sonra" ("'the message clears as soon as
+  the user types' — record this as tech debt; its fix after all releases are finished"). Consistent with the T-15c
+  plan's Q7 rule (TD-23): debts are fixed at the end.
+- **What:** every form keeps Release 1's validation timing (`auth.md`, "Timing (US-31 AC1)"): a field is checked on blur
+  once it has been touched (focused and left) and every field on submit; a message, once shown, stays until the field
+  is checked again at its next blur or at submit, and typing does not clear it. Release 2's forms follow the same rule
+  by the owner's decision (`ui-kit.md` 2.5 — the amount fields, the select fields of 2.6 (a choice does not clear a
+  message; their blur is focus leaving the field as a whole, a `focusout` whose `relatedTarget` is outside the wrapper
+  holding the trigger and its listbox, so opening the menu, moving the highlight, choosing by key or by click, Escape
+  and closing the menu by a click on its trigger are not a blur) and `pots.md`'s Pot Name — and the forms of
+  `budgets.md` and `pots.md` that cite it). The eventual target, the rule the design first drew (§13a, §16a as first
+  written): a field's message and its `aria-invalid` go away as soon as the person types in that field — and, in
+  `ui-kit.md`'s reading (the design has no select message to clear), as soon as the person chooses a new option in a
+  select field; typing never shows a message; the blur and submit checks of US-31 AC1 stay. `ui-kit.md` 2.11 lists
+  the difference, citing this entry.
+- **Where it applies:** `src/ui/Field.tsx` (uncontrolled; its form decides when it is checked) and the forms that check
+  it — today `app/(auth)/login/LoginForm.tsx` and `app/(auth)/signup/SignupForm.tsx` (`validateOnBlur`, and the submit
+  handler); `ui-kit.md` 2.5, 2.6, §3 and §7 and the Budgets and Pots forms built from them; `auth.md`'s login and sign-up
+  forms ("Timing (US-31 AC1)"). At fix time, every form of every release, so the app keeps one rule.
+- **Risk:** low — a difference from the design, not a defect. US-31 AC1 is met either way. A person who corrects a field
+  still sees the old message until they leave the field or submit, which may read as if the correction was not taken.
+  Nothing reaches data or the server.
+- **Guarded meanwhile by:** today's rule is the code's (`LoginForm`, `SignupForm`); `tests/e2e/login.spec.ts` checks
+  the messages on blur and on submit, `signup.spec.ts` on submit; neither checks what typing does. `ui-kit.md` §7's
+  `AmountField` and `SelectField` rows pin the rule for Release 2's forms once they are built (typing or a choice does
+  not clear a message, and opening and closing a select's menu neither shows nor clears one; the next blur or submit
+  checks again); those assertions change with the fix.
+- **When:** after all releases are finished (the owner's word), with the other open debts.
+- **Fix:**
+  - One rule for every form at once: the first input in a field that shows a message — or a new choice in a select
+    field — removes the message and `aria-invalid` and empties the live region; typing never shows a message; the
+    blur and submit checks stay.
+  - Amend `auth.md` "Timing (US-31 AC1)" and `ui-kit.md` 2.5, 2.6, §3, §7 (and any later form spec) to say so, and
+    amend `ui-kit.md` 2.11's row (keep the blur difference it still lists; record any difference the re-read design
+    then shows) — each an amendment the owner approves by merging.
+  - Re-read the designer's live source first: as re-read for `ui-kit.md` v0.8.3, §16a is titled "Release 1 behaviour"
+    and keeps a message while the person types — not this target — so the owner confirms the target (with the
+    designer) before the fix.
+- **How it will be verified:**
+  - Component tests, failing first on today's code: typing in a field with a message, or choosing a new option in a
+    select field with one, removes the message and `aria-invalid` at once and shows none while typing; an invalid value typed after that shows nothing until the next
+    blur or submit, which shows the new result; a server `issues` message is cleared by typing the same way.
+  - E2E on the login, sign-up, Budgets and Pots forms, on Chromium, Firefox and WebKit: a message is gone as soon as the
+    person types in its field, and the next blur or submit shows it again for an invalid value.
+  - Mark this entry **Closed** with the date and the PR.
+- **Picked up by:** nobody yet; after all releases are finished (owner, 2026-10-05).

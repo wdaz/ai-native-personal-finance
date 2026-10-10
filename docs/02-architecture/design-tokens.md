@@ -1,6 +1,6 @@
 # Design tokens
 
-Status: **Approved** (v1.4 — 2026-09-24: Public Sans is served by `next/font/local` from committed files, TD-11, owner decision "a"; v1.3 — 2026-09-23: the close-circle icon, T-08; v1.2 — 2026-09-23: app shell tokens and the sign-out icon, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
+Status: **Approved** (v1.8 — 2026-10-10: T-26, hand-off H16 (3): a "Pots" table with `--spacing-bar-text`, `--spacing-25` and `--duration-preview` (the designer's changelog §19c, §19d, §25c; SPEC-pots PO-Q6 (a), PO-Q10 (a)); `--radius-50` and `--duration-progress` came with T-24; approved by its pull request's merge under the owner's Release 2 delegation; v1.7 — 2026-10-10: T-24, hand-off H15 (3): a "Budgets and Pots" table with `--radius-50`, `--color-divider-on-beige` and `--duration-progress` (SPEC-budgets §9 BU-Q4 (a), BU-Q7 (a); the designer's changelog §18a–§18c), approved by its pull request's merge under the owner's Release 2 delegation; v1.6 — 2026-10-10: T-22, hand-off H13 (3) and (6): a "Modals and forms" table with `--color-backdrop`, `--modal-max-width`, `--action-menu-width`, `--field-menu-max-height` and `--duration-modal`, an "Opacity" table with `--opacity-unavailable` (SPEC-ui-kit §9 UK-Q4 (a); the designer's changelog §10, §12a), the destroy button's and the "…" menu Delete item's hover (UK-Q5 (a); the designer's changelog §11), and the `dots-three-outline` icon copied from the designer's export; approved by its pull request's merge under the owner's Release 2 delegation; v1.5 — 2026-10-10: T-19, hand-off H11 (2), (6)–(8): a "Shadow" table with `--shadow-popover` and the owner's note (SPEC-transactions §9 Q2), `--duration-popover` and `--filter-menu-max-height` (the designer's changelog §10, §12b), beige-500 for borders only (the designer's changelog §8a), and the Transactions toolbar's and pagination's five icons, copied from the designer's export; approved by the owner's merge of its pull request; v1.4 — 2026-09-24: Public Sans is served by `next/font/local` from committed files, TD-11, owner decision "a"; v1.3 — 2026-09-23: the close-circle icon, T-08; v1.2 — 2026-09-23: app shell tokens and the sign-out icon, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
 Changelog: v1.4 (2026-09-24, T-13c, owner decision "a" on TD-11) — the Typography section names
 `next/font/local` instead of `next/font/google`. The Google loader downloads the font while
 `next build` runs, and a Google Fonts outage failed CI builds (PR #36). The two files, their
@@ -19,7 +19,7 @@ Source: `../00-discovery/inputs/design/style-guide.html` (Claude Design export o
 
 | Token | Name | HEX | RGB | Use |
 |-------|------|-----|-----|-----|
-| `--color-beige-500` | Beige 500 | `#98908B` | 152, 144, 139 | input borders, placeholder text |
+| `--color-beige-500` | Beige 500 | `#98908B` | 152, 144, 139 | input and control borders only — never text, never under white text (3.14:1; placeholders are grey-500, the designer's changelog §8a) |
 | `--color-beige-100` | Beige 100 | `#F8F4F0` | 248, 244, 240 | page background, secondary button |
 | `--color-grey-900` | Grey 900 | `#201F24` | 32, 31, 36 | primary text, sidebar, primary button |
 | `--color-grey-500` | Grey 500 | `#696868` | 105, 104, 104 | secondary text |
@@ -117,10 +117,67 @@ Source: the design export, read 2026-09-23 at the T-07 plan gate — the sidebar
 | `--duration-sidebar` | 200ms | sidebar width and caret transition |
 | `--duration-hover` | 150ms | colour transition on navigation items and controls |
 
+## Menus and popovers (v1.5)
+
+Source: SPEC-transactions 2.8 (v1.0.14, v1.0.15) and the designer's changelog §10 ("Layout and motion tokens (UK-Q4)") and §12b; added by T-19 (hand-off H11 (7), (8)).
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--duration-popover` | 150ms | a menu panel's fade-in (`fadeIn .15s ease`); never for colour changes, which use `--duration-hover` |
+| `--filter-menu-max-height` | 360px | the Category filter menu's panel, which scrolls past it |
+
+## Shadow (v1.5)
+
+Source: the prototype's popover panels and the designer's style guide of 2026-10-04 ("Shadow", the designer's changelog §5); the owner's answer to SPEC-transactions §9 Q2. Added by T-19 (hand-off H11 (2)).
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--shadow-popover` | `0 4px 24px rgba(0, 0, 0, 0.25)` | for popovers and dropdown menus only — not for cards or modals (cards are flat; a modal is set apart by its dark backdrop): the Sort by and Category menus and the pot "…" menu |
+
+## Modals and forms (v1.6)
+
+Source: SPEC-ui-kit §9 UK-Q4 (a), the owner's answer of 2026-10-05 taken from the designer's project — the designer's changelog §10, "Layout and motion tokens (UK-Q4)", and the style guide's "Layout & Motion Tokens"; a token named for another use is never reused, even where the number matches (`--auth-card-max-width`, `--sidebar-width`, `--duration-sidebar`, `--duration-hover`). Added by T-22 (hand-off H13 (3)); `--duration-popover` came with T-19.
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--color-backdrop` | `rgba(0, 0, 0, 0.5)` | the layer behind an open modal |
+| `--modal-max-width` | 560px | a modal's panel, at most |
+| `--action-menu-width` | 134px | the Budgets and Pots "…" menu's panel |
+| `--field-menu-max-height` | 300px | a form's Theme or Budget Category options panel, which scrolls past it |
+| `--duration-modal` | 200ms | a modal's fade-in |
+
+## Opacity (v1.6)
+
+Source: the designer's changelog §12a (SPEC-ui-kit §9 UK-Q4's last part, answered (a)). Added by T-22 (hand-off H13 (3)).
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--opacity-unavailable` | 0.25 | the theme swatch of an "Already used" option — the swatch alone; its label stays grey-500 and says "Already used" (not Overview's donut tint, a `color-mix`) |
+
+## Budgets and Pots (v1.7)
+
+Source: SPEC-budgets §9 BU-Q4 (a) and BU-Q7 (a) (= `pots.md` PO-Q10, PO-Q6), the owner's answers of 2026-10-06, with the names the designer's changelog confirms — §18a (`--radius-50`), §18b (`--color-divider-on-beige`), §18c (`--duration-progress`, `ease`). Added by T-24 (hand-off H15 (3)); Pots uses `--radius-50` and `--duration-progress` too (T-26).
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--radius-50` | 4px | a progress bar's track and fill (the Budgets card's bar, the Pots card's bar) |
+| `--color-divider-on-beige` | `rgba(105, 104, 104, 0.15)` | the divider between rows on a beige-100 panel (a budget card's Latest Spending): grey-500 at 15 % |
+| `--duration-progress` | 400ms | a progress bar's width and a donut segment's length moving after a change, `ease`; none under `prefers-reduced-motion: reduce` |
+
+## Pots (v1.8)
+
+Source: the designer's changelog §19c (PO-3), §19d (PO-4) and §25c, approved by the owner on 2026-10-10; SPEC-pots 2.2, 2.6, 2.11 (PO-Q6 (a), PO-Q10 (a)). Pots only; added by T-26 (hand-off H16 (3)). The Pots card's bar uses `--radius-50` and `--duration-progress` from the table above. Nothing animates under `prefers-reduced-motion: reduce`.
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--spacing-bar-text` | 13px | a pot's bar to its text row, and the money modal's preview (Budgets keeps 16 px, §25c) |
+| `--spacing-25` | 2px | the money modal preview's two segments apart |
+| `--duration-preview` | 300ms | the money modal preview's segments, `ease` |
+
 ## Icons
 
-Phosphor Icons (27 used, listed in the style guide, plus `sign-out` (fill) added by T-07 as a project addition — the design has no logout control; MIT-licensed, taken from `github.com/phosphor-icons/core`: arrow-fat-lines-left, arrows-down-up, barbell, book-open-text, caret-down/right/up, chart-donut, check-circle, dots-three-outline, eye, eye-slash, filter, house, jar-fill, list-bullets, magnifying-glass, music-note, network, potted-plant, receipt, shield-plus, sort, video, warehouse, warning-circle, wrench). The five navigation icons and the minimise caret are the challenge's starter SVGs (`icon-nav-*.svg`, `icon-minimize-menu.svg`), the same Phosphor glyphs. `close-circle` (T-08) is the prototype's own modal close control, drawn inline in `app-prototype.html` and not among the 27, reused for the reset banner's dismiss button. `jar-fill` (T-10) is the Pots card's left tile (SPEC-overview §2.3), fetched from `github.com/phosphor-icons/core`'s own `assets/fill/jar-fill.svg` — the real Phosphor asset the design already names, rather than a substitute drawn without the (unavailable to this session) design export. Inlined as SVG components in `src/ui/icons/` with `aria-hidden` unless interactive.
+Phosphor Icons (27 used, listed in the style guide, plus `sign-out` (fill) added by T-07 as a project addition — the design has no logout control; MIT-licensed, taken from `github.com/phosphor-icons/core`: arrow-fat-lines-left, arrows-down-up, barbell, book-open-text, caret-down/right/up, chart-donut, check-circle, dots-three-outline, eye, eye-slash, filter, house, jar-fill, list-bullets, magnifying-glass, music-note, network, potted-plant, receipt, shield-plus, sort, video, warehouse, warning-circle, wrench). The five navigation icons and the minimise caret are the challenge's starter SVGs (`icon-nav-*.svg`, `icon-minimize-menu.svg`), the same Phosphor glyphs. `close-circle` (T-08) is the prototype's own modal close control, drawn inline in `app-prototype.html` and not among the 27, reused for the reset banner's dismiss button. `jar-fill` (T-10) is the Pots card's left tile (SPEC-overview §2.3), fetched from `github.com/phosphor-icons/core`'s own `assets/fill/jar-fill.svg` — the real Phosphor asset the design already names, rather than a substitute drawn without the (unavailable to this session) design export. `sort`, `filter`, `magnifying-glass`, `caret-down` and `caret-right` (T-19) are copied from the designer's Claude Design export (`components/icons/icon-data.js`, read 2026-10-10), the glyphs `Finance App.dc.html` draws: the Transactions page's mobile Sort and Category triggers, its search field, its menu triggers and its pagination (Prev is `caret-right` turned 180°, as the design draws it). `dots-three-outline` (T-22) is copied from the same export, the Budgets and Pots "…" button. Inlined as SVG components in `src/ui/icons/` with `aria-hidden` unless interactive.
 
 ## Component states (style guide)
 
-Buttons: primary (grey-900 → grey-500 on hover), secondary (beige-100 → white with beige-500 border on hover), tertiary (text + caret, grey-500 → grey-900), destroy (red → red at 80 % opacity). Inputs: default beige-500 border, hover grey-500, active/focus grey-900 border, filled grey-900 text; helper text preset-5 grey-500 right-aligned; error text preset-5 red. Focus indicator (project addition, NFR-A2): 2px `--color-grey-900` outline with 2px offset on light surfaces, `--color-white` on the sidebar.
+Buttons: primary (grey-900 → grey-500 on hover), secondary (beige-100 → white with beige-500 border on hover), tertiary (text + caret, grey-500 → grey-900), destroy (red; on hover the background stays red and the text is underlined, `text-underline-offset: 3px`, with no transition — v1.6, SPEC-ui-kit §9 UK-Q5 (a), the designer's changelog §11). A pending button (`aria-disabled="true"`) shows no hover, like a disabled one. The "…" menu's Delete item (v1.6): red, on hover still red and underlined (offset 3px), with no transition. Inputs: default beige-500 border, hover grey-500, active/focus grey-900 border, filled grey-900 text; helper text preset-5 grey-500 right-aligned; error text preset-5 red. Focus indicator (project addition, NFR-A2): 2px `--color-grey-900` outline with 2px offset on light surfaces, `--color-white` on the sidebar.

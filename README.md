@@ -110,7 +110,7 @@ positive is exempted by an allowlist in `.gitleaks.toml`, which is reviewed and 
 | `npm run secrets:scan`        | Gitleaks on all commit diffs and messages, inline `gitleaks:allow` ignored — first in `test:all`                 |
 | `npm test`                    | Vitest — `tests/unit`                                                                                            |
 | `npm run test:coverage`       | `npm test` with the coverage gate: at least 90 % of statements in `src/domain` (`vitest.thresholds.json`)        |
-| `npm run traceability`        | Every Release 1 story id (`docs/03-specs/release-1-stories.txt`) is named in a test title (NFR-T2)               |
+| `npm run traceability`        | Every story id of the release being built and of the releases before it (`docs/03-specs/release-<n>-stories.txt`) is named in a test title (NFR-T2) |
 | `npm run test:api`            | Playwright request-context tests — `tests/api`, one worker, against the app with `APP_ENV=test` and the database |
 | `npm run db:reset`            | `prisma migrate deploy`, then the seed (`prisma/seed.ts`); refuses a non-local `DATABASE_URL` first (TD-10)      |
 | `npm run db:drift`            | `prisma migrate diff`, migrated database vs `prisma/schema.prisma`; exit 2 on drift, also run by `test:api`      |
@@ -151,11 +151,13 @@ characters. Use a throwaway password, never one you use anywhere else: the login
 **Live demo:** <https://personal-finance-cyan-kappa.vercel.app> — log in with the demo credentials
 the login page shows (public by design, NFR-S1); the demo data resets every 10 days.
 
-The app deploys to Vercel (Hobby, region `fra1`) with its database on Neon in Frankfurt; a merge
-to `main` deploys production, and every pull request gets a preview on its own Neon branch
-(ADR-0007). Migrations run in the Vercel build through Neon's direct connection
-(`DATABASE_URL_UNPOOLED`, `vercel.json`). Setting up, seeding, rotating secrets, the origin-trial
-token and rolling back are in the runbook, `docs/04-process/runbooks/deploy.md`.
+The app deploys to Vercel (Hobby, region `fra1`) with its database on Neon in Frankfurt. Work
+merges into `develop`; a release (`develop` → `main`) or a hotfix merges into `main`, and that
+merge deploys production. Every pushed branch gets a preview on its own Neon branch (ADR-0007;
+the branch model is in `docs/04-process/governance.md`, "Branches and releases").
+Migrations run in the Vercel build through Neon's direct connection (`DATABASE_URL_UNPOOLED`,
+`vercel.json`). Setting up, seeding, rotating secrets, the origin-trial token, rolling back,
+releases and hotfixes are in the runbook, `docs/04-process/runbooks/deploy.md`.
 
 Never run `vercel env pull`, `neon link` or `neon env pull` inside this checkout: a production
 `DATABASE_URL` in `.env.local` would make `npm run dev` use the production database (the runbook

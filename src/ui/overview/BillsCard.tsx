@@ -1,10 +1,12 @@
+import { COPY } from "@/src/shared/copy";
 import { formatMoney } from "@/src/shared/money";
 import { CardLink } from "./CardLink";
 import styles from "./BillsCard.module.css";
 
 /**
  * SPEC-overview §2.6, §2.7: always three rows (no empty state — a `no-recurring` seed still
- * hands this card three zero amounts, already computed by `src/domain/bills.ts`).
+ * hands this card three zero amounts, already computed by `src/domain/bills.ts`). The three
+ * labels are `COPY`'s (SPEC-recurring-bills 2.15, H14 (1)).
  */
 export function BillsCard({
   paid,
@@ -16,9 +18,9 @@ export function BillsCard({
   dueSoon: number;
 }) {
   const rows = [
-    { key: "paid" as const, label: "Paid Bills", cents: paid },
-    { key: "upcoming" as const, label: "Total Upcoming", cents: upcoming },
-    { key: "dueSoon" as const, label: "Due Soon", cents: dueSoon },
+    { key: "paid" as const, label: COPY.billsPaid, cents: paid },
+    { key: "upcoming" as const, label: COPY.billsTotalUpcoming, cents: upcoming },
+    { key: "dueSoon" as const, label: COPY.billsDueSoon, cents: dueSoon },
   ];
   return (
     <div className={styles.card}>

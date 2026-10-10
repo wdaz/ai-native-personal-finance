@@ -34,3 +34,15 @@ Component as props — plan F1; `app/(app)/overview/layout.tsx` renders it) and 
 (`toolSuccess`, `toolError`, `fromApiOutcome`: the SPEC §2.5 status → error-code mapping and the
 §2.6 result shapes; `defineTool` uses the same `toolError`, and a validation error now carries
 `issues`). SPEC-webmcp-tools v1.0.4.
+
+T-22: `bus.ts` — the in-memory delete bus of SPEC-ui-kit 2.3. A page subscribes one handler per
+kind (`onDeleteRequest("budget" | "pot", …)`, the latest wins); a `delete_*` tool calls
+`runDeleteTool`, which asks the page through `requestDelete` and maps the dialog's outcome
+(`deleted`, `cancelled`, `busy`, `not_found`, or the confirmed request's failure) to a tool
+result. `tool-result.ts` gains the `busy` error code. The tools themselves are T-24's and T-26's.
+
+T-26: `tools/pots.ts` — the six Pots tools of SPEC-pots 2.13 (`list_pots`, `add_pot`, `edit_pot`, `delete_pot`,
+`add_money_to_pot`, `withdraw_from_pot`); each input is the route's schema with `id` added, each write carries
+`X-Via: webmcp`, and `delete_pot` goes through the page's dialog (`runDeleteTool("pot")`). `tools/PotsTools.tsx`
+wraps the four write tools so a success calls `router.refresh()` (2.8); the list is memoized so `WebMcpTools`
+does not re-register on every render.

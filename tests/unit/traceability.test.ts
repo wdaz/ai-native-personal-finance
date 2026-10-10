@@ -1,12 +1,16 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   checkTraceability,
+  cumulativeStoryIds,
   definedStoryIds,
+  listedReleases,
+  RELEASE_BEING_BUILT,
   releaseStoryIds,
   run,
+  storyListPath,
   testSources,
   titleStoryIds,
 } from "@/scripts/traceability";
@@ -43,19 +47,110 @@ const RELEASE_1 = [
   "US-41",
 ];
 
+/** The stories first delivered in Release 2 (PRD §5, v1.3): the four pages, then the mutating tools. */
+const RELEASE_2 = [
+  ...Array.from({ length: 22 }, (_, i) => `US-${String(i + 9).padStart(2, "0")}`),
+  "US-40",
+];
+
+const PRD = read("docs/01-requirements/prd.md");
+
 describe("the release's story list (PRD §5)", () => {
   it("expands the Release 1 'Stories:' sentence, ranges included, and stops before Deferred", () => {
-    expect(releaseStoryIds(read("docs/01-requirements/prd.md"))).toEqual(RELEASE_1);
+    expect(releaseStoryIds(PRD)).toEqual(RELEASE_1);
+    expect(releaseStoryIds(PRD, 1)).toEqual(RELEASE_1);
   });
 
-  it("is what docs/03-specs/release-1-stories.txt holds, one id per line", () => {
-    expect(read("docs/03-specs/release-1-stories.txt")).toBe(`${RELEASE_1.join("\n")}\n`);
+  it("expands the Release 2 'Stories:' sentence: 23 ids, the four pages and the mutating tools", () => {
+    expect(releaseStoryIds(PRD, 2)).toEqual(RELEASE_2);
+    expect(RELEASE_2).toHaveLength(23);
+  });
+
+  it("is what docs/03-specs/release-N-stories.txt holds, one id per line", () => {
+    expect(read(storyListPath(1))).toBe(`${RELEASE_1.join("\n")}\n`);
+    expect(read(storyListPath(2))).toBe(`${RELEASE_2.join("\n")}\n`);
+  });
+
+  it("names the list file by release number", () => {
+    expect(storyListPath(2)).toBe("docs/03-specs/release-2-stories.txt");
   });
 
   it("refuses a PRD with no Release 1 story sentence instead of returning an empty list", () => {
     expect(() => releaseStoryIds("### Release 1\n\nNo list here.\n\n### Release 2\n")).toThrow(
       /Stories:/,
     );
+  });
+
+  it("refuses a release with no story sentence, and says which release", () => {
+    expect(() => releaseStoryIds("### Release 2\n\nNo list here.\n\n### Release 3\n", 2)).toThrow(
+      /Release 2.*Stories:/,
+    );
+  });
+
+  it("ends a release's block at the next release heading, not at Release 2's", () => {
+    const prd = [
+      "### Release 1 — a",
+      "Stories: US-01, US-02. Deferred to Release 2: US-02 AC2.",
+      "### Release 2 — b",
+      "Stories: US-09…US-11, US-40.",
+      "### Release 3 — c",
+      "Stories: US-50.",
+    ].join("\n");
+    expect(releaseStoryIds(prd, 1)).toEqual(["US-01", "US-02"]);
+    expect(releaseStoryIds(prd, 2)).toEqual(["US-09", "US-10", "US-11", "US-40"]);
+    expect(releaseStoryIds(prd, 3)).toEqual(["US-50"]);
+  });
+
+  it("does not read the next release's sentence as a release's own when it has none", () => {
+    // The sentence terminator cannot stop this one: only the block's end keeps Release 2 from US-50.
+    const prd = "### Release 2 — b\nNo list here.\n### Release 3 — c\nStories: US-50.\n";
+    expect(() => releaseStoryIds(prd, 2)).toThrow(/Release 2.*Stories:/);
+    expect(listedReleases(prd)).toEqual([3]);
+  });
+
+  it("ends the last release's block at the next section heading, not at the end of the file", () => {
+    const prd = "### Release 3 — c\nNo new stories.\n\n## 6. Functional\nStories: US-60.\n";
+    expect(() => releaseStoryIds(prd, 3)).toThrow(/Release 3.*Stories:/);
+    expect(listedReleases(prd)).toEqual([]);
+  });
+
+  it("reads `Stories:` only where it starts a line, not in 'User Stories:' mid-sentence", () => {
+    const prd = "### Release 3 — c\nSee the User Stories: US-61 and US-62 for these.\n";
+    expect(() => releaseStoryIds(prd, 3)).toThrow(/Release 3.*Stories:/);
+  });
+
+  it("stops a sentence at 'Deferred' when no full stop comes before it", () => {
+    const prd = "### Release 1 — a\nStories: US-01, US-02 Deferred to Release 2: US-09.\n";
+    expect(releaseStoryIds(prd, 1)).toEqual(["US-01", "US-02"]);
+  });
+
+  it("lists the releases that carry a story sentence: Release 3 has none", () => {
+    expect(listedReleases(PRD)).toEqual([1, 2]);
+  });
+
+  it("is cumulative: the release being built and every one before it, in order, without a repeat", () => {
+    expect(cumulativeStoryIds(PRD, 1)).toEqual(RELEASE_1);
+    const both = cumulativeStoryIds(PRD, 2);
+    expect(both).toEqual([...RELEASE_1, ...RELEASE_2]);
+    expect(both).toHaveLength(41);
+    expect(new Set(both).size).toBe(41);
+    const repeated = [
+      "### Release 1 — a",
+      "Stories: US-01, US-02. Deferred",
+      "### Release 2 — b",
+      "Stories: US-02, US-03.",
+    ].join("\n");
+    expect(cumulativeStoryIds(repeated, 2)).toEqual(["US-01", "US-02", "US-03"]);
+  });
+
+  it("fails closed: the release being built must have its own story sentence", () => {
+    const prd = "### Release 1 — a\nStories: US-01. Deferred\n### Release 2 — b\nNo list yet.\n";
+    expect(() => cumulativeStoryIds(prd, 2)).toThrow(/Release 2.*Stories:.*being built/);
+    expect(cumulativeStoryIds(prd, 1)).toEqual(["US-01"]);
+  });
+
+  it("reads Release 2, being built since T-17 (ADR-0003, clarification 2026-10-04, dated line 2026-10-10)", () => {
+    expect(RELEASE_BEING_BUILT).toBe(2);
   });
 });
 
@@ -211,14 +306,22 @@ describe("testSources and run — against a throwaway repository", () => {
     for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
   });
 
-  /** A repository holding the real PRD and user stories, the given story list and test files. */
-  function repository(list: string[], tests: Record<string, string>): string {
+  /**
+   * A repository holding the real PRD and user stories, the given story lists (Release 1's, then
+   * Release 2's, which is the real one unless a test says otherwise) and test files.
+   */
+  function repository(
+    list: string[],
+    tests: Record<string, string>,
+    list2: string[] = RELEASE_2,
+  ): string {
     const root = mkdtempSync(join(tmpdir(), "traceability-"));
     roots.push(root);
     const files: Record<string, string> = {
       "docs/01-requirements/prd.md": read("docs/01-requirements/prd.md"),
       "docs/01-requirements/user-stories.md": read("docs/01-requirements/user-stories.md"),
-      "docs/03-specs/release-1-stories.txt": `${list.join("\n")}\n`,
+      [storyListPath(1)]: `${list.join("\n")}\n`,
+      [storyListPath(2)]: `${list2.join("\n")}\n`,
       ...Object.fromEntries(Object.entries(tests).map(([path, body]) => [`tests/${path}`, body])),
     };
     for (const [path, body] of Object.entries(files)) {
@@ -249,7 +352,7 @@ describe("testSources and run — against a throwaway repository", () => {
       "unit/all.test.ts": titles(RELEASE_1.filter((id) => id !== "US-41")),
       "e2e/helper.ts": call("test", "US-41 a helper"),
     });
-    expect(run(root)).toMatchObject({
+    expect(run(root, false, 1)).toMatchObject({
       code: 1,
       err: ["traceability: US-41 is named in no test title"],
     });
@@ -257,7 +360,7 @@ describe("testSources and run — against a throwaway repository", () => {
 
   it("exits non-zero and says the list differs from PRD §5 when the list lacks the last story", () => {
     const root = repository(RELEASE_1.slice(0, -1), { "unit/all.test.ts": titles(RELEASE_1) });
-    const result = run(root);
+    const result = run(root, false, 1);
     expect(result.code).toBe(1);
     expect(result.err.join("\n")).toMatch(/differs from PRD §5/);
   });
@@ -266,7 +369,7 @@ describe("testSources and run — against a throwaway repository", () => {
     const root = repository(RELEASE_1, {
       "unit/some.test.ts": `${titles(RELEASE_1.slice(2))}\n${call("test", "US-99 typo")}`,
     });
-    expect(run(root)).toEqual({
+    expect(run(root, false, 1)).toEqual({
       code: 1,
       out: [],
       err: [
@@ -279,28 +382,100 @@ describe("testSources and run — against a throwaway repository", () => {
 
   it("passes, with exit code 0, when every story is named", () => {
     const root = repository(RELEASE_1, { "unit/all.test.ts": titles(RELEASE_1) });
-    expect(run(root)).toEqual({
+    expect(run(root, false, 1)).toEqual({
       code: 0,
       out: ["traceability: all 18 Release 1 stories are named in a test title"],
       err: [],
     });
   });
 
-  it("--write regenerates the list from the PRD", () => {
-    const root = repository([], {});
+  it("--write regenerates every list the PRD has a story sentence for", () => {
+    const root = repository([], {}, []);
     expect(run(root, true).out).toEqual([
       "traceability: wrote 18 ids to docs/03-specs/release-1-stories.txt",
+      "traceability: wrote 23 ids to docs/03-specs/release-2-stories.txt",
     ]);
-    expect(readFileSync(join(root, "docs/03-specs/release-1-stories.txt"), "utf8")).toBe(
-      `${RELEASE_1.join("\n")}\n`,
+    expect(readFileSync(join(root, storyListPath(1)), "utf8")).toBe(`${RELEASE_1.join("\n")}\n`);
+    expect(readFileSync(join(root, storyListPath(2)), "utf8")).toBe(`${RELEASE_2.join("\n")}\n`);
+  });
+
+  it("does not turn red for Release 2 while Release 1 is the one being built", () => {
+    const root = repository(RELEASE_1, { "unit/all.test.ts": titles(RELEASE_1) });
+    expect(run(root, false, 1).code).toBe(0);
+  });
+
+  it("says a missing list file differs from PRD §5, instead of throwing", () => {
+    const root = repository(RELEASE_1, { "unit/all.test.ts": titles(RELEASE_1) });
+    rmSync(join(root, storyListPath(2)));
+    expect(run(root, false, 1)).toEqual({
+      code: 1,
+      out: [],
+      err: [
+        "traceability: release-2-stories.txt differs from PRD §5; run `npm run traceability -- --write`",
+      ],
+    });
+  });
+
+  it("flags a Release 2 list that differs from PRD §5 even while Release 1 is being built", () => {
+    const root = repository(
+      RELEASE_1,
+      { "unit/all.test.ts": titles(RELEASE_1) },
+      RELEASE_2.slice(1),
     );
+    const result = run(root, false, 1);
+    expect(result.code).toBe(1);
+    expect(result.err.join("\n")).toMatch(/release-2-stories\.txt differs from PRD §5/);
+  });
+
+  it("with Release 2 being built, names every Release 2 story that no title names", () => {
+    const named = [...RELEASE_1, "US-11", "US-27", "US-28"];
+    const root = repository(RELEASE_1, { "unit/some.test.ts": titles(named) });
+    const missing = RELEASE_2.filter((id) => !named.includes(id));
+    expect(missing).toHaveLength(20);
+    expect(run(root, false, 2)).toEqual({
+      code: 1,
+      out: [],
+      err: missing.map((id) => `traceability: ${id} is named in no test title`),
+    });
+  });
+
+  it("with Release 2 being built, still requires Release 1's stories", () => {
+    const root = repository(RELEASE_1, { "unit/some.test.ts": titles(RELEASE_2) });
+    const result = run(root, false, 2);
+    expect(result.code).toBe(1);
+    expect(result.err).toEqual(
+      RELEASE_1.map((id) => `traceability: ${id} is named in no test title`),
+    );
+  });
+
+  it("refuses to run for a release being built that has no story sentence (Release 3 has none)", () => {
+    const root = repository(RELEASE_1, { "unit/all.test.ts": titles(RELEASE_1) });
+    expect(() => run(root, false, 3)).toThrow(/Release 3.*Stories:.*being built/);
+  });
+
+  it("--write refuses a release being built that has no story sentence, and writes nothing", () => {
+    const root = repository([], {}, []);
+    expect(() => run(root, true, 3)).toThrow(/Release 3.*Stories:.*being built/);
+    expect(existsSync(join(root, storyListPath(1)))).toBe(true);
+    expect(readFileSync(join(root, storyListPath(1)), "utf8")).toBe("\n");
+  });
+
+  it("with Release 2 being built, passes when all 41 stories are named", () => {
+    const root = repository(RELEASE_1, {
+      "unit/all.test.ts": titles([...RELEASE_1, ...RELEASE_2]),
+    });
+    expect(run(root, false, 2)).toEqual({
+      code: 0,
+      out: ["traceability: all 41 stories of Releases 1–2 are named in a test title"],
+      err: [],
+    });
   });
 });
 
 describe("this repository", () => {
-  it("has a title for every Release 1 story and no undefined id", () => {
+  it("has a title for every story of the release being built and no undefined id", () => {
     const result = checkTraceability({
-      release: RELEASE_1,
+      release: cumulativeStoryIds(PRD, RELEASE_BEING_BUILT),
       defined: definedStoryIds(read("docs/01-requirements/user-stories.md")),
       sources: testSources(repoRoot),
     });

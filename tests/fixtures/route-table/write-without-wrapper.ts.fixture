@@ -1,0 +1,4 @@
+// route: app/api/pots/[id]/route.ts — a write handler that skips guardedWrite (7.4 rule 2).
+export async function PATCH(request: Request): Promise<Response> {
+  return Response.json(await request.json());
+}
