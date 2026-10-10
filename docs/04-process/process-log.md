@@ -7039,3 +7039,10 @@ them too").
   every state §7 names). Copilot errored on each run, so the Opus review is the only one.
   `tests/unit/install-scripts.test.ts` still fails on npm 10 locally; CI runs npm 11.
 - **Next:** T-20 (Recurring Bills, server and API), in the backlog's order.
+
+## Vercel skips agent branches (2026-10-10)
+
+- **Trigger:** the Hobby plan's deployment limit was hit; Vercel answered PR #125 with "Deployment rate limited — retry in 24 hours".
+- **Owner decision:** "2" — stop deploying `claude/*` branches rather than wait or buy Pro.
+- **Change:** `vercel.json` `git.deploymentEnabled` `{ "claude/*": false }`; ADR-0007 amendment 2026-10-10; `vercel-config.test.ts`.
+- **Not verified:** that the pattern is honoured on the live project; the first `claude/*` push after the merge shows it.
