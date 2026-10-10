@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { COPY } from "@/src/shared/copy";
 import { TransactionsCard, type TransactionItem } from "@/src/ui/overview/TransactionsCard";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 const row = (over: Partial<TransactionItem> = {}): TransactionItem => ({
   id: "1",
@@ -47,6 +50,22 @@ describe("TransactionsCard (US-06, SPEC-overview §2.4)", () => {
     render(<TransactionsCard items={[row()]} />);
     expect(screen.getByRole("link", { name: "View All ›" }).getAttribute("href")).toBe(
       "/transactions",
+    );
+  });
+  it("H12 (SPEC-overview v1.4): a name that does not fit is in TruncatedText — a focus stop with its whole text; one that fits is plain", () => {
+    // jsdom has no layout: the widths TruncatedText measures are stubbed.
+    const scroll = vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(300);
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(100);
+    render(<TransactionsCard items={[row({ name: "Savory Bites Bistro" })]} />);
+    const cut = screen.getByText("Savory Bites Bistro").parentElement!;
+    expect(cut.getAttribute("tabindex")).toBe("0");
+    expect(cut.textContent).toBe("Savory Bites Bistro");
+    cleanup();
+
+    scroll.mockReturnValue(100);
+    render(<TransactionsCard items={[row({ name: "Savory Bites Bistro" })]} />);
+    expect(screen.getByText("Savory Bites Bistro").parentElement!.hasAttribute("tabindex")).toBe(
+      false,
     );
   });
 });

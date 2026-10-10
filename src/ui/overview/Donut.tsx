@@ -4,16 +4,20 @@ import { DONUT_RADIUS, DONUT_SIZE, DONUT_STROKE, donutSegments } from "./donut-g
 import { themeVar } from "./theme-color";
 import styles from "./Donut.module.css";
 
-/** SPEC-overview §4.4: the inner ring sits immediately inside the outer one, 8 px wide. */
-const INNER_STROKE = 8;
-const INNER_RADIUS = DONUT_RADIUS - DONUT_STROKE / 2 - 4;
+/**
+ * SPEC-overview §4.4 v1.3 (H18): the inner ring sits flush inside the outer one, 12 px wide,
+ * at radius 78 (96 - 24/2 - 12/2).
+ */
+const INNER_STROKE = 12;
+const INNER_RADIUS = DONUT_RADIUS - DONUT_STROKE / 2 - INNER_STROKE / 2;
 const INNER_SCALE = INNER_RADIUS / DONUT_RADIUS;
 const CENTRE = DONUT_SIZE / 2;
 
 /**
- * SPEC-overview §4.4: an SVG donut with an inner ring at 25 % opacity repeating the same
- * segments. `total` is the caller's own denominator (Donut-geometry.ts's own docs / T-10 plan
- * D3) — usually `budgets.limit`, all budgets, not just the ones in `items`.
+ * SPEC-overview §4.4: an SVG donut with an inner ring repeating the same segments in each
+ * theme colour at 75 % opacity (v1.3, H18 / S45-5 (b); the opacity lives in the CSS).
+ * `total` is the caller's own denominator (`donut-geometry.ts`'s own docs / T-10 plan D3) —
+ * usually `budgets.limit`, all budgets, not just the ones in `items`.
  */
 export function Donut({
   items,
@@ -48,7 +52,7 @@ export function Donut({
             cx={CENTRE}
             cy={CENTRE}
             r={INNER_RADIUS}
-            stroke={`color-mix(in srgb, ${themeVar(segment.theme)} 25%, white)`}
+            stroke={themeVar(segment.theme)}
             strokeWidth={INNER_STROKE}
             strokeDasharray={segment.strokeDasharray
               .split(" ")

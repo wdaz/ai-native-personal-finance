@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { COPY } from "@/src/shared/copy";
 import { PotsCard } from "@/src/ui/overview/PotsCard";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 const pots = [
   { id: "1", name: "Savings", total: 15_900, theme: "Green" as const },
@@ -42,5 +45,19 @@ describe("PotsCard (US-05, SPEC-overview §2.3)", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(screen.getByText("Savings")).toBeTruthy();
     expect(screen.getByText("Concert Ticket")).toBeTruthy();
+  });
+  it("H12 (SPEC-overview v1.4): a name that does not fit is in TruncatedText — a focus stop with its whole text; one that fits is plain", () => {
+    // jsdom has no layout: the widths TruncatedText measures are stubbed.
+    const scroll = vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(300);
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(100);
+    render(<PotsCard total={92_000} items={pots} />);
+    const cut = screen.getByText("Concert Ticket").parentElement!;
+    expect(cut.getAttribute("tabindex")).toBe("0");
+    expect(cut.textContent).toBe("Concert Ticket");
+    cleanup();
+
+    scroll.mockReturnValue(100);
+    render(<PotsCard total={92_000} items={pots} />);
+    expect(screen.getByText("Concert Ticket").parentElement!.hasAttribute("tabindex")).toBe(false);
   });
 });
