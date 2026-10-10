@@ -7023,6 +7023,9 @@ them too").
     what the changelog already decided (§17–§26) and what `transactions.md` 2.6 already decided for
     T-19 (27c makes no new decision), on the owner's thread message above; §28 changes only how the
     pages load their scripts, on the owner's question relayed by the coordinator session.
+  - The designer's changelog §29: below 768 px the Transactions pagination's Prev and Next are 40 × 40
+    px and the items 4 px apart, with at most three numbers, as `transactions.md` 2.7 v1.0.19 (T-19)
+    already decided; drawn, not decided, here.
   - `governance.md` v1.14: the design folder is the design source; the designer agent works on it in
     any session that has it.
   - `.claude/agents/designer.md`: reads and, in apply mode, edits the design folder; no Claude Design
