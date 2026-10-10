@@ -423,8 +423,9 @@ test("US-07 AC1 AC2 donut look (SPEC-overview §4.4 v1.3, H18): inner ring 12 px
 
 /**
  * H12 (SPEC-overview §2.3, §2.4 v1.4; `TruncatedText`, SPEC-transactions 2.9). No seed name is
- * cut at any width from 320 to 1440 px (measured 2026-10-10), so the test narrows a name's own
- * box through `element.style` (CSP-safe) and lets the component's `ResizeObserver` find it cut.
+ * cut at 1440 px, the width this block runs at (measured 2026-10-10), so the test narrows a
+ * name's own box through `element.style` (CSP-safe) and lets the component's `ResizeObserver`
+ * find it cut.
  */
 async function cutName(page: Page, heading: string, name: string) {
   const text = card(page, heading).getByText(name, { exact: true });
