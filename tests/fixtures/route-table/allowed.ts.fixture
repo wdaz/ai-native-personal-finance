@@ -1,0 +1,14 @@
+// route: app/api/pots/[id]/route.ts — the control: GET beside writes that go through
+// guardedWrite, in both export forms.
+import { guardedWrite } from "@/src/server/write";
+
+export async function GET(): Promise<Response> {
+  return Response.json({ pots: [] });
+}
+
+export async function PATCH(request: Request): Promise<Response> {
+  return guardedWrite(request, { now: new Date(), run: async () => ({ kind: "ok", status: 204 }) });
+}
+
+export const DELETE = (request: Request) =>
+  guardedWrite(request, { now: new Date(), run: async () => ({ kind: "ok", status: 204 }) });
