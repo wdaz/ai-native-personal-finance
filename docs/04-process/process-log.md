@@ -7329,7 +7329,7 @@ them too").
 - **Trigger:** the coordinator's brief to build T-26 after T-25's merge (#133).
 - **Prompt(s):** the plan `plans/2026-10-10-T-26.md` raised no question; `pots.md` v0.6, `ui-kit.md`,
   `write-path.md` and `webmcp-tools.md` answered every behaviour.
-- **Produced** (pull request #@@PR@@, `develop`; and #136 first):
+- **Produced** (pull request #139, `develop`; and #136 first):
   - #136: `recurring-bills.md` v0.7.2 — §7's WebMCP row follows WM-Q3 (a), the precondition the backlog names.
   - The six tools and `PotsTools` (`router.refresh()` after a write tool's success); the page, `PotsBoard`,
     `PotCard`, `PotForm`, `MoneyModal`, `PotsError`, the grid's 644 px container query; the strings
