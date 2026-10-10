@@ -6793,6 +6793,50 @@ them too").
   relying on it.
 - **Next:** after the merge, rerun outcome 1's *apply* in a session on the Mac started from `develop`.
 
+---
+
+## 2026-10-10 — Phase 4 (Release 2): hotfix 1 and hotfix 2 — Release 1's production follows the amended documents
+
+- **Phase:** 4 — Specs & plan (Release 2); the Release 2 goal's outcome 0. The code is a Release 1 production
+  fix by the hotfix route (`governance.md`, "Branches and releases").
+- **Participants:** Owner (Ruslan), Agent (Claude, Claude Projects thread "Hotfix 1 və 2"; a Claude Code session
+  on the owner's Mac for the designer agent's read)
+- **Trigger:** the owner asked for the Release 2 goal's outcomes in roadmap order; outcome 0 is the two hotfixes
+  the backlog's "Release 2" notes put before the build.
+- **Prompt(s):** conversational, in the project thread; the designer agent's read and its report:
+  `prompts/2026-10-10-hotfix-2/designer-read.md`.
+- **Produced:**
+  - Hotfix 1: `next` on `main` (#106), the lock-file commit `develop` already carried (#80).
+  - Hotfix 2: the plan `plans/2026-10-10-hotfix-2.md` (#107, with this close-out); `develop` #109 — the
+    `overview.md` v1.4 amendment (2.3, 2.4: names on one line, cut with "…" in `TruncatedText`), H17 (`<main>` a
+    size container, the Overview grid at a 1060 px content width with a 608 px column), H18 (the donut at r 96 / 78,
+    a 12 px inner ring at 0.75, a beige-100 empty ring), `src/ui/TruncatedText.tsx` (`transactions.md` 2.9, built
+    here so T-19 reuses it), and H12's Overview part; `main` #111 — the code and test commits picked with `-x`.
+  - `release-2-handoffs.md` H17 and H18 ticked, H12's Overview part noted; backlog v1.60.
+- **What the agent got right:** measured which seed names are cut in a browser instead of trusting the plan's
+  prediction (F4): none at 1024–1440 px, two at 375 px, so the US-32 walkthroughs read the cut names at run time;
+  ran the API and Chromium E2E suites locally before each push; every repository check was green on both
+  pull requests before they left draft.
+- **What the agent got wrong or missed:** the first measurement ran before hydration and found no cut names;
+  `TruncatedText`'s first version set state in an effect, which the lint rule refused (the open state is now
+  derived); the plan's F4 guessed "Savory Bites Bistro" would be cut at 375 px, and it was not.
+- **Owner changes and reasoning:** chose Q1 (b) over the agent's (a): the amendment rode in #109 as its own first
+  commit, approved with the code by one merge; chose Q2 (b) over (a): the designer agent read the design live
+  before any code (no difference in the donut, the grid or the tooltip; the names needed the amendment H12 named);
+  Q3 (a) as recommended: only code and tests went to `main`.
+- **Disagreements:** none.
+- **Exception to v1.9:** Copilot reviewed #109 up to `5527e30` (its two findings fixed) and then stopped at its
+  weekly rate limit (resets 2026-10-12); the owner chose to take #109 out of draft on that review. #111 carries
+  the same commits. This close-out (#107, Markdown only) has no Copilot review either: the owner chose
+  "Without Copilot" on 2026-10-10, so it leaves draft on green CI. `github-advanced-security` failed on GitHub's side on both pull requests ("model not
+  available"); CodeQL's own analysis was green.
+- **Lessons for the process:** a plan's prediction about layout (which names are cut) is a guess until a browser
+  measures it after hydration; a test that depends on it reads it at run time.
+- **Next:** two questions from the designer agent's read wait on the owner: `overview.md` §2.4's avatar `alt`
+  against the design's `aria-hidden` (a separate amendment), and the designer's fix of stale text in its own
+  sources (applied on the Mac after `/designer-approve`). Then outcome 1, the Release 2 design alignment; T-17
+  waits for it.
+
 ## 2026-10-10 — Phase 4 (Release 2): outcome 1 applied — the designer's decisions recorded, then the specs amended
 
 - **Phase:** 4 — Specs & plan (Release 2); roadmap "Release 2 goal", outcome 1.
@@ -6849,7 +6893,7 @@ them too").
   - #113's two questions: "#113 1a 2a" (and "Hər ikisi") — the five new 2.14 departure rows stay, the two
     stale rows stay removed.
   - Merge order: "#107 əvvəl merge olunacaq" — #107 first; #117, #118 and this pull request, which touch
-    the same files, are rebased on it before they leave draft (`backlog.md` then becomes v1.61).
+    the same files, take `develop` in by a merge after it, before they leave draft (`backlog.md` then becomes v1.61).
 - **Exception to v1.9:** Copilot's review stayed at its weekly rate limit (resets 2026-10-12), and every
   run here ended with "Copilot encountered an error". The owner chose "Onsuz davam" ("go on without
   it"): #112–#119 leave draft once their required CI is green, without Copilot's review, this time
