@@ -1,0 +1,95 @@
+/*
+ * SPEC-budgets 2.4 (BU-10, the designer's changelog §18j): a white card, radius 12, padding 32 px
+ * (24 px 20 px below 768 px); its three parts 20 px apart, the inner group's items 16 px apart.
+ */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-250);
+  min-inline-size: 0;
+  padding: var(--spacing-300) var(--spacing-250);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-200);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-200);
+  min-inline-size: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-grey-900);
+  overflow-wrap: anywhere;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+}
+
+.maximum {
+  margin: 0;
+  color: var(--color-grey-500);
+}
+
+/* Spent and Remaining, each half the width, 16 px apart. */
+.figures {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--spacing-200);
+  margin: 0;
+}
+
+/* A 4 px bar as tall as the block, 16 px before the text. */
+/* The bar (4 px) and a --spacing-200 gap before the text, as the design draws them. */
+.figure {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-50);
+  min-inline-size: 0;
+  padding-inline-start: calc(4px + var(--spacing-200));
+}
+
+/* Holds the bar at the group's full height, out of the text's flow. */
+.pin {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: flex;
+}
+
+.remainingBar {
+  display: block;
+  inline-size: 4px;
+  flex-shrink: 0;
+  border-radius: var(--radius-100);
+  background: var(--color-beige-100);
+}
+
+.label {
+  margin: 0;
+  color: var(--color-grey-500);
+}
+
+.value {
+  margin: 0;
+  color: var(--color-grey-900);
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--spacing-400);
+  }
+}

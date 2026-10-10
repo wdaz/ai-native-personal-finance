@@ -1,0 +1,15 @@
+/*
+ * SPEC-ui-kit 2.2 (UI-6, the designer's changelog §21f): the form's parts 20 px apart (the
+ * fields as one part, the error area, the submit); the fields inside it 16 px apart.
+ */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-250);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+}

@@ -17,6 +17,15 @@ describe("the tool registry (NFR-W3, SPEC-webmcp-tools §3–§4)", () => {
     expect(PAGE_TOOLS.transactions.map((tool) => tool.name)).toEqual(["list_transactions"]);
   });
 
+  it("Budgets registers exactly its four tools (SPEC-budgets 2.13)", () => {
+    expect(PAGE_TOOLS.budgets.map((tool) => tool.name)).toEqual([
+      "list_budgets",
+      "add_budget",
+      "edit_budget",
+      "delete_budget",
+    ]);
+  });
+
   it("no name is registered on two pages", () => {
     const names = tools.map(({ tool }) => tool.name);
     expect(new Set(names).size).toBe(names.length);

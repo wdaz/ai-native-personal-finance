@@ -1,3 +1,4 @@
+import { donutCentreFit } from "@/src/shared/budgets";
 import type { Theme } from "@/src/shared/enums";
 import { formatMoney } from "@/src/shared/money";
 import { DONUT_RADIUS, DONUT_SIZE, DONUT_STROKE, donutSegments } from "./donut-geometry";
@@ -23,13 +24,23 @@ export function Donut({
   items,
   total,
   spent,
+  fitCentre = false,
 }: {
   items: readonly { theme: Theme; maximum: number }[];
   total: number;
   spent: number;
+  /**
+   * SPEC-budgets 2.3 (BU-11 (A), the designer's changelog §24a, §25d, §31a): the Budgets page's
+   * opt-in — the spent total steps down through the presets to fit the hole and the limit line
+   * breaks, by `donutCentreFit`'s table, chosen in this render (BU-Q9 (a)). Off on Overview.
+   */
+  fitCentre?: boolean;
 }) {
   const segments = donutSegments(items, total);
-  const label = `Spent ${formatMoney(spent)} of ${formatMoney(total)} limit`;
+  const spentText = formatMoney(spent);
+  const limitText = formatMoney(total);
+  const label = `Spent ${spentText} of ${limitText} limit`;
+  const fit = fitCentre ? donutCentreFit(spentText, limitText) : null;
 
   return (
     <div className={styles.wrapper}>
@@ -74,10 +85,32 @@ export function Donut({
           />
         ))}
       </svg>
-      <div className={styles.centre}>
-        <p className={`text-preset-1 ${styles.spent}`}>{formatMoney(spent)}</p>
-        <p className={`text-preset-5 ${styles.limit}`}>of {formatMoney(total)} limit</p>
-      </div>
+      {fit === null ? (
+        <div className={styles.centre}>
+          <p className={`text-preset-1 ${styles.spent}`}>{spentText}</p>
+          <p className={`text-preset-5 ${styles.limit}`}>of {limitText} limit</p>
+        </div>
+      ) : (
+        <div className={`${styles.centre} ${styles.fit}`} data-limit-lines={fit.limitLines}>
+          <p className={`${fit.spentPreset} ${styles.spent} ${styles.whole}`}>{spentText}</p>
+          <p className={`text-preset-5 ${styles.limit}`}>
+            {fit.limitLines === 1 ? (
+              <span className={styles.whole}>of {limitText} limit</span>
+            ) : fit.limitLines === 2 ? (
+              <>
+                <span className={styles.line}>of {limitText}</span>
+                <span className={styles.line}>limit</span>
+              </>
+            ) : (
+              <>
+                <span className={styles.line}>of</span>
+                <span className={styles.line}>{limitText}</span>
+                <span className={styles.line}>limit</span>
+              </>
+            )}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

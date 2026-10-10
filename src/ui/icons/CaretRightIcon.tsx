@@ -3,13 +3,14 @@
  * (`components/icons/icon-data.js`, `IconsIconsCollectionPhosphorIconsIconCaretRight`, read 2026-10-10).
  * SPEC-transactions 2.7: Next's caret; Prev draws the same caret turned 180°, as the design does. Decorative: the control carries the name.
  */
-export function CaretRightIcon() {
+/** `size`: 16 px by default; 12 px after Budgets' "See All" (SPEC-budgets 2.5). */
+export function CaretRightIcon({ size = 16 }: { size?: number }) {
   return (
     <svg
       aria-hidden="true"
       focusable="false"
-      width="16"
-      height="16"
+      width={size}
+      height={size}
       viewBox="0 0 16 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
