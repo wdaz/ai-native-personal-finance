@@ -6731,7 +6731,7 @@ them too").
   reading the repository, and restated G1–G4 as if they were new; the owner asked "Repoda hədəf olmalıdır.
   Onu oxudun?" ("There should be a goal in the repo. Did you read it?").
 - **Owner changes and reasoning:** chose option 1 (a goal for Release 2 and Phase 7, built on G1–G4) and
-  "Bəli əlavə et" ("yes, add it") to the soft date and to adding it to `roadmap.md`. Then: "Sprint tasklarına başlamazdan öncə dizayn uyğunlaşması etmək lazımdır ... Bu yalnız bu release 2 ilə veriləcək" ("before starting the sprint tasks a design alignment is needed ... it will ship only with this Release 2"); the agent added it as outcome 1.
+  "Bəli əlavə et" ("yes, add it") to the soft date and to adding it to `roadmap.md`. Then: "Sprint tasklarina başlamazdan öncə dizayn uyğunlaşması etmək lazımdır. Bunuda hədəf elave et. Bu yalnız bu relase 2 ilə veriləcək" ("a design alignment is needed before starting the sprint tasks. Add this to the goal too. This will ship only with Release 2"); the agent added it as outcome 1. Asked whether hotfix 2 (also a design change, to Release 1's screens) should move into it, the owner answered "Əgər hotfix 2 bunu edirsə artıq heç bir dəyişiklik lazım deyil" ("if hotfix 2 does this, no change is needed"); hotfix 2 stays in outcome 0, and outcome 1 covers the Release 2 specs only.
 - **Disagreements:** none.
 - **Lessons for the process:** read the repository's own goal documents before drafting a goal; a status
   summary is not the source.
