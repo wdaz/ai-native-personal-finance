@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import ts from "typescript";
 import { isWriteRequest, WRITE_EXEMPT_PATHS, WRITE_EXEMPT_PREFIX } from "@/src/server/write-rules";
@@ -108,21 +108,19 @@ export function routeTableViolations(routes: readonly RouteFile[]): string[] {
   return violations;
 }
 
-/** Every `route.ts` under `app/api`, read from disk. */
+/**
+ * Every `route.ts` under `app/api`, read from disk. The entry type comes with the listing
+ * (`withFileTypes`): a separate `stat` before the read would let the path change in between
+ * (CodeQL `js/file-system-race`, as in `scripts/traceability.ts`).
+ */
 export function apiRouteFiles(root: string): RouteFile[] {
-  const files: RouteFile[] = [];
-  const walk = (dir: string) => {
-    for (const name of readdirSync(dir)) {
-      const path = join(dir, name);
-      if (statSync(path).isDirectory()) walk(path);
-      else if (/^route\.(ts|tsx|js)$/.test(name)) {
-        files.push({
-          file: relative(root, path).split(sep).join("/"),
-          source: readFileSync(path, "utf8"),
-        });
-      }
-    }
-  };
-  walk(join(root, "app", "api"));
-  return files.sort((a, b) => a.file.localeCompare(b.file));
+  const walk = (dir: string): RouteFile[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) return walk(path);
+      return /^route\.(ts|tsx|js)$/.test(entry.name)
+        ? [{ file: relative(root, path).split(sep).join("/"), source: readFileSync(path, "utf8") }]
+        : [];
+    });
+  return walk(join(root, "app", "api")).sort((a, b) => a.file.localeCompare(b.file));
 }
