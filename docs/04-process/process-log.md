@@ -6836,3 +6836,73 @@ them too").
   against the design's `aria-hidden` (a separate amendment), and the designer's fix of stale text in its own
   sources (applied on the Mac after `/designer-approve`). Then outcome 1, the Release 2 design alignment; T-17
   waits for it.
+
+## 2026-10-10 — Phase 4 (Release 2): outcome 1 applied — the designer's decisions recorded, then the specs amended
+
+- **Phase:** 4 — Specs & plan (Release 2); roadmap "Release 2 goal", outcome 1.
+- **Participants:** Owner (Ruslan), Agent (Claude Code on the Mac, started from the project thread
+  "Release 2 dizayn uyğunlaşması"; the `designer` agent; drafting and Opus review subagents).
+- **Trigger:** after `governance.md` v1.13 (PR #110) gave the designer agent `finalize_plan`, the
+  coordinator asked for outcome 1's *apply* step; the owner then asked "spec düzəlişlərinə başla"
+  ("start the spec amendments").
+- **Prompt(s):** conversational. The gap list (48 gaps: TX-1..10, BU-1..11, PO-1..11, RB-1..4,
+  UI-1..10, WP-1, HO-1) stayed an uncommitted working file of the comparison session.
+- **Produced:**
+  - The designer's changelog in Claude Design (changelog only, the owner's "Yalnız changelog"):
+    §17–§23 (the 47 decisions approved with "hamısı ok"), §24 (BU-11 (A), "BU-11: (A) ok", scope
+    "(b) Yalnız Budgets"), §25a–§25f (corrections and completions found while amending the specs,
+    "§25 ok"). 33 entries are marked "drawing pending": the `.dc.html` files are not redrawn yet, and
+    until they are the entry wins over the drawing.
+  - Draft pull requests, one document each: #112 `transactions.md` v1.0.16 (Approved), #113
+    `recurring-bills.md` v0.7, #114 `ui-kit.md` v0.8.7 (Approved), #115 `budgets.md` v0.8, #116
+    `pots.md` v0.6, #117 `release-2-handoffs.md` (Approved), #118 `backlog.md` v1.61; this entry.
+  - No change needed, checked: `write-path.md` (WP-1 is the design catching up with 2.7),
+    `overview.md` (BU-8 matches 2.5/2.7), `design-tokens.md` (tokens land with their build tasks,
+    H15 (3)/H16 (3)), `webmcp-tools.md` (no gap).
+- **What the agent got right:**
+  - Kept each owner question out of the specs until answered: the mobile "Sort"/"Filter" names
+    against NFR-A4 (`transactions.md` §9 Q6) and how the donut centre's size is chosen against NFR-P2
+    (`budgets.md` §9 BU-Q9).
+  - Sent design questions found while drafting back to the designer agent (*propose*), not to the
+    owner directly: seven questions, six decided as §25a–§25f; the seventh (the modal's
+    `disabled`/`<span>`/`aria-describedby`) the designer returned as not a design question, so it
+    stays in `ui-kit.md` 2.11 as departures.
+  - An Opus review of each spec pull request (governance v1.3) found 10 defects in total, all wording
+    or consistency, none of them a wrong value; each was fixed before this entry.
+- **What the agent got wrong or missed:**
+  - The designer's §17a made `--transactions-table-wide-min` a token without knowing that a CSS custom
+    property cannot be read in an `@container` condition; the read-only document check caught it, and
+    §25a withdrew the token (768 px is the design's number, as 1060/952/961/644).
+  - §19c said `--spacing-bar-text` (13 px) applies "also on Budgets", which Budgets does not draw;
+    §25c corrected it.
+  - Three spec pull requests cited §25 before the designer had written it (the *apply* ran in
+    parallel); the citations were checked against the recorded §25 afterwards.
+  - Several review subagents had no shell and read the drafting worktrees instead of `gh pr diff`,
+    spot-checking the pushed branch; a full read of each pushed head stays with Copilot's review.
+  - `write_files` replaces the whole changelog on every write: "only appended" was checked by line
+    counts and the section boundary, not byte for byte.
+- **Owner changes and reasoning:** "hamısı ok" (all 47); BU-11 scope (b), then option (A); the write
+  scope "Yalnız changelog"; "§25 ok, Q6 a, BU-Q9 a" — Q6 (a) keeps 2.8's one name at every width,
+  BU-Q9 (a) chooses the size from a length table at server render so nothing moves after load.
+- **Disagreements:** none.
+- **Answered later the same day:**
+  - Overview's donut has no rule for an amount that does not fit its centre (BU-11 is Budgets only,
+    and hotfix 2, #109/#111, added none). The owner: "Backlog-a yaz" — `backlog.md` T-28, in a new
+    section "Outside a release", after T-24, outside Release 2 (#118); `release-2-handoffs.md` H15 (4)
+    names it (#117).
+  - #113's two questions: "#113 1a 2a" (and "Hər ikisi") — the five new 2.14 departure rows stay, the two
+    stale rows stay removed.
+  - Merge order: "#107 əvvəl merge olunacaq" — #107 first; #117, #118 and this pull request, which touch
+    the same files, take `develop` in by a merge after it, before they leave draft (`backlog.md` then becomes v1.61).
+- **Exception to v1.9:** Copilot's review stayed at its weekly rate limit (resets 2026-10-12), and every
+  run here ended with "Copilot encountered an error". The owner chose "Onsuz davam" ("go on without
+  it"): #112–#119 leave draft once their required CI is green, without Copilot's review, this time
+  only. The `github-advanced-security` job also fails on GitHub's side (`Model "claude-opus-5" is not
+  available`; CodeQL itself passes); each pull request carries one comment saying so.
+- **Lessons for the process:**
+  - Run the designer's *apply* before the spec drafts that cite it, or give the drafts the recorded
+    text, not the proposal.
+  - A token proposal for a breakpoint needs the CSS check (`@container`/`@media` cannot read custom
+    properties) before it is recorded.
+- **Next:** the owner's merges (#107 first); then the drawing of
+  the 33 pending entries in Claude Design (a separate *apply*, approved on its own) before T-17.
