@@ -3,22 +3,27 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  billFigures,
+  billSorts,
   markdownTable,
   seedFigures,
   seedOverviewInput,
   idNeverDecides,
   seedTransactions,
   sortExtremes,
+  totalText,
   transactionFigures,
   workedExample,
 } from "@/scripts/seed-figures";
+import { billsTotals } from "@/src/domain/bills";
 import { fixedClock } from "@/src/domain/clock";
 import { overviewSummary } from "@/src/domain/overview";
 import { CATEGORY_BY_NAME, seedRows } from "@/src/server/seed";
 import { applyVariant, SEED_VARIANTS } from "@/src/server/variants";
-import { formatDate } from "@/src/shared/dates";
+import { COPY } from "@/src/shared/copy";
+import { formatDate, formatDueDay } from "@/src/shared/dates";
 import { CATEGORIES } from "@/src/shared/enums";
-import { formatSignedMoney } from "@/src/shared/money";
+import { formatMoney, formatSignedMoney } from "@/src/shared/money";
 
 const repoRoot = join(import.meta.dirname, "..", "..");
 const read = (path: string) => readFileSync(join(repoRoot, path), "utf8");
@@ -251,6 +256,102 @@ describe("SPEC-transactions 4.2–4.7 are generated, never typed (H11 (3))", () 
     );
     expect(spec).toContain(
       `the widest amount is \`${formatSignedMoney(figures.widestAmount.amount)}\` (${figures.widestAmount.name})`,
+    );
+  });
+});
+
+const BILLS_HEADING = "**4.3 Each sort, all ";
+
+describe("SPEC-recurring-bills 4.2–4.5 are generated, never typed (H14 (2))", () => {
+  const spec = read("docs/03-specs/recurring-bills.md");
+  const flat = spec.replace(/\n\s*/g, " ");
+  const figures = billFigures();
+  const { totals } = figures;
+
+  it("US-30 AC1 4.3's table equals each sort's full order as the domain sorts the seed's bills", () => {
+    expect(spec).toContain(`${BILLS_HEADING}${figures.bills.length} rows**`);
+    expect(tableUnder(spec, BILLS_HEADING)).toEqual(billSorts());
+  });
+
+  it("would report Highest with Spark before Aqua, the design's old tie order (violation fixture)", () => {
+    const table = tableUnder(
+      read("tests/fixtures/seed-figures/bills-highest-spark-first.md.fixture"),
+      BILLS_HEADING,
+    );
+    expect(differingRows(table, billSorts())).toEqual([COPY.transactionSorts.highest]);
+  });
+
+  it("US-27 AC3 4.2: the counts and one line per vendor, in the bills' order", () => {
+    expect(spec).toContain(
+      `- ${figures.transactions} transactions, ${figures.recurring} recurring, **${figures.bills.length} bills** (US-27 AC3).`,
+    );
+    expect(flat).toContain(
+      `Per vendor (day shown · amount · status · the recurring transactions): ${figures.vendorLines.join(" · ")}.`,
+    );
+  });
+
+  it("US-28 AC1 4.2: the summary, and the rows whose own status is Upcoming", () => {
+    const soon = figures.byStatus.dueSoon;
+    const upcoming = figures.byStatus.upcoming;
+    expect(flat).toContain(
+      `Total Bills **${formatMoney(totals.total.amount)}** (${totals.total.amount.toLocaleString("en-US")} cents); Paid Bills **${totalText(totals.paid)}**; Total Upcoming **${totalText(totals.totalUpcoming)}**; Due Soon **${totalText(totals.dueSoon)}** — ${soon.map((b) => `${b.name} (${formatMoney(b.amount)}, ${formatDueDay(b.day).replace("Monthly - ", "")})`).join(" and ")}, as US-27 AC3 says.`,
+    );
+    expect(flat).toContain(
+      `The rows whose own status is Upcoming are ${totalText(billsTotals(upcoming).total)}: ${upcoming.map((b) => b.name).join(" and ")}.`,
+    );
+  });
+
+  it("US-30 AC1 4.3: the ties — no shared day, one repeated amount, so Lowest is not Highest reversed", () => {
+    const { ties } = figures;
+    expect(ties.days).toEqual([]);
+    expect(ties.caseInsensitive).toEqual([]);
+    expect(ties.amounts).toHaveLength(1);
+    const [tied] = ties.amounts;
+    const amount = figures.bills.find((b) => b.name === tied![0])!.amount;
+    expect(flat).toContain(
+      `One amount repeats: ${[...tied!].sort().join(" and ")} both cost ${formatMoney(amount)}`,
+    );
+    expect(figures.lowestIsHighestReversed).toBe(false);
+    expect(figures.collatorIsCodeUnit).toBe(true);
+    expect(flat).toContain(
+      `the collator's A to Z order of the ${figures.bills.length} names equals their code-unit order`,
+    );
+  });
+
+  it("US-29 AC1 4.5: the search examples and the tool's status examples", () => {
+    const names = (q: string) =>
+      figures
+        .search(q)
+        .map((b) => b.name)
+        .join(", ");
+    expect(flat).toContain(
+      `\`a\` → ${figures.search("a").length} (only ${figures.withoutA.map((b) => b.name).join(" and ")} have no \`a\`)`,
+    );
+    expect(figures.search("e")).toHaveLength(figures.bills.length);
+    expect(flat).toContain(`\`e\` → all ${figures.bills.length}`);
+    expect(flat).toContain(`\`co\` → ${figures.search("co").length}, ${names("co")}`);
+    expect(flat).toContain(`\`data\` → ${names("data")}`);
+    expect(flat).toContain(`\`BYTE\` → ${names("BYTE")} (case-insensitive)`);
+    expect(names("&")).toBe(names("spa & w"));
+    expect(flat).toContain(`\`&\` and \`spa & w\` → ${names("&")} (a literal \`&\`)`);
+    expect(flat).toContain(`\`  flow  \` → ${names("  flow  ")} (trimmed)`);
+    expect(figures.search(" ")).toHaveLength(figures.bills.length);
+    expect(flat).toContain(`one space → trimmed to empty, all ${figures.bills.length}`);
+    for (const q of ["bill", "Bills", "xyz"]) expect(figures.search(q)).toEqual([]);
+    expect(flat).toContain("`bill`, `Bills` and `xyz` → 0, the no-results state");
+    const tool = figures.view({ q: "e", status: "upcoming", sort: "highest" });
+    expect(flat).toContain(
+      `\`search: "e", status: "upcoming", sort: "highest"\` → ${tool.map((b) => b.name).join(", ")}`,
+    );
+    const paid = figures.byStatus.paid;
+    expect(flat).toContain(
+      `\`status: "paid"\` → ${paid.length}, ${formatMoney(billsTotals(paid).total.amount)} in total; \`status: "dueSoon"\` → ${figures.byStatus.dueSoon.length}; \`status: "upcoming"\` → ${figures.byStatus.upcoming.length}.`,
+    );
+  });
+
+  it("4.6: the longest bill name", () => {
+    expect(spec).toContain(
+      `The longest bill name is ${figures.longestName.length} characters ("${figures.longestName}")`,
     );
   });
 });

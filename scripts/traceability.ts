@@ -30,7 +30,7 @@ export const RELEASE_BEING_BUILT = 2;
  * line 2026-10-10): `run` does not require them. The list only shrinks — the build task whose
  * test first names an id removes it in the same pull request, and an id still listed once a title
  * names it fails the check. Each was one of the 20 ids unnamed on 2026-10-06; T-17 removed US-40; T-18 removed US-09, US-10 and US-12; T-19 removed
- * US-13 and US-19.
+ * US-13 and US-19; T-20 removed US-29 and US-30.
  */
 export const NOT_YET_BUILT: readonly string[] = [
   "US-14",
@@ -45,8 +45,6 @@ export const NOT_YET_BUILT: readonly string[] = [
   "US-24",
   "US-25",
   "US-26",
-  "US-29",
-  "US-30",
 ];
 
 /** The generated list of the stories a release first delivers (`--write`), one id per line. */
