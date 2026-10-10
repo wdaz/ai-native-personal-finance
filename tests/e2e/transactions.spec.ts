@@ -586,7 +586,9 @@ test.describe("NFR-A1 axe: no serious or critical violation", () => {
 
     await sortTrigger(page).click();
     await expect(page.getByRole("listbox")).toBeVisible();
-    expect(await seriousA11yViolations(page)).toEqual([]);
+    // The panel fades in (Menu.module.css `fade-in`); axe mid-fade reads the options'
+    // colour through the panel's opacity and reports a contrast failure that is not there.
+    await expect.poll(() => seriousA11yViolations(page), { message: "open menu" }).toEqual([]);
   });
 
   test("empty-all", async ({ page, request }) => {

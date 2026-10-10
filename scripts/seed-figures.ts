@@ -3,14 +3,22 @@ import { SEED_YEAR_SHIFT, shiftYears } from "@/src/domain/calendar";
 import { BUSINESS_TODAY, fixedClock } from "@/src/domain/clock";
 import { toCents } from "@/src/domain/money";
 import { overviewSummary } from "@/src/domain/overview";
+import { billsList, billsTotals, recurringBills, sortBills } from "@/src/domain/bills";
 import { filterTransactions, sortTransactions, transactionsPage } from "@/src/domain/transactions";
+import { COPY } from "@/src/shared/copy";
 import { CATEGORIES } from "@/src/shared/enums";
 import {
   TRANSACTION_SORTS,
   type TransactionSort,
   type TransactionsQuery,
 } from "@/src/shared/transactions-query";
-import { formatDate } from "@/src/shared/dates";
+import { formatDate, ordinalDay } from "@/src/shared/dates";
+import {
+  BILL_SORTS,
+  BILL_STATUSES,
+  type BillSort,
+  type RecurringBillsQuery,
+} from "@/src/shared/recurring-bills-query";
 import { formatMoney, formatSignedMoney } from "@/src/shared/money";
 
 /**
@@ -256,6 +264,107 @@ export function transactionFigures() {
     ),
     view,
   };
+}
+
+// ---------------------------------------------------------------------------------------
+// SPEC-recurring-bills 4.2–4.5 (hand-off H14 (2)): the bills' figures, computed by the domain.
+
+/** The seed's bills on the business day (NFR-D1), in `recurringBills`' order (first appearance). */
+export const seedBills = (transactions = seedOverviewInput().transactions) =>
+  recurringBills(transactions, fixedClock(BUSINESS_TODAY));
+
+type SeedBill = ReturnType<typeof seedBills>[number];
+
+const ordinal = ordinalDay;
+
+/** 4.2's and the row's words for a status. */
+const STATUS_WORDS = { paid: "paid", dueSoon: "due soon", upcoming: "upcoming" } as const;
+
+/** "Spark Electric Solutions (2nd)" in Latest's table cell; the amount in Highest's. */
+function sortCell(sort: BillSort, bill: SeedBill): string {
+  if (sort === "latest") return `${bill.name} (${ordinal(bill.day)})`;
+  if (sort === "highest") return `${bill.name} (${formatMoney(bill.amount)})`;
+  return bill.name;
+}
+
+/** SPEC-recurring-bills 4.3, cell by cell: the header, then each sort's full order. */
+export function billSorts(bills = seedBills()): string[][] {
+  return [
+    ["Sort", "Order"],
+    ...BILL_SORTS.map((sort) => [
+      COPY.transactionSorts[sort],
+      sortBills(bills, sort)
+        .map((bill) => sortCell(sort, bill))
+        .join(", "),
+    ]),
+  ];
+}
+
+/** "4 ($190.00)": a summary row as US-28 AC1 writes it. */
+export const totalText = ({ count, amount }: { count: number; amount: number }) =>
+  `${count} (${formatMoney(amount)})`;
+
+/** SPEC-recurring-bills 4.2 and 4.5: what the tests of the bills read instead of typing. */
+export function billFigures() {
+  const input = seedOverviewInput().transactions;
+  const bills = seedBills(input);
+  const view = (query: Partial<RecurringBillsQuery>) =>
+    billsList(bills, { q: undefined, sort: "latest", status: undefined, ...query });
+  const recurring = input.filter((t) => t.recurring);
+  const shortDate = (date: Date) => formatDate(date).replace(/ \d{4}$/, "");
+  return {
+    transactions: input.length,
+    recurring: recurring.length,
+    bills,
+    totals: billsTotals(bills),
+    /** 4.2: "Pixel Playground · 11th · $10.00 · paid (11 Aug)", one per vendor. */
+    vendorLines: bills.map(
+      (bill) =>
+        `${bill.name} · ${ordinal(bill.day)} · ${formatMoney(bill.amount)} · ${STATUS_WORDS[bill.status]} (${recurring
+          .filter((t) => t.name === bill.name)
+          .map((t) => shortDate(t.date))
+          .join(", ")})`,
+    ),
+    byStatus: Object.fromEntries(
+      BILL_STATUSES.map((status) => [status, view({ status })]),
+    ) as Record<(typeof BILL_STATUSES)[number], SeedBill[]>,
+    /** 4.3: the repeated keys, as groups of names. */
+    ties: {
+      days: groupNames(bills, (bill) => String(bill.day)),
+      amounts: groupNames(bills, (bill) => String(bill.amount)),
+      caseInsensitive: groupNames(bills, (bill) => bill.name.toLowerCase()),
+    },
+    /** 4.3: the collator's A to Z equals the code-unit order of the names. */
+    collatorIsCodeUnit:
+      sortBills(bills, "a-to-z")
+        .map((bill) => bill.name)
+        .join("|") ===
+      bills
+        .map((bill) => bill.name)
+        .sort()
+        .join("|"),
+    lowestIsHighestReversed:
+      sortBills(bills, "lowest")
+        .map((bill) => bill.name)
+        .join("|") ===
+      sortBills(bills, "highest")
+        .map((bill) => bill.name)
+        .reverse()
+        .join("|"),
+    /** 4.5: the search examples, in Latest order. */
+    search: (q: string) => view({ q }),
+    withoutA: sortBills(
+      bills.filter((bill) => !bill.name.toLowerCase().includes("a")),
+      "a-to-z",
+    ),
+    view,
+    /** 4.6: the longest name. */
+    longestName: bills.reduce((a, b) => (b.name.length > a.name.length ? b : a)).name,
+  };
+}
+
+function groupNames(bills: readonly SeedBill[], key: (bill: SeedBill) => string): string[][] {
+  return groups(bills, key).map((group) => group.map((bill) => bill.name));
 }
 
 if (import.meta.main) {
