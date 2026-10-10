@@ -141,7 +141,7 @@ test("US-06 AC1 AC2: Transactions card shows five rows (SPEC-overview §4.3); 'V
   // (§4.3, "19 Aug 2026" twice), so the date text alone is not unique on the page.
   const firstRow = page
     .getByText(first.name)
-    .locator("xpath=ancestor::div[contains(@class,'row')]");
+    .locator("xpath=ancestor::div[contains(@class,'row')][1]");
   await expect(firstRow.getByText(formatDate(first.date))).toBeVisible();
   await expect(page.getByText(second.name)).toBeVisible();
   await expect(page.getByText(formatSignedMoney(second.amount))).toBeVisible();
