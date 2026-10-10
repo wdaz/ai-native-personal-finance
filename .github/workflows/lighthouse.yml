@@ -80,8 +80,14 @@ jobs:
             | tr -d '\r' | sed -n 's/^[Ss]et-[Cc]ookie: \(pf_session=[^;]*\).*/\1/p')
           test -n "$cookie"
           echo "::add-mask::$cookie"
+          # Each page must answer 200 to the session: a 302 to /login would be measured as /login,
+          # whose URL matches no row of lighthouserc.json's assertMatrix, and pass unasserted.
           for page in overview transactions budgets; do
-            curl -sS -o /dev/null -H "Cookie: $cookie" "$BASE_URL/$page"
+            status=$(curl -sS -o /dev/null -w '%{http_code}' -H "Cookie: $cookie" "$BASE_URL/$page")
+            if [ "$status" != "200" ]; then
+              echo "::error::$BASE_URL/$page answered $status, not 200, to the signed-in session."
+              exit 1
+            fi
           done
           echo "LHCI_EXTRA_HEADERS={\"Cookie\":\"$cookie\"}" >> "$GITHUB_ENV"
 
