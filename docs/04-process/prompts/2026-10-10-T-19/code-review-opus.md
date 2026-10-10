@@ -2,13 +2,13 @@
 
 ## Brief
 
-> You are a read-only code reviewer. Invoke the `/code-review` skill (Skill tool, skill name "code-review", effort high) on the diff of branch `claude/project-thread-cb1uuf` against `origin/develop` in the repo at /home/user/ai-native-personal-finance (PR #124 in wdaz/ai-native-personal-finance: "T-19 Transactions — UI and list_transactions"). If the skill is unavailable, perform an equivalent thorough review yourself.
+> You are a read-only code reviewer. Invoke the `/code-review` skill (Skill tool, skill name "code-review", effort high) on the diff of branch `claude/project-thread-cb1uuf` against `origin/develop` in the repository (PR #124 in wdaz/ai-native-personal-finance: "T-19 Transactions — UI and list_transactions"). If the skill is unavailable, perform an equivalent thorough review yourself.
 >
 > Do NOT edit files, commit, push, or post anything to GitHub. Only read (git diff origin/develop...HEAD, read files).
 >
 > Context: read AGENTS.md first for project rules. The spec is docs/03-specs/transactions.md (v1.0.19), the plan is docs/04-process/plans/2026-10-10-T-19.md. Key constraints: CSP forbids inline `style` attributes (ADR-0006; element.style from JS is OK); layer rules ADR-0002 (`ui` imports only `ui` and `shared`; `shared` only `shared`); all user-visible copy comes from `COPY` (src/shared/copy.ts) mirrored by the appendix in docs/01-requirements/user-stories.md; tokens in design-tokens.md mirrored by src/ui/tokens.css. Focus areas: src/ui/Menu.tsx, src/ui/transactions/* (TransactionsNav navigation/debounce/popstate logic, pagination focus, ResultsRegion status line), app/(app)/transactions/page.tsx, src/webmcp/tools/transactions.ts, src/shared/pagination.ts, src/ui/useDebouncedValue.ts, and the tests (tests/e2e/transactions.spec.ts, tests/e2e/webmcp.spec.ts, unit tests). Known non-issues to ignore: local install-scripts unit test fails on npm 10; github-advanced-security check failing on GitHub's side.
 >
-> Report: a list of findings, each with severity (blocking / should-fix / nit), file:line, a concrete failure scenario, and a suggested fix. Verify each finding against the code before reporting; drop speculative ones. Also say plainly if you found nothing blocking. Save the brief you were given and your full report as markdown to /home/user/ai-native-personal-finance/docs/04-process/prompts/2026-10-10-T-19/code-review-opus.md (that one file write IS allowed), with a header "# T-19 — the `/code-review` skill on Opus", sections "Brief" and "Report".
+> Report: a list of findings, each with severity (blocking / should-fix / nit), file:line, a concrete failure scenario, and a suggested fix. Verify each finding against the code before reporting; drop speculative ones. Also say plainly if you found nothing blocking. Save the brief you were given and your full report as markdown to docs/04-process/prompts/2026-10-10-T-19/code-review-opus.md (that one file write IS allowed), with a header "# T-19 — the `/code-review` skill on Opus", sections "Brief" and "Report".
 
 ## Report
 
