@@ -7099,7 +7099,7 @@ them too").
 - **Prompt(s):** the owner's thread message; no prompt file.
 - **Produced:** `governance.md` v1.15 — the v1.9 rule "wait for Copilot's review" becomes "Review before
   ready": the `/code-review` skill, run by a new Opus subagent (owner's follow-up message: "Onun yerinə code-review skilli üçün yeni subagent istifadə edilir"), reviews the current head, important findings are fixed,
-  and the pull request is merge-ready when its required checks are green; Copilot is not expected and
+  and the pull request leaves draft once the other conditions of "Draft until ready" are met; Copilot is not expected and
   its absence is not an exception to record. `.github/pull_request_template.md` and the note in
   `.github/CODEOWNERS` say the same. The ruleset names that contain "Copilot" are kept as they are.
 - **What the agent got right:** history (earlier plans, prompts and log entries that mention Copilot) is
