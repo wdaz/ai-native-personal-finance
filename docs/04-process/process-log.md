@@ -6965,7 +6965,7 @@ them too").
 
 - **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; second Release 2 build task.
 - **Participants:** Owner (Ruslan), Agent (Claude Code, started from the project thread "Transactions
-  server and API"; one code-review subagent).
+  server and API"; two read-only review subagents, one of them the `/code-review` skill on Opus).
 - **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-17's merge.
 - **Prompt(s):** `prompts/2026-10-10-T-18/` (the review brief and report). The plan
   `plans/2026-10-10-T-18.md` went to the owner at the plan gate with three questions; the owner answered
@@ -6989,7 +6989,10 @@ them too").
   story), which the traceability check refused ("already named"); the title now names the section only.
 - **Owner changes and reasoning:** the owner took the three recommended options. During the build the
   owner also said that questions meant for them go to the coordinator session, which answers from the
-  project's goals, so threads do not wait.
+  project's goals, so threads do not wait; that a pull request merges itself once CI is green and the
+  owner reviews afterwards; and that when Copilot does not run, the `/code-review` skill runs on Opus
+  first. Both reviews found nothing blocking; their findings and what was done are in
+  `prompts/2026-10-10-T-18/code-review-handling.md`.
 - **Disagreements:** none.
 - **Not done here:** everything on the page (T-19). `tests/unit/install-scripts.test.ts` fails on a
   machine with npm 10, as recorded for T-17; CI runs npm 11. The E2E suite was not run locally (no
