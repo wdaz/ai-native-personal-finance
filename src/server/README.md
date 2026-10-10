@@ -51,3 +51,8 @@ T-23 (SPEC-budgets): `budgets.ts` — `getBudgets` (the page's and `GET /api/bud
 functions the routes hand to `guardedWrite` (`taken` against other budgets, `Budget` only);
 `prismaCategory`/`prismaTheme` invert the label maps. `variants.ts` now re-exports the variants'
 pure rules from `src/domain/variants.ts`.
+
+T-25 (SPEC-pots): `pots.ts` — `getPots` (the page's and `GET /api/pots`' read), `toPotDto`, and
+`createPot`, `updatePot`, `deletePot`, `depositToPot`, `withdrawFromPot`, the `run` functions the routes
+hand to `guardedWrite`. A move updates the pot first, then the balance, each conditionally
+(SPEC-write-path 2.8); a deletion refunds the total `DELETE … RETURNING` gives.
