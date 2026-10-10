@@ -6643,8 +6643,8 @@ them too").
 - **Prompt(s):** the conversation in this session (not saved under `prompts/`); the owner's words are
   quoted above.
 - **Produced:** `governance.md` v1.11 (the "Design questions" section is now a five-step route through the
-  designer agent in every phase; the v1.10 route stays for where the agent is not available or the owner
-  takes a question to the designer in person; an implementer subagent returns `DESIGN-Q` instead of
+  designer agent in every phase, and the only route: the v1.10 route is retired, and where the agent is
+  not available the question stays open and goes to the owner; an implementer subagent returns `DESIGN-Q` instead of
   choosing; a decision that contradicts an Approved spec goes to an amendment pull request first);
   `build-workflow.md` v1.4 (a rule of thumb for the build); this entry. Outside the repository, on the
   owner's machine: the mod `designer-agent` (`~/.claude/mods/designer-agent/`) — a `designer`
@@ -6667,7 +6667,8 @@ them too").
   the controller compared the etag of all 47 files before and after, and none changed. Not verified in a
   live session: `write_files` (the persona reports that the tool asks for a one-time project write approval
   at the first write, so the first *apply* may stop there), `SendMessage` resuming the persona between
-  *propose* and *apply*, the owner typing `/designer-approve`, and that a subagent's brief carries the
+  *propose* and *apply*, a designer write passing with the approval (the owner has typed
+  `/designer-approve`, set it and withdrawn it, but no write has followed), and that a subagent's brief carries the
   session rule (the rule is written for the main chat; a subagent's brief carries `DESIGN-Q` by the
   controller's hand).
   The first draft of this text claimed a guard of three tools; the agent's own review found the others
@@ -6677,7 +6678,10 @@ them too").
   ask the owner a question it cannot answer from the design or the documents. It added `QUESTION-TO-OWNER`
   to the persona and the main chat's rule (the owner's answer is `OWNER ANSWERED:` and is not an approval),
   and a sentence in governance v1.11 step 2. If the owner meant something else (for example the human
-  designer asking the owner), this is the line to correct.
+  designer asking the owner), this is the line to correct. On 2026-10-10 the owner also decided, after the
+  question "keep the v1.10 route beside the designer agent, or drop it?": "yol 2 ancaq" and "yalnız persona"
+  ("route 2 only", "only the persona"). The agent removed the v1.10 route from governance v1.11; entries the
+  human designer wrote before v1.11 stay answers to the questions they decided.
 - **Disagreements:** none.
 - **Lessons for the process:** "apply only after the owner approved" was first held by the persona's prompt
   and the controller's call, not by the tool: the guard knew *who* writes, not *which mode* it was in. The
@@ -6701,9 +6705,8 @@ them too").
   landed. A guard that names the files in the command (`/designer-approve <paths> -- <decision>`) is not
   built; it is offered to the owner.
 - **Next:**
-  - The owner reviews the draft pull request and merges it if the route is right; an open question for the
-    owner: may the owner still take a question to the human designer in person (the pull request says yes,
-    as the v1.10 route)?
+  - The owner reviews the draft pull request and merges it if the route is right (no open question is left
+    in it).
   - Still describing the earlier route, each for its own pull request: AGENTS.md §2 "Never fabricate" (names
     "the Figma file"), `docs/templates/feature-spec.md` and `user-story.md`, and the T-15d plan's D14.
   - Try the mod in a live session after the hot-reload question is answered, with one real design question,

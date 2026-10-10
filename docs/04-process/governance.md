@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6) · v1.9 2026-10-04: before taking a pull request out of draft the agent waits for Copilot's review of the branch's current head and has fixed its important findings (owner decision at T-15d) · v1.10 2026-10-05: design questions are the designer's — the agent tells the owner, the owner takes it to the designer, the designer records the decision in the designer's changelog, and the agent applies it from there (owner decisions at T-15d) · v1.11 2026-10-06, extended 2026-10-10: the designer agent decides design questions in every phase and may ask the owner a question, and the owner approves its decision with `/designer-approve` before it writes (owner decisions)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6) · v1.9 2026-10-04: before taking a pull request out of draft the agent waits for Copilot's review of the branch's current head and has fixed its important findings (owner decision at T-15d) · v1.10 2026-10-05: design questions are the designer's — the agent tells the owner, the owner takes it to the designer, the designer records the decision in the designer's changelog, and the agent applies it from there (owner decisions at T-15d) · v1.11 2026-10-06, extended 2026-10-10: the designer agent decides design questions in every phase, as the only route (the v1.10 route is retired), and may ask the owner a question, and the owner approves its decision with `/designer-approve` before it writes (owner decisions)
 
 ## Roles
 
@@ -19,7 +19,7 @@ Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run 
 | Acceptance criteria wording | Approves | Drafts |
 | Architecture (stack, layout, persistence, auth) | Accepts ADR | Drafts ADR with ≥2 alternatives |
 | Feature spec content | Approves | Drafts |
-| The design itself: a look, a value, a size, a token, a drawn behaviour (v1.10, v1.11) | Approves the designer agent's decision before it is recorded; may still take a question to the designer in person | Asks the designer agent, which decides and, once the owner approves, records the decision in the designer's changelog; applies it, citing its section |
+| The design itself: a look, a value, a size, a token, a drawn behaviour (v1.10, v1.11) | Approves the designer agent's decision before it is recorded, with `/designer-approve` | Asks the designer agent, which decides and, once the owner approves, records the decision in the designer's changelog; applies it, citing its section |
 | Implementation details within an approved spec | — | Decides, documents in PR |
 | Test design within the testing ADR | — | Decides |
 | Marking anything Approved/Accepted | Only | Never |
@@ -80,14 +80,17 @@ It runs in two modes, and the second needs the owner's approval named in its pro
    option or a note to discuss, not stated as a decision, is not yet the answer, and the question stays
    open.
 
-**Where the designer agent is not available**, or where the owner takes a question to the designer in
-person, the route of v1.10 stands: the agent tells the owner (the spec's §9 and the pull request, as for
-any open question), the owner discusses it with the designer, the designer records the decision in the
-designer's changelog, and the agent reads that entry and applies it as the answer (step 5).
+**The designer agent is the only route** (owner decision, 2026-10-10: "yol 2 ancaq" — "route 2 only").
+The v1.10 route, in which the owner took a question to the human designer, who recorded the decision in
+the designer's changelog for the agent to read, is retired: an entry written that way after v1.11 is not
+an answer. Where the designer agent is not available (the mod is not installed or loaded), the agent
+does not decide a design question and does not look for one in the changelog: it tells the owner in the
+spec's §9 and the pull request, as for any open question, and the question stays open until the designer
+agent can be asked.
 
-When the owner sends the agent to the designer's sources for an answer ("92 q4 və q5 cavabı claude
-design-dan götür" — "for #92 take the answers to Q4 and Q5 from Claude Design"), step 5 applies to
-what is already recorded there.
+What the designer's changelog already records before v1.11 stays an answer to the question it decided,
+and the agent may cite it (for example "92 q4 və q5 cavabı claude design-dan götür" — "for #92 take the
+answers to Q4 and Q5 from Claude Design" — read what is recorded there, step 5).
 
 Still the owner's, whatever the design says:
 
