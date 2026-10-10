@@ -21,3 +21,8 @@ T-12: `overview/layout.tsx` — a Server Component that renders `{children}` and
 `<OverviewTools />` (`src/webmcp/tools/`), so the two Release 1 tools are registered while the
 Overview segment is mounted and removed when the visitor navigates away (tools are page-scoped,
 R-23; SPEC-webmcp-tools §2.3).
+
+T-22: `_write/use-delete-flow.ts` (a private folder, no route) — the one join of
+`ConfirmDeleteDialog` (`src/ui`) and the delete bus (`src/webmcp/bus.ts`) both write pages use
+(SPEC-ui-kit 2.3; T-22 plan D1). `app/` may import both layers, `src/ui` never imports
+`src/webmcp` (ADR-0002). T-24 (Budgets) and T-26 (Pots) call it.

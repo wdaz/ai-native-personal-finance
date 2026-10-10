@@ -34,3 +34,9 @@ Component as props — plan F1; `app/(app)/overview/layout.tsx` renders it) and 
 (`toolSuccess`, `toolError`, `fromApiOutcome`: the SPEC §2.5 status → error-code mapping and the
 §2.6 result shapes; `defineTool` uses the same `toolError`, and a validation error now carries
 `issues`). SPEC-webmcp-tools v1.0.4.
+
+T-22: `bus.ts` — the in-memory delete bus of SPEC-ui-kit 2.3. A page subscribes one handler per
+kind (`onDeleteRequest("budget" | "pot", …)`, the latest wins); a `delete_*` tool calls
+`runDeleteTool`, which asks the page through `requestDelete` and maps the dialog's outcome
+(`deleted`, `cancelled`, `busy`, `not_found`, or the confirmed request's failure) to a tool
+result. `tool-result.ts` gains the `busy` error code. The tools themselves are T-24's and T-26's.

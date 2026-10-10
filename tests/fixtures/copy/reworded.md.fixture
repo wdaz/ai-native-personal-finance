@@ -94,4 +94,16 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | Recurring Bills | no results | No bills match your search |
 | Recurring Bills | no recurring bills at all | No recurring bills yet |
 
-`{N}`, `{days}`, `{total}`, `{n}`, `{m}` and `{count}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 second", "1 day", "1 transaction", "1 bill"). `{amount}` is a `formatMoney` amount ("$190.00"); `{ordinal day}` a day of the month with its English ordinal ("2nd", "11th", "21st").
+### R2 additions (2026-10-05, owner-approved with SPEC-ui-kit, §9 UK-Q1, and the design's strings of its 2.12; added by T-22)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Modal | close button (heard) | Close |
+| Delete dialog | title | Delete ‘{name}’? |
+| Delete dialog | buttons | Yes, Confirm Deletion · No, Go Back |
+| Delete dialog and forms | confirm and submit while pending | Deleting… · Saving… |
+| "…" menu | button's name (heard) | Budget options: {name} · Pot options: {name} |
+| "…" menu | items | Edit Budget · Delete Budget · Edit Pot · Delete Pot |
+| Budgets and Pots | header button (the "+" is not heard) | + Add New Budget · + Add New Pot |
+
+`{N}`, `{days}`, `{total}`, `{n}`, `{m}` and `{count}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 second", "1 day", "1 transaction", "1 bill"). `{amount}` is a `formatMoney` amount ("$190.00"); `{ordinal day}` a day of the month with its English ordinal ("2nd", "11th", "21st"). `{name}` is a budget's category or a pot's name, as stored.

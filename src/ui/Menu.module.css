@@ -125,7 +125,7 @@
   border-block-start: var(--border-width) solid var(--color-grey-100);
 }
 
-.option:hover {
+.option:hover:not([aria-disabled="true"]) {
   color: var(--color-grey-500);
 }
 
@@ -144,17 +144,18 @@
   cursor: default;
 }
 
-/* 2.6, 2.9 (§20c, RB-3): below 768 px an icon-only trigger, the 20 px icon in a 44 × 44 px box. */
+/* 2.6, 2.9 (§20c, RB-3): below 768 px a toolbar menu has an icon-only trigger, the 20 px icon
+   in a 44 × 44 px box. */
 @media (max-width: 767.98px) {
-  .label {
+  .toolbar .label {
     display: none;
   }
 
-  .anchor {
+  .toolbar .anchor {
     inline-size: auto;
   }
 
-  .trigger {
+  .toolbar .trigger {
     justify-content: center;
     inline-size: var(--tap-target-min);
     block-size: var(--tap-target-min);
@@ -162,17 +163,66 @@
     border: 0;
   }
 
-  .slot,
-  .caret {
+  .toolbar .slot,
+  .toolbar .caret {
     display: none;
   }
 
-  .icon {
+  .toolbar .icon {
     display: flex;
   }
 
-  .panel {
+  .toolbar .panel {
     inline-size: max-content;
     min-inline-size: 114px;
+  }
+}
+
+/*
+ * SPEC-ui-kit 2.6 — a form's select field: the label above (preset 5 bold, grey-500, as
+ * `Field`'s, 4 px above), `Field`'s 47 px box with its hover and focus, the value on the left and
+ * the caret at least 16 px after it (UI-8); the panel as wide as the field, 8 px under the box,
+ * at most 300 px tall. An "Already used" option is grey-500 with no hover (US-34 AC2).
+ */
+.field {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--spacing-50);
+}
+
+.field .anchor {
+  inline-size: 100%;
+}
+
+.field .trigger {
+  block-size: auto;
+}
+
+.field .trigger:hover {
+  border-color: var(--color-grey-500);
+}
+
+.field .trigger:focus-visible,
+.field .trigger[aria-expanded="true"] {
+  border-color: var(--color-grey-900);
+}
+
+.field .current {
+  text-align: start;
+}
+
+.field .panel {
+  inset-inline: 0;
+  max-block-size: var(--field-menu-max-height);
+}
+
+.field .option[aria-disabled="true"] {
+  color: var(--color-grey-500);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger,
+  .option {
+    transition: none;
   }
 }

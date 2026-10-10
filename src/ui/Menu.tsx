@@ -6,12 +6,15 @@ import {
   useId,
   useRef,
   useState,
+  type FocusEvent,
   type KeyboardEvent,
+  type MouseEvent,
   type ReactNode,
 } from "react";
 import { COPY } from "@/src/shared/copy";
 import { cx } from "./cx";
 import { CaretDownIcon } from "./icons/CaretDownIcon";
+import { claimOpenMenu, releaseOpenMenu } from "./open-menu";
 import styles from "./Menu.module.css";
 
 export type MenuOption<V extends string> = {
@@ -22,17 +25,20 @@ export type MenuOption<V extends string> = {
 };
 
 /**
- * 2.8's "opening one menu closes the other": opening a menu closes whichever other is open, so
- * at most one panel is ever in the DOM (the `TruncatedText` pattern).
- */
-let closeOpenMenu: (() => void) | null = null;
-
-/**
  * SPEC-transactions 2.8: the `Menu` primitive, for choosing one value from a list (the sort, the
  * category filter, and later the forms' category and theme). The trigger is a button with
  * `aria-haspopup="listbox"` and one accessible name, "{label}: {current}", at every width (§9
  * Q6 (a)); the panel is a `role="listbox"` that holds focus while open and names its highlighted
  * option with `aria-activedescendant`. Positioned by CSS alone (no inline `style`, ADR-0006).
+ *
+ * SPEC-ui-kit 2.2, 2.6 and §6 (T-22, hand-off H13 (1)): for every use, the Escape the menu handles
+ * stops there, so an open menu inside a modal closes alone. A form's select field (`SelectField`)
+ * passes the rest as options (with no value, its trigger is named by its label alone), so
+ * the toolbar menus keep SPEC-transactions 2.8's look and behaviour: `variant="field"` (the label
+ * above a 47 px field box, the panel as wide as the trigger, no icon-only trigger), what an option
+ * and the trigger show beyond the label, the error wiring, the field's blur, and `pointerFocus` —
+ * while open, a press on the trigger or an option does not move focus, and a click on an option,
+ * or on the trigger when it closes the menu, returns focus to the trigger (2.6).
  */
 export function Menu<V extends string>({
   label,
@@ -41,6 +47,13 @@ export function Menu<V extends string>({
   onChange,
   icon,
   className,
+  variant = "toolbar",
+  renderValue,
+  renderOption,
+  pointerFocus = false,
+  invalid = false,
+  describedBy,
+  onFieldBlur,
 }: {
   label: string;
   options: readonly MenuOption<V>[];
@@ -50,6 +63,19 @@ export function Menu<V extends string>({
   icon?: ReactNode;
   /** The trigger's and the panel's width, set by the page (2.6: Sort 114 px, Category 177 px). */
   className?: string;
+  /** SPEC-ui-kit 2.6: a form's select field, or a toolbar menu (SPEC-transactions 2.6). */
+  variant?: "toolbar" | "field";
+  /** What the trigger shows for the current option (a theme's swatch before its label). */
+  renderValue?: (option: MenuOption<V> | undefined) => ReactNode;
+  /** An option's content beyond its label (the swatch, "Already used", the check icon). */
+  renderOption?: (option: MenuOption<V>, selected: boolean) => ReactNode;
+  /** SPEC-ui-kit 2.6: the pointer's focus rules, so a pointer choice is not a field's blur. */
+  pointerFocus?: boolean;
+  invalid?: boolean;
+  /** The id of the field's message, while one is shown (US-31 AC2). */
+  describedBy?: string;
+  /** Focus left the trigger and its listbox as a whole (SPEC-ui-kit 2.6: the field's blur). */
+  onFieldBlur?: () => void;
 }) {
   const id = useId();
   const labelId = `${id}-label`;
@@ -76,14 +102,15 @@ export function Menu<V extends string>({
   const close = useCallback(() => setOpen(false), []);
 
   const openAt = (index: number) => {
-    if (closeOpenMenu !== null && closeOpenMenu !== close) closeOpenMenu();
-    closeOpenMenu = close;
+    claimOpenMenu(close);
     setHighlight(index);
     setOpen(true);
   };
 
   /** 2.8: the current option, or the first one when there is none (or it is disabled). */
   const startIndex = () => (enabled(currentIndex) ? currentIndex : firstEnabled());
+
+  const field = variant === "field";
 
   const closeToTrigger = () => {
     close();
@@ -97,16 +124,20 @@ export function Menu<V extends string>({
     onChange(option.value);
   };
 
-  // While open the listbox holds focus; a click anywhere outside closes.
+  // While open the listbox holds focus; a click anywhere outside closes. With `pointerFocus`,
+  // focus goes back to the trigger first, so the press then moves it off the field from there —
+  // a field's blur (SPEC-ui-kit 2.6) — rather than vanishing with the listbox.
   useEffect(() => {
     if (!open) return;
     listboxRef.current?.focus();
     const onPointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node | null)) close();
+      if (rootRef.current?.contains(event.target as Node | null)) return;
+      if (pointerFocus) triggerRef.current?.focus();
+      close();
     };
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open, close]);
+  }, [open, close, pointerFocus]);
 
   // The highlighted option is scrolled into view when it moves (Category's panel scrolls).
   useEffect(() => {
@@ -116,12 +147,7 @@ export function Menu<V extends string>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, highlight]);
 
-  useEffect(
-    () => () => {
-      if (closeOpenMenu === close) closeOpenMenu = null;
-    },
-    [close],
-  );
+  useEffect(() => () => releaseOpenMenu(close), [close]);
 
   const onTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (open) return;
@@ -167,7 +193,9 @@ export function Menu<V extends string>({
         choose(highlight);
         break;
       case "Escape":
+        // SPEC-ui-kit 2.2: the Escape stops here, so a modal around the menu never sees it.
         event.preventDefault();
+        event.stopPropagation();
         closeToTrigger();
         break;
       case "Tab":
@@ -177,12 +205,31 @@ export function Menu<V extends string>({
     }
   };
 
+  /** 2.6: while open, a press on the trigger or an option keeps focus on the listbox. */
+  const keepFocus = (event: MouseEvent) => {
+    if (pointerFocus && open) event.preventDefault();
+  };
+
+  const onBlur = (event: FocusEvent<HTMLDivElement>) => {
+    const next = event.relatedTarget as Node | null;
+    if (onFieldBlur && !rootRef.current?.contains(next)) onFieldBlur();
+  };
+
   return (
-    <div ref={rootRef} className={styles.menu}>
-      <span id={labelId} className={`text-preset-4 ${styles.label}`}>
+    <div
+      ref={rootRef}
+      className={cx(styles.menu, field ? styles.field : styles.toolbar)}
+      onBlur={onFieldBlur ? onBlur : undefined}
+    >
+      <span
+        id={labelId}
+        className={cx(field ? "text-preset-5-bold" : "text-preset-4", styles.label)}
+      >
         {label}
       </span>
       <div className={cx(styles.anchor, className)}>
+        {/* SPEC-ui-kit 2.6: a select field's trigger carries its field's `aria-invalid` (US-31). */}
+        {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props */}
         <button
           ref={triggerRef}
           type="button"
@@ -190,19 +237,33 @@ export function Menu<V extends string>({
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={listboxId}
-          aria-label={COPY.menuTriggerName(label, currentLabel)}
-          onClick={() => (open ? close() : openAt(startIndex()))}
+          aria-label={
+            field && current === undefined ? label : COPY.menuTriggerName(label, currentLabel)
+          }
+          aria-invalid={invalid ? true : undefined}
+          aria-describedby={describedBy}
+          onMouseDown={keepFocus}
+          onClick={() => {
+            if (!open) openAt(startIndex());
+            else if (pointerFocus) closeToTrigger();
+            else close();
+          }}
           onKeyDown={onTriggerKeyDown}
         >
           <span className={styles.slot}>
-            <span className={styles.current}>{currentLabel}</span>
+            <span className={styles.current}>
+              {renderValue ? renderValue(current) : currentLabel}
+            </span>
             {/* Every option, hidden, sizes the slot: the trigger is as wide as its widest
-                option, so no option is cut and the width never changes (T-19 plan Q3). */}
-            {options.map((option) => (
-              <span key={option.value} className={styles.sizer} aria-hidden="true">
-                {option.label}
-              </span>
-            ))}
+                option, so no option is cut and the width never changes (T-19 plan Q3). A form
+                field is as wide as its form, so it needs none. */}
+            {field
+              ? null
+              : options.map((option) => (
+                  <span key={option.value} className={styles.sizer} aria-hidden="true">
+                    {option.label}
+                  </span>
+                ))}
           </span>
           <span className={styles.caret}>
             <CaretDownIcon />
@@ -233,9 +294,10 @@ export function Menu<V extends string>({
                   index === currentIndex && styles.selected,
                   index === highlight && styles.highlighted,
                 )}
+                onMouseDown={keepFocus}
                 onClick={() => choose(index)}
               >
-                {option.label}
+                {renderOption ? renderOption(option, index === currentIndex) : option.label}
               </li>
             ))}
           </ul>

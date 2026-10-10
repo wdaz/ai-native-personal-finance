@@ -1,4 +1,9 @@
-.primary {
+/*
+ * design-tokens.md "Component states" and SPEC-ui-kit 2.3, 2.7, 2.8. A colour hover runs over
+ * `--duration-hover`; an underline hover is instant (UI-2, the designer's changelog §21b). A
+ * disabled or pending (`aria-disabled="true"`) button shows no hover (US-34 AC2).
+ */
+.button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -6,17 +11,61 @@
   padding: var(--spacing-200);
   border: none;
   border-radius: var(--radius-100);
-  background: var(--color-grey-900);
-  color: var(--color-white);
   font: var(--text-preset-4-bold);
   cursor: pointer;
 }
 
-/* US-34 AC2: a disabled control has no hover state. */
-.primary:hover:not(:disabled) {
+.fit {
+  inline-size: auto;
+  white-space: nowrap;
+}
+
+.primary {
+  background: var(--color-grey-900);
+  color: var(--color-white);
+  transition: background-color var(--duration-hover);
+}
+
+.primary:hover:not(:disabled, [aria-disabled="true"]) {
   background: var(--color-grey-500);
 }
 
-.primary:disabled {
+/* UK-Q5 (a), the designer's changelog §11: the background stays full red, the text underlines. */
+.destroy {
+  background: var(--color-red);
+  color: var(--color-white);
+}
+
+.destroy:hover:not(:disabled, [aria-disabled="true"]) {
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
+}
+
+/* "No, Go Back" (2.3): a text button at least the minimum tap target tall. */
+.text {
+  min-block-size: var(--tap-target-min);
+  padding: 0;
+  background: none;
+  color: var(--color-grey-500);
+  font: var(--text-preset-4);
+  transition: color var(--duration-hover);
+}
+
+.text:hover:not(:disabled, [aria-disabled="true"]) {
+  color: var(--color-grey-900);
+}
+
+.button:disabled {
   cursor: not-allowed;
+}
+
+.button[aria-disabled="true"] {
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary,
+  .text {
+    transition: none;
+  }
 }

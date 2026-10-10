@@ -57,13 +57,21 @@ describe("T-01 scaffold", () => {
       if (token && value) documentedPixels.set(token, value);
     }
 
-    // Shadows (v1.5): | `--shadow-x` | `0 4px 24px rgba(…)` | use |
-    const documentedShadows = new Map<string, string>();
+    // Values written in backticks — shadows (v1.5) and the backdrop colour (v1.6):
+    // | `--shadow-x` | `0 4px 24px rgba(…)` | use |, | `--color-backdrop` | `rgba(…)` | use |
+    const documentedLiterals = new Map<string, string>();
+    for (const match of tokensDoc.matchAll(/^\|\s*`(--[a-z0-9-]+)`\s*\|\s*`([^`]+)`\s*\|/gm)) {
+      const [, token, value] = match;
+      if (token && value) documentedLiterals.set(token, value);
+    }
+
+    // Opacities (v1.6): | `--opacity-x` | 0.25 | use |
+    const documentedOpacities = new Map<string, string>();
     for (const match of tokensDoc.matchAll(
-      /^\|\s*`(--shadow-[a-z0-9-]+)`\s*\|\s*`([^`]+)`\s*\|/gm,
+      /^\|\s*`(--opacity-[a-z0-9-]+)`\s*\|\s*([\d.]+)\s*\|/gm,
     )) {
       const [, token, value] = match;
-      if (token && value) documentedShadows.set(token, value);
+      if (token && value) documentedOpacities.set(token, value);
     }
 
     // Typography: | `--text-preset-1` | Text Preset 1 | 700 | 32px | 120% |
@@ -88,16 +96,20 @@ describe("T-01 scaffold", () => {
       expect(documentedColours.size).toBe(22);
       expect(documentedPresets.size).toBe(7);
       // 11 spacings + 8 radii/layout/breakpoints (v1.0) + 7 auth layout and lines (v1.1)
-      // + 9 app shell values, two of them durations (v1.2) + 2 menu values, one a duration (v1.5).
-      expect(documentedPixels.size).toBe(37);
-      expect(documentedShadows.size).toBe(1);
+      // + 9 app shell values, two of them durations (v1.2) + 2 menu values, one a duration (v1.5)
+      // + 4 modal and form values, one a duration (v1.6).
+      expect(documentedPixels.size).toBe(41);
+      // The popover shadow (v1.5) and the modal backdrop (v1.6).
+      expect(documentedLiterals.size).toBe(2);
+      expect(documentedOpacities.size).toBe(1);
       // Nothing documented may escape the three value checks below — a new table in the
       // document has to be given a parser here rather than silently going unchecked.
       const valued = new Set([
         ...documentedColours.keys(),
         ...documentedPixels.keys(),
         ...documentedPresets.keys(),
-        ...documentedShadows.keys(),
+        ...documentedLiterals.keys(),
+        ...documentedOpacities.keys(),
       ]);
       expect([...documentedTokens].filter((token) => !valued.has(token))).toEqual([]);
     });
@@ -110,7 +122,11 @@ describe("T-01 scaffold", () => {
       expect(declaredTokens.get(token)).toBe(value);
     });
 
-    it.each([...documentedShadows])("declares %s as %s", (token, value) => {
+    it.each([...documentedLiterals])("declares %s as %s", (token, value) => {
+      expect(declaredTokens.get(token)).toBe(value);
+    });
+
+    it.each([...documentedOpacities])("declares %s as %s", (token, value) => {
       expect(declaredTokens.get(token)).toBe(value);
     });
 
