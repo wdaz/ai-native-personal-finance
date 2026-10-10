@@ -26,6 +26,10 @@ locally). Each test resets it; it holds demo data only.
 - `write-refusals.spec.ts` (T-17) — the proxy's 403 and 415 on the eight planned write paths,
   401 first, the `Sec-Fetch-Site` and content-type cases, DELETE, the exempt routes, logout's
   403 envelope, and a lower-case method answered 400 by Node (SPEC-write-path 7.3)
+- `transactions.spec.ts` (T-18) — `GET /api/transactions`: 401, every seed variant and the views of
+  `transactions.md` 4.3–4.6 against an independent oracle (`applyVariant` + the domain), the clamp,
+  the strict 400s with the allowed values, `no-store`, nothing written (2.13; the 500 is a unit test,
+  v1.0.17)
 - `write-limit.spec.ts` (T-17) — the write limiter against real `WriteAttempt` rows: per IP,
   pruned, emptied by a reset, `retryAfter` (2.10)
 - `write-wrapper.spec.ts` (T-17) — `guardedWrite` called directly (no write route exists

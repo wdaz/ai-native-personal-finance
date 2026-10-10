@@ -2,6 +2,7 @@ import { z } from "zod";
 import { COPY } from "./copy";
 import { CATEGORIES, RESET_REASONS, THEMES } from "./enums";
 import { WEBMCP_MODES } from "./env";
+import { TRANSACTIONS_PAGE_SIZE } from "./transactions-query";
 
 /**
  * The request and response schemas of docs/02-architecture/data-model.md ("Request/response
@@ -122,8 +123,9 @@ export type ErrorIssue = z.infer<typeof ErrorIssueSchema>;
 
 export const ErrorEnvelopeSchema = z.strictObject({
   error: z.enum(ERROR_CODES),
-  /** Present for every code this schema has a fixed banner/notice for (401, 429, …); a 400
-   * validation error has none — its `issues` carry the codes the client renders instead. */
+  /** Present for every code this schema has a fixed banner/notice for (401, 429, …). A 400
+   * validation error's `issues` carry the codes the client renders; only a route whose spec says
+   * so adds a `message` (SPEC-transactions 2.13: the allowed values, for an agent). */
   message: z.string().min(1).optional(),
   issues: z.array(ErrorIssueSchema).optional(),
   /** Seconds, as in the `Retry-After` header (SPEC-auth §4). */
@@ -285,6 +287,33 @@ export const OverviewDtoSchema = z.strictObject({
   }),
 });
 export type OverviewDto = z.infer<typeof OverviewDtoSchema>;
+
+// ---------------------------------------------------------------------------------------
+// Transactions — SPEC-transactions 2.13
+
+/** One page of the list: the table's fields plus `id` (US-39 AC2) and `avatar`; no `recurring`. */
+export const TransactionsDtoSchema = z.strictObject({
+  items: z
+    .array(
+      z.strictObject({
+        id: z.uuid(),
+        name: z.string().min(1).max(60),
+        avatar: z.string().regex(AVATAR_KEY),
+        category: CategorySchema,
+        date: UtcDateTime,
+        amount: Cents,
+      }),
+    )
+    .max(TRANSACTIONS_PAGE_SIZE),
+  /** The effective page, after the clamp. */
+  page: z.int().min(1),
+  pageSize: z.literal(TRANSACTIONS_PAGE_SIZE),
+  /** `max(1, ceil(total / 10))`. */
+  pageCount: z.int().min(1),
+  /** The rows that match the search and the category. */
+  total: z.int().nonnegative(),
+});
+export type TransactionsDto = z.infer<typeof TransactionsDtoSchema>;
 
 // ---------------------------------------------------------------------------------------
 // Meta — SPEC-app-shell §5

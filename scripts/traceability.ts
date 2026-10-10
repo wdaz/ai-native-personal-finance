@@ -29,12 +29,9 @@ export const RELEASE_BEING_BUILT = 2;
  * The Release 2 stories no build task has named yet (H4, the owner's answer (a); ADR-0003's dated
  * line 2026-10-10): `run` does not require them. The list only shrinks — the build task whose
  * test first names an id removes it in the same pull request, and an id still listed once a title
- * names it fails the check. Each was one of the 20 ids unnamed on 2026-10-06; T-17 removed US-40.
+ * names it fails the check. Each was one of the 20 ids unnamed on 2026-10-06; T-17 removed US-40; T-18 removed US-09, US-10 and US-12.
  */
 export const NOT_YET_BUILT: readonly string[] = [
-  "US-09",
-  "US-10",
-  "US-12",
   "US-13",
   "US-14",
   "US-15",

@@ -31,6 +31,16 @@ describe("validationErrorResponse", () => {
     expect(body).toEqual({ error: "validation", issues: [{ path: ["email"], code: "required" }] });
     expect(body.message).toBeUndefined();
   });
+  it("carries a message beside the issues when given one (SPEC-transactions 2.13)", async () => {
+    const issues = [{ path: ["sort"], code: "invalid_format" as const }];
+    const response = validationErrorResponse(issues, 400, "sort must be one of: latest");
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: "validation",
+      message: "sort must be one of: latest",
+      issues,
+    });
+  });
 });
 
 describe("rateLimitedResponse", () => {

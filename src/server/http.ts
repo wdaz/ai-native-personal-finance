@@ -16,11 +16,16 @@ export function errorResponse(status: number, error: ApiErrorCode, message: stri
 }
 
 /**
- * SPEC-auth §2.10: a validation error carries `issues`, never `message` — no Zod default
- * strings. 400 unless told otherwise; a refused content type is 415 (SPEC-write-path 2.6).
+ * SPEC-auth §2.10: a validation error carries `issues` and no Zod default strings. 400 unless
+ * told otherwise; a refused content type is 415 (SPEC-write-path 2.6). Only a route whose spec
+ * gives its 400 a `message` passes one (SPEC-transactions 2.13: the allowed values).
  */
-export function validationErrorResponse(issues: ErrorIssue[], status = 400): Response {
-  const body: ErrorEnvelope = { error: "validation", issues };
+export function validationErrorResponse(
+  issues: ErrorIssue[],
+  status = 400,
+  message?: string,
+): Response {
+  const body: ErrorEnvelope = { error: "validation", ...(message ? { message } : {}), issues };
   return Response.json(body, { status, headers: NO_STORE });
 }
 
