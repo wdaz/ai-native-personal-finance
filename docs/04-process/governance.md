@@ -225,8 +225,10 @@ Since T-15b (2026-09-29; plan `plans/2026-09-29-T-15b.md`):
   the owner's).
 - **No review gates a merge except the required checks.** Copilot's review was turned off for
   pull requests into `develop` on 2026-10-10 (owner: "Copilot review dayandırdım" — "I stopped
-  Copilot review"); it is not expected, and its absence is not an exception to record. Until then it ran
-  on every pull request (the rulesets "main: pull request, Copilot, CodeQL" and "develop: pull
+  Copilot review"); on those pull requests it is not expected, and its absence is not an exception
+  to record. A release or hotfix pull request into `main` is outside that decision: the agent does not
+  wait for Copilot there either, and whether Copilot reviews it is the owner's setting. Until then
+  Copilot ran on every pull request (the rulesets "main: pull request, Copilot, CodeQL" and "develop: pull
   request, Copilot, CodeQL", keep those names; until T-15b the one "Copilot review for default
   branch") but was not reliable enough to hold a merge (owner, 2026-09-26: "Copilot review qoşulsada
   stabil deyil"). No rule requires an approval: the owner is the only collaborator and author of
@@ -254,7 +256,9 @@ that day have the evidence):
   pull request, code quality, CodeQL) and "main: required CI checks" (24007893; the seven checks and
   `release source`). `develop` has copies: "develop: pull request, Copilot, CodeQL" (24155781) and
   "develop: required CI checks" (24155784; the seven). No bypass actor in any. Compared on
-  2026-09-29: the rules are identical except `release source`.
+  2026-09-29: the rules are identical except `release source`. (As read then. Since 2026-10-10 the
+  owner has turned Copilot review off for `develop`; whether its ruleset still lists the rule was not
+  re-read, and the owner's settings decide it.)
 - **`develop`** was created from `main` at `cb6f845` (T-15a's last merge). CI runs on pushes to
   both branches and on every pull request; CodeQL on pushes and pull requests of both.
 - **The default branch is `develop`** (plan Q2): so the check's workflow runs from `develop`,
