@@ -6767,3 +6767,25 @@ them too").
 - **Next:** asked whether to disable the mod, whose write guard refuses Claude Design writes from any
   agent but `designer-agent:designer`, the owner chose "Saxla" ("keep it"): where the mod is loaded, writes
   still go through it. Once this pull request is merged (sessions started from `develop` see the agent only then), run outcome 1's comparison with the new agent in a session on the Mac.
+
+---
+
+## 2026-10-10 — Phase 4 (Release 2): the designer agent gets Claude Design's plan tool (governance v1.13)
+
+- **Phase:** 4 — Specs & plan (Release 2); met while applying outcome 1's approved design decisions.
+- **Participants:** Owner (Ruslan), Agent (Claude, Claude Projects thread)
+- **Trigger:** the first write in *apply* mode was refused: Claude Design's `write_files` takes a write only
+  with a `plan_token` from `finalize_plan`, which `.claude/agents/designer.md` did not list. Nothing was
+  written; the session did not call the tool in the agent's place.
+- **Prompt(s):** conversational, in the project thread "Release 2 dizayn uyğunlaşması".
+- **Produced:** `finalize_plan` in the agent's tools and *apply* steps; `governance.md` v1.13.
+- **What the agent got right:** stopped at the refusal and asked the owner instead of working around the
+  only route.
+- **What the agent got wrong or missed:** v1.12 copied the mod's read and write tools without checking
+  what a Claude Design write needs.
+- **Owner changes and reasoning:** chose "Aləti əlavə et" ("add the tool") over applying the changes by
+  hand.
+- **Disagreements:** none.
+- **Lessons for the process:** check a new agent's tool list against one real call of each mode before
+  relying on it.
+- **Next:** after the merge, rerun outcome 1's *apply* in a session on the Mac started from `develop`.
