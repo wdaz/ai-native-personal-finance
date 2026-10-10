@@ -7248,3 +7248,40 @@ them too").
   stays with T-24. The throwing threshold check runs the route's handler in the test process, since the
   API server's environment is fixed (plan F4).
 - **Next:** the merge of #131; then T-24.
+
+## 2026-10-10 — Phase 4 (Release 2): T-25 — Pots, server and API
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; a Release 2 server task, built while
+  T-24 (Budgets UI) ran in another thread.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "Release 2 build T-25"; one read-only review subagent, the `/code-review`
+  skill on Opus).
+- **Trigger:** the coordinator's brief to build T-25, which depends only on T-17.
+- **Prompt(s):** `prompts/2026-10-10-T-25/` (the review brief, report and handling). The plan
+  `plans/2026-10-10-T-25.md` raised no question: `pots.md` v0.6 and `write-path.md` answered every behaviour.
+- **Produced** (pull request #133, `develop`):
+  - A: `potPercent`, `potFill`, `moneyPreview`, `isPotNameTaken`, `firstFreeTheme`; `formatPercent`; the pot
+    schemas and the strict DTOs.
+  - B: `src/server/pots.ts` and the six routes of `pots.md` 2.12; every money move and a deletion as
+    `write-path.md` 2.8's conditional updates in one transaction (the pot first, then the balance; a
+    deletion's refund from `DELETE … RETURNING`); `tests/api/pots.spec.ts` with 7.2's conservation and races
+    and US-04 AC2 through `GET /api/overview` (H8). US-21 left `NOT_YET_BUILT`, which is empty.
+  - C: `potFigures()` in `scripts/seed-figures.ts` and `pots.md` §4.2–§4.6 held to it (H16 (2)).
+- **What went well:** the pipeline of T-17 and the pattern of T-23 made each route a few lines; the figures of
+  T-15d matched the domain's output; the API suite passed on its first run.
+- **What the agent got wrong or missed:** the first domain test typed the seed's figures from the seed file,
+  which `build-workflow.md` forbids; it was rewritten with the spec's examples as plain inputs, and the seed's
+  side moved to the figures test. The review found that the moves lock `Pot` then `Balance` while the reset
+  truncated them in the other order, a deadlock under a reset during a move; the reset now follows the moves'
+  order. It also found the pots' two reads outside one snapshot and an unchecked balance credit; both
+  fixed (`code-review-handling.md`).
+- **Found on the way:** Zod 4's string `.max` counts code points, not UTF-16 code units, so `PotNameSchema`
+  accepted 15 emoji and a letter (31 units) against `pots.md` 4.6 and `write-path.md` 2.7. It now checks the
+  units too, with the same `too_long` code; `.max` stays for the tool schemas' `maxLength`.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none.
+- **Not done here:** the page, the tools, the copy and the tokens (T-26); §4.7–§4.9 of `pots.md` (widths, tool
+  descriptions, contrast) move into the figures with T-26, which builds what they describe; removing the empty
+  `NOT_YET_BUILT` and its upper-bound test is T-26's.
+- **Next:** the merge of this pull request; T-26 after T-22, T-24 and T-25.

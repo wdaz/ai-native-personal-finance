@@ -38,6 +38,12 @@ locally). Each test resets it; it holds demo data only.
   seed variant against an independent oracle (`applyVariant` + `budgetsSummary`), the writes' answers, `taken`,
   `required`, 404 and the non-UUID 400, nothing but `Budget` written; `write-path.md` 7.2 on a real route (an
   id from before a reset, two concurrent creates, the threshold's 409, a throwing check run in-process)
+- `pots.spec.ts` (T-25) — `GET`, `POST /api/pots`, `PATCH` and `DELETE /api/pots/:id`, `POST
+/api/pots/:id/deposit` and `/withdraw`: 401, every seed variant against an independent oracle (`applyVariant` +
+  `potPercent`), the writes' answers, `taken`, `required`, `exceeds_balance`, `exceeds_total`, 404 and the
+  non-UUID 400; `write-path.md` 7.2 on the pot routes (conservation after 4.2's chain, a deposit and a delete of
+  one pot at once, two concurrent deposits over the balance, an id from before a reset, the `citext` unique
+  constraint as `taken`) and US-04 AC2 through `GET /api/overview`
 - `write-limit.spec.ts` (T-17) — the write limiter against real `WriteAttempt` rows: per IP,
   pruned, emptied by a reset, `retryAfter` (2.10)
 - `write-wrapper.spec.ts` (T-17) — `guardedWrite` called directly (no write route exists

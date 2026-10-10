@@ -6,10 +6,17 @@ import { overviewSummary } from "@/src/domain/overview";
 import { budgetsSummary, latestSpending } from "@/src/domain/budgets";
 import { applyVariant, type SeedVariant } from "@/src/domain/variants";
 import { budgetFillPercent } from "@/src/shared/budgets";
+import {
+  firstFreeTheme,
+  isPotNameTaken,
+  moneyPreview,
+  potFill,
+  potPercent,
+} from "@/src/domain/pots";
 import { billsList, billsTotals, recurringBills, sortBills } from "@/src/domain/bills";
 import { filterTransactions, sortTransactions, transactionsPage } from "@/src/domain/transactions";
 import { COPY } from "@/src/shared/copy";
-import { CATEGORIES } from "@/src/shared/enums";
+import { CATEGORIES, THEMES, type Theme } from "@/src/shared/enums";
 import {
   TRANSACTION_SORTS,
   type TransactionSort,
@@ -22,7 +29,8 @@ import {
   type BillSort,
   type RecurringBillsQuery,
 } from "@/src/shared/recurring-bills-query";
-import { formatMoney, formatSignedMoney } from "@/src/shared/money";
+import { formatMoney, formatPercent, formatSignedMoney } from "@/src/shared/money";
+import { AMOUNT_MAX_CENTS } from "@/src/shared/schemas";
 
 /**
  * The seed's figures, computed by the domain from prisma/data.json — the one source every
@@ -497,6 +505,126 @@ export function budgetFigures() {
     },
   };
 }
+
+// ---------------------------------------------------------------------------------------
+// SPEC-pots 4.2–4.6 (hand-off H16 (2)): the pots' figures, computed by `src/domain/pots.ts`. 4.7
+// (the card widths), 4.8 (the tool descriptions) and 4.9 (the contrast) move with T-26, which
+// builds the page and the tools (T-25 plan D7).
+
+type SeedPot = SeedInput["pots"][number];
+type Pots = { balance: number; pots: SeedPot[] };
+
+const potNamed = (pots: readonly SeedPot[], name: string): SeedPot => {
+  const found = pots.find((pot) => pot.name === name);
+  if (!found) throw new Error(`No pot named ${name}`);
+  return found;
+};
+
+const potsSum = (pots: readonly SeedPot[]) => pots.reduce((sum, pot) => sum + pot.total, 0);
+
+/** A move as the server makes it (SPEC-write-path 2.8): the pot and the balance, opposite ways. */
+function moved(state: Pots, name: string, kind: "add" | "withdraw", amount: number): Pots {
+  const sign = kind === "add" ? 1 : -1;
+  return {
+    balance: state.balance - sign * amount,
+    pots: state.pots.map((pot) =>
+      pot.name === name ? { ...pot, total: pot.total + sign * amount } : pot,
+    ),
+  };
+}
+
+/** A deletion: the pot's total goes back to the balance (SPEC-pots 2.7). */
+function deleted(state: Pots, name: string): Pots {
+  return {
+    balance: state.balance + potNamed(state.pots, name).total,
+    pots: state.pots.filter((pot) => pot.name !== name),
+  };
+}
+
+/** SPEC-pots 4.2–4.6: what the tests of the pots read instead of typing. `theme` names data.json's hex. */
+export function potFigures(theme: (hex: string) => Theme) {
+  const input = seedOverviewInput();
+  const seed: Pots = { balance: input.balance.current, pots: input.pots };
+  const pot = (name: string) => potNamed(seed.pots, name);
+  const preview = (name: string, kind: "add" | "withdraw", amount: number, state = seed) =>
+    moneyPreview(potNamed(state.pots, name), kind, amount, state.balance);
+  const usedThemes = seed.pots.map((p) => theme(p.theme));
+  const freeThemes = THEMES.filter((t) => !usedThemes.includes(t));
+  const sum = seed.balance + potsSum(seed.pots);
+
+  // 4.3's chain, write-path.md 4.2's sequence.
+  const afterDeposit = moved(seed, "Savings", "add", 10_000);
+  const afterWithdrawal = moved(afterDeposit, "Concert Ticket", "withdraw", 3_000);
+  const afterDelete = deleted(afterWithdrawal, "New Laptop");
+
+  return {
+    input,
+    seed,
+    sum,
+    potsTotal: potsSum(seed.pots),
+    usedThemes,
+    freeThemes,
+    firstFree: firstFreeTheme(usedThemes),
+    budgetThemes: input.budgets.map((b) => theme(b.theme)),
+    longestName: seed.pots.reduce((a, b) => (b.name.length > a.name.length ? b : a)).name,
+    /** 2.3: the largest numerator of `potPercent`, the conserved sum over the largest target. */
+    largestNumerator: 2 * sum * 10_000 + AMOUNT_MAX_CENTS,
+    chain: {
+      deposit: { preview: preview("Savings", "add", 10_000), after: afterDeposit },
+      withdrawal: {
+        preview: preview("Concert Ticket", "withdraw", 3_000, afterDeposit),
+        after: afterWithdrawal,
+      },
+      deletion: { refund: potNamed(afterWithdrawal.pots, "New Laptop").total, after: afterDelete },
+    },
+    pastTarget: {
+      concert: preview("Concert Ticket", "add", 5_000),
+      concertBar: potFill(pot("Concert Ticket").total + 5_000, pot("Concert Ticket").target),
+      gift: preview("Gift", "add", 4_000),
+    },
+    allOfHoliday: {
+      preview: preview("Holiday", "withdraw", pot("Holiday").total),
+      after: moved(seed, "Holiday", "withdraw", pot("Holiday").total),
+      clamped: preview("Holiday", "withdraw", pot("Holiday").total + 1),
+    },
+    wholeBalance: {
+      preview: preview("Savings", "add", seed.balance),
+      after: moved(seed, "Savings", "add", seed.balance),
+      clamped: preview("Savings", "add", seed.balance + 1),
+    },
+    deletions: Object.fromEntries(
+      ["Holiday", "Savings", "New Laptop"].map((name) => [name, deleted(seed, name)]),
+    ) as Record<"Holiday" | "Savings" | "New Laptop", Pots>,
+    edits: {
+      holiday500: potPercent(pot("Holiday").total, 50_000),
+      holidayFill: potFill(pot("Holiday").total, 50_000),
+      savingsAtTotal: potPercent(pot("Savings").total, pot("Savings").total),
+    },
+    overview: {
+      afterSavings100: afterDeposit,
+      afterHoliday31: moved(seed, "Holiday", "withdraw", 3_100),
+    },
+    zeroBalance: {
+      afterDeposit: moved(seed, "Savings", "add", seed.balance),
+      giftWithdrawal: moved(moved(seed, "Savings", "add", seed.balance), "Gift", "withdraw", 1_000),
+    },
+    /** 4.6: the name checks (the counter is the page's, T-26). */
+    names: {
+      paddedLower: isPotNameTaken("  savings  ", seed.pots.map(withId)),
+      upper: isPotNameTaken("SAVINGS", seed.pots.map(withId)),
+      savings2: isPotNameTaken("Savings 2", seed.pots.map(withId)),
+      ownName: isPotNameTaken("savings", seed.pots.map(withId), "Savings"),
+      giftToHoliday: isPotNameTaken("Holiday", seed.pots.map(withId), "Gift"),
+    },
+  };
+}
+
+/** The seed's pots have no id before the database gives one; the name stands in for it here. */
+const withId = (pot: SeedPot) => ({ id: pot.name, name: pot.name });
+
+/** "7.95 %": 4.3's way of writing a share of the bar. */
+export const percentSpaced = (basisPoints: number) =>
+  `${formatPercent(basisPoints).slice(0, -1)} %`;
 
 if (import.meta.main) {
   console.log(markdownTable(workedExample()));

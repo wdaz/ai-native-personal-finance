@@ -31,9 +31,10 @@ export const RELEASE_BEING_BUILT = 2;
  * test first names an id removes it in the same pull request, and an id still listed once a title
  * names it fails the check. Each was one of the 20 ids unnamed on 2026-10-06; T-17 removed US-40; T-18 removed US-09, US-10 and US-12; T-19 removed
  * US-13 and US-19; T-20 removed US-29 and US-30; T-22 removed US-15–US-17 and US-22–US-26; T-23
- * removed US-14, US-18 and US-20.
+ * removed US-14, US-18 and US-20; T-25 removed US-21, so the list is empty (T-26 removes it and its
+ * upper-bound test).
  */
-export const NOT_YET_BUILT: readonly string[] = ["US-21"];
+export const NOT_YET_BUILT: readonly string[] = [];
 
 /** The generated list of the stories a release first delivers (`--write`), one id per line. */
 export function storyListPath(release: number): string {

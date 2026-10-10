@@ -125,7 +125,7 @@ for (const site of ["same-origin", "same-site", "none", undefined]) {
       { ...JSON_TYPE, ...(site ? { "sec-fetch-site": site } : {}) },
       "{}",
     );
-    // No route exists yet (T-25): whatever answers, it is not the proxy's 403 or 415.
+    // It reaches the route (T-25): whatever answers, it is not the proxy's 403 or 415.
     expect([403, 415]).not.toContain(response.status());
   });
 }

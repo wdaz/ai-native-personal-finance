@@ -6,13 +6,15 @@ import { seedRows, type SeedRows } from "./seed";
 /**
  * SPEC-reset-and-test-support §2.1: "truncates all tables" — every model of
  * prisma/schema.prisma and nothing else, so Prisma's `_prisma_migrations` survives.
- * tests/unit/reset.test.ts holds this list to the schema.
+ * tests/unit/reset.test.ts holds this list to the schema. `TRUNCATE` locks the tables in this
+ * order, so `Pot` comes before `Balance`: a pot move or deletion locks its pot row, then the
+ * balance row, and the same order here means a reset waits for it instead of deadlocking (T-25).
  */
 export const RESET_TABLES = [
+  "Pot",
   "Balance",
   "Transaction",
   "Budget",
-  "Pot",
   "ResetLog",
   "LoginAttempt",
   "WriteAttempt",

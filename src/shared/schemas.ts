@@ -182,8 +182,29 @@ export const POT_NAME_MAX = 30;
 
 /** Money in a write body: integer cents (the client converts the typed text first, 2.7). */
 export const AmountCentsSchema = z.int().min(1).max(AMOUNT_MAX_CENTS);
-/** A pot name: trimmed, 1–30 UTF-16 code units (JS `.length`, what the live counter counts). */
-export const PotNameSchema = z.string().trim().min(1).max(POT_NAME_MAX);
+/**
+ * A pot name: trimmed, 1–30 UTF-16 code units (JS `.length`, what the live counter and the input's
+ * `maxLength` count; SPEC-pots 4.6: "an emoji counts 2"). Zod's `.max` counts code points, so 15
+ * emoji and a letter pass it; the check after it counts units and reports the same `too_big`, which
+ * the mapper reads as `too_long` (T-25). `.max` stays for the tool schemas' `maxLength`.
+ */
+export const PotNameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(POT_NAME_MAX)
+  .check((ctx) => {
+    // Only when `.max` passed (at most 30 code points), so a name gets one `too_big`, not two.
+    if (ctx.value.length > POT_NAME_MAX && [...ctx.value].length <= POT_NAME_MAX) {
+      ctx.issues.push({
+        code: "too_big",
+        origin: "string",
+        maximum: POT_NAME_MAX,
+        inclusive: true,
+        input: ctx.value,
+      });
+    }
+  });
 /** A record id in a path or a tool input; `.max` gives a tool its `maxLength` (2.7). */
 export const RecordIdSchema = z.uuid().max(36);
 
@@ -422,6 +443,73 @@ export type BudgetsDto = z.infer<typeof BudgetsDtoSchema>;
 /** The create's and the edit's answer: the record under its noun (2.10, as `pots.md` 2.12). */
 export const BudgetWriteDtoSchema = z.strictObject({ budget: BudgetItemDtoSchema });
 export type BudgetWriteDto = z.infer<typeof BudgetWriteDtoSchema>;
+
+// ---------------------------------------------------------------------------------------
+// Pots — SPEC-pots 2.12
+
+/** SPEC-write-path 4.1: at most fifteen pots, one per theme. */
+export const POTS_MAX = THEMES.length;
+
+/**
+ * `POST /api/pots`: the name (trimmed, 1–30), the target (integer cents) and the theme (one of the
+ * fifteen), all required. Unknown keys are stripped, so a `total` in the body is dropped: a pot's
+ * total changes only by a move (2.12).
+ */
+export const PotCreateSchema = z.object({
+  name: PotNameSchema,
+  target: AmountCentsSchema,
+  theme: ThemeSchema,
+});
+export type PotCreateInput = z.infer<typeof PotCreateSchema>;
+
+/**
+ * `PATCH /api/pots/:id`: the same three fields, all required, as the edit form sends them (2.12;
+ * partial edits are out of scope, §8).
+ */
+export const PotUpdateSchema = z.object({
+  name: PotNameSchema,
+  target: AmountCentsSchema,
+  theme: ThemeSchema,
+});
+export type PotUpdateInput = z.infer<typeof PotUpdateSchema>;
+
+/** `POST /api/pots/:id/deposit` and `…/withdraw`: the amount in integer cents. */
+export const PotMoneyMoveSchema = z.object({ amount: AmountCentsSchema });
+export type PotMoneyMoveInput = z.infer<typeof PotMoneyMoveSchema>;
+
+/** One pot as the card shows it, with its id (US-39 AC2). No `seq`: the order of `items` is the order. */
+export const PotDtoSchema = z.strictObject({
+  id: z.uuid(),
+  name: z.string().min(1).max(POT_NAME_MAX),
+  theme: ThemeSchema,
+  target: AmountCentsSchema,
+  /** May exceed the target (data-model.md). */
+  total: NonNegativeCents,
+  /** `potPercent(total, target)`: 795 means 7.95 % (2.3). */
+  percentBasisPoints: z.int().nonnegative(),
+});
+export type PotDto = z.infer<typeof PotDtoSchema>;
+
+/** Current Balance: what a deposit may not exceed. */
+const PotsBalanceSchema = z.strictObject({ current: NonNegativeCents });
+
+/** `GET /api/pots`: the balance and every pot in creation order; no sum of the totals (2.12). */
+export const PotsDtoSchema = z.strictObject({
+  balance: PotsBalanceSchema,
+  items: z.array(PotDtoSchema).max(POTS_MAX),
+});
+export type PotsDto = z.infer<typeof PotsDtoSchema>;
+
+/** The create's and the edit's answer: the record under its noun (2.12). */
+export const PotWriteDtoSchema = z.strictObject({ pot: PotDtoSchema });
+export type PotWriteDto = z.infer<typeof PotWriteDtoSchema>;
+
+/** A deposit's and a withdrawal's answer: the pot and the balance the move leaves. */
+export const PotMoneyMoveDtoSchema = z.strictObject({
+  pot: PotDtoSchema,
+  balance: PotsBalanceSchema,
+});
+export type PotMoneyMoveDto = z.infer<typeof PotMoneyMoveDtoSchema>;
 
 // ---------------------------------------------------------------------------------------
 // Meta — SPEC-app-shell §5

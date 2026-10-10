@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatAmountInput,
+  formatPercent,
   formatMoney,
   formatSignedMoney,
   parseAmountInput,
@@ -154,5 +155,22 @@ describe("formatAmountInput (SPEC-ui-kit 2.5, 4.1: an edit form's pre-fill; US-1
   it("refuses a value that is not whole, non-negative cents", () => {
     expect(() => formatAmountInput(1.5)).toThrow();
     expect(() => formatAmountInput(-1)).toThrow();
+  });
+});
+
+describe("formatPercent (SPEC-pots 2.3: basis points, two decimals, no separator)", () => {
+  it.each([
+    [795, "7.95%"],
+    [10_667, "106.67%"],
+    [0, "0.00%"],
+    [5, "0.05%"],
+    [57_560_000_00, "57560000.00%"],
+  ])("US-21 AC1 %i basis points read %s", (basisPoints, text) => {
+    expect(formatPercent(basisPoints)).toBe(text);
+  });
+
+  it("refuses a value that is not whole, non-negative basis points", () => {
+    expect(() => formatPercent(7.5)).toThrow("7.5");
+    expect(() => formatPercent(-1)).toThrow("-1");
   });
 });
