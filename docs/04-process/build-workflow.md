@@ -1,6 +1,6 @@
 # Build workflow (Phase 5–6) — working with Claude Code
 
-Status: Approved (owner, 2026-09-20; v1.1 same day after T-01; v1.2 — 2026-09-24, owner decisions after T-13: scratch verification is allowed before the plan gate, and the worktree bootstrap is a rule of thumb; v1.3 — 2026-10-03, owner decision at the T-15c retrospective: two rules of thumb — `gh pr view --json state` before a push to a branch that has or had a pull request, and a plan answered in place is read once for tense)
+Status: Approved (owner, 2026-09-20; v1.1 same day after T-01; v1.2 — 2026-09-24, owner decisions after T-13: scratch verification is allowed before the plan gate, and the worktree bootstrap is a rule of thumb; v1.3 — 2026-10-03, owner decision at the T-15c retrospective: two rules of thumb — `gh pr view --json state` before a push to a branch that has or had a pull request, and a plan answered in place is read once for tense; v1.4 — 2026-10-06, owner decision: a design question that comes up in the build goes to the designer agent, and a subagent returns `DESIGN-Q` instead of choosing)
 
 Claude Code reads `CLAUDE.md` → `AGENTS.md` automatically when started in the repo root, so every session begins with the same context as this document set. The loop below is one task from `docs/03-specs/backlog.md` per session.
 
@@ -16,6 +16,12 @@ Claude Code reads `CLAUDE.md` → `AGENTS.md` automatically when started in the 
 
 ## Rules of thumb
 - If the agent wants to touch a spec, ADR or story, it says so first (AGENTS.md §2).
+- A design question that comes up while code is written or reviewed (a look, a value, a size, a token, a
+  drawn behaviour) is not decided in the code. The controller asks the designer agent and takes its
+  proposal to the owner (`governance.md`, "Design questions are decided by the designer"). A subagent
+  that implements or reviews UI has this line in its brief: "If you meet a design question, stop that
+  part and return `DESIGN-Q: <question, file, component>`. Do not choose." The pull request and the code
+  cite the designer's changelog section that answered it (owner decision, 2026-10-06).
 - A fresh git worktree has no `node_modules` and no generated Prisma client. Set it up from the
   worktree root with `npm ci --ignore-scripts`, then `npx prisma generate`. Never symlink another
   checkout's `node_modules` (the Prisma client is generated per checkout, so tests then fail to
