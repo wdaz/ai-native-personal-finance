@@ -3,5 +3,6 @@
   "installCommand": "npm ci",
   "buildCommand": "npx prisma migrate deploy && npm run build",
   "ignoreCommand": "sh scripts/vercel-ignore-build.sh",
+  "git": { "deploymentEnabled": { "claude/*": false } },
   "crons": [{ "path": "/api/admin/reset", "schedule": "0 3 * * *" }]
 }
