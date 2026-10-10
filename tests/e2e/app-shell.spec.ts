@@ -11,7 +11,7 @@ const PAGES = [
   { path: "/transactions", name: "Transactions", release2: false },
   { path: "/budgets", name: "Budgets", release2: true },
   { path: "/pots", name: "Pots", release2: true },
-  { path: "/recurring-bills", name: "Recurring Bills", release2: true },
+  { path: "/recurring-bills", name: "Recurring Bills", release2: false },
 ] as const;
 
 const GREY_300 = "rgb(179, 179, 179)";
