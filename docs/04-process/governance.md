@@ -61,14 +61,20 @@ It runs in two modes, and the second needs the owner's approval named in its pro
 3. **The owner approves, or decides otherwise.** The agent relays the proposal. The owner's word wins:
    the owner may approve, choose another option, or override a decision already recorded (as for the
    designer's changelog §16a, 2026-10-05, where "hazırda form qərarları dəyişmir" — "the form decisions
-   are not changing now" — kept Release 1 behaviour).
-4. **The designer agent applies, in *apply* mode.** Only after "OWNER APPROVED: <the decision>" it makes
-   the smallest change in the designer's Claude Design project and records the decision in the designer's
-   changelog, stated as a decision. It returns the changelog section and the files changed. Only the
-   designer agent writes to the designer's Claude Design project: the mod that holds the agent refuses
-   every Claude Design tool that changes the project (a write, a delete, a copy, a sharing or member
-   change) from any other agent, and one added later until it is listed as read-only. It does not hold
-   the owner's own `/design-sync`, which stays outside it.
+   are not changing now" — kept Release 1 behaviour). The owner gives the approval by typing
+   `/designer-approve <the decision>` at the prompt (owner decision, 2026-10-10, "guard qur" — "build the
+   guard"). It is the owner's own Enter: a message of the agent, of a subagent or of another plugin cannot
+   give it, and it lasts fifteen minutes or until the designer agent's turn ends. `/designer-approve off`
+   withdraws it.
+4. **The designer agent applies, in *apply* mode.** Only after "OWNER APPROVED: <the decision>" and the
+   owner's `/designer-approve` it makes the smallest change in the designer's Claude Design project and
+   records the decision in the designer's changelog, stated as a decision. It returns the changelog
+   section and the files changed. Only the designer agent writes to the designer's Claude Design project,
+   and only while the owner's approval stands: the mod that holds the agent refuses every Claude Design
+   tool that changes the project (a write, a delete, a copy, a sharing or member change) from any other
+   agent, and one added later until it is listed as read-only, and refuses the designer agent's own write
+   without the approval (`APPROVAL-MISSING`). It does not hold the owner's own `/design-sync`, which stays
+   outside it, nor a write made by the owner in Claude Design itself.
 5. **The agent cites the answer**, naming the changelog's section (for example "the designer's
    changelog §8a"), in the spec, the pull request and the code. A changelog entry that is a proposal, an
    option or a note to discuss, not stated as a decision, is not yet the answer, and the question stays

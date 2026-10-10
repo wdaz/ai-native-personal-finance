@@ -6463,12 +6463,16 @@ them too").
   and a sentence in governance v1.11 step 2. If the owner meant something else (for example the human
   designer asking the owner), this is the line to correct.
 - **Disagreements:** none.
-- **Lessons for the process:** "apply only after the owner approved" is held by the persona's prompt and the
-  controller's call, not by the tool: the guard knows *who* writes, not *which mode* it is in. A write by the
-  designer agent in *propose* mode would pass it. The check that catches it is after the fact: compare
-  the etags of the project's files (`list_files`) before and after a *propose* run, as the smoke test did.
-  A guard that makes the owner's approval a condition of the write, not a line in a prompt, is not built;
-  it is offered to the owner.
+- **Lessons for the process:** "apply only after the owner approved" was first held by the persona's prompt
+  and the controller's call, not by the tool: the guard knew *who* writes, not *which mode* it was in. The
+  owner then said "guard qur" ("build the guard") and it is built: `/designer-approve <decision>` sets a
+  fifteen-minute approval that only the owner's own Enter (origin `composer`) can set, the designer agent's
+  writes are refused without it (`APPROVAL-MISSING`), and it ends when the designer agent's turn ends. The
+  mod's eighteen tests pass; four of them first passed for the wrong reason (the test had no clock, so the
+  approval never took effect and every "refused" assertion held), which a positive-control test (the write
+  goes through after the approval) exposed. Not covered: a write the owner makes in Claude Design itself or
+  through `/design-sync`, and a reload, which drops the approval (that fails closed). The after-the-fact
+  check stays useful: compare file etags (`list_files`) before and after a run.
 - **Next:**
   - The owner reviews the draft pull request and merges it if the route is right; an open question for the
     owner: may the owner still take a question to the human designer in person (the pull request says yes,
