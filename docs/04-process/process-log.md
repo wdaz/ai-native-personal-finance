@@ -7039,3 +7039,40 @@ them too").
   every state §7 names). Copilot errored on each run, so the Opus review is the only one.
   `tests/unit/install-scripts.test.ts` still fails on npm 10 locally; CI runs npm 11.
 - **Next:** T-20 (Recurring Bills, server and API), in the backlog's order.
+
+## 2026-10-10 — Phase 4 (Release 2): T-20 — Recurring Bills, server and API
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; fourth Release 2 build task.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "T-20"; one read-only review subagent, the `/code-review` skill on
+  Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-19's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-20/` (the review brief, report and handling). The plan
+  `plans/2026-10-10-T-20.md` went to the coordinator session at the plan gate with two questions, the
+  same gaps T-18 met; it answered Q1 (a) and Q2 (a), "consistent with T-18": several invalid fields join
+  their messages with "; " in the order `q`, `sort`, `status`, and the 500 is a unit test. Both are
+  `recurring-bills.md` v0.7.1, which also corrects two stale sentences (the parser's `message`, the
+  helpers' `no-store`) and takes `transactions.md` 2.3's cut of `q`.
+- **Produced** (pull request #127, `develop`):
+  - A: `parseRecurringBillsQuery`, `BILL_STATUSES` (`src/shared/recurring-bills-query.ts`; the sort slugs
+    are Transactions'), `formatDueDay`, `RecurringBillsDtoSchema`; the two list parsers now share
+    `firstParam`, `isOneOf` and `cutSearch` (`src/shared/query-params.ts`).
+  - B: `sortBills`, `filterBills`, `billsList`, `billsTotals` in `src/domain/bills.ts`; `BillStatus` is
+    the type of `BILL_STATUSES`; `billsSummary` and the Overview unchanged.
+  - C: `getRecurringBills`, `toRecurringBillsDto`, `GET /api/recurring-bills`; the API suite against an
+    independent oracle for every seed variant and the views of 4.3–4.5 with each `status`.
+  - D: H14 (2) — `seedBills`, `billSorts` and `billFigures` in `scripts/seed-figures.ts`; 4.3's table
+    held to them with a violation fixture (Highest's $100.00 tie in the design's old order), and the
+    prose figures of 4.2 and 4.5 too; US-29 and US-30 left `NOT_YET_BUILT` (12 ids remain).
+- **What went well:** re-running T-15d's figures script before the gate showed 4.2–4.5 still held, so the
+  figures moved into code unchanged; the two questions had T-18's answers to follow, so the gate took
+  one message.
+- **What the agent got wrong or missed:** the generated "names without an `a`" came out in the bills'
+  order, where the spec writes them A to Z; the figure now sorts them, as the spec's text does.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus while Copilot is down, merge on green CI).
+- **Disagreements:** none.
+- **Not done here:** everything on the page, the copy (H14 (1)) and `list_recurring_bills` (T-21).
+  `tests/unit/install-scripts.test.ts` fails on a machine with npm 10, as recorded for T-17; CI runs
+  npm 11. The E2E suite was not run locally; this task changes no page, and CI runs it.
+- **Next:** the merge of #127; then T-21 (Recurring Bills, UI and `list_recurring_bills`).

@@ -30,6 +30,10 @@ locally). Each test resets it; it holds demo data only.
   `transactions.md` 4.3–4.6 against an independent oracle (`applyVariant` + the domain), the clamp,
   the strict 400s with the allowed values, `no-store`, nothing written (2.13; the 500 is a unit test,
   v1.0.17)
+- `recurring-bills.spec.ts` (T-20) — `GET /api/recurring-bills`: 401, every seed variant and the views of
+  `recurring-bills.md` 4.3–4.5 with each `status` against an independent oracle (`applyVariant` + the
+  domain on the business day), the summary over every bill, the strict 400s with the allowed values (one
+  and several at once), `no-store`, nothing written (2.11; the 500 is a unit test, v0.7.1)
 - `write-limit.spec.ts` (T-17) — the write limiter against real `WriteAttempt` rows: per IP,
   pruned, emptied by a reset, `retryAfter` (2.10)
 - `write-wrapper.spec.ts` (T-17) — `guardedWrite` called directly (no write route exists
