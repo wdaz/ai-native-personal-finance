@@ -6652,7 +6652,7 @@ them too").
   session rule telling the main chat when to ask it, and a `tool.call` guard that refuses every Claude
   Design tool except a short read-only list (so a write, a delete, a copy, a sharing or member change, and a
   tool added later) from every agent but the designer, and refuses the designer's own write without the
-  owner's `/designer-approve` (added 2026-10-10, see the lessons below). Its eighteen tests pass (`claude plugin test`); the
+  owner's `/designer-approve` (added 2026-10-10, see the lessons below). Its nineteen tests pass (`claude plugin test`); the
   project id is a `userConfig` field, not in the mod's source.
 - **What the agent got right:** it read `governance.md` v1.10 first and saw that the owner's choice changes
   its steps 1 and 2 ("tells the owner, does not put the question to the designer"), so it raised the
@@ -6682,11 +6682,15 @@ them too").
 - **Lessons for the process:** "apply only after the owner approved" was first held by the persona's prompt
   and the controller's call, not by the tool: the guard knew *who* writes, not *which mode* it was in. The
   owner then said "guard qur" ("build the guard") and it is built: `/designer-approve <decision>` sets a
-  fifteen-minute approval that only the owner's own Enter (origin `composer`) can set, the designer agent's
-  writes are refused without it (`APPROVAL-MISSING`), and it ends when the designer agent's turn ends. The
-  mod's eighteen tests pass; four of them first passed for the wrong reason (the test had no clock, so the
+  fifteen-minute approval that only the owner's own gesture can set (origin `composer`, Enter at the
+  prompt, or `bridge`, the owner's message through Remote Control), the designer agent's writes are
+  refused without it (`APPROVAL-MISSING`), and it ends when the designer agent's turn ends. The mod's
+  nineteen tests pass; four of them first passed for the wrong reason (the test had no clock, so the
   approval never took effect and every "refused" assertion held), which a positive-control test (the write
-  goes through after the approval) exposed. Not covered: a write the owner makes in Claude Design itself or
+  goes through after the approval) exposed. The first live use found a second defect: the owner typed
+  `/designer-approve` in this background session and the guard refused it, because the command was not
+  stamped `composer` (the session is driven from another client); the guard now also accepts `bridge` and
+  names the origin it refused, so a refusal tells which origin it saw. Not covered: a write the owner makes in Claude Design itself or
   through `/design-sync`, and a reload, which drops the approval (that fails closed). The after-the-fact
   check stays useful: compare file etags (`list_files`) before and after a run.
 - **Next:**

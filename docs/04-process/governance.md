@@ -63,8 +63,8 @@ It runs in two modes, and the second needs the owner's approval named in its pro
    designer's changelog §16a, 2026-10-05, where "hazırda form qərarları dəyişmir" — "the form decisions
    are not changing now" — kept Release 1 behaviour). The owner gives the approval by typing
    `/designer-approve <the decision>` at the prompt (owner decision, 2026-10-10, "guard qur" — "build the
-   guard"). It is the owner's own Enter: a message of the agent, of a subagent or of another plugin cannot
-   give it, and it lasts fifteen minutes or until the designer agent's turn ends. `/designer-approve off`
+   guard"). It is the owner's own gesture, Enter at the prompt or the owner's message through Remote Control: a
+   message of the agent, of a subagent, of an SDK host or of another plugin cannot give it, and it lasts fifteen minutes or until the designer agent's turn ends. `/designer-approve off`
    withdraws it.
 4. **The designer agent applies, in *apply* mode.** Only after "OWNER APPROVED: <the decision>" and the
    owner's `/designer-approve` it makes the smallest change in the designer's Claude Design project and
