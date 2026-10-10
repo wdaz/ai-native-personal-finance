@@ -6766,4 +6766,4 @@ them too").
   sessions; a rule that must hold everywhere belongs in the repository.
 - **Next:** asked whether to disable the mod, whose write guard refuses Claude Design writes from any
   agent but `designer-agent:designer`, the owner chose "Saxla" ("keep it"): where the mod is loaded, writes
-  still go through it. Then run outcome 1's comparison with the new agent in a session on the Mac.
+  still go through it. Once this pull request is merged (sessions started from `develop` see the agent only then), run outcome 1's comparison with the new agent in a session on the Mac.
