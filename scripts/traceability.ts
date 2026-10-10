@@ -20,11 +20,38 @@ const SKIPS = new Set(["skip", "fixme", "todo"]);
 
 /**
  * The release being built (ADR-0003, clarification 2026-09-24 and its T-15d amendment): the stories
- * of this release and of every release before it must be named in a test title. Release 1 until the
- * first Release 2 build task, whose first test lands in the pull request that sets this to 2 — a
- * flip before then would fail CI for ids no test can name yet (T-15d plan D3).
+ * of this release and of every release before it must be named in a test title. Release 2 since
+ * T-17, the first Release 2 build task, whose tests name US-40 (dated line 2026-10-10).
  */
-export const RELEASE_BEING_BUILT = 1;
+export const RELEASE_BEING_BUILT = 2;
+
+/**
+ * The Release 2 stories no build task has named yet (H4, the owner's answer (a); ADR-0003's dated
+ * line 2026-10-10): `run` does not require them. The list only shrinks — the build task whose
+ * test first names an id removes it in the same pull request, and an id still listed once a title
+ * names it fails the check. Each was one of the 20 ids unnamed on 2026-10-06; T-17 removed US-40.
+ */
+export const NOT_YET_BUILT: readonly string[] = [
+  "US-09",
+  "US-10",
+  "US-12",
+  "US-13",
+  "US-14",
+  "US-15",
+  "US-16",
+  "US-17",
+  "US-18",
+  "US-19",
+  "US-20",
+  "US-21",
+  "US-22",
+  "US-23",
+  "US-24",
+  "US-25",
+  "US-26",
+  "US-29",
+  "US-30",
+];
 
 /** The generated list of the stories a release first delivers (`--write`), one id per line. */
 export function storyListPath(release: number): string {
@@ -191,16 +218,20 @@ export function checkTraceability(input: {
   release: string[];
   defined: string[];
   sources: SourceFile[];
-}): { missing: string[]; unknown: string[] } {
+  /** Ids of `release` not required yet (`NOT_YET_BUILT`); one a title names is `alreadyNamed`. */
+  notYetBuilt?: readonly string[];
+}): { missing: string[]; unknown: string[]; alreadyNamed: string[] } {
   const named = new Set<string>();
   for (const file of input.sources) {
     const ids =
       typeof file === "string" ? titleStoryIds(file) : titleStoryIds(file.source, file.path);
     for (const id of ids) named.add(id);
   }
+  const notYetBuilt = input.notYetBuilt ?? [];
   return {
-    missing: input.release.filter((id) => !named.has(id)),
+    missing: input.release.filter((id) => !named.has(id) && !notYetBuilt.includes(id)),
     unknown: [...named].filter((id) => !input.defined.includes(id)).sort(),
+    alreadyNamed: notYetBuilt.filter((id) => named.has(id)),
   };
 }
 
@@ -227,6 +258,7 @@ export function run(
   root: string,
   write = false,
   built = RELEASE_BEING_BUILT,
+  notYetBuilt: readonly string[] = NOT_YET_BUILT,
 ): { code: number; out: string[]; err: string[] } {
   const prd = readFileSync(join(root, "docs/01-requirements/prd.md"), "utf8");
   const lists = listedReleases(prd).map((n) => {
@@ -261,8 +293,9 @@ export function run(
       ),
     };
   }
-  const { missing, unknown } = checkTraceability({
+  const { missing, unknown, alreadyNamed } = checkTraceability({
     release,
+    notYetBuilt,
     defined: definedStoryIds(
       readFileSync(join(root, "docs/01-requirements/user-stories.md"), "utf8"),
     ),
@@ -273,15 +306,20 @@ export function run(
     ...unknown.map(
       (id) => `traceability: ${id} appears in a test title but user-stories.md does not define it`,
     ),
+    ...alreadyNamed.map(
+      (id) => `traceability: ${id} is already named in a test title; remove it from NOT_YET_BUILT`,
+    ),
   ];
   if (err.length > 0) return { code: 1, out: [], err };
+  const skipped = release.filter((id) => notYetBuilt.includes(id)).length;
+  const required = release.length - skipped;
+  const line =
+    built === 1
+      ? `traceability: all ${required} Release 1 stories are named in a test title`
+      : `traceability: all ${required} stories of Releases 1–${built} are named in a test title`;
   return {
     code: 0,
-    out: [
-      built === 1
-        ? `traceability: all ${release.length} Release 1 stories are named in a test title`
-        : `traceability: all ${release.length} stories of Releases 1–${built} are named in a test title`,
-    ],
+    out: [skipped === 0 ? line : `${line}; ${skipped} are not built yet`],
     err: [],
   };
 }
