@@ -256,6 +256,112 @@ test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the four car
   await expect(page).toHaveURL(`${baseURL}/overview`);
 });
 
+/** A card's own box: its heading sits in the card's `.header`, a child of the card. */
+function card(page: Page, heading: string) {
+  return page.getByRole("heading", { name: heading, exact: true }).locator("../..");
+}
+
+async function box(page: Page, heading: string) {
+  const rect = await card(page, heading).boundingBox();
+  if (rect === null) throw new Error(`no box for the ${heading} card`);
+  return rect;
+}
+
+/** SPEC-app-shell §2.9: `<main>`'s content-box width, what the grid's container query reads. */
+async function contentWidth(page: Page): Promise<number> {
+  return page.getByRole("main").evaluate((main) => {
+    const style = getComputedStyle(main);
+    return main.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  });
+}
+
+async function expectTwoColumns(page: Page) {
+  const [pots, transactions, budgets, bills] = await Promise.all(
+    ["Pots", "Transactions", "Budgets", "Recurring Bills"].map((name) => box(page, name)),
+  );
+  expect(budgets!.y).toBe(pots!.y);
+  expect(budgets!.x).toBeGreaterThan(pots!.x);
+  expect(bills!.x).toBeGreaterThan(transactions!.x);
+  expect(pots!.width).toBe(608);
+  return { pots: pots!, budgets: budgets! };
+}
+
+async function expectOneColumn(page: Page) {
+  const boxes = await Promise.all(
+    ["Pots", "Transactions", "Budgets", "Recurring Bills"].map((name) => box(page, name)),
+  );
+  for (let i = 1; i < boxes.length; i++) {
+    expect(boxes[i]!.x).toBe(boxes[0]!.x);
+    expect(boxes[i]!.y).toBeGreaterThan(boxes[i - 1]!.y);
+  }
+}
+
+test.describe("US-33 layout (SPEC-overview §6 v1.2, H17): two columns from a 1060 px content width", () => {
+  test("sidebar expanded: two columns at 1440 px (608 + 24 + 428), one column at 1439, 1100, 1024 and 768 px", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/overview");
+    await expect.poll(() => contentWidth(page)).toBe(1060);
+    const { pots, budgets } = await expectTwoColumns(page);
+    expect(budgets.x - (pots.x + pots.width)).toBe(24);
+    expect(budgets.width).toBe(428);
+
+    await page.setViewportSize({ width: 1439, height: 900 });
+    await expect.poll(() => contentWidth(page)).toBe(1059);
+    await expectOneColumn(page);
+
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await expect.poll(() => contentWidth(page)).toBe(720);
+    await expectOneColumn(page);
+    // The designer's changelog §14: at 1100 px the donut and legend overflowed the Budgets card.
+    const budgetsCard = await box(page, "Budgets");
+    const label = `Spent ${formatMoney(FIGURES.budgets.spent)} of ${formatMoney(FIGURES.budgets.limit)} limit`;
+    for (const inner of [
+      await page.getByRole("img", { name: label }).boundingBox(),
+      await card(page, "Budgets").getByRole("list").boundingBox(),
+    ]) {
+      expect(inner).not.toBeNull();
+      expect(inner!.x).toBeGreaterThanOrEqual(budgetsCard.x);
+      expect(inner!.x + inner!.width).toBeLessThanOrEqual(budgetsCard.x + budgetsCard.width);
+    }
+
+    for (const width of [1024, 768]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expectOneColumn(page);
+    }
+  });
+
+  test("sidebar collapsed: two columns at 1228 px, one at 1227 px; the left column stays 608 px at 1440 px; collapsing at 1300 px switches one column to two and back", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1300, height: 900 });
+    await page.goto("/overview");
+    await expectOneColumn(page);
+
+    await page.getByRole("button", { name: COPY.minimizeMenu }).click();
+    await expect.poll(() => contentWidth(page)).toBe(1132);
+    await expectTwoColumns(page);
+
+    await page.setViewportSize({ width: 1228, height: 900 });
+    await expect.poll(() => contentWidth(page)).toBe(1060);
+    await expectTwoColumns(page);
+
+    await page.setViewportSize({ width: 1227, height: 900 });
+    await expect.poll(() => contentWidth(page)).toBe(1059);
+    await expectOneColumn(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect.poll(() => contentWidth(page)).toBe(1272);
+    await expectTwoColumns(page);
+
+    await page.setViewportSize({ width: 1300, height: 900 });
+    await page.getByRole("button", { name: COPY.expandMenu }).click();
+    await expect.poll(() => contentWidth(page)).toBe(920);
+    await expectOneColumn(page);
+  });
+});
+
 test.describe("US-34 hover and focus states (design-tokens.md 'Component states': tertiary)", () => {
   test("all four card links go grey-500 to grey-900 on hover and focus", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });

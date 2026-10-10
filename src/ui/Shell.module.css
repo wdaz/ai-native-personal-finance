@@ -13,6 +13,8 @@
   flex-direction: column;
   gap: var(--spacing-400);
   min-inline-size: 0;
+  /* SPEC-app-shell §2.9 (v1.5, H17): pages switch columns by this content box, not the window. */
+  container-type: inline-size;
   /* Plan D13: clear the fixed bottom bar — its height plus 40 px. */
   padding: var(--spacing-300) var(--spacing-200)
     calc(var(--bottom-nav-height-mobile) + var(--spacing-500));
