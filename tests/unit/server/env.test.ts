@@ -10,6 +10,8 @@ import {
   resetRowThreshold,
   resetSecret,
   webmcpOriginTrialToken,
+  writeRateLimitMax,
+  writeRateLimitWindowSeconds,
 } from "@/src/server/env";
 
 describe("demoPasswordHash", () => {
@@ -92,6 +94,25 @@ describe("resetRowThreshold / resetBytesThreshold (SPEC-reset-and-test-support ย
     expect(() => resetRowThreshold({ RESET_ROW_THRESHOLD: "lots" })).toThrow(/RESET_ROW_THRESHOLD/);
     expect(() => resetBytesThreshold({ RESET_BYTES_THRESHOLD: "0" })).toThrow(
       /RESET_BYTES_THRESHOLD/,
+    );
+  });
+});
+
+describe("writeRateLimitMax / writeRateLimitWindowSeconds (SPEC-write-path 2.10)", () => {
+  it("default to 30 writes per 60 seconds (ยง9 Q4)", () => {
+    expect(writeRateLimitMax({})).toBe(30);
+    expect(writeRateLimitWindowSeconds({})).toBe(60);
+  });
+
+  it("read configured values (the test suites' 1,000)", () => {
+    expect(writeRateLimitMax({ WRITE_RATE_LIMIT_MAX: "1000" })).toBe(1000);
+    expect(writeRateLimitWindowSeconds({ WRITE_RATE_LIMIT_WINDOW_SECONDS: "5" })).toBe(5);
+  });
+
+  it("throw on an invalid value", () => {
+    expect(() => writeRateLimitMax({ WRITE_RATE_LIMIT_MAX: "0" })).toThrow(/WRITE_RATE_LIMIT_MAX/);
+    expect(() => writeRateLimitWindowSeconds({ WRITE_RATE_LIMIT_WINDOW_SECONDS: "1e2" })).toThrow(
+      /WRITE_RATE_LIMIT_WINDOW_SECONDS/,
     );
   });
 });
