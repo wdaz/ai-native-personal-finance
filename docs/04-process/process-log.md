@@ -6736,3 +6736,34 @@ them too").
 - **Lessons for the process:** read the repository's own goal documents before drafting a goal; a status
   summary is not the source.
 - **Next:** the owner reviews the pull request from `docs/release-2-goal`; then hotfix 1.
+
+---
+
+## 2026-10-10 — Phase 4 (Release 2): the designer agent moves into the repository (governance v1.12)
+
+- **Phase:** 4 — Specs & plan (Release 2); a process change met while starting the Release 2 goal's
+  outcome 1 (design alignment).
+- **Participants:** Owner (Ruslan), Agent (Claude, Claude Projects thread)
+- **Trigger:** outcome 1 needs the designer agent, and the mod that held it (`designer-agent:designer`) did
+  not load in sessions started remotely on the owner's Mac (`Agent type 'designer-agent:designer' not
+  found`), nor in cloud threads. The owner: "hazırda həmin agent mod-dur və sesiya vaxtı qoşulur. Bunun
+  üçün yeni agent yarat" ("that agent is a mod and attaches at session time; create a new agent for this").
+- **Prompt(s):** conversational, in the project thread "Release 2 dizayn uyğunlaşması".
+- **Produced:** `.claude/agents/designer.md` (the persona of the mod's `persona.ts`, as a project agent);
+  `governance.md` v1.12.
+- **What the agent got right:** read the mod (`register.ts`, `persona.ts`) before proposing, found that a
+  cloud session has no Claude Design tools, kept the Claude Design project id out of the repository (the
+  agent finds the project by its files), and asked the owner whether the new agent should apply as well as
+  propose, since an agent file cannot hold the `/designer-approve` guard.
+- **What the agent got wrong or missed:** several turns were spent restarting remote sessions before the
+  cause (the mod registers its agent in its own session-start hook) was understood.
+- **Owner changes and reasoning:** chose "Təklif və tətbiq" ("propose and apply") over the agent's
+  recommendation of propose-only: the approval is now the owner's own message, quoted after "OWNER
+  APPROVED:", with no tool guard.
+- **Disagreements:** the agent recommended keeping writes behind the mod's guard; the owner chose one agent
+  that does both.
+- **Lessons for the process:** a check that lives in a local mod does not travel to remote or cloud
+  sessions; a rule that must hold everywhere belongs in the repository.
+- **Next:** asked whether to disable the mod, whose write guard refuses Claude Design writes from any
+  agent but `designer-agent:designer`, the owner chose "Saxla" ("keep it"): where the mod is loaded, writes
+  still go through it. Once this pull request is merged (sessions started from `develop` see the agent only then), run outcome 1's comparison with the new agent in a session on the Mac.

@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6) · v1.9 2026-10-04: before taking a pull request out of draft the agent waits for Copilot's review of the branch's current head and has fixed its important findings (owner decision at T-15d) · v1.10 2026-10-05: design questions are the designer's — the agent tells the owner, the owner takes it to the designer, the designer records the decision in the designer's changelog, and the agent applies it from there (owner decisions at T-15d) · v1.11 2026-10-06, extended 2026-10-10: the designer agent decides design questions in every phase, as the only route (the v1.10 route is retired), and may ask the owner a question, and the owner approves its decision with `/designer-approve` before it writes (owner decisions)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6) · v1.9 2026-10-04: before taking a pull request out of draft the agent waits for Copilot's review of the branch's current head and has fixed its important findings (owner decision at T-15d) · v1.10 2026-10-05: design questions are the designer's — the agent tells the owner, the owner takes it to the designer, the designer records the decision in the designer's changelog, and the agent applies it from there (owner decisions at T-15d) · v1.11 2026-10-06, extended 2026-10-10: the designer agent decides design questions in every phase, as the only route (the v1.10 route is retired), and may ask the owner a question, and the owner approves its decision with `/designer-approve` before it writes (owner decisions) · v1.12 2026-10-10: the designer agent is the repository's own `.claude/agents/designer.md`, loaded by every session in the repository, next to the mod; it proposes and applies, and the owner's approval is the owner's own message; the mod stays installed, and where it is loaded its `/designer-approve` guard still holds (owner decisions)
 
 ## Roles
 
@@ -19,7 +19,7 @@ Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run 
 | Acceptance criteria wording | Approves | Drafts |
 | Architecture (stack, layout, persistence, auth) | Accepts ADR | Drafts ADR with ≥2 alternatives |
 | Feature spec content | Approves | Drafts |
-| The design itself: a look, a value, a size, a token, a drawn behaviour (v1.10, v1.11) | Approves the designer agent's decision before it is recorded, with `/designer-approve` | Asks the designer agent, which decides and, once the owner approves, records the decision in the designer's changelog; applies it, citing its section |
+| The design itself: a look, a value, a size, a token, a drawn behaviour (v1.10, v1.11, v1.12) | Approves the designer agent's decision before it is recorded, in the owner's own message | Asks the designer agent, which decides and, once the owner approves, records the decision in the designer's changelog; applies it, citing its section |
 | Implementation details within an approved spec | — | Decides, documents in PR |
 | Test design within the testing ADR | — | Decides |
 | Marking anything Approved/Accepted | Only | Never |
@@ -39,7 +39,7 @@ təsdiqləyirsən" — "it decides itself, you confirm"; and "bu həmçinin kod 
 qərarlarda iştirak edir. Nə zaman dizayn qərarı lazımdırsa. Tək spec yazarkən yox. Bütün proses vaxtı" —
 "it also takes part in the decisions that come up while code is written: whenever a design decision is
 needed, not only when a spec is written, but during the whole process"). The designer agent is a
-persona subagent (`designer-agent:designer`) that takes the designer's role: it reads the designer's
+persona subagent (`designer`, defined in the repository's `.claude/agents/designer.md`, v1.12) that takes the designer's role: it reads the designer's
 live sources, decides, and, once the owner has approved, writes to the designer's Claude Design project.
 It runs in two modes, and the second needs the owner's approval named in its prompt:
 
@@ -61,20 +61,23 @@ It runs in two modes, and the second needs the owner's approval named in its pro
 3. **The owner approves, or decides otherwise.** The agent relays the proposal. The owner's word wins:
    the owner may approve, choose another option, or override a decision already recorded (as for the
    designer's changelog §16a, 2026-10-05, where "hazırda form qərarları dəyişmir" — "the form decisions
-   are not changing now" — kept Release 1 behaviour). The owner gives the approval by typing
-   `/designer-approve <the decision>` at the prompt (owner decision, 2026-10-10, "guard qur" — "build the
-   guard"). It is the owner's own gesture, Enter at the prompt or the owner's message through Remote Control: a
-   message of the agent, of a subagent, of an SDK host or of another plugin cannot give it, and it lasts fifteen minutes or until the designer agent's turn ends. `/designer-approve off`
-   withdraws it.
-4. **The designer agent applies, in *apply* mode.** Only after "OWNER APPROVED: <the decision>" and the
-   owner's `/designer-approve` it makes the smallest change in the designer's Claude Design project and
+   are not changing now" — kept Release 1 behaviour). The approval is the owner's own message naming the
+   decision; the agent quotes it after "OWNER APPROVED:" (v1.12, owner decision 2026-10-10, "Təklif və
+   tətbiq" — "propose and apply"). The v1.11 `/designer-approve` guard belonged to the mod, which a session
+   started remotely does not load ("hazırda həmin agent mod-dur və sesiya vaxtı qoşulur. Bunun üçün yeni
+   agent yarat" — "that agent is a mod and attaches at session time; create a new agent for this"); an
+   agent file cannot hold such a guard, so the owner chose to rely on the quoted approval.
+4. **The designer agent applies, in *apply* mode.** Only after "OWNER APPROVED: <the decision>", quoting
+   the owner's own approval, it makes the smallest change in the designer's Claude Design project and
    records the decision in the designer's changelog, stated as a decision. It returns the changelog
    section and the files changed. Only the designer agent writes to the designer's Claude Design project,
-   and only while the owner's approval stands: the mod that holds the agent refuses every Claude Design
-   tool that changes the project (a write, a delete, a copy, a sharing or member change) from any other
-   agent, and one added later until it is listed as read-only, and refuses the designer agent's own write
-   without the approval (`APPROVAL-MISSING`). It does not hold the owner's own `/design-sync`, which stays
-   outside it, nor a write made by the owner in Claude Design itself.
+   and only for a decision the owner approved; without the quoted approval it writes nothing and answers
+   `APPROVAL-MISSING`. In a session without the mod, no tool enforces this (v1.12): it is a rule of the
+   agent's prompt and of this document. The mod stays installed on the owner's Mac (owner decision,
+   2026-10-10, "Saxla" — "keep it"); in a session that loads it, its guard still refuses Claude Design
+   writes from any agent but `designer-agent:designer`, so there the write goes through the mod's agent
+   and the owner's `/designer-approve`. The owner's own `/design-sync` and the owner's own writes in Claude Design stay outside
+   it.
 5. **The agent cites the answer**, naming the changelog's section (for example "the designer's
    changelog §8a"), in the spec, the pull request and the code. A changelog entry that is a proposal, an
    option or a note to discuss, not stated as a decision, is not yet the answer, and the question stays
@@ -83,7 +86,8 @@ It runs in two modes, and the second needs the owner's approval named in its pro
 **The designer agent is the only route** (owner decision, 2026-10-10: "yol 2 ancaq" — "route 2 only").
 The v1.10 route, in which the owner took a question to the human designer, who recorded the decision in
 the designer's changelog for the agent to read, is retired: an entry written that way after v1.11 is not
-an answer. Where the designer agent is not available (the mod is not installed or loaded), the agent
+an answer. Where the designer agent is not available (a session without the Claude Design tools, such as
+a cloud session, where it answers `DESIGNER-UNAVAILABLE`), the agent
 does not decide a design question and does not look for one in the changelog: it tells the owner in the
 spec's §9 and the pull request, as for any open question, and the question stays open until the designer
 agent can be asked.
