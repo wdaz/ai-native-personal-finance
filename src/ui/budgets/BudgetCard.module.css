@@ -51,7 +51,6 @@
   margin: 0;
 }
 
-/* A 4 px bar as tall as the block, 16 px before the text. */
 /* The bar (4 px) and a --spacing-200 gap before the text, as the design draws them. */
 .figure {
   position: relative;

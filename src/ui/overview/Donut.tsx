@@ -37,6 +37,12 @@ export function Donut({
   fitCentre?: boolean;
 }) {
   const segments = donutSegments(items, total);
+  const seen = new Map<string, number>();
+  const keys = segments.map(({ theme }) => {
+    const occurrence = seen.get(theme) ?? 0;
+    seen.set(theme, occurrence + 1);
+    return `${theme}-${occurrence}`;
+  });
   const spentText = formatMoney(spent);
   const limitText = formatMoney(total);
   const label = `Spent ${spentText} of ${limitText} limit`;
@@ -54,11 +60,11 @@ export function Donut({
       >
         <circle className={styles.ring} cx={CENTRE} cy={CENTRE} r={DONUT_RADIUS} />
         {segments.map((segment, index) => (
-          // Keyed by array index, not `segment.theme`: two budgets could in principle share a
-          // theme (nothing here enforces US-15 AC1's "used themes disabled" rule), and a theme
-          // string is not a stable per-segment identity the way the array's own order is.
+          // Keyed by theme (with its occurrence, should two ever share one), so a segment keeps
+          // its element when a budget before it goes: its colour never jumps while its arc
+          // animates (SPEC-budgets 2.3, BU-Q7 (a); T-24 review finding 4).
           <circle
-            key={`inner-${index}`}
+            key={`inner-${keys[index]}`}
             className={styles.innerSegment}
             cx={CENTRE}
             cy={CENTRE}
@@ -74,7 +80,7 @@ export function Donut({
         ))}
         {segments.map((segment, index) => (
           <circle
-            key={`outer-${index}`}
+            key={`outer-${keys[index]}`}
             className={styles.outerSegment}
             cx={CENTRE}
             cy={CENTRE}

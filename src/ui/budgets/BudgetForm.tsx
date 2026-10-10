@@ -92,7 +92,6 @@ export function BudgetForm({
   const [formError, setFormError] = useState<string | undefined>(undefined);
   const sending = useRef(false);
 
-  const formRef = useRef<HTMLFormElement>(null);
   const categoryRef = useRef<HTMLDivElement>(null);
   const themeRef = useRef<HTMLDivElement>(null);
   const maximumRef = useRef<HTMLInputElement>(null);
@@ -205,7 +204,7 @@ export function BudgetForm({
       initialFocus={() => trigger(categoryRef.current)}
       returnFocus={returnFocus}
     >
-      <form ref={formRef} className={styles.form} noValidate onSubmit={(e) => void onSubmit(e)}>
+      <form className={styles.form} noValidate onSubmit={(e) => void onSubmit(e)}>
         <div className={styles.fields}>
           <div ref={categoryRef}>
             <SelectField

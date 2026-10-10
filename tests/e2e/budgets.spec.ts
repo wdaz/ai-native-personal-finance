@@ -33,6 +33,9 @@ const card = (page: Page, category: string) =>
   page.getByRole("region", { name: category, exact: true });
 const cardTitles = (page: Page) => cards(page).getByRole("heading", { level: 2 });
 const donut = (page: Page) => page.getByRole("img", { name: /^Spent / });
+/** Dining Out's outer segment (the seed's Yellow budget; the inner ring's circles carry a stroke width). */
+const donutSegment = (page: Page) =>
+  donut(page).locator('circle[stroke="var(--color-yellow)"]:not([stroke-width])');
 const summaryList = (page: Page) => page.getByRole("list", { name: COPY.spendingSummary });
 const addButton = (page: Page) => page.getByRole("button", { name: COPY.addNewBudget });
 const modal = (page: Page) => page.getByRole("dialog");
@@ -135,7 +138,7 @@ test.describe("US-14 the budgets", () => {
     const over = SEED.items.find((b) => b.spent >= b.maximum);
     expect(over?.category).toBe("Dining Out");
     const it = card(page, "Dining Out");
-    await expect(it.locator("dd").nth(1)).toHaveText(formatMoney(0));
+    await expect(it.locator("dd")).toHaveText([formatMoney(over!.spent), formatMoney(0)]);
     const track = await it.locator("rect").locator("..").boundingBox();
     const fill = await it.locator("rect").boundingBox();
     expect(Math.round(fill?.width ?? 0)).toBe(Math.round(track?.width ?? -1));
@@ -441,7 +444,7 @@ test.describe("the donut's centre (BU-11 (A), changelog §24a, §25d, §31a; 2.3
         expect(line.bottom).toBeLessThanOrEqual(cy + 72);
       }
       // The limit's amount is whole on one line: one of the limit's lines holds all of it.
-      const limitLines = centre.locator("p").last().locator("span");
+      const limitLines = centre.locator("p span");
       await expect(limitLines).toHaveCount(fit.limitLines === 1 ? 1 : fit.limitLines);
       await expect(limitLines.filter({ hasText: limitText })).toHaveCount(1);
     });
@@ -453,10 +456,7 @@ test.describe("the bar's and the donut's animation (BU-Q7 (a))", () => {
     await page.goto("/budgets");
     await expect(card(page, "Dining Out").locator("rect")).toHaveCSS("transition-duration", "0.4s");
     // A segment moves stroke-dasharray and stroke-dashoffset: one duration each.
-    await expect(donut(page).locator("circle").nth(1)).toHaveCSS(
-      "transition-duration",
-      "0.4s, 0.4s",
-    );
+    await expect(donutSegment(page)).toHaveCSS("transition-duration", "0.4s, 0.4s");
   });
 
   test.describe("reduced motion", () => {
@@ -464,10 +464,7 @@ test.describe("the bar's and the donut's animation (BU-Q7 (a))", () => {
     test("no transition", async ({ page }) => {
       await page.goto("/budgets");
       await expect(card(page, "Dining Out").locator("rect")).toHaveCSS("transition-duration", "0s");
-      await expect(donut(page).locator("circle").nth(1)).toHaveCSS(
-        "transition-duration",
-        /^0s(, 0s)?$/,
-      );
+      await expect(donutSegment(page)).toHaveCSS("transition-duration", /^0s(, 0s)?$/);
     });
   });
 });
@@ -482,10 +479,10 @@ test.describe("layout by the content width (2.2, BU-Q8 (a))", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/budgets");
     const summary = await summaryCard(page).boundingBox();
-    const first = await cards(page).first().boundingBox();
+    const first = await card(page, "Entertainment").boundingBox();
     expect(Math.round(summary?.width ?? 0)).toBe(428);
     expect(first!.x).toBeGreaterThan(summary!.x + summary!.width);
-    await cards(page).last().scrollIntoViewIfNeeded();
+    await card(page, "Personal Care").scrollIntoViewIfNeeded();
     await expect(summaryCard(page)).toBeInViewport();
   });
 
@@ -493,7 +490,7 @@ test.describe("layout by the content width (2.2, BU-Q8 (a))", () => {
     await page.setViewportSize({ width: 1331, height: 900 });
     await page.goto("/budgets");
     const summary = await summaryCard(page).boundingBox();
-    const first = await cards(page).first().boundingBox();
+    const first = await card(page, "Entertainment").boundingBox();
     expect(first!.y).toBeGreaterThan(summary!.y + summary!.height - 1);
     expect((await listBox(page))!.x).toBeGreaterThan((await donutBox(page))!.x);
   });
@@ -518,7 +515,10 @@ test.describe("layout by the content width (2.2, BU-Q8 (a))", () => {
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
         ),
       ).toBe(true);
-      const avatar = card(page, "Entertainment").locator("img").first();
+      const avatar = card(page, "Entertainment")
+        .getByRole("listitem")
+        .filter({ hasText: "Pixel Playground" })
+        .locator("img");
       if (width < 768) await expect(avatar).toBeHidden();
       else await expect(avatar).toBeVisible();
     });
@@ -540,8 +540,12 @@ test.describe("US-34 states", () => {
     await modal(page)
       .getByRole("button", { name: new RegExp(`^${COPY.theme}`) })
       .click();
-    const disabled = page.locator('[role="option"][aria-disabled="true"]').first();
-    await expect(disabled.locator("[aria-hidden='true']").first()).toHaveCSS("opacity", "0.25");
+    // Green is the seed's Entertainment theme, so "Already used" in the add form.
+    await expect(option(page, "Green")).toHaveAttribute("aria-disabled", "true");
+    await expect(option(page, "Green").locator("[aria-hidden='true']")).toHaveCSS(
+      "opacity",
+      "0.25",
+    );
   });
 });
 
