@@ -46,11 +46,23 @@
   border-color: var(--color-grey-900);
 }
 
-.current {
+/* The current option and, hidden, every option in one grid cell: the widest sets the width. */
+.slot {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.current,
+.sizer {
+  grid-area: 1 / 1;
   min-inline-size: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.sizer {
+  visibility: hidden;
 }
 
 .caret {
@@ -150,7 +162,7 @@
     border: 0;
   }
 
-  .current,
+  .slot,
   .caret {
     display: none;
   }

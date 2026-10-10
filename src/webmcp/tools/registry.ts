@@ -1,5 +1,6 @@
 import type { ToolDefinition } from "../types";
 import { overviewTools } from "./overview";
+import { transactionsTools } from "./transactions";
 
 /**
  * SPEC-webmcp-tools §3–§4: one registry per page (ADR-0004). Release 2 adds a key per page;
@@ -8,4 +9,5 @@ import { overviewTools } from "./overview";
  */
 export const PAGE_TOOLS = {
   overview: overviewTools,
+  transactions: transactionsTools,
 } as const satisfies Record<string, ToolDefinition[]>;

@@ -1,0 +1,99 @@
+/*
+ * SPEC-transactions 2.9 (the designer's changelog §17b TX-2, §17h TX-8): the toolbar wraps at
+ * every width. The search field grows into the room the row leaves and is never narrower than
+ * 160 px; the Sort and Category group keeps its width and, when it no longer fits, wraps to the
+ * next line, right-aligned, 16 px below.
+ */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-200) var(--spacing-300);
+}
+
+.search {
+  position: relative;
+  flex: 1 1 160px;
+  min-inline-size: 160px;
+}
+
+.input {
+  box-sizing: border-box;
+  inline-size: 100%;
+  /* 2.9 (§17h, TX-8): 45 px tall, the text 20 px in, room on the right for the glass. */
+  block-size: 45px;
+  padding: var(--spacing-150) 52px var(--spacing-150) var(--spacing-250);
+  border: var(--border-width) solid var(--color-beige-500);
+  border-radius: var(--radius-100);
+  background: var(--color-white);
+  color: var(--color-grey-900);
+  transition: border-color var(--duration-hover);
+}
+
+/* 2.5 (the designer's changelog §8a): the placeholder is grey-500; beige-500 fails WCAG 1.4.3. */
+.input::placeholder {
+  color: var(--color-grey-500);
+  opacity: 1;
+}
+
+/* 2.12 (§17c, TX-3): beige-500, grey-500 on hover, grey-900 on focus — plus the focus ring. */
+.input:hover {
+  border-color: var(--color-grey-500);
+}
+
+.input:focus {
+  border-color: var(--color-grey-900);
+}
+
+.searchIcon {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--spacing-250);
+  display: flex;
+  color: var(--color-grey-900);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.menus {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--spacing-300);
+  margin-inline-start: auto;
+}
+
+.visuallyHidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/*
+ * 2.6 (§17h, TX-8): the triggers' drawn widths, as a minimum — a trigger grows to its widest
+ * option (T-19 plan Q3); below 768 px they are 44 px icons (Menu).
+ */
+@media (min-width: 768px) {
+  .search {
+    max-inline-size: 215px;
+  }
+
+  .sort {
+    min-inline-size: 114px;
+  }
+
+  .category {
+    min-inline-size: 177px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .search {
+    max-inline-size: 320px;
+  }
+}

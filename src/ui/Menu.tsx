@@ -194,7 +194,16 @@ export function Menu<V extends string>({
           onClick={() => (open ? close() : openAt(startIndex()))}
           onKeyDown={onTriggerKeyDown}
         >
-          <span className={styles.current}>{currentLabel}</span>
+          <span className={styles.slot}>
+            <span className={styles.current}>{currentLabel}</span>
+            {/* Every option, hidden, sizes the slot: the trigger is as wide as its widest
+                option, so no option is cut and the width never changes (T-19 plan Q3). */}
+            {options.map((option) => (
+              <span key={option.value} className={styles.sizer} aria-hidden="true">
+                {option.label}
+              </span>
+            ))}
+          </span>
           <span className={styles.caret}>
             <CaretDownIcon />
           </span>
