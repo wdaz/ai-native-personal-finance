@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { formatDate } from "@/src/shared/dates";
+import { formatDate, formatDueDay } from "@/src/shared/dates";
 
 // SPEC-overview §4.2 writes dates in UTC. Run in a zone where 20:23Z is already the next
 // local day (UTC+14), so a formatter that used local time would fail here and not only on
@@ -75,5 +75,29 @@ describe("formatDate (SPEC-overview §4.2: `d MMM yyyy`, UTC)", () => {
 
   it("refuses an invalid Date", () => {
     expect(() => formatDate(new Date(Number.NaN))).toThrow("is not a valid ISO-8601 date");
+  });
+});
+
+describe('formatDueDay (SPEC-recurring-bills 2.9: "Monthly - {ordinal day}", US-27 AC1)', () => {
+  it.each([
+    [1, "1st"],
+    [2, "2nd"],
+    [3, "3rd"],
+    [4, "4th"],
+    [11, "11th"],
+    [12, "12th"],
+    [13, "13th"],
+    [21, "21st"],
+    [22, "22nd"],
+    [23, "23rd"],
+    [24, "24th"],
+    [30, "30th"],
+    [31, "31st"],
+  ])("writes day %i as Monthly - %s", (day, ordinal) => {
+    expect(formatDueDay(day)).toBe(`Monthly - ${ordinal}`);
+  });
+
+  it.each([0, 32, 1.5, Number.NaN, -1])("refuses %s, which no month has", (day) => {
+    expect(() => formatDueDay(day)).toThrow("is not a day of the month");
   });
 });

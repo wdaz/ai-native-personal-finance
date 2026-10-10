@@ -1,4 +1,5 @@
 import { CATEGORIES, type Category } from "./enums";
+import { cutSearch, firstParam as first, isOneOf, type QueryParams } from "./query-params";
 import type { ErrorIssue } from "./schemas";
 
 /**
@@ -34,8 +35,7 @@ export type TransactionsQuery = {
 };
 
 /** A `URLSearchParams` (the route) or Next's awaited `searchParams` (the page). */
-export type TransactionsParams =
-  URLSearchParams | Readonly<Record<string, string | readonly string[] | undefined>>;
+export type TransactionsParams = QueryParams;
 
 export type ParsedTransactionsQuery = {
   query: TransactionsQuery;
@@ -46,21 +46,6 @@ export type ParsedTransactionsQuery = {
 };
 
 const PAGE_PATTERN = /^[1-9]\d*$/;
-
-/** 2.2: a repeated parameter reads as its first value; an empty one reads as absent. */
-function first(params: TransactionsParams, name: string): string | undefined {
-  let value: string | null | undefined;
-  if (params instanceof URLSearchParams) {
-    value = params.get(name);
-  } else if (Object.hasOwn(params, name)) {
-    const raw = params[name];
-    value = typeof raw === "string" ? raw : raw?.[0];
-  }
-  return value ? value : undefined;
-}
-
-const isOneOf = <T extends string>(list: readonly T[], value: string): value is T =>
-  (list as readonly string[]).includes(value);
 
 export function parseTransactionsQuery(
   params: TransactionsParams,
@@ -79,12 +64,7 @@ export function parseTransactionsQuery(
       refuse("q", "too_long", `q must be at most ${TRANSACTIONS_Q_MAX} characters`);
       q = undefined;
     } else {
-      // v1.0.17: cut, then trimmed again, so the query never ends in a space; the limit counts
-      // UTF-16 units (the field's `maxLength`), and a cut never keeps half a surrogate pair.
-      q = q
-        .slice(0, TRANSACTIONS_Q_MAX)
-        .replace(/[\uD800-\uDBFF]$/, "")
-        .trimEnd();
+      q = cutSearch(q, TRANSACTIONS_Q_MAX); // v1.0.17
     }
   }
 

@@ -50,3 +50,17 @@ export function formatDate(value: Date | string): string {
   }
   return `${date.getUTCDate()} ${month} ${date.getUTCFullYear()}`;
 }
+
+/**
+ * SPEC-recurring-bills 2.9: a bill's due text, "Monthly - {ordinal day}" (US-27 AC1) — 1st,
+ * 2nd, 3rd, 4th … 11th, 12th, 13th … 21st, 22nd, 23rd … 31st. A day outside 1–31 throws, as a
+ * bad date does in `formatDate`, rather than writing a due day no month has.
+ */
+export function formatDueDay(day: number): string {
+  if (!Number.isInteger(day) || day < 1 || day > 31) {
+    throw new Error(`Day ${day} is not a day of the month (1–31)`);
+  }
+  const suffix =
+    day >= 11 && day <= 13 ? "th" : (({ 1: "st", 2: "nd", 3: "rd" } as const)[day % 10] ?? "th");
+  return `Monthly - ${day}${suffix}`;
+}

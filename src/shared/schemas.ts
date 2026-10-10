@@ -2,6 +2,7 @@ import { z } from "zod";
 import { COPY } from "./copy";
 import { CATEGORIES, RESET_REASONS, THEMES } from "./enums";
 import { WEBMCP_MODES } from "./env";
+import { BILL_STATUSES } from "./recurring-bills-query";
 import { TRANSACTIONS_PAGE_SIZE } from "./transactions-query";
 
 /**
@@ -314,6 +315,41 @@ export const TransactionsDtoSchema = z.strictObject({
   total: z.int().nonnegative(),
 });
 export type TransactionsDto = z.infer<typeof TransactionsDtoSchema>;
+
+// ---------------------------------------------------------------------------------------
+// Recurring Bills — SPEC-recurring-bills 2.11
+
+export const BillStatusSchema = z.enum(BILL_STATUSES);
+
+/** One summary row: how many bills and their absolute amounts, in cents. */
+const BillsTotal = z.strictObject({ count: z.int().nonnegative(), amount: NonNegativeCents });
+
+/**
+ * The bills after the search (and the API's status) and the sort, with the summary over all
+ * bills. A bill has no `id` (§9 RB-Q6 (a)): its name is its key. No `max` on `items`: the list
+ * is bounded by the number of bills, which the schema cannot know (2.7).
+ */
+export const RecurringBillsDtoSchema = z.strictObject({
+  items: z.array(
+    z.strictObject({
+      name: z.string().min(1).max(NAME_MAX),
+      avatar: z.string().regex(AVATAR_KEY),
+      /** The due day, 1–31; the page writes it with `formatDueDay`. */
+      day: z.int().min(1).max(31),
+      /** Absolute (US-30 AC1). */
+      amount: NonNegativeCents,
+      status: BillStatusSchema,
+    }),
+  ),
+  summary: z.strictObject({
+    total: BillsTotal,
+    paid: BillsTotal,
+    /** Every bill not paid, due soon included — not the row status `upcoming` (§9 RB-Q4 (a)). */
+    totalUpcoming: BillsTotal,
+    dueSoon: BillsTotal,
+  }),
+});
+export type RecurringBillsDto = z.infer<typeof RecurringBillsDtoSchema>;
 
 // ---------------------------------------------------------------------------------------
 // Meta — SPEC-app-shell §5
