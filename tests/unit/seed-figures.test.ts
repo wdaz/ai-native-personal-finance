@@ -3,6 +3,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  barText,
+  budgetFigures,
+  budgetTable,
+  latestText,
+  seedVariantInput,
   billFigures,
   billSorts,
   markdownTable,
@@ -16,13 +21,17 @@ import {
   workedExample,
 } from "@/scripts/seed-figures";
 import { billsTotals } from "@/src/domain/bills";
-import { fixedClock } from "@/src/domain/clock";
+import { BUSINESS_TODAY, fixedClock } from "@/src/domain/clock";
 import { overviewSummary } from "@/src/domain/overview";
-import { CATEGORY_BY_NAME, seedRows } from "@/src/server/seed";
+import { compareLatest } from "@/src/domain/transactions";
+import { THEME_LABEL } from "@/src/server/overview";
+import { CATEGORY_BY_NAME, seedRows, themeFromHex } from "@/src/server/seed";
 import { applyVariant, SEED_VARIANTS } from "@/src/server/variants";
 import { COPY } from "@/src/shared/copy";
 import { formatDate, ordinalDay } from "@/src/shared/dates";
-import { CATEGORIES } from "@/src/shared/enums";
+import { CATEGORIES, THEMES } from "@/src/shared/enums";
+import { budgetFillPercent } from "@/src/shared/budgets";
+import { AMOUNT_MAX_CENTS } from "@/src/shared/schemas";
 import { formatMoney, formatSignedMoney } from "@/src/shared/money";
 
 const repoRoot = join(import.meta.dirname, "..", "..");
@@ -352,6 +361,178 @@ describe("SPEC-recurring-bills 4.2–4.5 are generated, never typed (H14 (2))", 
   it("4.6: the longest bill name", () => {
     expect(spec).toContain(
       `The longest bill name is ${figures.longestName.length} characters ("${figures.longestName}")`,
+    );
+  });
+});
+
+const BUDGETS_HEADING = "**4.2 The seed**";
+
+describe("SPEC-budgets 4.2 and 4.4–4.7 are generated, never typed (H15 (2))", () => {
+  const spec = read("docs/03-specs/budgets.md");
+  const flat = spec.replace(/\n\s*/g, " ");
+  const figures = budgetFigures();
+  const { seed } = figures;
+  const themeName = (hex: string) => THEME_LABEL.get(themeFromHex(hex))!;
+  const total = (s: { spent: number; limit: number }) =>
+    `${formatMoney(s.spent)} of ${formatMoney(s.limit)}`;
+  const WORDS = [
+    "no",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "eleven",
+  ];
+
+  it("US-14 AC1 AC2 AC4 4.2's table equals the seed's budgets as budgetsSummary reads them", () => {
+    expect(tableUnder(spec, BUDGETS_HEADING)).toEqual(budgetTable(themeName));
+  });
+
+  it("would report Dining Out's Remaining below $0.00 (violation fixture)", () => {
+    const table = tableUnder(
+      read("tests/fixtures/seed-figures/budgets-remaining-negative.md.fixture"),
+      BUDGETS_HEADING,
+    );
+    expect(differingRows(table, budgetTable(themeName))).toEqual(["Dining Out"]);
+  });
+
+  it("US-20 AC1 4.2: the totals, equal to overviewSummary's, the free values and the new budgets' spent", () => {
+    const overview = seedFigures().budgets;
+    expect({ spent: seed.spent, limit: seed.limit }).toEqual({
+      spent: overview.spent,
+      limit: overview.limit,
+    });
+    expect(flat).toContain(`Totals **${total(seed)}** — "Spent ${total(seed)} limit"`);
+    const usedThemes = new Set(figures.input.budgets.map((b) => themeName(b.theme)));
+    const freeThemes = THEMES.filter((theme) => !usedThemes.has(theme));
+    expect(flat).toContain(
+      `Free for a new budget: ${WORDS[figures.freeCategories.length]} categories (${figures.freeCategories[0]} first) and ${WORDS[freeThemes.length]} themes (${freeThemes[0]} first)`,
+    );
+    expect(flat).toContain(
+      `What a new budget in a free category would show at once (US-15 AC3; August spent): ${figures.freeCategories
+        .map((c) => `${c} ${formatMoney(figures.newSpent[c]!)}`)
+        .join(", ")
+        .replace(
+          `Shopping ${formatMoney(0)}`,
+          `Shopping ${formatMoney(0)} (its three transactions are all in July)`,
+        )}`,
+    );
+  });
+
+  it("US-18 AC1 AC2 4.4: each seed budget's latest three, the income rows and the shorter list", () => {
+    for (const budget of seed.items) {
+      expect(budget.latest).toEqual(figures.latest[budget.category]);
+    }
+    const line = (category: string) => figures.latest[category]!.map(latestText).join(" · ");
+    for (const category of ["Bills", "Dining Out"]) {
+      expect(flat).toContain(`- ${category}: ${line(category)}.`);
+    }
+    const [pixel, james, rina] = figures.latest["Entertainment"]!;
+    expect(flat).toContain(
+      `- Entertainment: ${latestText(pixel!)} · ${latestText(james!)} · ${latestText(rina!)} (the two of`,
+    );
+    expect(flat).toContain(`- Personal Care: ${line("Personal Care")} (a month older`);
+    for (const category of ["General", "Groceries"]) {
+      const [income, ...rest] = figures.latest[category]!;
+      expect(income!.amount).toBeGreaterThan(0);
+      expect(flat).toContain(
+        `**${category}** (${income!.name} ${formatDate(income!.date)} **${formatSignedMoney(income!.amount)}** · ${rest[0]!.name}`,
+      );
+    }
+    expect(seed.items.flatMap((b) => b.latest).every((t) => t.amount < 0)).toBe(true);
+    const education = figures.latest["Education"]!;
+    expect(education).toHaveLength(2);
+    expect(flat).toContain(
+      `a budget for **Education** (${education[0]!.name} ${formatDate(education[0]!.date)} and ${formatDate(education[1]!.date)}, ${formatSignedMoney(education[0]!.amount)} each)`,
+    );
+    expect(flat).toContain(
+      `The longest name in the seed budgets' lists is "${figures.longestLatestName}" (${figures.longestLatestName.length} characters)`,
+    );
+  });
+
+  it("US-14 AC3 US-18 AC2 US-20 AC2 4.5: the variants, through the domain's applyVariant", () => {
+    for (const name of SEED_VARIANTS) {
+      const summary = figures.variant(name);
+      const overview = overviewSummary(seedVariantInput(name), fixedClock(BUSINESS_TODAY)).budgets;
+      expect({ spent: summary.spent, limit: summary.limit }, name).toEqual({
+        spent: overview.spent,
+        limit: overview.limit,
+      });
+    }
+    const empty = figures.variant("empty-budgets");
+    expect(figures.variant("empty-all")).toEqual(empty);
+    expect(flat).toContain(`no budgets, totals ${total(empty)} ("Spent ${total(empty)} limit"`);
+    const few = figures.variant("few-transactions");
+    const kept = seedVariantInput("few-transactions").transactions;
+    const dining = few.items.find((b) => b.category === "Dining Out")!;
+    expect(flat).toContain(
+      `\`few-transactions\` (the latest three transactions kept: ${[...kept]
+        .sort(compareLatest)
+        .map((t) => t.name)
+        .join(", ")})`,
+    );
+    expect(flat).toContain(
+      `Dining Out spent ${formatMoney(dining.spent)}, remaining ${formatMoney(dining.remaining)}, bar ${barText(dining.spent, dining.maximum)}, ${WORDS[dining.latest.length]} row (${dining.latest.map((t) => t.name).join(", ")})`,
+    );
+    const others = few.items.filter((b) => b !== dining);
+    expect(others.map((b) => b.category)).toEqual(["Entertainment", "Bills", "Personal Care"]);
+    expect(others.every((b) => b.spent === 0 && b.latest.length === 0)).toBe(true);
+    expect(flat).toContain(`totals ${total(few)}.`);
+  });
+
+  it("US-15 AC3 US-16 AC2 US-17 AC2 4.6: the worked writes", () => {
+    const { writes } = figures;
+    const last = (s: typeof seed) => s.items.at(-1)!;
+    const general = last(writes.addGeneral);
+    expect(writes.addGeneral.items).toHaveLength(5);
+    expect(flat).toContain(
+      `add General ${formatMoney(general.maximum)} Red → listed fifth, spent ${formatMoney(general.spent)}, remaining ${formatMoney(general.remaining)}, bar ${barText(general.spent, general.maximum)}, totals ${total(writes.addGeneral)}.`,
+    );
+    const groceries = last(writes.addGroceries);
+    expect(flat).toContain(
+      `Add Groceries ${formatMoney(groceries.maximum)} Red → spent ${formatMoney(groceries.spent)}, remaining ${formatMoney(groceries.remaining)}, bar ${barText(groceries.spent, groceries.maximum)}, totals ${total(writes.addGroceries)}.`,
+    );
+    const d150 = writes.diningOut150.items.find((b) => b.category === "Dining Out")!;
+    const d133 = writes.diningOut133.items.find((b) => b.category === "Dining Out")!;
+    expect(writes.diningOut150.items.map((b) => b.category)).toEqual(
+      seed.items.map((b) => b.category),
+    );
+    expect(flat).toContain(
+      `Edit Dining Out's maximum to ${formatMoney(d150.maximum)} → remaining ${formatMoney(d150.remaining)}, bar ${barText(d150.spent, d150.maximum)}, limit ${formatMoney(writes.diningOut150.limit)}; to ${formatMoney(d133.maximum)} → remaining ${formatMoney(d133.remaining)}, bar ${barText(d133.spent, d133.maximum)}.`,
+    );
+    const deleted = writes.deleteEntertainment;
+    expect(flat).toContain(
+      `Delete Entertainment → ${WORDS[deleted.items.length]} budgets, totals ${total(deleted)}, the balance still ${formatMoney(figures.input.balance.current)}.`,
+    );
+  });
+
+  it("US-14 AC2 US-20 4.7: the boundaries", () => {
+    const { oneCent, largest, tenLargest } = figures.boundaries;
+    expect(flat).toContain(
+      `A maximum of 1 cent with ${formatMoney(oneCent.spent)} spent: remaining ${formatMoney(oneCent.remaining)}, bar ${budgetFillPercent(oneCent.spent, oneCent.maximum)} %.`,
+    );
+    expect(largest.maximum).toBe(AMOUNT_MAX_CENTS);
+    const amount = formatMoney(largest.maximum);
+    expect(flat).toContain(
+      `"Maximum of ${amount}" (${amount.length} characters of amount), remaining ${formatMoney(largest.remaining)} with ${formatMoney(largest.spent)} spent, bar ${barText(largest.spent, largest.maximum)};`,
+    );
+    expect(Number.isSafeInteger(tenLargest.limit)).toBe(true);
+    expect(flat).toContain(
+      `ten budgets at that maximum make a limit of ${tenLargest.limit.toLocaleString("en-US")} cents`,
+    );
+    expect(flat).toContain(`give the limit ${formatMoney(tenLargest.limit)}`);
+    expect(flat).toContain(
+      `the ten categories' August figures of 4.2 summed, ${formatMoney(tenLargest.spent)}`,
+    );
+    const d133 = figures.writes.diningOut133.items.find((b) => b.category === "Dining Out")!;
+    expect(flat).toContain(
+      `Spent equal to the maximum (${formatMoney(d133.spent)} of ${formatMoney(d133.maximum)}): remaining ${formatMoney(d133.remaining)}, bar ${barText(d133.spent, d133.maximum)}.`,
     );
   });
 });
