@@ -644,6 +644,96 @@ test.describe("WebMCP on Budgets (2.13)", () => {
   });
 });
 
+test.describe("write-path.md 7.5 and 7.6 on this page", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("US-36 7.5: an add answered 429 shows the server's message in the form's error area; the form stays", async ({
+    page,
+  }) => {
+    await page.route("**/api/budgets", (route) =>
+      route.request().method() === "POST"
+        ? route.fulfill({
+            status: 429,
+            headers: { "retry-after": "30" },
+            contentType: "application/json",
+            body: JSON.stringify({
+              error: "rate_limited",
+              message: "Too many changes",
+              retryAfter: 30,
+            }),
+          })
+        : route.fallback(),
+    );
+    await page.goto("/budgets");
+    await openAdd(page);
+    await maximumField(page).fill("20");
+    await modal(page).getByRole("button", { name: COPY.addBudgetSubmit }).click();
+    await expect(modal(page).getByText("Too many changes")).toBeVisible();
+    await expect(cards(page)).toHaveCount(SEED.items.length);
+  });
+
+  test("US-40 7.6: add_budget answered 403 returns forbidden, not server_error, and the page does not change", async ({
+    page,
+  }) => {
+    test.skip(RUN_MODE !== "polyfill", `polyfill-mode test; this run expects ${RUN_MODE}`);
+    await page.route("**/api/budgets", (route) =>
+      route.request().method() === "POST"
+        ? route.fulfill({
+            status: 403,
+            contentType: "application/json",
+            body: JSON.stringify({ error: "forbidden", message: "Forbidden" }),
+          })
+        : route.fallback(),
+    );
+    await page.goto("/budgets");
+    await expectToolsReady(page);
+    const result = await callTool(page, "add_budget", {
+      category: "General",
+      maximum: 50_000,
+      theme: "Purple",
+    });
+    expect(result).toMatchObject({ isError: true, code: "forbidden" });
+    await expect(cards(page)).toHaveCount(SEED.items.length);
+  });
+});
+
+test.describe("US-32 the keyboard", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("the '…' menu by keyboard: Enter opens it on its first item, ArrowDown, Enter runs Delete, Escape goes back", async ({
+    page,
+  }) => {
+    await page.goto("/budgets");
+    await menuFor(page, "Bills").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("menuitem", { name: COPY.editBudget })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(page.getByRole("menuitem", { name: COPY.deleteBudget })).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: COPY.deleteTitle("Bills") })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(menuFor(page, "Bills")).toBeFocused();
+    await expect(card(page, "Bills")).toBeVisible();
+  });
+
+  test("the edit form by keyboard: the category field opens with Enter, an option is chosen with the arrows", async ({
+    page,
+  }) => {
+    await page.goto("/budgets");
+    await menuFor(page, "Dining Out").focus();
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Enter");
+    await expect(categoryTrigger(page)).toBeFocused();
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+    await expect(categoryTrigger(page)).toBeFocused();
+    await expect(categoryTrigger(page)).not.toHaveAccessibleName(
+      COPY.menuTriggerName(COPY.budgetCategory, "Dining Out"),
+    );
+  });
+});
+
 test.describe("NFR-A1 axe: no serious or critical violation", () => {
   test("the seed, empty-budgets, a modal open and 375 px", async ({ page }) => {
     await page.goto("/budgets");
