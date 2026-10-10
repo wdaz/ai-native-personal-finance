@@ -10,6 +10,7 @@ type VercelConfig = {
   installCommand?: string;
   buildCommand?: string;
   ignoreCommand?: string;
+  git?: { deploymentEnabled?: Record<string, boolean> };
   crons?: { path: string; schedule: string }[];
 };
 
@@ -25,6 +26,8 @@ type VercelConfig = {
  * - `ignoreCommand`: `sh scripts/vercel-ignore-build.sh`, which skips the build of a commit that
  *   changes nothing outside `docs/` and builds whenever it cannot tell (ADR-0007 amendment
  *   2026-10-05; the script's own cases are in tests/unit/vercel-ignore-build.test.ts).
+ * - `git.deploymentEnabled`: `claude/*` branches are not deployed (ADR-0007 amendment 2026-10-10): the
+ *   agents' working branches would otherwise exhaust Hobby's daily deployment limit.
  * - `crons`: the daily reset, unchanged (ADR-0007 amendment 2026-09-23).
  */
 const vercelConfigProblems = (config: VercelConfig): string[] => {
@@ -35,6 +38,9 @@ const vercelConfigProblems = (config: VercelConfig): string[] => {
     problems.push("buildCommand");
   }
   if (config.ignoreCommand !== "sh scripts/vercel-ignore-build.sh") problems.push("ignoreCommand");
+  if (JSON.stringify(config.git?.deploymentEnabled) !== JSON.stringify({ "claude/*": false })) {
+    problems.push("git.deploymentEnabled");
+  }
   const cron = [{ path: "/api/admin/reset", schedule: "0 3 * * *" }];
   if (JSON.stringify(config.crons) !== JSON.stringify(cron)) problems.push("crons");
   return problems;
@@ -58,6 +64,7 @@ describe("vercel.json deploys to fra1, installs with npm ci, migrates before it 
       "installCommand",
       "buildCommand",
       "ignoreCommand",
+      "git.deploymentEnabled",
       "crons",
     ]);
   });
@@ -70,7 +77,14 @@ describe("vercel.json deploys to fra1, installs with npm ci, migrates before it 
         buildCommand: "npm run build",
         crons: [{ path: "/api/admin/reset", schedule: "0 3 */10 * *" }],
       }),
-    ).toEqual(["regions", "installCommand", "buildCommand", "ignoreCommand", "crons"]);
+    ).toEqual([
+      "regions",
+      "installCommand",
+      "buildCommand",
+      "ignoreCommand",
+      "git.deploymentEnabled",
+      "crons",
+    ]);
   });
 
   it("(fixture) reports migrations run after the build", () => {
@@ -80,6 +94,7 @@ describe("vercel.json deploys to fra1, installs with npm ci, migrates before it 
         installCommand: "npm ci",
         buildCommand: "npm run build && npx prisma migrate deploy",
         ignoreCommand: "sh scripts/vercel-ignore-build.sh",
+        git: { deploymentEnabled: { "claude/*": false } },
         crons: [{ path: "/api/admin/reset", schedule: "0 3 * * *" }],
       }),
     ).toEqual(["buildCommand"]);
@@ -90,6 +105,7 @@ describe("vercel.json deploys to fra1, installs with npm ci, migrates before it 
       regions: ["fra1"],
       installCommand: "npm ci",
       buildCommand: "npx prisma migrate deploy && npm run build",
+      git: { deploymentEnabled: { "claude/*": false } },
       crons: [{ path: "/api/admin/reset", schedule: "0 3 * * *" }],
     };
     expect(vercelConfigProblems({ ...rest, ignoreCommand: "exit 0" })).toEqual(["ignoreCommand"]);
