@@ -7197,7 +7197,7 @@ them too").
 - **Prompt(s):** `prompts/2026-10-10-T-22/` (the review brief, report and handling). The plan
   `plans/2026-10-10-T-22.md` raised no question: the spec (`ui-kit.md` v0.8.7) answered every behaviour,
   and the designer's changelog §27 had drawn every part.
-- **Produced** (pull request #PRNUM, `develop`):
+- **Produced** (pull request #130, `develop`):
   - A: `parseAmountInput` and `formatAmountInput` (4.1's examples as the unit test), `writeAnswer`
     (`write-path.md` §3's messages on the client), the strings of 2.12 and UK-Q1 (a fourth appendix
     table and `COPY`), the tokens of UK-Q4 (`design-tokens.md` v1.6), `busy` and the delete bus.
@@ -7216,4 +7216,4 @@ them too").
 - **Disagreements:** none.
 - **Not done here:** no page uses the parts yet (T-24 and T-26), so there is no E2E row.
   `tests/unit/install-scripts.test.ts` fails on a machine with npm 10, as recorded for T-17.
-- **Next:** the merge of #PRNUM; then T-23.
+- **Next:** the merge of #130; then T-23.
