@@ -2,6 +2,7 @@ import { formatDate } from "@/src/shared/dates";
 import { formatSignedMoney } from "@/src/shared/money";
 import { COPY } from "@/src/shared/copy";
 import { cx } from "../cx";
+import { TruncatedText } from "../TruncatedText";
 import { CardLink } from "./CardLink";
 import styles from "./TransactionsCard.module.css";
 
@@ -16,6 +17,8 @@ export type TransactionItem = {
 /**
  * SPEC-overview §2.4, US-06: up to five most-recent transactions (already capped server-side,
  * T-09). §2.7: fewer than five renders just the given rows; none renders the empty message.
+ * §2.4 v1.4 (H12): a name that does not fit is cut with an ellipsis and its tooltip
+ * (`TruncatedText`, which does the clipping now).
  */
 export function TransactionsCard({ items }: { items: readonly TransactionItem[] }) {
   return (
@@ -39,7 +42,9 @@ export function TransactionsCard({ items }: { items: readonly TransactionItem[] 
                   width={40}
                   height={40}
                 />
-                <p className={`text-preset-4-bold ${styles.name}`}>{transaction.name}</p>
+                <p className={`text-preset-4-bold ${styles.name}`}>
+                  <TruncatedText text={transaction.name} />
+                </p>
               </div>
               <div className={styles.figures}>
                 <p

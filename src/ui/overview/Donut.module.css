@@ -1,4 +1,4 @@
-/* SPEC-overview §4.4: SVG 240 px, ring 24 px, clockwise from 12 o'clock. */
+/* SPEC-overview §4.4 v1.3: SVG 240 px, ring 24 px at r 96, clockwise from 12 o'clock. */
 .wrapper {
   position: relative;
   inline-size: 240px;
@@ -12,16 +12,15 @@
 
 .ring {
   fill: none;
-  stroke: var(--color-grey-100);
+  stroke: var(--color-beige-100);
   stroke-width: 24px;
 }
 
 /*
  * Adversarial review finding 1: a stylesheet rule always outranks an SVG presentation
  * attribute, so a single `.segment` class here silently overrode the inner ring's own
- * `strokeWidth={8}` JSX prop with this file's 24px, painting a 16 px band instead of an 8 px
- * one (the outer ring's 24px covering the top 16px of what should have been an 8px inner
- * ring). Two classes, matching the two actual stroke widths §4.4 names.
+ * `strokeWidth` JSX prop with this file's 24px. Two classes, matching the two actual stroke
+ * widths §4.4 names (24 px outer, 12 px inner since v1.3).
  */
 .outerSegment {
   fill: none;
@@ -31,8 +30,9 @@
 
 .innerSegment {
   fill: none;
-  stroke-width: 8px;
+  stroke-width: 12px;
   stroke-linecap: butt;
+  opacity: 0.75;
 }
 
 .centre {

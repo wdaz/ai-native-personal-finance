@@ -1,0 +1,57 @@
+/*
+ * SPEC-transactions 2.9 (H12 on Overview): the name on one line, cut with an ellipsis. The root
+ * carries the focus stop and the hit area; the inner span is the one that clips, so the root's
+ * 44 px tap target (below) is not clipped with it.
+ */
+.root {
+  position: relative;
+  display: block;
+  min-inline-size: 0;
+}
+
+.text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A cut name's tap target is at least 44 px tall without changing the row's layout. */
+.cut::after {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 50%;
+  block-size: 44px;
+  content: "";
+  transform: translateY(-50%);
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  max-inline-size: min(240px, 100vw - 32px);
+  padding: var(--spacing-100) var(--spacing-150);
+  border-radius: var(--radius-100);
+  background: var(--color-grey-900);
+  color: var(--color-white);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+/* An 8 × 8 px square rotated 45°, 4 px outside the edge facing the name. */
+.arrow {
+  position: absolute;
+  inline-size: 8px;
+  block-size: 8px;
+  background: var(--color-grey-900);
+  transform: rotate(45deg);
+}
+
+.tooltip[data-side="above"] .arrow {
+  inset-block-end: -4px;
+}
+
+.tooltip[data-side="below"] .arrow {
+  inset-block-start: -4px;
+}
