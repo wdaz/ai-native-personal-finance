@@ -1,6 +1,6 @@
 # User stories
 
-Status: **Approved** (v1.5 — 2026-10-10: the copy appendix's "R2 additions" table, the four messages the owner approved with SPEC-write-path (§9 Q5, 2026-10-04), added by T-17 together with `COPY` (`release-2-handoffs.md` H10), approved by the owner's merge of its pull request; v1.4 — 2026-09-23 amendment, owner decision at the T-06 plan gate (Q1 (c)): sign-up's failure rows — "Something went wrong. Try again" on a server error only, a network failure its own message; v1.3 — 2026-09-23: a not-found row for the 404 page, plan T-06 finding F1 — approved by the owner, who merged PR #15; v1.2 — 2026-09-23 amendments, owner decisions at the T-04 plan gate: the copy appendix's demo banner takes the configured interval (`{days}`), and three R1 additions give the sign-up maxima their messages; v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · Author(s): Agent (draft) · Date: 2026-09-08
+Status: **Approved** (v1.6 — 2026-10-10: the copy appendix's second "R2 additions" table, the Transactions page's strings the owner approved with SPEC-transactions (§9 Q1 and Q4, 2026-10-04) and the design's and stories' strings of its 2.16, added by T-19 together with `COPY` (`release-2-handoffs.md` H11 (1)), approved by the owner's merge of its pull request; v1.5 — 2026-10-10: the copy appendix's "R2 additions" table, the four messages the owner approved with SPEC-write-path (§9 Q5, 2026-10-04), added by T-17 together with `COPY` (`release-2-handoffs.md` H10), approved by the owner's merge of its pull request; v1.4 — 2026-09-23 amendment, owner decision at the T-06 plan gate (Q1 (c)): sign-up's failure rows — "Something went wrong. Try again" on a server error only, a network failure its own message; v1.3 — 2026-09-23: a not-found row for the 404 page, plan T-06 finding F1 — approved by the owner, who merged PR #15; v1.2 — 2026-09-23 amendments, owner decisions at the T-04 plan gate: the copy appendix's demo banner takes the configured interval (`{days}`), and three R1 additions give the sign-up maxima their messages; v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · Author(s): Agent (draft) · Date: 2026-09-08
 Source: `../00-discovery/inputs/challenge-brief.md` (brief), `../00-discovery/problem-statement.md` (PS), `../00-discovery/inputs/design/` (design; visual reference only)
 Conventions: ids are stable; priorities Must/Should/Could; every story lists ≥1 error or boundary criterion; "Agent tool" names the WebMCP tool the story implies (final set decided in NFR-W / ADR). Business "today" is **19 Aug 2026** and the current month is **August 2026** (OQ-4); seed dates are shifted +2 years at seed time. **Where the design and `data.json` differ, `data.json` wins** (owner decision R-01). Every budget and pot has a server-generated `id`; tools take and return ids (R-26). Validation copy: see the copy table at the end of this document (R-07). Money is USD, shown with two decimals and a sign as in the design.
 
@@ -319,4 +319,20 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | Any write | rate limited (429) | Too many changes. Try again in {N} seconds |
 | Category or theme | already used by another budget or pot | Already used |
 
-`{N}` and `{days}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 second", "1 day").
+### R2 additions (2026-10-04, owner-approved with SPEC-transactions, §9 Q1 and Q4; added by T-19)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Transactions | search field: placeholder · hidden label | Search transaction · label: Search transactions |
+| Transactions | menu labels | Sort by · Category |
+| Transactions sort menu | options | Latest · Oldest · A to Z · Z to A · Highest · Lowest |
+| Transactions category menu | options | All Transactions · Entertainment · Bills · Groceries · Dining Out · Transportation · Personal Care · Education · Lifestyle · Shopping · General |
+| Menu trigger | accessible name | {label}: {current} |
+| Transactions table | column headers | Recipient / Sender · Category · Transaction Date · Amount |
+| Pagination | landmark · buttons (visible · name) · page button name | Pagination · Prev · Previous page · Next · Next page · Page {n} |
+| Transactions | status line after a change | {total} transactions, page {n} of {m} |
+| Transactions | load error | Couldn't load your transactions · button: Retry |
+| Transactions | no results, or a category with no rows and no search (US-19 AC2) | No transactions match your search |
+| Transactions | no transactions at all | No transactions yet |
+
+`{N}`, `{days}`, `{total}`, `{n}` and `{m}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 second", "1 day", "1 transaction").

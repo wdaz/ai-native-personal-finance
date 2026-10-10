@@ -60,3 +60,11 @@ Run: `npm run test:e2e`.
   runs the whole Chromium suite once per mode, and Firefox and WebKit in `polyfill` mode.
   Locally the off leg is `WEBMCP_MODE=off npx playwright test --project=chromium` — stop any
   running server first, because Playwright reuses one and it would still be the polyfill build.
+- `transactions.spec.ts` (T-19): the Transactions page, SPEC-transactions §7's E2E row — US-09
+  to US-13 and US-19 against the seed and the `few-transactions` and `empty-all` variants,
+  US-32's walkthrough and every menu key, US-33 at 1440, 768, 375 and 320 px (the widest
+  pagination, page 3, included) and the tooltip, US-34 hover and focus, and axe. Every figure
+  comes from `transactionFigures()` (`scripts/seed-figures.ts`). The busy state holds the page's
+  own data request with `page.route` until it is asserted. `webmcp.spec.ts` gains
+  `list_transactions` (§7's WebMCP row), and its "polyfill · 0" client navigation goes to
+  `/pots`, the Release 2 page built last (hand-off H11 (4)).

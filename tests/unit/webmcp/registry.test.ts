@@ -13,6 +13,10 @@ describe("the tool registry (NFR-W3, SPEC-webmcp-tools §3–§4)", () => {
     ]);
   });
 
+  it("Transactions registers exactly list_transactions (SPEC-transactions 2.14)", () => {
+    expect(PAGE_TOOLS.transactions.map((tool) => tool.name)).toEqual(["list_transactions"]);
+  });
+
   it("no name is registered on two pages", () => {
     const names = tools.map(({ tool }) => tool.name);
     expect(new Set(names).size).toBe(names.length);
@@ -40,5 +44,8 @@ describe("the tool registry (NFR-W3, SPEC-webmcp-tools §3–§4)", () => {
     expect(
       PAGE_TOOLS.overview.find((t) => t.name === "get_overview_summary")?.annotations,
     ).toMatchObject({ untrustedContentHint: true });
+    expect(
+      PAGE_TOOLS.transactions.find((t) => t.name === "list_transactions")?.annotations,
+    ).toMatchObject({ readOnlyHint: true, untrustedContentHint: true });
   });
 });

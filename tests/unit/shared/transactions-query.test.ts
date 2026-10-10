@@ -4,6 +4,7 @@ import {
   parseTransactionsQuery,
   TRANSACTION_SORTS,
   TRANSACTIONS_Q_MAX,
+  transactionsSearch,
 } from "@/src/shared/transactions-query";
 
 const lenient = (search: string) =>
@@ -160,5 +161,30 @@ describe("SPEC-transactions 2.2–2.3: parseTransactionsQuery", () => {
       ]);
       expect(result.message).toBe([Q_MESSAGE, CATEGORY_MESSAGE, SORT_MESSAGE].join("; "));
     });
+  });
+});
+
+describe("SPEC-transactions 2.2: transactionsSearch, the URL the controls write", () => {
+  const base = { q: undefined, category: undefined, sort: "latest", page: 1 } as const;
+
+  it("writes nothing for the default view", () => {
+    expect(transactionsSearch(base)).toBe("");
+  });
+
+  it("writes q, category, sort, page in that order, a space as +", () => {
+    expect(
+      transactionsSearch({ q: "co ffee", category: "Dining Out", sort: "a-to-z", page: 3 }),
+    ).toBe("?q=co+ffee&category=Dining+Out&sort=a-to-z&page=3");
+  });
+
+  it("leaves out latest and page 1", () => {
+    expect(transactionsSearch({ ...base, category: "Bills" })).toBe("?category=Bills");
+    expect(transactionsSearch({ ...base, sort: "oldest" })).toBe("?sort=oldest");
+    expect(transactionsSearch({ ...base, page: 2 })).toBe("?page=2");
+  });
+
+  it("round-trips through the lenient parser", () => {
+    const query = { q: "a & b", category: "Personal Care", sort: "lowest", page: 4 } as const;
+    expect(lenient(transactionsSearch(query).slice(1)).query).toEqual(query);
   });
 });

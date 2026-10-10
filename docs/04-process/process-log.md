@@ -6999,6 +6999,47 @@ them too").
   browser stack in the session); this task changes no page, and CI runs it.
 - **Next:** the owner's merge of #123; then T-19 (Transactions, UI and `list_transactions`).
 
+## 2026-10-10 — Phase 4 (Release 2): T-19 — Transactions, the page and `list_transactions`
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; third Release 2 build task.
+- **Participants:** Owner (Ruslan), the project's coordinator session (answering for the owner under the
+  owner's delegation of Release 2), Agent (Claude Code, the cloud thread "Release 2 build T-19"; one read-only
+  review subagent, the `/code-review` skill on Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-18's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-19/`. The plan `plans/2026-10-10-T-19.md` went to the coordinator
+  session at the plan gate with two questions; two more came up during the build. Q1, the mobile Sort, Filter
+  and Prev icons: first the nearest Phosphor glyphs, then, once the owner uploaded the design export, the
+  export's own glyphs (copied from `components/icons/icon-data.js`; Prev is the right caret turned 180°).
+  Q2 (a): outcome 1's comparison of 2026-10-10 counts as H11 (5)'s live re-read; the export's changelog ends
+  at §26 with no Transactions change since. Q3 (a): a menu trigger as wide as its longest option, the drawn
+  114 px and 177 px its minimum (`transactions.md` v1.0.18). Q4 (a), tapped by the owner: below 768 px Prev and
+  Next are 40 px squares and the pagination's items 4 px apart (`transactions.md` v1.0.19).
+- **Produced** (pull request #124, `develop`): the page (`app/(app)/transactions/`), `src/ui/Menu.tsx`,
+  `src/ui/transactions/` (`TransactionsNav`, `TransactionsToolbar`, `ResultsRegion`, `TransactionTable`,
+  `TransactionsPagination`, `TransactionsError`), `useDebouncedValue`, `pageItems`, five icons,
+  `list_transactions`; H11 (1), (2), (4)–(8): the page's strings in the appendix and `COPY`, three tokens in
+  `design-tokens.md` v1.5 and `tokens.css`, the WebMCP placeholder checks moved to `/pots`
+  (`webmcp-tools.md` v1.0.13); component tests, `tests/e2e/transactions.spec.ts` and the `list_transactions`
+  tests; US-13 and US-19 left `NOT_YET_BUILT` (14 ids remain).
+- **What went well:** the E2E test of US-33 found what the drawing hides: at 320 px the pagination needed
+  348 px of 248 (Q4), and the drawn menu widths cut "Latest" and "All Transactions" (Q3). Both were measured
+  in Chromium before they were asked.
+- **What the agent got wrong or missed:** the first E2E pass checked "no horizontal scroll" only on a search
+  with one page of results, where the pagination is short; the four-widths test now also loads page 3. The
+  review found that the pagination moved focus (and scrolled) after Back and Forward too, and that Back
+  resynced the controls only when the server's answer changed; both fixed with unit tests that fail without
+  the fix.
+- **Owner changes and reasoning:** the coordinator answered Q1–Q3 from the project's goals; the owner tapped
+  Q4 (a). The coordinator then named `/mnt/project-files/design/` the design source and gave its edits to a
+  separate design thread; this task changed nothing there. For that thread: Sort and Category triggers are at
+  least 114 px and 177 px wide and as wide as their longest option; below 768 px Prev and Next are 40 × 40 px,
+  the pagination's items 4 px apart and an ellipsis 12 px wide.
+- **Disagreements:** none.
+- **Not done here:** the screen-reader pass 2.9 asks for (no screen reader in the cloud session; axe passes at
+  every state §7 names). Copilot errored on each run, so the Opus review is the only one.
+  `tests/unit/install-scripts.test.ts` still fails on npm 10 locally; CI runs npm 11.
+- **Next:** T-20 (Recurring Bills, server and API), in the backlog's order.
+
 ## 2026-10-10 — Phase 4 (Release 2): the design files catch up, and the design folder becomes the design source
 
 - **Phase:** 4 (Release 2), design alignment.

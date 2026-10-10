@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { COPY, retryAfterMinutes } from "@/src/shared/copy";
+import { CATEGORIES } from "@/src/shared/enums";
+import { TRANSACTION_SORTS } from "@/src/shared/transactions-query";
 
 const repoRoot = join(import.meta.dirname, "..", "..", "..");
 const read = (path: string) => readFileSync(join(repoRoot, path), "utf8");
@@ -38,7 +40,13 @@ const SAMPLES: [string, string][] = [
   ["<date>", "12 Sep 2026"],
   ["{N}", "2"],
   ["{days}", "10"],
-  ["· N", "· 3"],
+  ["native · N", "native · 3"],
+  ["polyfill · N", "polyfill · 3"],
+  ["{total}", "49"],
+  ["{n}", "2"],
+  ["{m}", "5"],
+  ["{label}", "Sort by"],
+  ["{current}", "Latest"],
 ];
 const fill = (text: string) => SAMPLES.reduce((out, [from, to]) => out.replaceAll(from, to), text);
 const state = (text: string) => text.replace("Agent tools: ", "");
@@ -105,6 +113,48 @@ const RENDERED: [context: string, keys: Key[], message: string][] = [
   ["Pot", ["potGone"], COPY.potGone],
   ["Any write", ["writeRateLimited"], COPY.writeRateLimited(2)],
   ["Category or theme", ["alreadyUsed"], COPY.alreadyUsed],
+  [
+    "Transactions",
+    ["searchTransactionsPlaceholder", "searchTransactionsLabel"],
+    `${COPY.searchTransactionsPlaceholder} · label: ${COPY.searchTransactionsLabel}`,
+  ],
+  ["Transactions", ["sortBy", "category"], `${COPY.sortBy} · ${COPY.category}`],
+  [
+    "Transactions sort menu",
+    ["transactionSorts"],
+    TRANSACTION_SORTS.map((sort) => COPY.transactionSorts[sort]).join(" · "),
+  ],
+  [
+    "Transactions category menu",
+    ["allTransactions"],
+    [COPY.allTransactions, ...CATEGORIES].join(" · "),
+  ],
+  ["Menu trigger", ["menuTriggerName"], COPY.menuTriggerName("Sort by", "Latest")],
+  [
+    "Transactions table",
+    ["columnRecipient", "columnCategory", "columnDate", "columnAmount"],
+    [COPY.columnRecipient, COPY.columnCategory, COPY.columnDate, COPY.columnAmount].join(" · "),
+  ],
+  [
+    "Pagination",
+    ["pagination", "prev", "previousPage", "next", "nextPage", "pageNumber"],
+    [
+      COPY.pagination,
+      COPY.prev,
+      COPY.previousPage,
+      COPY.next,
+      COPY.nextPage,
+      COPY.pageNumber(2),
+    ].join(" · "),
+  ],
+  ["Transactions", ["transactionsStatus"], COPY.transactionsStatus(49, 2, 5)],
+  [
+    "Transactions",
+    ["transactionsLoadError", "retry"],
+    `${COPY.transactionsLoadError} · button: ${COPY.retry}`,
+  ],
+  ["Transactions", ["transactionsNoResults"], COPY.transactionsNoResults],
+  ["Transactions", ["transactionsEmpty"], COPY.transactionsEmpty],
 ];
 
 const expected = RENDERED.map(([context, , message]) => [context, message]);
@@ -171,6 +221,14 @@ describe("copy with a number in it", () => {
     [60, "Too many changes. Try again in 60 seconds"],
   ])('write rate limit, %i second(s) (SPEC-write-path §3: 1 is "1 second")', (seconds, text) => {
     expect(COPY.writeRateLimited(seconds)).toBe(text);
+  });
+
+  it.each([
+    [1, 1, 1, "1 transaction, page 1 of 1"],
+    [8, 1, 1, "8 transactions, page 1 of 1"],
+    [49, 2, 5, "49 transactions, page 2 of 5"],
+  ])("Transactions status line, %i row(s) (SPEC-transactions 2.10)", (total, n, m, text) => {
+    expect(COPY.transactionsStatus(total, n, m)).toBe(text);
   });
 
   it("writes the indicator's tool count as given", () => {
