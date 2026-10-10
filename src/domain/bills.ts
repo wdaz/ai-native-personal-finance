@@ -86,17 +86,17 @@ type ListBill = Pick<RecurringBill, "name" | "day" | "amount" | "status">;
  * Name A to Z (§9 RB-Q8 (a)): the collator first, then UTF-16 code units for two different
  * strings the collator calls equal, so the order is total and stable between requests.
  */
-const byName = (a: ListBill, b: ListBill) =>
+const compareNames = (a: ListBill, b: ListBill) =>
   names.compare(a.name, b.name) || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
 
 /** 2.4's table: each sort's keys; every one but Z to A ends in name A to Z. */
 const SORT_KEYS: Record<BillSort, (a: ListBill, b: ListBill) => number> = {
-  latest: (a, b) => a.day - b.day || byName(a, b),
-  oldest: (a, b) => b.day - a.day || byName(a, b),
-  "a-to-z": byName,
-  "z-to-a": (a, b) => byName(b, a),
-  highest: (a, b) => b.amount - a.amount || byName(a, b),
-  lowest: (a, b) => a.amount - b.amount || byName(a, b),
+  latest: (a, b) => a.day - b.day || compareNames(a, b),
+  oldest: (a, b) => b.day - a.day || compareNames(a, b),
+  "a-to-z": compareNames,
+  "z-to-a": (a, b) => compareNames(b, a),
+  highest: (a, b) => b.amount - a.amount || compareNames(a, b),
+  lowest: (a, b) => a.amount - b.amount || compareNames(a, b),
 };
 
 /**

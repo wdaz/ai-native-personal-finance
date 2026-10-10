@@ -52,8 +52,20 @@ export async function getRecurringBills(
   query: RecurringBillsQuery,
 ): Promise<RecurringBillsDto> {
   const rows = await db.transaction.findMany({
-    select: { name: true, avatar: true, category: true, date: true, amount: true, recurring: true },
+    select: {
+      id: true,
+      name: true,
+      avatar: true,
+      category: true,
+      date: true,
+      amount: true,
+      recurring: true,
+    },
   });
+  // `findMany()` has no order; a vendor's two recurring rows with the same timestamp would let the
+  // database's order pick the bill's amount and avatar (`recurringBills` keeps the first of a
+  // tie). Ordering by `id` first makes that choice the same on every request (code review, T-20).
+  rows.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const bills = recurringBills(
     rows.map((row) => ({
       name: row.name,

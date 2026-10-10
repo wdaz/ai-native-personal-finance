@@ -21,7 +21,7 @@ import { overviewSummary } from "@/src/domain/overview";
 import { CATEGORY_BY_NAME, seedRows } from "@/src/server/seed";
 import { applyVariant, SEED_VARIANTS } from "@/src/server/variants";
 import { COPY } from "@/src/shared/copy";
-import { formatDate, formatDueDay } from "@/src/shared/dates";
+import { formatDate, ordinalDay } from "@/src/shared/dates";
 import { CATEGORIES } from "@/src/shared/enums";
 import { formatMoney, formatSignedMoney } from "@/src/shared/money";
 
@@ -294,7 +294,7 @@ describe("SPEC-recurring-bills 4.2–4.5 are generated, never typed (H14 (2))", 
     const soon = figures.byStatus.dueSoon;
     const upcoming = figures.byStatus.upcoming;
     expect(flat).toContain(
-      `Total Bills **${formatMoney(totals.total.amount)}** (${totals.total.amount.toLocaleString("en-US")} cents); Paid Bills **${totalText(totals.paid)}**; Total Upcoming **${totalText(totals.totalUpcoming)}**; Due Soon **${totalText(totals.dueSoon)}** — ${soon.map((b) => `${b.name} (${formatMoney(b.amount)}, ${formatDueDay(b.day).replace("Monthly - ", "")})`).join(" and ")}, as US-27 AC3 says.`,
+      `Total Bills **${formatMoney(totals.total.amount)}** (${totals.total.amount.toLocaleString("en-US")} cents); Paid Bills **${totalText(totals.paid)}**; Total Upcoming **${totalText(totals.totalUpcoming)}**; Due Soon **${totalText(totals.dueSoon)}** — ${soon.map((b) => `${b.name} (${formatMoney(b.amount)}, ${ordinalDay(b.day)})`).join(" and ")}, as US-27 AC3 says.`,
     );
     expect(flat).toContain(
       `The rows whose own status is Upcoming are ${totalText(billsTotals(upcoming).total)}: ${upcoming.map((b) => b.name).join(" and ")}.`,

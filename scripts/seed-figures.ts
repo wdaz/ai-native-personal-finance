@@ -12,7 +12,7 @@ import {
   type TransactionSort,
   type TransactionsQuery,
 } from "@/src/shared/transactions-query";
-import { formatDate, formatDueDay } from "@/src/shared/dates";
+import { formatDate, ordinalDay } from "@/src/shared/dates";
 import {
   BILL_SORTS,
   BILL_STATUSES,
@@ -270,18 +270,17 @@ export function transactionFigures() {
 // SPEC-recurring-bills 4.2–4.5 (hand-off H14 (2)): the bills' figures, computed by the domain.
 
 /** The seed's bills on the business day (NFR-D1), in `recurringBills`' order (first appearance). */
-export const seedBills = () =>
-  recurringBills(seedOverviewInput().transactions, fixedClock(BUSINESS_TODAY));
+export const seedBills = (transactions = seedOverviewInput().transactions) =>
+  recurringBills(transactions, fixedClock(BUSINESS_TODAY));
 
 type SeedBill = ReturnType<typeof seedBills>[number];
 
-/** "11th": the ordinal of `formatDueDay`, without "Monthly - ". */
-const ordinal = (day: number) => formatDueDay(day).replace("Monthly - ", "");
+const ordinal = ordinalDay;
 
 /** 4.2's and the row's words for a status. */
 const STATUS_WORDS = { paid: "paid", dueSoon: "due soon", upcoming: "upcoming" } as const;
 
-/** "Spark Electric Solutions (2nd)" in Latest and Oldest' table cell; the amount in Highest's. */
+/** "Spark Electric Solutions (2nd)" in Latest's table cell; the amount in Highest's. */
 function sortCell(sort: BillSort, bill: SeedBill): string {
   if (sort === "latest") return `${bill.name} (${ordinal(bill.day)})`;
   if (sort === "highest") return `${bill.name} (${formatMoney(bill.amount)})`;
@@ -308,7 +307,7 @@ export const totalText = ({ count, amount }: { count: number; amount: number }) 
 /** SPEC-recurring-bills 4.2 and 4.5: what the tests of the bills read instead of typing. */
 export function billFigures() {
   const input = seedOverviewInput().transactions;
-  const bills = seedBills();
+  const bills = seedBills(input);
   const view = (query: Partial<RecurringBillsQuery>) =>
     billsList(bills, { q: undefined, sort: "latest", status: undefined, ...query });
   const recurring = input.filter((t) => t.recurring);

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { formatDate, formatDueDay } from "@/src/shared/dates";
+import { formatDate, formatDueDay, ordinalDay } from "@/src/shared/dates";
 
 // SPEC-overview §4.2 writes dates in UTC. Run in a zone where 20:23Z is already the next
 // local day (UTC+14), so a formatter that used local time would fail here and not only on
@@ -99,5 +99,6 @@ describe('formatDueDay (SPEC-recurring-bills 2.9: "Monthly - {ordinal day}", US-
 
   it.each([0, 32, 1.5, Number.NaN, -1])("refuses %s, which no month has", (day) => {
     expect(() => formatDueDay(day)).toThrow("is not a day of the month");
+    expect(() => ordinalDay(day)).toThrow("is not a day of the month");
   });
 });

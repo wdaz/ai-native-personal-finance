@@ -57,10 +57,15 @@ export function formatDate(value: Date | string): string {
  * bad date does in `formatDate`, rather than writing a due day no month has.
  */
 export function formatDueDay(day: number): string {
+  return `Monthly - ${ordinalDay(day)}`;
+}
+
+/** "1st", "2nd", "11th", "21st": the day of `formatDueDay`, on its own (the spec's 4.2 and 4.3). */
+export function ordinalDay(day: number): string {
   if (!Number.isInteger(day) || day < 1 || day > 31) {
     throw new Error(`Day ${day} is not a day of the month (1–31)`);
   }
   const suffix =
     day >= 11 && day <= 13 ? "th" : (({ 1: "st", 2: "nd", 3: "rd" } as const)[day % 10] ?? "th");
-  return `Monthly - ${day}${suffix}`;
+  return `${day}${suffix}`;
 }

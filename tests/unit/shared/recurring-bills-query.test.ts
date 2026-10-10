@@ -23,6 +23,14 @@ describe("SPEC-recurring-bills 2.2–2.3: parseRecurringBillsQuery", () => {
     expect(BILL_STATUSES).toEqual(["paid", "dueSoon", "upcoming"]);
   });
 
+  it("2.3: the strict messages are the spec's words", () => {
+    expect([SORT_MESSAGE, Q_MESSAGE, STATUS_MESSAGE]).toEqual([
+      "sort must be one of: latest, oldest, a-to-z, z-to-a, highest, lowest",
+      "q must be at most 60 characters",
+      "status must be one of: paid, dueSoon, upcoming",
+    ]);
+  });
+
   it("US-30 reads no parameter as the default view: no search, latest, every status", () => {
     for (const parse of [lenient, strict]) {
       expect(parse("")).toEqual({ query: DEFAULT, issues: [], message: "" });
@@ -86,6 +94,8 @@ describe("SPEC-recurring-bills 2.2–2.3: parseRecurringBillsQuery", () => {
     });
     expect(parseRecurringBillsQuery({}, { strict: true }).query).toEqual(DEFAULT);
     expect(parseRecurringBillsQuery({ q: undefined }, { strict: true }).query).toEqual(DEFAULT);
+    const inherited = Object.create({ sort: "highest", status: "paid" }) as Record<string, string>;
+    expect(parseRecurringBillsQuery(inherited, { strict: true }).query).toEqual(DEFAULT);
   });
 
   describe("lenient (the page)", () => {
