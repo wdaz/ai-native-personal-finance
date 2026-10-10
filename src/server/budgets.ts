@@ -159,9 +159,10 @@ async function takenIssues(
 }
 
 /**
- * 2.10: the answer's DTO is computed with the same `budgetsSummary` as `GET`, from the state the
- * write leaves (read on the write's own transaction, so it is the committed state), so the budget
- * comes back with its August spent, remaining and latest three (US-15 AC3).
+ * 2.10: the answer's DTO is computed with the same `budgetsSummary` as `GET`, so the budget comes
+ * back with its August spent, remaining and latest three (US-15 AC3). It is read on the write's
+ * own transaction, just before the commit: the transaction sees its own write, so this is the
+ * state the commit leaves; a threshold reset after the commit answers 409 instead (2.9).
  */
 async function answer(tx: WriteTx, clock: Clock, id: string, status: 200 | 201) {
   const summary = await readSummary(tx, clock);
@@ -200,7 +201,9 @@ export function updateBudget(clock: Clock) {
     if (!exists) return { kind: "not_found" };
     const issues = await takenIssues(tx, body, id);
     if (issues.length > 0) return { kind: "validation", issues };
-    await tx.budget.update({
+    // A conditional update (SPEC-write-path 2.8): a delete that commits between the read above
+    // and this write leaves no row to touch, which is a 404, not a thrown P2025 (code review, T-23).
+    const { count } = await tx.budget.updateMany({
       where: { id: id! },
       data: {
         category: prismaCategory(body.category),
@@ -208,6 +211,7 @@ export function updateBudget(clock: Clock) {
         theme: prismaTheme(body.theme),
       },
     });
+    if (count === 0) return { kind: "not_found" };
     return answer(tx, clock, id!, 200);
   };
 }
