@@ -38,7 +38,7 @@ export function TransactionsCard({ items }: { items: readonly TransactionItem[] 
                 <img
                   className={styles.avatar}
                   src={`/avatars/${transaction.avatar}.jpg`}
-                  alt={transaction.name}
+                  alt=""
                   width={40}
                   height={40}
                 />

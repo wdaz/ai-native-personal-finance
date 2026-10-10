@@ -6906,3 +6906,25 @@ them too").
     properties) before it is recorded.
 - **Next:** the owner's merges (#107 first); then the drawing of
   the 33 pending entries in Claude Design (a separate *apply*, approved on its own) before T-17.
+
+## 2026-10-10 — Phase 4 (Release 2): `overview.md` v1.5 — the avatar is decorative
+
+- **Phase:** 4 — Specs & plan (Release 2); the question deferred from hotfix 2.
+- **Participants:** Owner (Ruslan), Agent (Claude Code, project thread "Avatar alt").
+- **Trigger:** the designer agent's read in hotfix 2 found `overview.md` §2.4 saying the avatar's `alt` is the
+  transaction's name, where the design hides its avatars from assistive technology (changelog §8c) and
+  `transactions.md` 2.9 and `recurring-bills.md` state `alt=""`. It was left as its own amendment.
+- **Prompt(s):** conversational; the owner answered the decision card with "Dekorativ (`alt=""`)".
+- **Produced:** `overview.md` v1.5 (§2.4, header, changelog); `TransactionsCard.tsx` with `alt=""`; the unit
+  test asserts the empty `alt` and no `img` role; the E2E test finds a row through its name text, not through
+  the avatar's accessible name, and asserts every avatar has an empty `alt`.
+- **What the agent got right:** found that two tests located elements by the avatar's accessible name, so the
+  one-line code change would have broken them.
+- **What the agent got wrong or missed:** nothing found; the E2E change was not run locally (no browser
+  stack in the session), CI runs it.
+- **Owner changes and reasoning:** chose the decorative option over keeping the name, as the agent
+  recommended: one rule on all three pages, and the name is read once.
+- **Disagreements:** none.
+- **Lessons for the process:** a test that finds an element by its accessible name ties the test to a
+  spec value; when that value changes, search the tests for the role query, not only the attribute.
+- **Next:** the owner's merge of this pull request.
