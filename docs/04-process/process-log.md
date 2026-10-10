@@ -7285,3 +7285,32 @@ them too").
   descriptions, contrast) move into the figures with T-26, which builds what they describe; removing the empty
   `NOT_YET_BUILT` and its upper-bound test is T-26's.
 - **Next:** the merge of this pull request; T-26 after T-22, T-24 and T-25.
+
+## 2026-10-10 — Phase 4 (Release 2): T-26 — Pots, UI and its six tools
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; the last Release 2 page, built while
+  T-24 (Budgets UI) ran in another thread.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread for T-26; read-only review subagents, the `/code-review` skill on Opus).
+- **Trigger:** the coordinator's brief to build T-26 after T-25's merge (#133).
+- **Prompt(s):** the plan `plans/2026-10-10-T-26.md` raised no question; `pots.md` v0.6, `ui-kit.md`,
+  `write-path.md` and `webmcp-tools.md` answered every behaviour.
+- **Produced** (pull request #@@PR@@, `develop`; and #136 first):
+  - #136: `recurring-bills.md` v0.7.2 — §7's WebMCP row follows WM-Q3 (a), the precondition the backlog names.
+  - The six tools and `PotsTools` (`router.refresh()` after a write tool's success); the page, `PotsBoard`,
+    `PotCard`, `PotForm`, `MoneyModal`, `PotsError`, the grid's 644 px container query; the strings
+    (`user-stories.md` v1.9) and tokens (`design-tokens.md` v1.7); `pots.md` §4.7–§4.9 computed by the figures
+    script.
+  - E2E: `tests/e2e/pots.spec.ts` (§7's E2E and WebMCP rows); `webmcp.spec.ts`'s placeholder checks replaced by
+    WM-Q3 (a)'s poll; `app-shell.spec.ts`'s `/pots` row; the phone keyboard walkthrough now walks the page.
+  - `NOT_YET_BUILT` removed with its upper-bound test; ADR-0003's dated line.
+- **What went well:** T-22's parts and T-25's domain made the page an assembly; the design matched at every width
+  on the first render.
+- **What the agent got wrong or missed:** the first `PotsBoard` claimed the modal slot inside a state updater, which
+  StrictMode runs twice; moved out. The idle `Notice` (T-22) took space in `<main>`'s flow and doubled the gap under
+  the header; it is now visually hidden when idle. The first E2E assumed `getTools()` keeps registration order and
+  that a money move could trip the row threshold; both corrected.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none.
+- **Next:** T-24's merge and the reconciliation of the strings and tokens both tasks add; then T-27.
