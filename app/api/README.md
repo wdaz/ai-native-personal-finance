@@ -13,3 +13,7 @@ reset), both Bearer `RESET_SECRET` or `CRON_SECRET`, handled in `src/server/admi
 
 T-09: `overview/route.ts` — `GET /api/overview` (session-protected by `proxy.ts`,
 `no-store`, `getOverview`).
+
+T-23: `budgets/route.ts` — `GET /api/budgets` (`no-store`, `getBudgets`) and `POST`;
+`budgets/[id]/route.ts` — `PATCH` and `DELETE`. Each write handler calls `guardedWrite` with a run
+from `src/server/budgets.ts` (SPEC-budgets 2.10, 2.11).

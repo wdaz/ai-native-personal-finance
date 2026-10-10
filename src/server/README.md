@@ -45,3 +45,9 @@ runs (rate limit → path id → body → one transaction → threshold → the 
 pruned by the check itself. `client-ip.ts` — `clientIp`, shared with login's limiter.
 `threshold.ts`'s `checkThreshold` is now one query. A new write route must call `guardedWrite`:
 `tests/unit/route-table.test.ts` fails otherwise.
+
+T-23 (SPEC-budgets): `budgets.ts` — `getBudgets` (the page's and `GET /api/budgets`' read),
+`toBudgetItemDto`/`toBudgetsDto`, and `createBudget`, `updateBudget`, `deleteBudget`, the `run`
+functions the routes hand to `guardedWrite` (`taken` against other budgets, `Budget` only);
+`prismaCategory`/`prismaTheme` invert the label maps. `variants.ts` now re-exports the variants'
+pure rules from `src/domain/variants.ts`.

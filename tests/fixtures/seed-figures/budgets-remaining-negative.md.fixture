@@ -1,0 +1,10 @@
+Violation fixture (tests/unit/seed-figures.test.ts): Dining Out's Remaining written as -$58.00, maximum − spent without the floor of SPEC-budgets 4.1.
+
+**4.2 The seed** (`prisma/data.json`; four budgets, creation order):
+
+| Budget | Theme | Maximum | Spent (Aug 2026) | Remaining | Bar | Summary row |
+|---|---|---|---|---|---|---|
+| Entertainment | Green | $50.00 | $15.00 | $35.00 | 30 % | $15.00 of $50.00 |
+| Bills | Cyan | $750.00 | $150.00 | $600.00 | 20 % | $150.00 of $750.00 |
+| Dining Out | Yellow | $75.00 | $133.00 | -$58.00 | 100 % (177.33 %) | $133.00 of $75.00 |
+| Personal Care | Navy | $100.00 | $40.00 | $60.00 | 40 % | $40.00 of $100.00 |

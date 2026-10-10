@@ -3,6 +3,9 @@ import { SEED_YEAR_SHIFT, shiftYears } from "@/src/domain/calendar";
 import { BUSINESS_TODAY, fixedClock } from "@/src/domain/clock";
 import { toCents } from "@/src/domain/money";
 import { overviewSummary } from "@/src/domain/overview";
+import { budgetsSummary, latestSpending } from "@/src/domain/budgets";
+import { applyVariant, type SeedVariant } from "@/src/domain/variants";
+import { budgetFillPercent } from "@/src/shared/budgets";
 import { billsList, billsTotals, recurringBills, sortBills } from "@/src/domain/bills";
 import { filterTransactions, sortTransactions, transactionsPage } from "@/src/domain/transactions";
 import { COPY } from "@/src/shared/copy";
@@ -365,6 +368,134 @@ export function billFigures() {
 
 function groupNames(bills: readonly SeedBill[], key: (bill: SeedBill) => string): string[][] {
   return groups(bills, key).map((group) => group.map((bill) => bill.name));
+}
+
+// ---------------------------------------------------------------------------------------
+// SPEC-budgets 4.2 and 4.4–4.7 (hand-off H15 (2)): the budgets' figures, computed by the domain.
+
+type SeedInput = ReturnType<typeof seedOverviewInput>;
+type SeedBudget = SeedInput["budgets"][number];
+
+/** The seed after a variant (SPEC-reset-and-test-support §2.7), through the domain's own rules. */
+export const seedVariantInput = (variant: SeedVariant): SeedInput =>
+  applyVariant(seedOverviewInput(), variant);
+
+/** The budgets' summary on the business day (NFR-D1). */
+export const budgetsOf = (input: Pick<SeedInput, "budgets" | "transactions">) =>
+  budgetsSummary(input, fixedClock(BUSINESS_TODAY));
+
+type SummaryItem = ReturnType<typeof budgetsOf>["items"][number];
+
+/** "100 % (177.33 %)": the bar, with the uncapped share when it is over (4.2's Bar cell). */
+export function barText(spent: number, maximum: number): string {
+  const fill = budgetFillPercent(spent, maximum);
+  if (spent <= maximum) return `${fill} %`;
+  return `${fill} % (${(Math.round((spent * 10_000) / maximum) / 100).toFixed(2)} %)`;
+}
+
+/** SPEC-budgets 4.2, cell by cell: the header, then one row per budget. `theme` names data.json's hex. */
+export function budgetTable(theme: (hex: string) => string): string[][] {
+  return [
+    ["Budget", "Theme", "Maximum", "Spent (Aug 2026)", "Remaining", "Bar", "Summary row"],
+    ...budgetsOf(seedOverviewInput()).items.map((b) => [
+      b.category,
+      theme(b.theme),
+      formatMoney(b.maximum),
+      formatMoney(b.spent),
+      formatMoney(b.remaining),
+      barText(b.spent, b.maximum),
+      `${formatMoney(b.spent)} of ${formatMoney(b.maximum)}`,
+    ]),
+  ];
+}
+
+/** "Pixel Playground 11 Aug 2026 -$10.00": a Latest Spending row as 4.4 writes it. */
+export const latestText = (t: { name: string; date: Date; amount: number }) =>
+  `${t.name} ${formatDate(t.date)} ${formatSignedMoney(t.amount)}`;
+
+/** A budget added to the seed's input, as a create would add it (listed last). */
+function withBudget(
+  input: SeedInput,
+  category: string,
+  maximum: number,
+  theme = "added",
+): SeedInput {
+  const seq = Math.max(0, ...input.budgets.map((b) => b.seq)) + 1;
+  return { ...input, budgets: [...input.budgets, { seq, category, maximum, theme }] };
+}
+
+const edited = (input: SeedInput, category: string, change: Partial<SeedBudget>): SeedInput => ({
+  ...input,
+  budgets: input.budgets.map((b) => (b.category === category ? { ...b, ...change } : b)),
+});
+
+const item = (summary: ReturnType<typeof budgetsOf>, category: string): SummaryItem => {
+  const found = summary.items.find((b) => b.category === category);
+  if (!found) throw new Error(`No budget for ${category}`);
+  return found;
+};
+
+/** SPEC-budgets 4.2 and 4.4–4.7: what the tests of the budgets read instead of typing. */
+export function budgetFigures() {
+  const input = seedOverviewInput();
+  const seed = budgetsOf(input);
+  const used = new Set(input.budgets.map((b) => b.category));
+  const freeCategories = CATEGORIES.filter((category) => !used.has(category));
+  /** What a new budget in each free category would show at once (US-15 AC3; August spent). */
+  const newSpent = Object.fromEntries(
+    freeCategories.map((category) => [
+      category,
+      item(budgetsOf(withBudget(input, category, 1)), category).spent,
+    ]),
+  );
+  const variant = (name: SeedVariant) => budgetsOf(seedVariantInput(name));
+  /** The largest maximum NFR-S3 allows. */
+  const largest = 99_999_999_999;
+  /** Ten budgets, every category, each at the largest maximum (4.7). */
+  const tenLargest = budgetsOf({
+    transactions: input.transactions,
+    budgets: CATEGORIES.map((category, index) => ({
+      seq: index + 1,
+      category,
+      maximum: largest,
+      theme: String(index),
+    })),
+  });
+  return {
+    input,
+    seed,
+    freeCategories,
+    newSpent,
+    /** 4.4: each seed budget's rows, and the categories US-18 needs beyond the seed's. */
+    latest: Object.fromEntries(
+      CATEGORIES.map((category) => [category, latestSpending(category, input.transactions)]),
+    ),
+    longestLatestName: CATEGORIES.flatMap((category) =>
+      latestSpending(category, input.transactions),
+    ).reduce((a, b) => (b.name.length > a.name.length ? b : a)).name,
+    /** 4.5. */
+    variant,
+    /** 4.6: the worked writes on the seed. */
+    writes: {
+      addGeneral: budgetsOf(withBudget(input, "General", 50_000)),
+      addGroceries: budgetsOf(withBudget(input, "Groceries", 20_000)),
+      diningOut150: budgetsOf(edited(input, "Dining Out", { maximum: 15_000 })),
+      diningOut133: budgetsOf(edited(input, "Dining Out", { maximum: 13_300 })),
+      deleteEntertainment: budgetsOf({
+        ...input,
+        budgets: input.budgets.filter((b) => b.category !== "Entertainment"),
+      }),
+    },
+    /** 4.7: the boundaries. */
+    boundaries: {
+      oneCent: item(budgetsOf(edited(input, "Entertainment", { maximum: 1 })), "Entertainment"),
+      largest: item(
+        budgetsOf(edited(input, "Entertainment", { maximum: largest })),
+        "Entertainment",
+      ),
+      tenLargest,
+    },
+  };
 }
 
 if (import.meta.main) {
