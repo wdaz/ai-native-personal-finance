@@ -52,7 +52,12 @@ It runs in two modes, and the second needs the owner's approval named in its pro
 2. **The designer agent proposes.** It reads the designer's changelog, the app design and the style
    guide live, not an older export, and the repository's documents the question touches. It returns the
    design as it stands, two or three options with their trade-offs, the decision it takes, the files and
-   sections it would change, and a draft changelog entry. In this mode it writes nothing.
+   sections it would change, and a draft changelog entry. In this mode it writes nothing. Where the answer
+   is a fact only a person has (the intent behind a screen, which of two uses matters more) and neither
+   the design nor the documents give it, it may instead ask the owner one question (owner decision,
+   2026-10-10: "dizayner insana sual verə bilər" — "the designer can ask a person a question"); the agent
+   puts the question to the owner and returns the owner's answer, and the designer agent goes on in
+   *propose* mode. The answer is not an approval: only step 3 opens step 4.
 3. **The owner approves, or decides otherwise.** The agent relays the proposal. The owner's word wins:
    the owner may approve, choose another option, or override a decision already recorded (as for the
    designer's changelog §16a, 2026-10-05, where "hazırda form qərarları dəyişmir" — "the form decisions

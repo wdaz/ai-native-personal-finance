@@ -6456,7 +6456,12 @@ them too").
   `SendMessage` resuming the persona.
   The first draft of this text claimed a guard of three tools; the agent's own review found the others
   (sharing, members, conversation) unguarded, and the guard now covers all but a read-only list.
-- **Owner changes and reasoning:** the three answers above.
+- **Owner changes and reasoning:** the three answers above; and, on 2026-10-10, "dizayner insana sual
+  verə bilər" ("the designer can ask a person a question"), which the agent read as: the designer agent may
+  ask the owner a question it cannot answer from the design or the documents. It added `QUESTION-TO-OWNER`
+  to the persona and the main chat's rule (the owner's answer is `OWNER ANSWERED:` and is not an approval),
+  and a sentence in governance v1.11 step 2. If the owner meant something else (for example the human
+  designer asking the owner), this is the line to correct.
 - **Disagreements:** none.
 - **Lessons for the process:** "apply only after the owner approved" is held by the persona's prompt and the
   controller's call, not by the tool: the guard knows *who* writes, not *which mode* it is in. A write by the
