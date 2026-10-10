@@ -52,7 +52,8 @@ export function TransactionsToolbar() {
           value={nav.text}
           onChange={(event) => nav.setText(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === "Enter") {
+            // An Enter that ends an IME composition (Chinese, Japanese, Korean) is not a submit.
+            if (event.key === "Enter" && !event.nativeEvent.isComposing) {
               event.preventDefault();
               nav.submitSearch();
             }

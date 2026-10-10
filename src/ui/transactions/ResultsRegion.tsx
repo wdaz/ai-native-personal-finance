@@ -18,9 +18,13 @@ export function ResultsRegion({ status, children }: { status: string; children: 
 
   useEffect(() => {
     if (pending || changes === spoken.current) return;
-    spoken.current = changes;
     setAnnounced("");
-    const frame = requestAnimationFrame(() => setAnnounced(status));
+    // Marked as spoken only when the frame runs: an effect re-run inside the frame cancels it
+    // and must still speak this change.
+    const frame = requestAnimationFrame(() => {
+      spoken.current = changes;
+      setAnnounced(status);
+    });
     return () => cancelAnimationFrame(frame);
   }, [pending, changes, status]);
 

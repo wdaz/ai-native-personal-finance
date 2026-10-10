@@ -143,6 +143,47 @@ describe("TransactionsNav (SPEC-transactions 2.5, 2.10, US-10 AC1, US-11 AC2)", 
     expect(field()).toHaveProperty("value", "emma");
   });
 
+  it("Back before the answer arrives resyncs the controls from the view shown, though the answer is unchanged", () => {
+    render(<Page />);
+    fireEvent.click(screen.getAllByRole("button", { name: "Page 2" })[0]!);
+    expect(screen.getAllByRole("button", { name: "Page 2" })[0]!.getAttribute("aria-current")).toBe(
+      "page",
+    );
+    act(() => {
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(screen.getAllByRole("button", { name: "Page 1" })[0]!.getAttribute("aria-current")).toBe(
+      "page",
+    );
+  });
+
+  it("after Back to a clamped view, a later link with the same q keeps the typed text", () => {
+    const { rerender } = render(<Page effective={{ ...DEFAULT, q: "co", page: 5 }} />);
+    act(() => {
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    type("cof");
+    rerender(<Page effective={{ ...DEFAULT, q: "co", page: 1 }} />);
+    expect(field()).toHaveProperty("value", "cof");
+  });
+
+  it("Back or Forward never moves focus to the pagination; activating a page that disables Next does", () => {
+    const { rerender } = render(<Page />);
+    act(() => {
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    rerender(<Page effective={{ ...DEFAULT, page: 3 }} />);
+    expect(document.activeElement).toBe(document.body);
+
+    const next = screen.getByRole("button", { name: COPY.nextPage });
+    fireEvent.click(screen.getAllByRole("button", { name: "Page 4" })[0]!);
+    rerender(<Page effective={{ ...DEFAULT, page: 4 }} />);
+    next.focus();
+    fireEvent.click(next);
+    rerender(<Page effective={{ ...DEFAULT, page: 5 }} />);
+    expect(document.activeElement?.getAttribute("aria-label")).toBe("Page 5");
+  });
+
   it("a server answer never rewrites the text the person is typing", () => {
     const { rerender } = render(<Page />);
     type("co");

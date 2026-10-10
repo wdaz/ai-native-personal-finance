@@ -25,10 +25,19 @@ export function TransactionsPagination({ pageCount, total }: { pageCount: number
 
   // 2.7 "Focus": an activated control keeps focus when it is still there and enabled; otherwise
   // focus goes to the current page's number in the visible list, never to <body>.
+  // Only after a control here was activated: Back, Forward or another control never moves focus
+  // (and never scrolls the page to the pagination).
+  const activated = useRef(false);
+  const go = (page: number) => {
+    activated.current = true;
+    nav.setPage(page);
+  };
   const shownPage = useRef(current);
   useEffect(() => {
     if (shownPage.current === current) return;
     shownPage.current = current;
+    if (!activated.current) return;
+    activated.current = false;
     const root = navRef.current;
     const active = document.activeElement;
     if (root === null) return;
@@ -39,7 +48,7 @@ export function TransactionsPagination({ pageCount, total }: { pageCount: number
       (active instanceof HTMLElement && !active.isConnected);
     if (!lost) return;
     const list = [...root.querySelectorAll("[data-pages]")].find(isShown);
-    list?.querySelector<HTMLButtonElement>('[aria-current="page"]')?.focus();
+    list?.querySelector<HTMLButtonElement>('[aria-current="page"]')?.focus({ preventScroll: true });
   }, [current]);
 
   if (total < 1) return null;
@@ -59,7 +68,7 @@ export function TransactionsPagination({ pageCount, total }: { pageCount: number
               aria-label={COPY.pageNumber(item)}
               aria-current={item === current ? "page" : undefined}
               onClick={() => {
-                if (item !== current) nav.setPage(item);
+                if (item !== current) go(item);
               }}
             >
               {item}
@@ -77,7 +86,7 @@ export function TransactionsPagination({ pageCount, total }: { pageCount: number
         className={cx("text-preset-4", styles.button, styles.end)}
         aria-label={COPY.previousPage}
         disabled={current <= 1}
-        onClick={() => nav.setPage(current - 1)}
+        onClick={() => go(current - 1)}
       >
         {/* The design turns Next's caret 180° for Prev. */}
         <span className={styles.flip}>
@@ -92,7 +101,7 @@ export function TransactionsPagination({ pageCount, total }: { pageCount: number
         className={cx("text-preset-4", styles.button, styles.end)}
         aria-label={COPY.nextPage}
         disabled={current >= pageCount}
-        onClick={() => nav.setPage(current + 1)}
+        onClick={() => go(current + 1)}
       >
         <span className={styles.endText}>{COPY.next}</span>
         <CaretRightIcon />

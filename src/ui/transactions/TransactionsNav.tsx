@@ -78,6 +78,9 @@ export function TransactionsNav({
   const [debounced, flush] = useDebouncedValue(text, SEARCH_DEBOUNCE_MS);
   const [changes, setChanges] = useState(0);
   const fromHistory = useRef(false);
+  // Bumped on every Back or Forward, so the resync below runs even when the server's answer
+  // does not change (the view was clamped, or a pending push was abandoned).
+  const [historyTick, setHistoryTick] = useState(0);
 
   const go = useCallback(
     (next: TransactionsQuery, mode: "push" | "replace") => {
@@ -127,6 +130,7 @@ export function TransactionsNav({
   useEffect(() => {
     const onPopState = () => {
       fromHistory.current = true;
+      setHistoryTick((tick) => tick + 1);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -141,10 +145,10 @@ export function TransactionsNav({
     intended.current = effective;
     setQuery(effective);
     if (history || qChanged) setText(effective.q ?? "");
-    // It runs when the server's answer changes, not when `pending` does: `effectiveKey` stands
-    // for `effective`, whose object identity changes on every render.
+    // It runs when the server's answer changes or on Back and Forward, not when `pending` does:
+    // `effectiveKey` stands for `effective`, whose object identity changes on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveKey]);
+  }, [effectiveKey, historyTick]);
 
   const value = useMemo<TransactionsNavValue>(
     () => ({
