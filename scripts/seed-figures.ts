@@ -3,11 +3,7 @@ import { SEED_YEAR_SHIFT, shiftYears } from "@/src/domain/calendar";
 import { BUSINESS_TODAY, fixedClock } from "@/src/domain/clock";
 import { toCents } from "@/src/domain/money";
 import { overviewSummary } from "@/src/domain/overview";
-import {
-  filterTransactions,
-  sortTransactions,
-  transactionsPage,
-} from "@/src/domain/transactions";
+import { filterTransactions, sortTransactions, transactionsPage } from "@/src/domain/transactions";
 import { CATEGORIES } from "@/src/shared/enums";
 import {
   TRANSACTION_SORTS,
