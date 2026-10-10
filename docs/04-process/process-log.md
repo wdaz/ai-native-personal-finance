@@ -6691,8 +6691,15 @@ them too").
   `/designer-approve` in this background session and the guard refused it, because the command was not
   stamped `composer` (the session is driven from another client); the guard now also accepts `bridge` and
   names the origin it refused, so a refusal tells which origin it saw. Not covered: a write the owner makes in Claude Design itself or
-  through `/design-sync`, and a reload, which drops the approval (that fails closed). The after-the-fact
-  check stays useful: compare file etags (`list_files`) before and after a run.
+  through `/design-sync`, and a reload, which drops the approval (that fails closed). Also not covered, and
+  stated here because a side reviewer pointed it out: the approval is bound to time, not to the decision or
+  to files. For fifteen minutes (or until the designer agent's turn ends) any `write_files` call of the
+  designer agent passes, whatever it changes; the text after `/designer-approve` is only a label in the
+  status. Keeping the change to what the owner approved rests on the persona's prompt. The after-the-fact
+  check is therefore the real one: compare file etags (`list_files`) before and after a run, and after the
+  first *apply* read the designer's changelog and the `.dc.html` files to see that only the approved change
+  landed. A guard that names the files in the command (`/designer-approve <paths> -- <decision>`) is not
+  built; it is offered to the owner.
 - **Next:**
   - The owner reviews the draft pull request and merges it if the route is right; an open question for the
     owner: may the owner still take a question to the human designer in person (the pull request says yes,
