@@ -19,10 +19,9 @@ import {
   type TransactionsQuery,
 } from "@/src/shared/transactions-query";
 import { ResultsNavContext, type ResultsNavState } from "../ResultsRegion";
-import { useDebouncedValue } from "../useDebouncedValue";
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "../useDebouncedValue";
 
-/** SPEC-transactions 2.5 and 4.1 (US-10 AC1 allows at most 300 ms). */
-export const SEARCH_DEBOUNCE_MS = 250;
+export { SEARCH_DEBOUNCE_MS };
 
 type TransactionsNavValue = {
   /** The intended query: what the controls show at once, before the server answers (2.5). */
@@ -35,10 +34,6 @@ type TransactionsNavValue = {
   setSort: (sort: TransactionSort) => void;
   setCategory: (category: Category | undefined) => void;
   setPage: (page: number) => void;
-  /** A navigation started by a control is pending: the results region is `aria-busy` (2.10). */
-  pending: boolean;
-  /** Counts the navigations controls started, so the status line speaks after each (2.10). */
-  changes: number;
 };
 
 const TransactionsNavContext = createContext<TransactionsNavValue | null>(null);
@@ -161,10 +156,8 @@ export function TransactionsNav({
       setCategory: (category) =>
         change({ category, page: 1 }, category === intended.current.category),
       setPage: (page) => change({ page }, page === intended.current.page),
-      pending,
-      changes,
     }),
-    [query, text, applySearch, flush, change, pending, changes],
+    [query, text, applySearch, flush, change],
   );
 
   const results = useMemo<ResultsNavState>(() => ({ pending, changes }), [pending, changes]);

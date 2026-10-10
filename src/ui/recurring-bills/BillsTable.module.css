@@ -86,10 +86,6 @@
   flex-shrink: 0;
 }
 
-.icon.paid {
-  color: var(--color-green);
-}
-
 .icon.dueSoon {
   color: var(--color-red);
 }

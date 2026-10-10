@@ -18,10 +18,9 @@ import {
   type RecurringBillsPageQuery,
 } from "@/src/shared/recurring-bills-query";
 import { ResultsNavContext, type ResultsNavState } from "../ResultsRegion";
-import { useDebouncedValue } from "../useDebouncedValue";
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "../useDebouncedValue";
 
-/** SPEC-recurring-bills 2.5 and 4.1: the search's debounce, as on Transactions. */
-export const SEARCH_DEBOUNCE_MS = 250;
+export { SEARCH_DEBOUNCE_MS };
 
 type BillsNavValue = {
   /** The intended query: what the controls show at once, before the server answers (2.5). */

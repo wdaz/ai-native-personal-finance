@@ -7151,3 +7151,38 @@ them too").
   `tests/unit/install-scripts.test.ts` fails on a machine with npm 10, as recorded for T-17; CI runs
   npm 11. The E2E suite was not run locally; this task changes no page, and CI runs it.
 - **Next:** the merge of #127; then T-21 (Recurring Bills, UI and `list_recurring_bills`).
+
+## 2026-10-10 — Phase 4 (Release 2): T-21 — Recurring Bills, the page and `list_recurring_bills`
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; fifth Release 2 build task.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "T-21"; one read-only review subagent, the `/code-review` skill on
+  Opus).
+- **Trigger:** the coordinator's brief to continue Release 2 in roadmap order after T-20's merge.
+- **Prompt(s):** `prompts/2026-10-10-T-21/` (the review brief, report and handling). The plan
+  `plans/2026-10-10-T-21.md` raised no question: the spec (`recurring-bills.md` v0.7.1) answered every
+  behaviour, and the designer's changelog §27 had drawn every pending entry.
+- **Produced** (pull request #129, `develop`):
+  - A: `ResultsRegion` moved to `src/ui/` with a small `ResultsNavContext` both list pages provide; the
+    page's copy in `COPY` and a new appendix table (H14 (1)), `formatDueDay` and the Overview's
+    `BillsCard` reading it; `recurringBillsSearch`; three Phosphor icons.
+  - B: the page and `src/ui/recurring-bills/` (`BillsNav`, `BillsToolbar`, `BillsTable`,
+    `TotalBillsCard`, `BillsSummaryCard`, `BillsError`); the content-width layout of 2.13 on `<main>`'s
+    container query.
+  - C: `list_recurring_bills` (`readOnlyHint`, `untrustedContentHint`) and `PAGE_TOOLS.recurringBills`.
+  - D: `tests/e2e/recurring-bills.spec.ts` (28 tests) and the tool's rows in `tests/e2e/webmcp.spec.ts`;
+    the placeholder row in `app-shell.spec.ts` retired.
+- **What went well:** T-19's Transactions page gave the navigation, toolbar and status-line patterns, so
+  the page took them with two parameters instead of four; the seed figures from T-20 gave every E2E
+  number.
+- **What the agent got wrong or missed:** the two summary cards at 768–960 px came out unequal twice
+  (`flex: 1 1 0` and `50%` bases both let padding or shrink weighting move the split); a `calc` basis
+  with no grow or shrink fixed it. The review found `TransactionsNav` still publishing `pending` and
+  `changes` after the move, and the debounce constant declared twice; both fixed.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none. Three review findings (a shared navigation hook, shared toolbar CSS and error
+  card) were left for a later task, with reasons in the handling file.
+- **Not done here:** Firefox and WebKit E2E ran only in CI. `tests/unit/install-scripts.test.ts` fails on
+  a machine with npm 10, as recorded for T-17.
+- **Next:** the merge of #129; then T-22.
