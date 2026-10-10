@@ -180,23 +180,30 @@ test("US-38 AC1 US-41: leaving Overview by client navigation unregisters the too
     (window as unknown as { __clientNav?: boolean }).__clientNav = true;
   });
 
-  // H11 (4): Pots is the Release 2 page built last, so it registers no tools until then.
+  // SPEC-pots 2.13: Pots swaps Overview's two tools for its six, with no reload in between.
   await mainNav(page).getByRole("link", { name: PAGE_NAMES.pots, exact: true }).click();
   await expect(page).toHaveURL(/\/pots$/);
-  await expect(page.locator("html")).not.toHaveAttribute("data-webmcp", "ready");
-  expect(await listTools(page)).toEqual([]);
-  await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(0) })).toBeVisible();
+  await expect
+    .poll(async () => (await listTools(page)).map((tool) => tool.name))
+    .toEqual([
+      "add_money_to_pot",
+      "add_pot",
+      "delete_pot",
+      "edit_pot",
+      "list_pots",
+      "withdraw_from_pot",
+    ]);
+  await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(6) })).toBeVisible();
   expect(
     await page.evaluate(() => (window as unknown as { __clientNav?: boolean }).__clientNav),
     "the navigation was a full page load, not a client navigation",
   ).toBe(true);
 
+  // WM-Q3 (a): `data-webmcp` stays "ready" between two built pages, so the list is polled.
   await mainNav(page).getByRole("link", { name: PAGE_NAMES.overview, exact: true }).click();
-  await expectToolsReady(page);
-  expect((await listTools(page)).map((tool) => tool.name)).toEqual([
-    "get_balance",
-    "get_overview_summary",
-  ]);
+  await expect
+    .poll(async () => (await listTools(page)).map((tool) => tool.name))
+    .toEqual(["get_balance", "get_overview_summary"]);
   await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(2) })).toBeVisible();
 });
 
@@ -490,7 +497,7 @@ test.describe("list_recurring_bills on Recurring Bills (US-38 AC1, US-39 AC2–A
     });
   });
 
-  test("leaving Recurring Bills by client navigation unregisters its tool (Pots registers none yet)", async ({
+  test("leaving Recurring Bills by client navigation swaps its tool for Overview's two (WM-Q3 (a))", async ({
     page,
   }) => {
     await page.goto("/recurring-bills");
@@ -499,10 +506,12 @@ test.describe("list_recurring_bills on Recurring Bills (US-38 AC1, US-39 AC2–A
       (window as unknown as { __clientNav?: boolean }).__clientNav = true;
     });
 
-    await mainNav(page).getByRole("link", { name: PAGE_NAMES.pots, exact: true }).click();
-    await expect(page).toHaveURL(/\/pots$/);
-    await expect(page.locator("html")).not.toHaveAttribute("data-webmcp", "ready");
-    expect(await listTools(page)).toEqual([]);
+    await mainNav(page).getByRole("link", { name: PAGE_NAMES.overview, exact: true }).click();
+    await expect(page).toHaveURL(/\/overview$/);
+    await expect
+      .poll(async () => (await listTools(page)).map((tool) => tool.name))
+      .toEqual(["get_balance", "get_overview_summary"]);
+    await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(2) })).toBeVisible();
     expect(
       await page.evaluate(() => (window as unknown as { __clientNav?: boolean }).__clientNav),
       "the navigation was a full page load, not a client navigation",

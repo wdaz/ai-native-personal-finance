@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import seedFile from "@/prisma/data.json" with { type: "json" };
 import { SEED_YEAR_SHIFT, shiftYears } from "@/src/domain/calendar";
 import { BUSINESS_TODAY, fixedClock } from "@/src/domain/clock";
@@ -508,8 +509,8 @@ export function budgetFigures() {
 
 // ---------------------------------------------------------------------------------------
 // SPEC-pots 4.2–4.6 (hand-off H16 (2)): the pots' figures, computed by `src/domain/pots.ts`. 4.7
-// (the card widths), 4.8 (the tool descriptions) and 4.9 (the contrast) move with T-26, which
-// builds the page and the tools (T-25 plan D7).
+// (the card widths), 4.8 (the tool descriptions) and 4.9 (the contrast) came with T-26, which
+// built the page and the tools: `potWidths`, `descriptionLengths` and `contrastRatio` below.
 
 type SeedPot = SeedInput["pots"][number];
 type Pots = { balance: number; pots: SeedPot[] };
@@ -621,6 +622,47 @@ export function potFigures(theme: (hex: string) => Theme) {
 
 /** The seed's pots have no id before the database gives one; the name stands in for it here. */
 const withId = (pot: SeedPot) => ({ id: pot.name, name: pot.name });
+
+/**
+ * SPEC-pots 4.7: a window's content width (`app-shell.md` §2.9: the sidebar, 300 px or 88 px, from
+ * 1024 px; `<main>`'s padding 40 px from 768 px, 16 px below), then a card's width, its inside (the
+ * card's padding 24 px from 768 px, 20 px below; 2.2) and each money button's (the two share the
+ * inside with a 16 px gap). Two columns, 24 px apart, from a 644 px content width (PO-Q7 (a)) unless
+ * `columns` says otherwise — the drawing's own rule, by the window, for 4.7's first sentence.
+ */
+export function potWidths(window: number, sidebar: number, columns?: 1 | 2) {
+  const content =
+    window >= 1024 ? window - sidebar - 2 * 40 : window >= 768 ? window - 2 * 40 : window - 2 * 16;
+  const cols = columns ?? (content >= 644 ? 2 : 1);
+  const card = cols === 2 ? (content - 24) / 2 : content;
+  const inside = card - 2 * (window >= 768 ? 24 : 20);
+  return { content, columns: cols, card, inside, button: (inside - 16) / 2 };
+}
+
+/** SPEC-pots 4.8: each tool's description length, in characters (NFR-W3: at most 200). */
+export function descriptionLengths(tools: readonly { name: string; description: string }[]) {
+  return Object.fromEntries(tools.map((tool) => [tool.name, tool.description.length]));
+}
+
+/** A colour token's value as `src/ui/tokens.css` defines it, e.g. `tokenColour("green")`. */
+export function tokenColour(name: string, css = readFileSync("src/ui/tokens.css", "utf8")): string {
+  const found = new RegExp(`--color-${name}:\\s*(#[0-9a-f]{6});`, "i").exec(css);
+  if (!found) throw new Error(`No colour token --color-${name}`);
+  return found[1]!;
+}
+
+/** SPEC-pots 4.9: WCAG 2.1's contrast ratio of two `#rrggbb` colours, as "4.95:1". */
+export function contrastRatio(a: string, b: string): string {
+  const luminance = (hex: string) => {
+    const [r, g, bl] = [1, 3, 5].map((i) => {
+      const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * bl!;
+  };
+  const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return `${((light! + 0.05) / (dark! + 0.05)).toFixed(2)}:1`;
+}
 
 /** "7.95 %": 4.3's way of writing a share of the bar. */
 export const percentSpaced = (basisPoints: number) =>
