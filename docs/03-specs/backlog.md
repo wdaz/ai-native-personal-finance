@@ -1,6 +1,6 @@
 # Backlog — Release 1 (vertical slice: Auth + Overview) and Release 2 (Transactions, Recurring Bills, Budgets, Pots)
 
-Status: **Approved** (v1.60 — 2026-10-10: T-24 aligned with the designer's Release 2 decisions, approved by the owner on 2026-10-10 (the designer's changelog §17–§25): BU-11 (A)'s Budgets-only centre-text fit as a `Donut` option, with BU-Q9 (a)'s length table at server render, and the token names confirmed (§18); T-19 and T-26 need no change (TX-1 adds no token, §25a; T-26 already lists `--spacing-bar-text` for Pots only, §25c); v1.59 — 2026-10-06: **T-15d is done, and with it T-15** — the Release 2 specs are merged
+Status: **Approved** (v1.60 — 2026-10-10: T-24 aligned with the designer's Release 2 decisions, approved by the owner on 2026-10-10 (the designer's changelog §17–§25): BU-11 (A)'s Budgets-only centre-text fit as a `Donut` option, with BU-Q9 (a)'s length table at server render, and the token names confirmed (§18); T-19 and T-26 need no change (TX-1 adds no token, §25a; T-26 already lists `--spacing-bar-text` for Pots only, §25c); and a new section "Outside a release" with **T-28**, the Overview counterpart of BU-11 (A) — whether Overview's donut passes the same centre-text fit, an `overview.md` 4.4 amendment the designer is asked about first and the owner approves — added on the owner's answer of 2026-10-10, "Backlog-a yaz", outside Release 2 and after T-24; v1.59 — 2026-10-06: **T-15d is done, and with it T-15** — the Release 2 specs are merged
 (`write-path.md` #87, `transactions.md` #88, `ui-kit.md` #92, `recurring-bills.md` #91, `budgets.md` #98, `pots.md`
 #97, `webmcp-tools.md` §4 #90; the amendments #95, #96, #99–#102), and T-15d's last pull request (#104, plan Q4 (a)) adds the
 section "Release 2" below — the build tasks T-17 to T-27, each pointing to its spec sections and naming the hand-offs
@@ -511,3 +511,12 @@ Release 2 notes
 - **At Release 2's end** (T-27): the retrospective's "Not yet observed" list is read on the first `develop` → `main`
   release (plan A3). Open tech debt — TD-3, TD-13, TD-21, TD-22, TD-23 and TD-24 — stays for the end of all releases
   unless the same case repeats (`tech-debt.md`).
+
+## Outside a release
+
+Tasks the owner has put on the backlog without a release. They are not part of Release 2's order (T-17 → T-27),
+and none of them is in a release's story list until the owner places it.
+
+| Id | Task | Spec / ADR | Stories | Depends on |
+|----|------|------------|---------|------------|
+| T-28 | **Overview — the donut's centre-text fit** (the owner's answer of 2026-10-10, "Backlog-a yaz"; the Overview counterpart of BU-11 (A), the designer's changelog §24a and §25d, open in `release-2-handoffs.md` H15 (4)). Overview's donut has no rule for a spent or limit amount that does not fit its 144 px centre hole. Budgets has one: an option of the shared `Donut`, off by default (`budgets.md` v0.8, pull request #115), which steps the spent figure through presets 1 → 2 → 3 → 4 Bold → 5 Bold until it fits 128 px and breaks "of {limit} limit" before "limit", and also after "of" if "of {limit}" is still wider than 128 px, with the size chosen from a table of amount length → preset when the server renders the page (BU-Q9 (a), NFR-P2). This task decides whether the Overview card passes the same option. That is an amendment of the Approved `overview.md` 4.4: the designer is asked first (`governance.md`, "Design questions are decided by the designer"), and the owner approves the amendment by merging its pull request; the code follows it | `overview.md` 2.5, 4.4 (amended first); `budgets.md` 2.3 (v0.8); `governance.md` | US-07 | T-24 (the Budgets build task that adds the option) |
