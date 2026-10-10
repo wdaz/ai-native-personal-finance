@@ -7351,3 +7351,17 @@ them too").
   T-24's; this task's copy table, token table and versions follow them (`user-stories.md` v1.10,
   `design-tokens.md` v1.8). `Release2Placeholder.tsx` went with the last placeholder page.
 - **Next:** T-27 (Release 2 closed).
+
+## 2026-10-11 — Phase 7: the retrospective and the README's portfolio section
+
+- **Phase:** 7 (Retrospective and portfolio narrative); roadmap outcome 6.
+- **Participants:** Owner (Ruslan), the project's coordinator session, Agent (Claude Code, Sonnet 5.5, cloud thread "Phase 7 README"); one read-only Opus subagent (`Explore`) read the log from 2026-10-03 to 2026-10-10; a second fresh Opus subagent ran `/code-review` and found nine defects, all fixed (a wrong governance version, an entry and a test-file count, TD-24's line, "five" disagreements that were one, two phase labels, a README line that called an open gap closed, a template field name).
+- **Trigger:** Release 2's build tasks T-17…T-26 are merged; roadmap outcome 6 asks for `docs/04-process/retrospective.md` and the README's portfolio section.
+- **Prompt(s):** the coordinator's brief for this thread (no prompt file; its content is the task text above).
+- **Produced:** `docs/04-process/retrospective.md` v0.1 (Draft); the README's status line and "The story in short" section; the `docs/README.md` map row; the roadmap's Status line.
+- **What the agent got right:** the Release 1 retrospective's themes and counting method were reused, so this task read only the new part of the log; the subagent's quotes were re-opened before use.
+- **What the agent got wrong or missed:** its first draft of section 6 described T-15c's Q1 as Release 2's sequencing; it was corrected against the log line before the commit. API and end-to-end tests could not be run in this session (no database or browsers); the retrospective says so.
+- **Owner changes and reasoning:** none yet; the owner reviews and merges this pull request themselves (not merged by the agent, per the owner's rule for the Phase 7 README).
+- **Disagreements:** none.
+- **Lessons for the process:** section 6 of the retrospective is written as questions because an agent cannot state the owner's verdict; the owner answers them in review.
+- **Next:** the owner reviews and merges this pull request; T-27's release pull request #141 is merged by the owner, after which the retrospective's section 7 is read and section 1 updated.

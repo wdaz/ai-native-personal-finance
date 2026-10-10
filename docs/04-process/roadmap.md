@@ -1,6 +1,6 @@
 # Roadmap
 
-Status: Approved · Current phase: **Release 1 — 5, Build the slice** (Phase 4 exit for Release 1 approved 2026-09-20); **Release 2 — 4, Specs & plan** (the return trip, opened by T-15d on 2026-10-04 and in effect from the owner's merge of PR #85) · 2026-10-10: "Release 2 goal" added (owner decision)
+Status: Approved · Current phase: **Release 1 — 5, Build the slice** (Phase 4 exit for Release 1 approved 2026-09-20); **Release 2 — 4, Specs & plan** (the return trip, opened by T-15d on 2026-10-04 and in effect from the owner's merge of PR #85) · 2026-10-10: "Release 2 goal" added (owner decision) · 2026-10-11: Release 2 is built on `develop` (T-17…T-26); the Phase 7 retrospective and README section are drafted; the phase exit stays the owner's to approve and record
 
 The roadmap is a sequence of phases with gates, not a calendar. A phase is
 entered only when the previous phase's exit gate is recorded in

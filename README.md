@@ -16,9 +16,37 @@ A portfolio project with two deliverables:
    the first: it shows how an idea is analysed, specified and built *with*
    LLMs, not just that an app exists.
 
-> Status: **Phase 5 — Build the slice (Release 1).** The stack, layout, testing approach
-> and WebMCP design are recorded in `docs/02-architecture/`; the Release 1 specs are
-> approved in `docs/03-specs/`. The backlog is `docs/03-specs/backlog.md`.
+> Status: **Release 2 is built on `develop`; the Phase 7 retrospective and this section are drafted and
+> wait for the owner's approval** (the roadmap's phase exits are the owner's to record). Release 1 (Overview) runs in production. Release 2 (Transactions, Recurring Bills,
+> Budgets, Pots and 12 more agent tools) is merged into `develop`; its `develop` → `main` release
+> pull request is the owner's to merge. The retrospective is
+> `docs/04-process/retrospective.md` (draft, awaiting the owner). The backlog is
+> `docs/03-specs/backlog.md`.
+
+## The story in short
+
+*What "AI-native" meant here, in numbers read from the repository on 2026-10-11 (sources and caveats:
+`docs/04-process/retrospective.md`, section 1).*
+
+- **38 days, 938 commits, 121 process-log entries.** From the first commit (2026-09-03) to the end of the
+  Release 2 build: discovery, requirements, seven ADRs, specs, 35 implementation plans and the app itself.
+- **Documents were the context.** An agent starting a task read `AGENTS.md`, the roadmap, the spec and the plan;
+  nothing else was handed over. The owner decided and merged; agents drafted, built, reviewed and logged.
+- **Every story is traced.** 41 of 41 user stories are named in a test title (`npm run traceability`); 2156 unit
+  tests, plus API and end-to-end suites on Chromium, Firefox and WebKit in CI.
+- **The app is also an agent surface.** 14 WebMCP tools let an in-browser agent read every page and, after the
+  user's confirmation, write budgets and pots (`docs/03-specs/webmcp-tools.md`).
+- **Where it helped:** a reviewer that is not the author kept finding real defects; running the real page found what
+  tests and drawings hid; shared parts built once made four pages and 12 tools a one-day build.
+- **Where it hurt:** claims were accepted before anything could contradict them (specs from a stale export, plans'
+  predictions, tests that passed for the wrong reason), and written rules did not stop the recurrences by
+  themselves; a fresh review did. Merge authority drifted from `governance.md`, and the merge-on-green rule is still in no governance version (retrospective §6, Q2).
+- **What the owner changed** is in each process-log entry's "Owner changes" and "Disagreements" fields, and
+  summarised in the retrospective, sections 5 and 6.
+
+Read next: [`retrospective.md`](docs/04-process/retrospective.md) (the whole project),
+[`release-1-retrospective.md`](docs/04-process/release-1-retrospective.md) (Release 1, line-checked) and
+[`process-log.md`](docs/04-process/process-log.md) (the raw record).
 
 ## How to read this repository
 
