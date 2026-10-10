@@ -245,6 +245,45 @@ const RENDERED: [context: string, keys: Key[], message: string][] = [
     `${COPY.addBudgetSubmit} · ${COPY.saveChanges}`,
   ],
   ["Budgets", ["budgetsLoadError", "retry"], `${COPY.budgetsLoadError} · button: ${COPY.retry}`],
+  ["Pots card", ["totalSaved", "targetOf"], `${COPY.totalSaved} · ${COPY.targetOf("$190.00")}`],
+  ["Pots card", ["addMoney", "withdraw"], `+ ${COPY.addMoney} · ${COPY.withdraw}`],
+  [
+    "Pots card",
+    ["addMoneyTo", "withdrawFrom"],
+    `${COPY.addMoneyTo("Savings")} · ${COPY.withdrawFrom("Savings")}`,
+  ],
+  [
+    "Pot form",
+    ["addPotDescription", "addPotSubmit"],
+    `${COPY.addPotDescription} · button: ${COPY.addPotSubmit}`,
+  ],
+  ["Pot form", ["editPotDescription"], COPY.editPotDescription],
+  [
+    "Pot form",
+    ["potName", "potNamePlaceholder", "target"],
+    [COPY.potName, COPY.potNamePlaceholder, COPY.target].join(" · "),
+  ],
+  ["Pot form", ["charactersLeft"], COPY.charactersLeft(2)],
+  ["Pot form", ["allThemesUsed"], COPY.allThemesUsed],
+  [
+    "Money modal",
+    ["addToPotTitle", "withdrawFromPotTitle"],
+    `${COPY.addToPotTitle("Savings")} · ${COPY.withdrawFromPotTitle("Savings")}`,
+  ],
+  ["Money modal", ["addMoneyDescription"], COPY.addMoneyDescription],
+  ["Money modal", ["withdrawDescription"], COPY.withdrawDescription],
+  [
+    "Money modal",
+    ["amountToAdd", "amountToWithdraw"],
+    `${COPY.amountToAdd} · ${COPY.amountToWithdraw}`,
+  ],
+  ["Money modal", ["newAmount"], COPY.newAmount],
+  [
+    "Money modal",
+    ["confirmAddition", "confirmWithdrawal"],
+    `${COPY.confirmAddition} · ${COPY.confirmWithdrawal}`,
+  ],
+  ["Pots", ["potsLoadError", "retry"], `${COPY.potsLoadError} · button: ${COPY.retry}`],
 ];
 
 const expected = RENDERED.map(([context, , message]) => [context, message]);

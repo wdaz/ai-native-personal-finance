@@ -1,0 +1,138 @@
+/*
+ * SPEC-pots 2.2 (`Finance App.dc.html`, the Pots screen): a white card, its three parts 32 px
+ * apart; the Total Saved row 16 px above the bar, the bar 13 px above its text row
+ * (`--spacing-bar-text`, Pots only, the designer's changelog §19c, §25c).
+ */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-400);
+  min-inline-size: 0;
+  padding: var(--spacing-300) var(--spacing-250);
+  border-radius: var(--radius-150);
+  background: var(--color-white);
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--spacing-300);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-200);
+}
+
+.title {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--spacing-200);
+  min-inline-size: 0;
+}
+
+.name {
+  min-inline-size: 0;
+  color: var(--color-grey-900);
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+}
+
+.barGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-bar-text);
+}
+
+/*
+ * §18e (BU-5): a row wraps, and what does not fit beside its label moves whole to a second line,
+ * right-aligned.
+ */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-100) var(--spacing-200);
+  margin: 0;
+}
+
+.amount,
+.end {
+  min-inline-size: 0;
+  margin-inline-start: auto;
+  color: var(--color-grey-900);
+  text-align: end;
+}
+
+.muted {
+  color: var(--color-grey-500);
+}
+
+.end {
+  color: var(--color-grey-500);
+}
+
+/* 8 px, ends rounded `--radius-50` (§18a, BU-1), beige-100, the fill clipped by it. */
+.track {
+  overflow: hidden;
+  block-size: var(--spacing-100);
+  border-radius: var(--radius-50);
+  background: var(--color-beige-100);
+}
+
+.track svg {
+  display: block;
+}
+
+/* 2.11 (PO-Q6 (a), §18c BU-3): the width animates over 0.4 s, ease; none under reduced motion. */
+.fill {
+  rx: var(--radius-50);
+  transition: width var(--duration-progress) ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+}
+
+/*
+ * PO-Q11 (a), §19b (PO-2), §25e: side by side, each half the row; each at least its label wide,
+ * so when the two do not fit they stack, full width, 16 px apart.
+ */
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-200);
+}
+
+/* The tokens' secondary button: beige-100, white with a beige-500 border on hover. */
+.money {
+  flex: 1 1 0;
+  box-sizing: border-box;
+  min-inline-size: max-content;
+  /* The primary button's 53 px: 16 px padding with the border inside it. */
+  padding: calc(var(--spacing-200) - var(--border-width));
+  border: var(--border-width) solid var(--color-beige-100);
+  border-radius: var(--radius-100);
+  background: var(--color-beige-100);
+  color: var(--color-grey-900);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-hover),
+    border-color var(--duration-hover);
+}
+
+.money:hover {
+  border-color: var(--color-beige-500);
+  background: var(--color-white);
+}

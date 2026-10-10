@@ -12,7 +12,11 @@ import {
   seedVariantInput,
   billFigures,
   billSorts,
+  contrastRatio,
+  descriptionLengths,
   markdownTable,
+  potWidths,
+  tokenColour,
   seedFigures,
   seedOverviewInput,
   idNeverDecides,
@@ -22,6 +26,7 @@ import {
   transactionFigures,
   workedExample,
 } from "@/scripts/seed-figures";
+import { potsTools } from "@/src/webmcp/tools/pots";
 import { billsTotals } from "@/src/domain/bills";
 import { BUSINESS_TODAY, fixedClock } from "@/src/domain/clock";
 import { overviewSummary } from "@/src/domain/overview";
@@ -675,5 +680,51 @@ describe("SPEC-pots 4.2–4.6 are generated, never typed (H16 (2))", () => {
     expect(flat).toContain(
       `"  savings  " and "SAVINGS" are taken (Savings); "Savings 2" is free; editing Savings to "savings" is allowed (its own name); editing Gift to "Holiday" is taken.`,
     );
+  });
+});
+
+describe("SPEC-pots 4.7–4.9 are generated, never typed (T-26)", () => {
+  const flat = read("docs/03-specs/pots.md").replace(/\n\s*/g, " ");
+  const four = (w: ReturnType<typeof potWidths>) =>
+    [w.content, w.card, w.inside, w.button].join(", ");
+
+  it("US-33 4.7: the content, card, inside and button widths at each window", () => {
+    const wide = potWidths(1440, 300, 2);
+    expect(flat).toContain(
+      `1440 px, sidebar expanded — content ${wide.content} px, a card ${wide.card} px, ${wide.inside} px inside, each money button ${wide.button} px; collapsed — ${four(potWidths(1440, 88, 2))}; 1024 px expanded — ${potWidths(1024, 300, 2).content}, **${[potWidths(1024, 300, 2).card, potWidths(1024, 300, 2).inside, potWidths(1024, 300, 2).button].join(", ")}**; collapsed — ${four(potWidths(1024, 88, 2))}; 768 px — ${four(potWidths(768, 0, 2))}.`,
+    );
+    const one = (window: number) => potWidths(window, 0, 1);
+    expect(flat).toContain(
+      `One column: 767 px — ${one(767).content} px inside ${one(767).inside}, each button ${one(767).button}; 375 px — ${[one(375).content, one(375).inside, one(375).button].join(", ")}; **320 px — ${[one(320).content, one(320).inside, one(320).button].join(", ")}**.`,
+    );
+    const w767 = potWidths(767, 0);
+    const w676 = potWidths(676, 0);
+    expect([w767.columns, w676.columns, potWidths(675, 0).columns]).toEqual([2, 2, 1]);
+    expect(flat).toContain(
+      `767 px — card ${w767.card}, ${w767.inside} inside, each button ${w767.button}; 676 px — ${[w676.card, w676.inside, w676.button].join(", ")};`,
+    );
+    expect(flat).toContain(
+      `The narrowest buttons are ${one(320).button} px (320 px) and ${potWidths(1024, 300).button} px (1024 px with the sidebar expanded)`,
+    );
+  });
+
+  it("NFR-W3 4.8: each Pots tool's description length, at most 200", () => {
+    const lengths = descriptionLengths(potsTools);
+    expect(flat).toContain(
+      `(NFR-W3: at most 200 characters; counted by the figures script): ${Object.entries(lengths)
+        .map(([name, length]) => `\`${name}\` ${length}`)
+        .join(", ")}.`,
+    );
+    for (const length of Object.values(lengths)) expect(length).toBeLessThanOrEqual(200);
+  });
+
+  it("NFR-A7 4.9: the contrast ratios from the tokens", () => {
+    const on = (a: string, b: string) => contrastRatio(tokenColour(a), tokenColour(b));
+    expect(flat).toContain(
+      `green on white ${on("green", "white")} and red on white ${on("red", "white")}`,
+    );
+    expect(flat).toContain(`grey-500 on white ${on("grey-500", "white")}`);
+    expect(flat).toContain(`grey-900 on beige-100 ${on("grey-900", "beige-100")}`);
+    expect(flat).toContain(`beige-500 on white ${on("beige-500", "white")}`);
   });
 });

@@ -13,6 +13,19 @@
   background: var(--color-white);
 }
 
+/*
+ * Empty, out of the flow, so the page's flex gap is not doubled around it (T-26, seen on Pots);
+ * still rendered, so the region is in the page before its first text and is announced.
+ */
+.idle {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .text {
   margin: 0;
   color: var(--color-grey-900);

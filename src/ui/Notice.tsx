@@ -45,7 +45,7 @@ export function Notice({ notice, onDismiss }: { notice: NoticeState; onDismiss: 
   const shown = notice !== null && spoken?.id === notice.id;
   const text = shown ? notice.text : "";
   return (
-    <div className={shown ? styles.notice : undefined}>
+    <div className={shown ? styles.notice : styles.idle}>
       <p role="status" className={styles.text}>
         {text}
       </p>

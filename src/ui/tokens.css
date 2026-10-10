@@ -115,6 +115,12 @@
   --color-divider-on-beige: rgba(105, 104, 104, 0.15);
   --duration-progress: 400ms;
 
+  /* Pots — design-tokens.md v1.8 (SPEC-pots 2.2, 2.6, 2.11; hand-off H16 (3)): the bar to its
+     text row, the preview's two segments apart, and their transition (§19c, §19d, §25c) */
+  --spacing-bar-text: 13px;
+  --spacing-25: 2px;
+  --duration-preview: 300ms;
+
   /* Breakpoints (see the note at the top of this file) */
   --bp-tablet: 768px;
   --bp-desktop: 1024px;

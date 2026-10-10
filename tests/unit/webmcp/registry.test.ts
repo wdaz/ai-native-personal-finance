@@ -26,6 +26,41 @@ describe("the tool registry (NFR-W3, SPEC-webmcp-tools §3–§4)", () => {
     ]);
   });
 
+  it("Pots registers exactly its six tools (SPEC-pots 2.13)", () => {
+    expect(PAGE_TOOLS.pots.map((tool) => tool.name)).toEqual([
+      "list_pots",
+      "add_pot",
+      "edit_pot",
+      "delete_pot",
+      "add_money_to_pot",
+      "withdraw_from_pot",
+    ]);
+  });
+
+  it("the five mutating Pots tools carry consequentialHint, and the five that return a name untrustedContentHint (H3)", () => {
+    const annotations = Object.fromEntries(PAGE_TOOLS.pots.map((t) => [t.name, t.annotations]));
+    for (const name of [
+      "add_pot",
+      "edit_pot",
+      "delete_pot",
+      "add_money_to_pot",
+      "withdraw_from_pot",
+    ]) {
+      expect(annotations[name]).toMatchObject({ consequentialHint: true });
+    }
+    for (const name of [
+      "list_pots",
+      "add_pot",
+      "edit_pot",
+      "add_money_to_pot",
+      "withdraw_from_pot",
+    ]) {
+      expect(annotations[name]).toMatchObject({ untrustedContentHint: true });
+    }
+    expect(annotations.delete_pot).not.toHaveProperty("untrustedContentHint");
+    expect(annotations.list_pots).not.toHaveProperty("consequentialHint");
+  });
+
   it("no name is registered on two pages", () => {
     const names = tools.map(({ tool }) => tool.name);
     expect(new Set(names).size).toBe(names.length);

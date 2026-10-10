@@ -97,8 +97,9 @@ describe("T-01 scaffold", () => {
       expect(documentedPresets.size).toBe(7);
       // 11 spacings + 8 radii/layout/breakpoints (v1.0) + 7 auth layout and lines (v1.1)
       // + 9 app shell values, two of them durations (v1.2) + 2 menu values, one a duration (v1.5)
-      // + 4 modal and form values, one a duration (v1.6) + the progress radius and duration (v1.7).
-      expect(documentedPixels.size).toBe(43);
+      // + 4 modal and form values, one a duration (v1.6) + the progress radius and duration (v1.7)
+      // + the Pots bar spacing, the preview gap and the preview duration (v1.8).
+      expect(documentedPixels.size).toBe(46);
       // The popover shadow (v1.5), the modal backdrop (v1.6) and the divider on beige (v1.7).
       expect(documentedLiterals.size).toBe(3);
       expect(documentedOpacities.size).toBe(1);

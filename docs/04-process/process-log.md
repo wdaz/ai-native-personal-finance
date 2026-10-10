@@ -7319,3 +7319,35 @@ them too").
   server's envelope, not with pre-filled rows; the threshold-reset E2E, the full two-order walkthrough of 2.14,
   the pointer checks and the hover matrix of US-34 beyond its 44 px and 0.25 checks are left to a follow-up.
 - **Next:** the merge of #137; then T-26 (Pots UI).
+
+## 2026-10-10 — Phase 4 (Release 2): T-26 — Pots, UI and its six tools
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; the last Release 2 page, built while
+  T-24 (Budgets UI) ran in another thread.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread for T-26; read-only review subagents, the `/code-review` skill on Opus).
+- **Trigger:** the coordinator's brief to build T-26 after T-25's merge (#133).
+- **Prompt(s):** the plan `plans/2026-10-10-T-26.md` raised no question; `pots.md` v0.6, `ui-kit.md`,
+  `write-path.md` and `webmcp-tools.md` answered every behaviour.
+- **Produced** (pull request #139, `develop`; and #136 first):
+  - #136: `recurring-bills.md` v0.7.2 — §7's WebMCP row follows WM-Q3 (a), the precondition the backlog names.
+  - The six tools and `PotsTools` (`router.refresh()` after a write tool's success); the page, `PotsBoard`,
+    `PotCard`, `PotForm`, `MoneyModal`, `PotsError`, the grid's 644 px container query; the strings
+    (`user-stories.md` v1.10) and tokens (`design-tokens.md` v1.8); `pots.md` §4.7–§4.9 computed by the figures
+    script.
+  - E2E: `tests/e2e/pots.spec.ts` (§7's E2E and WebMCP rows); `webmcp.spec.ts`'s placeholder checks replaced by
+    WM-Q3 (a)'s poll; `app-shell.spec.ts`'s `/pots` row; the phone keyboard walkthrough now walks the page.
+  - `NOT_YET_BUILT` removed with its upper-bound test; ADR-0003's dated line.
+- **What went well:** T-22's parts and T-25's domain made the page an assembly; the design matched at every width
+  on the first render.
+- **What the agent got wrong or missed:** the first `PotsBoard` claimed the modal slot inside a state updater, which
+  StrictMode runs twice; moved out. The idle `Notice` (T-22) took space in `<main>`'s flow and doubled the gap under
+  the header; it is now visually hidden when idle. The first E2E assumed `getTools()` keeps registration order and
+  that a money move could trip the row threshold; both corrected.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none.
+- **Merged with T-24 (#137):** the form strings Pots shares and `--radius-50` and `--duration-progress` are
+  T-24's; this task's copy table, token table and versions follow them (`user-stories.md` v1.10,
+  `design-tokens.md` v1.8). `Release2Placeholder.tsx` went with the last placeholder page.
+- **Next:** T-27 (Release 2 closed).
