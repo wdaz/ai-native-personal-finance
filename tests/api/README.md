@@ -34,6 +34,10 @@ locally). Each test resets it; it holds demo data only.
   `recurring-bills.md` 4.3–4.5 with each `status` against an independent oracle (`applyVariant` + the
   domain on the business day), the summary over every bill, the strict 400s with the allowed values (one
   and several at once), `no-store`, nothing written (2.11; the 500 is a unit test, v0.7.1)
+- `budgets.spec.ts` (T-23) — `GET`, `POST /api/budgets`, `PATCH` and `DELETE /api/budgets/:id`: 401, every
+  seed variant against an independent oracle (`applyVariant` + `budgetsSummary`), the writes' answers, `taken`,
+  `required`, 404 and the non-UUID 400, nothing but `Budget` written; `write-path.md` 7.2 on a real route (an
+  id from before a reset, two concurrent creates, the threshold's 409, a throwing check run in-process)
 - `write-limit.spec.ts` (T-17) — the write limiter against real `WriteAttempt` rows: per IP,
   pruned, emptied by a reset, `retryAfter` (2.10)
 - `write-wrapper.spec.ts` (T-17) — `guardedWrite` called directly (no write route exists
