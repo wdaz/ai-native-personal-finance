@@ -1,6 +1,6 @@
 # Governance — who decides what
 
-Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6) · v1.9 2026-10-04: before taking a pull request out of draft the agent waits for Copilot's review of the branch's current head and has fixed its important findings (owner decision at T-15d) · v1.10 2026-10-05: design questions are the designer's — the agent tells the owner, the owner takes it to the designer, the designer records the decision in the designer's changelog, and the agent applies it from there (owner decisions at T-15d) · v1.11 2026-10-06, extended 2026-10-10: the designer agent decides design questions in every phase, as the only route (the v1.10 route is retired), and may ask the owner a question, and the owner approves its decision with `/designer-approve` before it writes (owner decisions) · v1.12 2026-10-10: the designer agent is the repository's own `.claude/agents/designer.md`, loaded by every session in the repository, next to the mod; it proposes and applies, and the owner's approval is the owner's own message; the mod stays installed, and where it is loaded its `/designer-approve` guard still holds (owner decisions) · v1.13 2026-10-10: the designer agent may call Claude Design's `finalize_plan`, which a write needs (owner decision) · v1.14 2026-10-10: the design export in the project's shared design folder, with its published preview, is the design source; Claude Design is no longer updated, and the designer agent works on the design folder in any session that has it, cloud sessions included (owner decision)
+Status: Approved (Phase 0, 2026-09-08) · v1.1 2026-09-22: review subagents run without write tools (T-02a incident) · v1.2 2026-09-22: implementer constraints, reported output, predictions, test config (T-02 lessons) · v1.3 2026-09-24: code review subagents use Opus 5.5 (owner decision) · v1.4 2026-09-25: branches and releases — `develop` from the close of Release 1, `main` takes releases only (owner decision) · v1.5 2026-09-26: `main` and `develop` take changes only through a pull request, `main` only from `develop` or a hotfix branch; Copilot's review gates nothing; T-16 closes before T-15 and does not wait for the switch; the switch is T-15b, after T-15a and before the retrospective (owner decisions) · v1.6 2026-09-29: the switch is done (T-15b) — `develop` is the default branch; a hotfix is fixed on `develop` first and reaches `main` as `hotfix/<name>-main`, a cherry-pick (owner decision); the rulesets and the `release source` check that enforce it; "Open at the switch" becomes "Settled at the switch" · v1.7 2026-09-29: merge commits only on `main` and `develop`; no direct push to either (owner decision) · v1.8 2026-10-03: a question to the owner can be answered as written; a pull request that is not a draft is merge-ready and unfinished work stays a draft (owner decisions at the T-15c retrospective, P5 and P6) · v1.9 2026-10-04: before taking a pull request out of draft the agent waits for Copilot's review of the branch's current head and has fixed its important findings (owner decision at T-15d) · v1.10 2026-10-05: design questions are the designer's — the agent tells the owner, the owner takes it to the designer, the designer records the decision in the designer's changelog, and the agent applies it from there (owner decisions at T-15d) · v1.11 2026-10-06, extended 2026-10-10: the designer agent decides design questions in every phase, as the only route (the v1.10 route is retired), and may ask the owner a question, and the owner approves its decision with `/designer-approve` before it writes (owner decisions) · v1.12 2026-10-10: the designer agent is the repository's own `.claude/agents/designer.md`, loaded by every session in the repository, next to the mod; it proposes and applies, and the owner's approval is the owner's own message; the mod stays installed, and where it is loaded its `/designer-approve` guard still holds (owner decisions) · v1.13 2026-10-10: the designer agent may call Claude Design's `finalize_plan`, which a write needs (owner decision) · v1.14 2026-10-10: the design export in the project's shared design folder, with its published preview, is the design source; Claude Design is no longer updated, and the designer agent works on the design folder in any session that has it, cloud sessions included (owner decision) · v1.15 2026-10-10: Copilot's review is turned off for pull requests into `develop`; before a pull request leaves draft the `/code-review` skill reviews its current head on an Opus model and the real findings are fixed (owner decision)
 
 ## Roles
 
@@ -223,14 +223,16 @@ Since T-15b (2026-09-29; plan `plans/2026-09-29-T-15b.md`):
   the same lines, and then `develop`'s side is kept.
 - **The owner merges the release and the hotfix pull requests** (Decision rights: merging is
   the owner's).
-- **Copilot's review gates nothing.** Its review runs on every pull request (the rulesets "main:
-  pull request, Copilot, CodeQL" and "develop: pull request, Copilot, CodeQL"; until T-15b the one
-  "Copilot review for default branch") but is not reliable enough to hold a merge (owner, 2026-09-26: "Copilot
-  review qoşulsada stabil deyil"; since v1.9 the agent nevertheless waits for it before taking a pull
-  request out of draft, "Draft until ready" below), and no rule requires an approval: the owner is the only
-  collaborator and author of every pull request, so a required approval would block every merge
-  (`.github/CODEOWNERS` says why). What gates a merge is the pull request itself and the required
-  checks.
+- **No review gates a merge except the required checks.** Copilot's review was turned off for
+  pull requests into `develop` on 2026-10-10 (owner: "Copilot review dayandırdım" — "I stopped
+  Copilot review"); it is not expected, and its absence is not an exception to record. Until then it ran
+  on every pull request (the rulesets "main: pull request, Copilot, CodeQL" and "develop: pull
+  request, Copilot, CodeQL", keep those names; until T-15b the one "Copilot review for default
+  branch") but was not reliable enough to hold a merge (owner, 2026-09-26: "Copilot review qoşulsada
+  stabil deyil"). No rule requires an approval: the owner is the only collaborator and author of
+  every pull request, so a required approval would block every merge (`.github/CODEOWNERS` says
+  why). What gates a merge is the pull request itself and the required checks. The review the agent
+  does itself is "Review before ready" below.
 - **Enforcement:** a required status check in `main`'s ruleset fails unless the pull request's
   head branch is `develop` or `hotfix/<name>-main` in this repository, and the ruleset has no
   bypass actor. The agent pushes with the owner's GitHub account, so a bypass right for the owner
@@ -287,33 +289,22 @@ merges it without a further check. Unfinished work — a plan waiting for answer
 waiting for review fixes or CI, a document waiting for the owner — stays a draft
 (`gh pr create --draft`). The agent takes a pull request out of draft (`gh pr ready`) only when its
 content is finished, every required check is green, the checklist items the agent can tick are
-ticked, **and Copilot has reviewed the branch's current head and no important finding of it is
-left unfixed** (v1.9, below). A ready pull request gets no more pushes: further work goes in a
+ticked, **and the `/code-review` skill has reviewed the branch's current head on an Opus model and
+no important finding of it is left unfixed** (v1.15, below). A ready pull request gets no more pushes: further work goes in a
 new pull request, or the pull request is first put back into draft (`gh pr ready --undo`).
 
-**Copilot's review is waited for** (v1.9, owner decision 2026-10-04, T-15d: "Copilot məcburi
-revyu edəndir və onun revyularını bitirmək gözlənməlidir. Vacib tapıntılar fix olmalıdır." — "Copilot
-is the mandatory reviewer and its reviews must be waited for to finish. Important findings must be
-fixed."). Before `gh pr ready`, Copilot's review of the branch's **current head** must exist: a review whose
-`commit_id` is the head's commit, and whose author is Copilot (`copilot-pull-request-reviewer[bot]`).
-Two commands show it (the first prints the head's full SHA; the second lists the commit of every
-Copilot review, and the head's SHA must be among them):
-
-```sh
-gh pr view <n> --json headRefOid --jq .headRefOid
-gh api --paginate repos/<owner>/<repo>/pulls/<n>/reviews --jq '.[] | select(.user.login=="copilot-pull-request-reviewer[bot]") | .commit_id'
-```
-
-A review of an earlier commit does not count. Every fix is itself a new push and so a new head, which Copilot reviews
-again; the agent therefore pushes the fixes, waits for the review of the new head, and leaves draft only
-on a head whose review is in and has no important finding still open. Each finding is fixed, or answered
-with its reason in the pull request. An **important** finding is one the agent confirms is a defect — a
-wrong fact or number, a contradiction, a broken command, a failing or vacuous test, a missed
-requirement — whatever severity Copilot gave it; those are always fixed before the pull request leaves
-draft. A finding that is a matter of taste may be declined with a sentence of reasoning. If Copilot has
-not reviewed the current head after a reasonable wait, the agent leaves the pull request in draft and
-tells the owner, instead of marking it ready. This changes what the
-agent waits for, not what GitHub enforces (the bullet "Copilot's review gates nothing", above).
+**Review before ready** (v1.15, owner decision 2026-10-10: Copilot review turned off for pull
+requests into `develop`; it replaces v1.9 of 2026-10-04, "Copilot is the mandatory reviewer", T-15d).
+Before `gh pr ready`, the agent runs the `/code-review` skill on the pull request, with an Opus
+model ("Code review subagents use Opus 5.5", above), and the review must be of the branch's
+**current head**: every fix is itself a new push and so a new head, which is reviewed again. Each
+finding is fixed, or answered with its reason in the pull request. An **important** finding is one
+the agent confirms is a defect — a wrong fact or number, a contradiction, a broken command, a
+failing or vacuous test, a missed requirement — whatever severity the review gave it; those are
+always fixed before the pull request leaves draft. A finding that is a matter of taste may be
+declined with a sentence of reasoning. Then the pull request is merge-ready when its required
+checks are green. Copilot is not waited for, and its not having reviewed is not recorded as an
+exception. This changes what the agent does before leaving draft, not what GitHub enforces.
 
 Open at the switch (as written before T-15b; settled above):
 

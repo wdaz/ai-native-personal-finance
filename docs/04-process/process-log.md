@@ -7087,3 +7087,27 @@ them too").
 - **Lessons for the process:** a design change that the code takes before the design draws it should be
   drawn in the same task, now that a cloud session can edit the design.
 - **Next:** keep the design in step with T-20 to T-27 as they land.
+
+## 2026-10-10 — Phase 4 (Release 2): Copilot review is turned off for develop
+
+- **Phase:** 4 (Release 2), process.
+- **Participants:** Owner (Ruslan), Agent (Claude Code, Sonnet 5.5, cloud thread "Copilot review dayandırıldı")
+- **Trigger:** the owner stopped Copilot's review of pull requests into `develop` ("Hazırda develop
+  branchinə yaranan pr-lar Copilot review dayandırdım. Bunu iş prosesində nəzərə al" — "I have stopped
+  Copilot review for the pull requests opened against develop; take this into account in the process").
+  It had already errored on every run that day (see the entries of #112–#119 and T-19).
+- **Prompt(s):** the owner's thread message; no prompt file.
+- **Produced:** `governance.md` v1.15 — the v1.9 rule "wait for Copilot's review" becomes "Review before
+  ready": the `/code-review` skill on an Opus model reviews the current head, real findings are fixed,
+  and the pull request is merge-ready when its required checks are green; Copilot is not expected and
+  its absence is not an exception to record. `.github/pull_request_template.md` and the note in
+  `.github/CODEOWNERS` say the same. The ruleset names that contain "Copilot" are kept as they are.
+- **What the agent got right:** history (earlier plans, prompts and log entries that mention Copilot) is
+  left as written, because it records what was true then.
+- **What the agent got wrong or missed:** nothing found.
+- **Owner changes and reasoning:** none; the stop is the owner's own choice, not an outage.
+- **Disagreements:** none.
+- **Lessons for the process:** a tool a rule waits for should be named by its role ("the reviewer"), so
+  that switching it off changes one sentence.
+- **Next:** none. Whether the rulesets still carry the `copilot_code_review` rule was not read from GitHub
+  here; the owner's settings decide it.
