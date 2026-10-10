@@ -184,7 +184,7 @@ test("US-38 AC1 US-41: leaving Overview by client navigation unregisters the too
   await mainNav(page).getByRole("link", { name: PAGE_NAMES.pots, exact: true }).click();
   await expect(page).toHaveURL(/\/pots$/);
   await expect
-    .poll(async () => (await listTools(page)).map((tool) => tool.name))
+    .poll(async () => (await listTools(page)).map((tool) => tool.name).sort())
     .toEqual([
       "add_money_to_pot",
       "add_pot",

@@ -129,11 +129,15 @@ function MoneyModalOpen({
 
   const check = () => checkMoveAmount(inputRef.current?.value ?? "", kind, pot, balance);
 
-  const showIssues = (issues: ErrorIssue[]) => {
+  /** True when an issue landed under the amount; any other 400 is the form's (ui-kit.md 2.7). */
+  const showIssues = (issues: ErrorIssue[]): boolean => {
     const issue = issues.find((entry) => entry.path[0] === "amount");
-    setError(
-      issue === undefined ? COPY.signupFailed : (SERVER_MESSAGES[issue.code] ?? COPY.signupFailed),
-    );
+    if (issue === undefined) {
+      setFormError(COPY.signupFailed);
+      return false;
+    }
+    setError(SERVER_MESSAGES[issue.code] ?? COPY.signupFailed);
+    return true;
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -167,11 +171,10 @@ function MoneyModalOpen({
         return;
       case "validation":
         setPending(false);
-        showIssues(answer.issues);
         if (answer.issues.some((i) => i.code === "exceeds_balance" || i.code === "exceeds_total")) {
           onStale();
         }
-        inputRef.current?.focus();
+        if (showIssues(answer.issues)) inputRef.current?.focus();
         return;
       case "failed":
         setPending(false);

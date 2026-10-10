@@ -33,6 +33,8 @@ const potPath = (id: string) => `/api/pots/${encodeURIComponent(id)}`;
  * `ModalSlot`, owns the one write function the pot forms, the money modals and the delete dialog
  * use, and its refresh: after a success, or a 400 that shows the data is old, `router.refresh()`
  * in a transition re-reads `getPots`, and the grid carries `aria-busy` until the new props land.
+ * An agent's write refreshes through `PotsTools` instead, outside this transition, so it shows no
+ * `aria-busy` (as Budgets' tools do).
  * What it renders is always the server's last read — it computes no money.
  */
 export function PotsBoard({ dto }: { dto: PotsDto }) {
@@ -134,7 +136,9 @@ function Board({ dto }: { dto: PotsDto }) {
 
   const submitForm = (body: PotFormBody): Promise<WriteAnswer<unknown>> => {
     const mode = form?.value;
-    return mode === undefined || mode === "add"
+    // No open form, no request: a stale submit must never create a pot.
+    if (mode === undefined) return Promise.resolve({ kind: "gone" });
+    return mode === "add"
       ? write("POST", "/api/pots", body)
       : write("PATCH", potPath(mode.edit.id), body);
   };

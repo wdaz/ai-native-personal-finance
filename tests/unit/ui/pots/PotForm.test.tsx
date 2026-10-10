@@ -157,6 +157,19 @@ describe("PotForm (SPEC-pots 2.5; US-22, US-23, PO-Q4 (a))", () => {
     expect(document.activeElement?.getAttribute("aria-haspopup")).toBe("listbox");
   });
 
+  it("a 400 under no field shows in the form's error area, never silence", async () => {
+    props.onSubmit = vi.fn(async () => ({
+      kind: "validation" as const,
+      issues: [{ path: [], code: "invalid_format" as const }],
+    }));
+    const { name, target } = open();
+    type(name, "New");
+    type(target, "10");
+    await submit(COPY.addPotSubmit);
+    expect(screen.getByRole("alert").textContent).toBe(COPY.signupFailed);
+    expect(screen.getByRole("dialog")).toBeTruthy();
+  });
+
   it("a server `taken` shows under its field and refreshes the page's data; the form stays open", async () => {
     props.onSubmit = vi.fn(async () => ({
       kind: "validation" as const,

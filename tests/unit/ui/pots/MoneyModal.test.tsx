@@ -172,6 +172,20 @@ describe("MoneyModal (SPEC-pots 2.6; US-25, US-26, PO-Q2 (a), PO-Q5 (a))", () =>
     expect(screen.getByRole("dialog")).toBeTruthy();
   });
 
+  it("a 400 whose issues name no amount shows in the form's error area; the field stays valid", async () => {
+    props.onSubmit = vi.fn(async () => ({
+      kind: "validation" as const,
+      issues: [{ path: ["id"], code: "invalid_format" as const }],
+    }));
+    const { field } = open();
+    type(field, "1");
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: COPY.confirmAddition }));
+    });
+    expect(screen.getByRole("alert").textContent).toBe(COPY.signupFailed);
+    expect(field.getAttribute("aria-invalid")).toBeNull();
+  });
+
   it("a 404 is handed to the page (the notice); a 429 shows its message in the error area", async () => {
     props.onSubmit = vi.fn(async () => ({ kind: "gone" as const }));
     const { field } = open();

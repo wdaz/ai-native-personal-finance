@@ -645,7 +645,10 @@ export function descriptionLengths(tools: readonly { name: string; description: 
 }
 
 /** A colour token's value as `src/ui/tokens.css` defines it, e.g. `tokenColour("green")`. */
-export function tokenColour(name: string, css = readFileSync("src/ui/tokens.css", "utf8")): string {
+export function tokenColour(
+  name: string,
+  css = readFileSync(new URL("../src/ui/tokens.css", import.meta.url), "utf8"),
+): string {
   const found = new RegExp(`--color-${name}:\\s*(#[0-9a-f]{6});`, "i").exec(css);
   if (!found) throw new Error(`No colour token --color-${name}`);
   return found[1]!;

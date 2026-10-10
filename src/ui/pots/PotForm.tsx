@@ -141,7 +141,9 @@ function PotFormOpen({
     }
     setErrors(found);
     const first = (["name", "target", "theme"] as const).find((f) => found[f] !== undefined);
-    if (first !== undefined) focusField(first);
+    // An issue under no field is the form's own (ui-kit.md 2.7), never silence.
+    if (first === undefined) setFormError(COPY.signupFailed);
+    else focusField(first);
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
