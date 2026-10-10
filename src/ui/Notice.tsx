@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { COPY } from "@/src/shared/copy";
 import { CloseCircleIcon } from "./icons/CloseCircleIcon";
 import { focusMain } from "./main-content";
@@ -15,10 +15,12 @@ export type NoticeState = { text: string; id: number } | null;
  */
 export function useNotice() {
   const [notice, setNotice] = useState<NoticeState>(null);
-  const show = useCallback(
-    (text: string) => setNotice((current) => ({ text, id: (current?.id ?? 0) + 1 })),
-    [],
-  );
+  // Only ever goes up, also across a dismissal, so a new notice never reuses a spoken id.
+  const nextId = useRef(0);
+  const show = useCallback((text: string) => {
+    nextId.current += 1;
+    setNotice({ text, id: nextId.current });
+  }, []);
   const clear = useCallback(() => setNotice(null), []);
   return { notice, show, clear };
 }

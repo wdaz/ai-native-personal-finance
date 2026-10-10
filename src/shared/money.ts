@@ -1,3 +1,5 @@
+import { AMOUNT_MAX_CENTS } from "./schemas";
+
 /**
  * SPEC-overview §4.2, "All money": `$` + thousands separators + two decimals; negative as
  * `-$55.50`; transaction rows prefix positives with `+`. Money is integer cents everywhere
@@ -28,7 +30,7 @@ export type AmountInputIssue = "required" | "invalid_format" | "too_small" | "to
 export type AmountInput = { ok: true; cents: number } | { ok: false; code: AmountInputIssue };
 
 /** NFR-S3: the largest amount, `$999,999,999.99` (the same bound as `AMOUNT_MAX_CENTS`). */
-const AMOUNT_MAX = 99_999_999_999n;
+const AMOUNT_MAX = BigInt(AMOUNT_MAX_CENTS);
 
 /**
  * Plain digits (`1234`, `007`) or groups of three after a first group of one to three digits that

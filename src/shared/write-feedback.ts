@@ -33,6 +33,8 @@ const CANNOT_REACH = COPY.signupUnreachable;
 export function writeAnswer<T>(outcome: ApiOutcome<T>): WriteAnswer<T> {
   if (outcome.ok) return { kind: "ok", data: outcome.data };
   switch (outcome.kind) {
+    // No write passes a signal yet (`aborted` cannot happen); were one to, a cancelled write
+    // would read as a lost connection, so a future caller must handle it before this.
     case "network":
     case "aborted":
       return { kind: "failed", code: "server_error", message: CANNOT_REACH };

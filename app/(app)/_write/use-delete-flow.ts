@@ -28,6 +28,8 @@ type Target = {
   trigger?: HTMLElement;
   release: () => void;
   confirmed: boolean;
+  /** The tool's request was aborted after the confirm: the request's answer is its result. */
+  aborted?: boolean;
 };
 
 const DESCRIPTIONS: Record<DeleteKind, string> = {
@@ -116,7 +118,12 @@ export function useDeleteFlow({
         };
         const onAbort = () => {
           const current = targetRef.current;
-          if (current?.resolve !== settle || current.confirmed) return;
+          if (current?.resolve !== settle) return;
+          if (current.confirmed) {
+            // After the confirm the request's answer decides (2.3 item 4), even a failure.
+            current.aborted = true;
+            return;
+          }
           close(current, false);
           settle("cancelled");
         };
@@ -132,10 +139,11 @@ export function useDeleteFlow({
       mounted.current = false;
       unsubscribe();
       // 2.3 item 4: unmounting before a confirm cancels; after one, the answer decides.
+      // The slot is freed either way; `trackWrite` still counts a confirmed request in flight.
       const current = targetRef.current;
-      if (current !== null && !current.confirmed) {
+      if (current !== null) {
         current.release();
-        current.resolve?.("cancelled");
+        if (!current.confirmed) current.resolve?.("cancelled");
         targetRef.current = null;
       }
     };
@@ -168,7 +176,9 @@ export function useDeleteFlow({
       current.confirmed = true;
       const answer = await remove(current);
       const terminal = answer.kind !== "failed" && answer.kind !== "validation";
-      if (terminal || !mounted.current) current.resolve?.(deleteResultOf(answer));
+      if (terminal || !mounted.current || current.aborted === true) {
+        current.resolve?.(deleteResultOf(answer));
+      }
       // A failure leaves the dialog open with its message; the person may confirm again.
       if (!terminal && mounted.current) current.confirmed = false;
       return answer;

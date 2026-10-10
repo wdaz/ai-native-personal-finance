@@ -185,17 +185,52 @@ describe("the delete dialog with the bus (SPEC-ui-kit 2.3; US-17, US-24, US-25)"
     expect(hasDeleteHandler("pot")).toBe(false);
   });
 
-  it("unmounting after the confirm: the request's answer still reaches the tool (2.3 item 4)", async () => {
-    const view = page();
+  it.each([
+    [429, "rate_limited"],
+    [500, "server_error"],
+    [204, "deleted"],
+  ])(
+    "unmounting after the confirm: a %i still reaches the tool as %s (2.3 item 4)",
+    async (status, expected) => {
+      const view = page();
+      let result: Promise<string> = Promise.resolve("");
+      act(() => {
+        result = requestDelete("pot", "p1");
+      });
+      let finish: (r: Response) => void = () => {};
+      fetchMock.mockReturnValueOnce(new Promise<Response>((r) => (finish = r)));
+      fireEvent.click(confirm());
+      view.unmount();
+      finish(new Response(status === 204 ? null : JSON.stringify({ error: "x" }), { status }));
+      expect(await result).toBe(expected);
+    },
+  );
+
+  it("an abort after the confirm: the request's answer is the result, even a failure; the dialog stays for the person", async () => {
+    page();
+    const controller = new AbortController();
     let result: Promise<string> = Promise.resolve("");
     act(() => {
-      result = requestDelete("pot", "p1");
+      result = requestDelete("pot", "p1", controller.signal);
     });
     let finish: (r: Response) => void = () => {};
     fetchMock.mockReturnValueOnce(new Promise<Response>((r) => (finish = r)));
     fireEvent.click(confirm());
-    view.unmount();
-    finish(new Response(JSON.stringify({ error: "x" }), { status: 429 }));
-    expect(await result).toBe("rate_limited");
+    act(() => controller.abort());
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    await act(async () => finish(new Response(JSON.stringify({ error: "x" }), { status: 500 })));
+    expect(await result).toBe("server_error");
+    expect(screen.getByRole("alert").textContent).toBe("Something went wrong. Try again");
+  });
+
+  it("a request made while a person's dialog is already open is busy, and that dialog stays", async () => {
+    page();
+    fireEvent.click(screen.getByRole("button", { name: "Delete Gift" }));
+    let result: Promise<string> = Promise.resolve("");
+    act(() => {
+      result = requestDelete("pot", "p1");
+    });
+    expect(await result).toBe("busy");
+    expect(screen.getByRole("dialog", { name: "Delete \u2018Gift\u2019?" })).toBeTruthy();
   });
 });

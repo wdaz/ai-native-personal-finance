@@ -228,6 +228,22 @@ describe("Notice (SPEC-ui-kit 2.9; US-17 AC3, US-24 AC2)", () => {
     }
   });
 
+  it("a notice after a dismissal is emptied first and announced again (its id is new)", () => {
+    vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });
+    try {
+      render(<NoticePage />);
+      fireEvent.click(screen.getByRole("button", { name: "show" }));
+      act(() => vi.advanceTimersToNextFrame());
+      fireEvent.click(screen.getByRole("button", { name: COPY.dismissNotice }));
+      fireEvent.click(screen.getByRole("button", { name: "show" }));
+      expect(screen.getByRole("status").textContent).toBe("");
+      act(() => vi.advanceTimersToNextFrame());
+      expect(screen.getByRole("status").textContent).toBe(COPY.budgetGone);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("the same text shown again is emptied first and announced again", () => {
     vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });
     try {
