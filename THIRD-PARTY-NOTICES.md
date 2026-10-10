@@ -35,17 +35,20 @@ files are not included in this repository.
 
 ### Phosphor Icons — MIT
 
-| Path                              | Icon                                                      |
-| --------------------------------- | --------------------------------------------------------- |
-| `src/ui/icons/SignOutIcon.tsx`    | `assets/fill/sign-out-fill.svg`                           |
-| `src/ui/icons/JarIcon.tsx`        | `assets/fill/jar-fill.svg`                                |
-| `src/ui/icons/SearchIcon.tsx`     | `magnifying-glass`, as the design export draws it         |
-| `src/ui/icons/CaretDownIcon.tsx`  | `caret-down`, as the design export draws it               |
-| `src/ui/icons/CaretRightIcon.tsx` | `caret-right`, as the design export draws it              |
-| `src/ui/icons/SortIcon.tsx`       | the style guide's `sort`, as the design export draws it   |
-| `src/ui/icons/FilterIcon.tsx`     | the style guide's `filter`, as the design export draws it |
+| Path                                 | Icon                                                      |
+| ------------------------------------ | --------------------------------------------------------- |
+| `src/ui/icons/SignOutIcon.tsx`       | `assets/fill/sign-out-fill.svg`                           |
+| `src/ui/icons/JarIcon.tsx`           | `assets/fill/jar-fill.svg`                                |
+| `src/ui/icons/SearchIcon.tsx`        | `magnifying-glass`, as the design export draws it         |
+| `src/ui/icons/CaretDownIcon.tsx`     | `caret-down`, as the design export draws it               |
+| `src/ui/icons/CaretRightIcon.tsx`    | `caret-right`, as the design export draws it              |
+| `src/ui/icons/SortIcon.tsx`          | the style guide's `sort`, as the design export draws it   |
+| `src/ui/icons/FilterIcon.tsx`        | the style guide's `filter`, as the design export draws it |
+| `src/ui/icons/ReceiptIcon.tsx`       | `receipt`, as the design export draws it                  |
+| `src/ui/icons/CheckCircleIcon.tsx`   | `check-circle`, as the design export draws it             |
+| `src/ui/icons/WarningCircleIcon.tsx` | `warning-circle`, as the design export draws it           |
 
-From https://github.com/phosphor-icons/core (the last five through the designer's Claude Design export, `components/icons/icon-data.js`, read 2026-10-10, T-19); the notice and licence below are its `LICENSE` file as of
+From https://github.com/phosphor-icons/core (the last eight through the designer's Claude Design export, `components/icons/icon-data.js`, read 2026-10-10: five in T-19, three in T-21); the notice and licence below are its `LICENSE` file as of
 commit `6cb9423` (2023-01-08), read 2026-09-29.
 
 ```text

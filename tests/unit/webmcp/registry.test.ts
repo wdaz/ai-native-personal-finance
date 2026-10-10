@@ -47,5 +47,9 @@ describe("the tool registry (NFR-W3, SPEC-webmcp-tools §3–§4)", () => {
     expect(
       PAGE_TOOLS.transactions.find((t) => t.name === "list_transactions")?.annotations,
     ).toMatchObject({ readOnlyHint: true, untrustedContentHint: true });
+    // SPEC-recurring-bills 2.12, §9 RB-Q5 (a): the bill names are transaction names.
+    expect(
+      PAGE_TOOLS.recurringBills.find((t) => t.name === "list_recurring_bills")?.annotations,
+    ).toMatchObject({ readOnlyHint: true, untrustedContentHint: true });
   });
 });

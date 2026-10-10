@@ -1,7 +1,12 @@
 import { seedFigures } from "@/scripts/seed-figures";
 import { COPY } from "@/src/shared/copy";
 import { formatMoney } from "@/src/shared/money";
-import { OverviewDtoSchema, TransactionsDtoSchema } from "@/src/shared/schemas";
+import {
+  OverviewDtoSchema,
+  RecurringBillsDtoSchema,
+  TransactionsDtoSchema,
+} from "@/src/shared/schemas";
+import { BILL_STATUSES } from "@/src/shared/recurring-bills-query";
 import { PAGE_NAMES } from "@/src/ui/nav";
 import { expect, loginViaApi, resetDemoData, test } from "../fixtures/e2e";
 import { RUN_MODE, callTool, expectToolsReady, listTools } from "../fixtures/webmcp";
@@ -355,5 +360,152 @@ test.describe("list_transactions on Transactions (US-38 AC1, US-39 AC2–AC4)", 
       method: "GET",
       route: "/api/transactions",
     });
+  });
+});
+
+/**
+ * SPEC-recurring-bills 2.12 and §7's WebMCP row: `list_recurring_bills`, the Recurring Bills
+ * page's one tool. What it returns is compared with what `GET /api/recurring-bills` returns for
+ * the same query and with what the page shows, never with typed figures.
+ */
+test.describe("list_recurring_bills on Recurring Bills (US-38 AC1, US-39 AC2–AC4)", () => {
+  const apiBills = async (page: import("@playwright/test").Page, search: string) =>
+    RecurringBillsDtoSchema.parse(
+      await (await page.request.get(`/api/recurring-bills${search}`)).json(),
+    );
+  const pageNames = (page: import("@playwright/test").Page) =>
+    page
+      .getByRole("table", { name: PAGE_NAMES.recurringBills })
+      .locator("tbody")
+      .getByRole("row")
+      .locator("td:first-child");
+  const withUnits = <T extends object>(dto: T) => ({ ...dto, currency: "USD", unit: "cents" });
+
+  test("the page registers exactly list_recurring_bills, read-only and untrusted, its description at most 200 characters; the indicator reads 'polyfill · 1'", async ({
+    page,
+  }) => {
+    await page.goto("/recurring-bills");
+    await expectToolsReady(page);
+    const tools = await listTools(page);
+    expect(tools.map((tool) => tool.name)).toEqual(["list_recurring_bills"]);
+    expect(tools[0]!.annotations).toEqual({ readOnlyHint: true, untrustedContentHint: true });
+    expect(tools[0]!.description.length).toBeLessThanOrEqual(200);
+    await expect(page.getByRole("status", { name: COPY.agentToolsPolyfill(1) })).toBeVisible();
+  });
+
+  test("no input, and a search with a sort, return what the page shows and the API returns", async ({
+    page,
+  }) => {
+    await page.goto("/recurring-bills");
+    await expectToolsReady(page);
+    const all = await apiBills(page, "");
+    expect((await callTool(page, "list_recurring_bills")).structuredContent).toEqual(
+      withUnits(all),
+    );
+    await expect(pageNames(page)).toHaveText(all.items.map((item) => item.name));
+
+    await page.goto("/recurring-bills?q=e&sort=highest");
+    await expectToolsReady(page);
+    const sorted = await apiBills(page, "?q=e&sort=highest");
+    expect(
+      (await callTool(page, "list_recurring_bills", { search: "e", sort: "highest" }))
+        .structuredContent,
+    ).toEqual(withUnits(sorted));
+    await expect(pageNames(page)).toHaveText(sorted.items.map((item) => item.name));
+  });
+
+  test("each status returns the page's rows of that status, in order, with the summary over all bills", async ({
+    page,
+  }) => {
+    await page.goto("/recurring-bills?sort=highest");
+    await expectToolsReady(page);
+    const shown = await apiBills(page, "?sort=highest");
+    for (const status of BILL_STATUSES) {
+      const result = await callTool(page, "list_recurring_bills", { status, sort: "highest" });
+      expect(result.structuredContent).toEqual(
+        withUnits(await apiBills(page, `?sort=highest&status=${status}`)),
+      );
+      const dto = RecurringBillsDtoSchema.parse({
+        items: (result.structuredContent as { items: unknown }).items,
+        summary: (result.structuredContent as { summary: unknown }).summary,
+      });
+      expect(dto.items).toEqual(shown.items.filter((item) => item.status === status));
+      expect(dto.summary).toEqual(shown.summary);
+    }
+  });
+
+  test("a sort or status outside the list is a validation error naming the allowed values; the page the person sees is unchanged", async ({
+    page,
+  }) => {
+    await page.goto("/recurring-bills?sort=oldest");
+    await expectToolsReady(page);
+    const shown = await pageNames(page).allTextContents();
+
+    const badSort = await callTool(page, "list_recurring_bills", { sort: "newest" });
+    expect(badSort).toMatchObject({ isError: true, code: "validation" });
+    expect(badSort.message).toContain("latest");
+    expect(badSort.structuredContent).toBeUndefined();
+
+    const badStatus = await callTool(page, "list_recurring_bills", { status: "late" });
+    expect(badStatus).toMatchObject({ isError: true, code: "validation" });
+    expect(badStatus.message).toContain("dueSoon");
+
+    await expect(page).toHaveURL(/\/recurring-bills\?sort=oldest$/);
+    await expect(pageNames(page)).toHaveText(shown);
+  });
+
+  test("after the session ends the tool returns unauthenticated and no data", async ({ page }) => {
+    await page.goto("/recurring-bills");
+    await expectToolsReady(page);
+    await page.context().clearCookies();
+
+    const result = await callTool(page, "list_recurring_bills");
+
+    expect(result).toMatchObject({ isError: true, code: "unauthenticated" });
+    expect(result.structuredContent).toBeUndefined();
+  });
+
+  test("the call carries X-Via: webmcp and is on the server's record", async ({
+    page,
+    request,
+  }) => {
+    await page.goto("/recurring-bills");
+    await expectToolsReady(page);
+    const listResponse = page.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname === "/api/recurring-bills" &&
+        r.request().headers()["x-via"] === "webmcp",
+    );
+
+    await callTool(page, "list_recurring_bills", { status: "paid" });
+
+    const response = await listResponse;
+    const requestId = response.headers()["x-request-id"]!;
+    const log = await request.get("/api/test/log", { params: { requestId } });
+    expect(await log.json()).toEqual({
+      requestId,
+      via: "webmcp",
+      method: "GET",
+      route: "/api/recurring-bills",
+    });
+  });
+
+  test("leaving Recurring Bills by client navigation unregisters its tool (Pots registers none yet)", async ({
+    page,
+  }) => {
+    await page.goto("/recurring-bills");
+    await expectToolsReady(page);
+    await page.evaluate(() => {
+      (window as unknown as { __clientNav?: boolean }).__clientNav = true;
+    });
+
+    await mainNav(page).getByRole("link", { name: PAGE_NAMES.pots, exact: true }).click();
+    await expect(page).toHaveURL(/\/pots$/);
+    await expect(page.locator("html")).not.toHaveAttribute("data-webmcp", "ready");
+    expect(await listTools(page)).toEqual([]);
+    expect(
+      await page.evaluate(() => (window as unknown as { __clientNav?: boolean }).__clientNav),
+      "the navigation was a full page load, not a client navigation",
+    ).toBe(true);
   });
 });

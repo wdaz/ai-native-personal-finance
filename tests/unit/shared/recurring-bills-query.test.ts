@@ -4,6 +4,7 @@ import {
   BILL_STATUSES,
   parseRecurringBillsQuery,
   RECURRING_BILLS_Q_MAX,
+  recurringBillsSearch,
 } from "@/src/shared/recurring-bills-query";
 import { TRANSACTION_SORTS } from "@/src/shared/transactions-query";
 
@@ -161,6 +162,28 @@ describe("SPEC-recurring-bills 2.2–2.3: parseRecurringBillsQuery", () => {
         { path: ["status"], code: "invalid_format" },
       ]);
       expect(result.message).toBe([Q_MESSAGE, SORT_MESSAGE, STATUS_MESSAGE].join("; "));
+    });
+  });
+});
+
+describe("recurringBillsSearch (SPEC-recurring-bills 2.2: the URL the page's controls write)", () => {
+  it("writes nothing at the defaults", () => {
+    expect(recurringBillsSearch({ q: undefined, sort: "latest" })).toBe("");
+  });
+
+  it("writes q then sort, a space as '+', and never latest", () => {
+    expect(recurringBillsSearch({ q: "spa & w", sort: "highest" })).toBe(
+      "?q=spa+%26+w&sort=highest",
+    );
+    expect(recurringBillsSearch({ q: "data", sort: "latest" })).toBe("?q=data");
+    expect(recurringBillsSearch({ q: undefined, sort: "z-to-a" })).toBe("?sort=z-to-a");
+  });
+
+  it("reads back, leniently, as the query it was written from", () => {
+    const query = { q: "flow", sort: "oldest" as const };
+    expect(lenient(recurringBillsSearch(query).slice(1)).query).toEqual({
+      ...query,
+      status: undefined,
     });
   });
 });

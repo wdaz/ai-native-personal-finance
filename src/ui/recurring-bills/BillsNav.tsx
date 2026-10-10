@@ -12,57 +12,54 @@ import {
   useTransition,
   type ReactNode,
 } from "react";
-import type { Category } from "@/src/shared/enums";
 import {
-  transactionsSearch,
-  type TransactionSort,
-  type TransactionsQuery,
-} from "@/src/shared/transactions-query";
+  recurringBillsSearch,
+  type BillSort,
+  type RecurringBillsPageQuery,
+} from "@/src/shared/recurring-bills-query";
 import { ResultsNavContext, type ResultsNavState } from "../ResultsRegion";
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "../useDebouncedValue";
 
 export { SEARCH_DEBOUNCE_MS };
 
-type TransactionsNavValue = {
+type BillsNavValue = {
   /** The intended query: what the controls show at once, before the server answers (2.5). */
-  query: TransactionsQuery;
+  query: RecurringBillsPageQuery;
   /** The search field's own text; a server answer never rewrites it (2.5). */
   text: string;
   setText: (text: string) => void;
   /** Enter in the search field: the typed text applies at once. */
   submitSearch: () => void;
-  setSort: (sort: TransactionSort) => void;
-  setCategory: (category: Category | undefined) => void;
-  setPage: (page: number) => void;
+  setSort: (sort: BillSort) => void;
 };
 
-const TransactionsNavContext = createContext<TransactionsNavValue | null>(null);
+const BillsNavContext = createContext<BillsNavValue | null>(null);
 
-export function useTransactionsNav(): TransactionsNavValue {
-  const value = useContext(TransactionsNavContext);
-  if (value === null) throw new Error("useTransactionsNav needs a <TransactionsNav>");
+export function useBillsNav(): BillsNavValue {
+  const value = useContext(BillsNavContext);
+  if (value === null) throw new Error("useBillsNav needs a <BillsNav>");
   return value;
 }
 
 const needle = (text: string) => text.trim() || undefined;
-const sameQuery = (a: TransactionsQuery, b: TransactionsQuery) =>
-  transactionsSearch(a) === transactionsSearch(b);
+const sameQuery = (a: RecurringBillsPageQuery, b: RecurringBillsPageQuery) =>
+  recurringBillsSearch(a) === recurringBillsSearch(b);
 
 /**
- * SPEC-transactions 2.1, 2.5: owns the page's navigation. It holds one *intended query*, set
- * from the server's effective query on load and on every Back or Forward; every control changes
- * it synchronously and every URL is built from it (`transactionsSearch`), so a control never
- * drops what another has just set. A search writes the URL with `router.replace` after 250 ms
- * (or at once on Enter); a sort, a category or a page first applies a pending search, then uses
- * `router.push`. Each navigation runs in `startTransition` with `{ scroll: false }`; the latest
- * one wins.
+ * SPEC-recurring-bills 2.1, 2.5: owns the page's navigation — `TransactionsNav` with two
+ * parameters (`transactions.md` 2.5). It holds one *intended query*, set from the server's
+ * effective query on load and on every Back or Forward; every control changes it synchronously
+ * and every URL is built from it (`recurringBillsSearch`). A search writes the URL with
+ * `router.replace` after 250 ms (or at once on Enter); a sort first applies a pending search,
+ * then uses `router.push`; choosing the current sort adds no history entry. Each navigation runs
+ * in `startTransition` with `{ scroll: false }`; the latest one wins.
  */
-export function TransactionsNav({
+export function BillsNav({
   effective,
   children,
 }: {
-  /** The query the server rendered: the URL read leniently, the page clamped (2.3). */
-  effective: TransactionsQuery;
+  /** The query the server rendered: the URL read leniently (2.3). */
+  effective: RecurringBillsPageQuery;
   children: ReactNode;
 }) {
   const router = useRouter();
@@ -75,47 +72,43 @@ export function TransactionsNav({
   const [changes, setChanges] = useState(0);
   const fromHistory = useRef(false);
   // Bumped on every Back or Forward, so the resync below runs even when the server's answer
-  // does not change (the view was clamped, or a pending push was abandoned).
+  // does not change (a pending push was abandoned).
   const [historyTick, setHistoryTick] = useState(0);
 
   const go = useCallback(
-    (next: TransactionsQuery, mode: "push" | "replace") => {
+    (next: RecurringBillsPageQuery, mode: "push" | "replace") => {
       intended.current = next;
       setQuery(next);
       setChanges((count) => count + 1);
       fromHistory.current = false;
       startTransition(() => {
-        router[mode](`${pathname}${transactionsSearch(next)}`, { scroll: false });
+        router[mode](`${pathname}${recurringBillsSearch(next)}`, { scroll: false });
       });
     },
     [pathname, router],
   );
 
-  /** A search starts at page 1; when the needle is the current one nothing happens. */
+  /** When the needle is the current one nothing happens. */
   const applySearch = useCallback(
     (typed: string) => {
       const q = needle(typed);
       if (q === intended.current.q) return;
-      go({ ...intended.current, q, page: 1 }, "replace");
+      go({ ...intended.current, q }, "replace");
     },
     [go],
   );
 
   useEffect(() => applySearch(debounced), [debounced, applySearch]);
 
-  /**
-   * A sort, a category or a page: the pending search first, then the change, by `push`.
-   * Choosing the option or the page already current adds no history entry (2.5); only the typed
-   * search, if any, applies.
-   */
-  const change = useCallback(
-    (patch: Partial<TransactionsQuery>, current: boolean) => {
+  /** A sort: the pending search first, then the sort, by `push`; the current sort adds nothing. */
+  const setSort = useCallback(
+    (sort: BillSort) => {
       const q = needle(flush());
-      if (current) {
+      if (sort === intended.current.sort) {
         applySearch(q ?? "");
         return;
       }
-      go({ ...intended.current, q, ...patch }, "push");
+      go({ ...intended.current, q, sort }, "push");
     },
     [flush, applySearch, go],
   );
@@ -132,7 +125,7 @@ export function TransactionsNav({
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  const effectiveKey = transactionsSearch(effective);
+  const effectiveKey = recurringBillsSearch(effective);
   useEffect(() => {
     const history = fromHistory.current;
     if (!history && (pending || sameQuery(effective, intended.current))) return;
@@ -146,25 +139,21 @@ export function TransactionsNav({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveKey, historyTick]);
 
-  const value = useMemo<TransactionsNavValue>(
+  const value = useMemo<BillsNavValue>(
     () => ({
       query,
       text,
       setText,
       submitSearch: () => applySearch(flush()),
-      setSort: (sort) => change({ sort, page: 1 }, sort === intended.current.sort),
-      setCategory: (category) =>
-        change({ category, page: 1 }, category === intended.current.category),
-      setPage: (page) => change({ page }, page === intended.current.page),
+      setSort,
     }),
-    [query, text, applySearch, flush, change],
+    [query, text, applySearch, flush, setSort],
   );
-
   const results = useMemo<ResultsNavState>(() => ({ pending, changes }), [pending, changes]);
 
   return (
-    <TransactionsNavContext.Provider value={value}>
+    <BillsNavContext.Provider value={value}>
       <ResultsNavContext.Provider value={results}>{children}</ResultsNavContext.Provider>
-    </TransactionsNavContext.Provider>
+    </BillsNavContext.Provider>
   );
 }

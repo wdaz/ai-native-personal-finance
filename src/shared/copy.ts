@@ -112,4 +112,29 @@ export const COPY = {
   transactionsStatus: (total: number, page: number, pageCount: number) =>
     `${count(total, "transaction", "transactions")}, page ${page} of ${pageCount}`,
   transactionsLoadError: "Couldn't load your transactions",
+
+  // R2 additions (SPEC-recurring-bills 2.15, §9 RB-Q1 and RB-Q2; release-2-handoffs.md H14 (1))
+  searchBillsPlaceholder: "Search bills",
+  searchBillsLabel: "Search bills",
+  totalBills: "Total Bills",
+  billsSummaryTitle: "Summary",
+  /** Also the Overview bills card's three labels (SPEC-overview §2.6). */
+  billsPaid: "Paid Bills",
+  billsTotalUpcoming: "Total Upcoming",
+  billsDueSoon: "Due Soon",
+  /** US-28 AC1: "4 ($190.00)"; the amount comes formatted (`formatMoney`). */
+  billsCountAmount: (n: number, amount: string) => `${n} (${amount})`,
+  columnBillTitle: "Bill Title",
+  columnDueDate: "Due Date",
+  /** US-27 AC1: the due text, `formatDueDay`'s words ("Monthly - 2nd"). */
+  billDue: (ordinalDay: string) => `Monthly - ${ordinalDay}`,
+  /** 2.9: a row's visually hidden status, by `BILL_STATUSES`. */
+  billStatuses: {
+    paid: "Paid",
+    dueSoon: "Due soon",
+    upcoming: "Upcoming",
+  },
+  billsStatus: (n: number) => count(n, "bill", "bills"),
+  billsLoadError: "Couldn't load your recurring bills",
+  billsEmpty: "No recurring bills yet",
 } as const;

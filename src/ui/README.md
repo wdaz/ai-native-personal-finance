@@ -54,3 +54,10 @@ intended query and every navigation), `TransactionsToolbar`, `ResultsRegion` (`a
 the status line), `TransactionTable` (a server component), `TransactionsPagination` and
 `TransactionsError`. `icons/` gains `SearchIcon`, `CaretDownIcon`, `CaretRightIcon`, `SortIcon`
 and `FilterIcon`, their paths copied from the owner's design export (Phosphor, MIT).
+
+T-21: `ResultsRegion` moves from `transactions/` to `src/ui` (SPEC-recurring-bills §6): it reads
+`{ pending, changes }` from `ResultsNavContext`, which each list page's navigation provider
+(`TransactionsNav`, `BillsNav`) provides beside its own context. `recurring-bills/` — the page's
+parts: `BillsNav` (`TransactionsNav` with `q` and `sort` only), `BillsToolbar`, `BillsTable`,
+`TotalBillsCard` and `BillsSummaryCard` (server components) and `BillsError`. `icons/` gains
+`ReceiptIcon`, `CheckCircleIcon` and `WarningCircleIcon` (Phosphor, from the design export).

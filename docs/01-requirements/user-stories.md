@@ -1,6 +1,6 @@
 # User stories
 
-Status: **Approved** (v1.6 — 2026-10-10: the copy appendix's second "R2 additions" table, the Transactions page's strings the owner approved with SPEC-transactions (§9 Q1 and Q4, 2026-10-04) and the design's and stories' strings of its 2.16, added by T-19 together with `COPY` (`release-2-handoffs.md` H11 (1)), approved by the owner's merge of its pull request; v1.5 — 2026-10-10: the copy appendix's "R2 additions" table, the four messages the owner approved with SPEC-write-path (§9 Q5, 2026-10-04), added by T-17 together with `COPY` (`release-2-handoffs.md` H10), approved by the owner's merge of its pull request; v1.4 — 2026-09-23 amendment, owner decision at the T-06 plan gate (Q1 (c)): sign-up's failure rows — "Something went wrong. Try again" on a server error only, a network failure its own message; v1.3 — 2026-09-23: a not-found row for the 404 page, plan T-06 finding F1 — approved by the owner, who merged PR #15; v1.2 — 2026-09-23 amendments, owner decisions at the T-04 plan gate: the copy appendix's demo banner takes the configured interval (`{days}`), and three R1 additions give the sign-up maxima their messages; v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · Author(s): Agent (draft) · Date: 2026-09-08
+Status: **Approved** (v1.7 — 2026-10-10: the copy appendix's third "R2 additions" table, the Recurring Bills page's strings the owner approved with SPEC-recurring-bills (§9 RB-Q1 and RB-Q2, 2026-10-05) and the design's and stories' strings of its 2.15, added by T-21 together with `COPY` (`release-2-handoffs.md` H14 (1)), approved by the owner's merge of its pull request; v1.6 — 2026-10-10: the copy appendix's second "R2 additions" table, the Transactions page's strings the owner approved with SPEC-transactions (§9 Q1 and Q4, 2026-10-04) and the design's and stories' strings of its 2.16, added by T-19 together with `COPY` (`release-2-handoffs.md` H11 (1)), approved by the owner's merge of its pull request; v1.5 — 2026-10-10: the copy appendix's "R2 additions" table, the four messages the owner approved with SPEC-write-path (§9 Q5, 2026-10-04), added by T-17 together with `COPY` (`release-2-handoffs.md` H10), approved by the owner's merge of its pull request; v1.4 — 2026-09-23 amendment, owner decision at the T-06 plan gate (Q1 (c)): sign-up's failure rows — "Something went wrong. Try again" on a server error only, a network failure its own message; v1.3 — 2026-09-23: a not-found row for the 404 page, plan T-06 finding F1 — approved by the owner, who merged PR #15; v1.2 — 2026-09-23 amendments, owner decisions at the T-04 plan gate: the copy appendix's demo banner takes the configured interval (`{days}`), and three R1 additions give the sign-up maxima their messages; v1.1 — 2026-09-20 amendments: copy appendix "R1 additions"; US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2 — see PRD v1.2) · Author(s): Agent (draft) · Date: 2026-09-08
 Source: `../00-discovery/inputs/challenge-brief.md` (brief), `../00-discovery/problem-statement.md` (PS), `../00-discovery/inputs/design/` (design; visual reference only)
 Conventions: ids are stable; priorities Must/Should/Could; every story lists ≥1 error or boundary criterion; "Agent tool" names the WebMCP tool the story implies (final set decided in NFR-W / ADR). Business "today" is **19 Aug 2026** and the current month is **August 2026** (OQ-4); seed dates are shifted +2 years at seed time. **Where the design and `data.json` differ, `data.json` wins** (owner decision R-01). Every budget and pot has a server-generated `id`; tools take and return ids (R-26). Validation copy: see the copy table at the end of this document (R-07). Money is USD, shown with two decimals and a sign as in the design.
 
@@ -335,4 +335,20 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | Transactions | no results, or a category with no rows and no search (US-19 AC2) | No transactions match your search |
 | Transactions | no transactions at all | No transactions yet |
 
-`{N}`, `{days}`, `{total}`, `{n}` and `{m}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 second", "1 day", "1 transaction").
+### R2 additions (2026-10-05, owner-approved with SPEC-recurring-bills, §9 RB-Q1 and RB-Q2; added by T-21)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Recurring Bills | search field: placeholder · hidden label | Search bills · label: Search bills |
+| Recurring Bills | summary cards | Total Bills · Summary |
+| Recurring Bills | summary labels (also Overview's bills card) | Paid Bills · Total Upcoming · Due Soon |
+| Recurring Bills | summary value | {count} ({amount}) |
+| Recurring Bills table | column headers | Bill Title · Due Date · Amount |
+| Recurring Bills | due text | Monthly - {ordinal day} |
+| Recurring Bills | hidden status of a row | Paid · Due soon · Upcoming |
+| Recurring Bills | status line after a change | {count} bills |
+| Recurring Bills | load error | Couldn't load your recurring bills · button: Retry |
+| Recurring Bills | no results | No bills match your search |
+| Recurring Bills | no recurring bills at all | No recurring bills yet |
+
+`{N}`, `{days}`, `{total}`, `{n}`, `{m}` and `{count}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 second", "1 day", "1 transaction", "1 bill"). `{amount}` is a `formatMoney` amount ("$190.00"); `{ordinal day}` a day of the month with its English ordinal ("2nd", "11th", "21st").

@@ -78,4 +78,20 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | Transactions | no results, or a category with no rows and no search (US-19 AC2) | No transactions match your search |
 | Transactions | no transactions at all | No transactions yet |
 
-`{N}`, `{days}`, `{total}`, `{n}` and `{m}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 second", "1 day", "1 transaction").
+### R2 additions (2026-10-05, owner-approved with SPEC-recurring-bills, §9 RB-Q1 and RB-Q2; added by T-21)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Recurring Bills | search field: placeholder · hidden label | Search bills · label: Search bills |
+| Recurring Bills | summary cards | Total Bills · Summary |
+| Recurring Bills | summary labels (also Overview's bills card) | Paid Bills · Total Upcoming · Due Soon |
+| Recurring Bills | summary value | {count} ({amount}) |
+| Recurring Bills table | column headers | Bill Title · Due Date · Amount |
+| Recurring Bills | due text | Monthly - {ordinal day} |
+| Recurring Bills | hidden status of a row | Paid · Due soon · Upcoming |
+| Recurring Bills | status line after a change | {count} bills |
+| Recurring Bills | load error | Couldn't load your recurring bills · button: Retry |
+| Recurring Bills | no results | No bills match your search |
+| Recurring Bills | no recurring bills at all | No recurring bills yet |
+
+`{N}`, `{days}`, `{total}`, `{n}`, `{m}` and `{count}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 second", "1 day", "1 transaction", "1 bill"). `{amount}` is a `formatMoney` amount ("$190.00"); `{ordinal day}` a day of the month with its English ordinal ("2nd", "11th", "21st").

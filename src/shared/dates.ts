@@ -6,6 +6,8 @@
  * engines need not ship the same data.
  */
 
+import { COPY } from "./copy";
+
 const MONTHS = [
   "Jan",
   "Feb",
@@ -57,7 +59,7 @@ export function formatDate(value: Date | string): string {
  * bad date does in `formatDate`, rather than writing a due day no month has.
  */
 export function formatDueDay(day: number): string {
-  return `Monthly - ${ordinalDay(day)}`;
+  return COPY.billDue(ordinalDay(day));
 }
 
 /** "1st", "2nd", "11th", "21st": the day of `formatDueDay`, on its own (the spec's 4.2 and 4.3). */
