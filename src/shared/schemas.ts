@@ -194,7 +194,8 @@ export const PotNameSchema = z
   .min(1)
   .max(POT_NAME_MAX)
   .check((ctx) => {
-    if (ctx.value.length > POT_NAME_MAX) {
+    // Only when `.max` passed (at most 30 code points), so a name gets one `too_big`, not two.
+    if (ctx.value.length > POT_NAME_MAX && [...ctx.value].length <= POT_NAME_MAX) {
       ctx.issues.push({
         code: "too_big",
         origin: "string",

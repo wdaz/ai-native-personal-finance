@@ -30,6 +30,7 @@ import {
   type RecurringBillsQuery,
 } from "@/src/shared/recurring-bills-query";
 import { formatMoney, formatPercent, formatSignedMoney } from "@/src/shared/money";
+import { AMOUNT_MAX_CENTS } from "@/src/shared/schemas";
 
 /**
  * The seed's figures, computed by the domain from prisma/data.json — the one source every
@@ -567,7 +568,7 @@ export function potFigures(theme: (hex: string) => Theme) {
     budgetThemes: input.budgets.map((b) => theme(b.theme)),
     longestName: seed.pots.reduce((a, b) => (b.name.length > a.name.length ? b : a)).name,
     /** 2.3: the largest numerator of `potPercent`, the conserved sum over the largest target. */
-    largestNumerator: 2 * sum * 10_000 + 99_999_999_999,
+    largestNumerator: 2 * sum * 10_000 + AMOUNT_MAX_CENTS,
     chain: {
       deposit: { preview: preview("Savings", "add", 10_000), after: afterDeposit },
       withdrawal: {

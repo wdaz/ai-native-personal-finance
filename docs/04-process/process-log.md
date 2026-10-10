@@ -7271,7 +7271,10 @@ them too").
   T-15d matched the domain's output; the API suite passed on its first run.
 - **What the agent got wrong or missed:** the first domain test typed the seed's figures from the seed file,
   which `build-workflow.md` forbids; it was rewritten with the spec's examples as plain inputs, and the seed's
-  side moved to the figures test.
+  side moved to the figures test. The review found that the moves lock `Pot` then `Balance` while the reset
+  truncated them in the other order, a deadlock under a reset during a move; the reset now follows the moves'
+  order. It also found the pots' two reads outside one snapshot and an unchecked balance credit; both
+  fixed (`code-review-handling.md`).
 - **Found on the way:** Zod 4's string `.max` counts code points, not UTF-16 code units, so `PotNameSchema`
   accepted 15 emoji and a letter (31 units) against `pots.md` 4.6 and `write-path.md` 2.7. It now checks the
   units too, with the same `too_long` code; `.max` stays for the tool schemas' `maxLength`.

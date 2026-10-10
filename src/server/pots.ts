@@ -47,15 +47,29 @@ async function readBalance(db: Db | WriteTx): Promise<number> {
 }
 
 /**
+ * Money back into the Current Balance (a withdrawal, a deletion's refund). The one balance row must
+ * take it: anything else throws, so the transaction rolls back and no money is lost (code review, T-25).
+ */
+async function creditBalance(tx: WriteTx, amount: bigint): Promise<void> {
+  const { count } = await tx.balance.updateMany({ data: { current: { increment: amount } } });
+  if (count !== 1) throw new Error(`Expected one balance row to credit, found ${count}`);
+}
+
+/**
  * SPEC-pots 2.1, 2.12: the one place the pots are read, for the page (directly) and `GET /api/pots`:
  * the Current Balance and every pot in creation order (`seq`). No sum of the totals (2.12).
  */
 export async function getPots(db: Db): Promise<PotsDto> {
-  const [current, pots] = await Promise.all([
-    readBalance(db),
-    db.pot.findMany({ orderBy: { seq: "asc" }, select: POT_SELECT }),
-  ]);
-  return { balance: { current }, items: pots.map(toPotDto) };
+  // One snapshot for both reads, so a move committing between them never shows the balance after
+  // it and the pots before it (the sum the page shows stays conserved; code review, T-25).
+  return db.$transaction(
+    async (tx) => {
+      const current = await readBalance(tx);
+      const pots = await tx.pot.findMany({ orderBy: { seq: "asc" }, select: POT_SELECT });
+      return { balance: { current }, items: pots.map(toPotDto) };
+    },
+    { isolationLevel: "RepeatableRead" },
+  );
 }
 
 /**
@@ -143,7 +157,7 @@ export async function deletePot(
     DELETE FROM "Pot" WHERE "id" = ${id!}::uuid RETURNING "total"`;
   const row = deleted[0];
   if (row === undefined) return { kind: "not_found" };
-  await tx.balance.updateMany({ data: { current: { increment: row.total } } });
+  await creditBalance(tx, row.total);
   return { kind: "ok", status: 204 };
 }
 
@@ -199,6 +213,6 @@ export async function withdrawFromPot(
     if (!exists) return { kind: "not_found" };
     return { kind: "validation", issues: [{ path: ["amount"], code: "exceeds_total" }] };
   }
-  await tx.balance.updateMany({ data: { current: { increment: amount } } });
+  await creditBalance(tx, amount);
   return moveAnswer(tx, id!);
 }

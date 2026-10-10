@@ -54,10 +54,11 @@ describe("toPotDto (SPEC-pots 2.12, §6 API)", () => {
 describe("GET /api/pots when the database fails (2.12; the 500 is a unit test, T-18/T-20 Q2 (a))", () => {
   it("answers 500 server_error, no-store, and logs the failure", async () => {
     const failure = new Error("connection lost");
-    getDb.mockReturnValue({
+    const tx = {
       balance: { findFirstOrThrow: vi.fn().mockRejectedValue(failure) },
       pot: { findMany: vi.fn().mockResolvedValue([]) },
-    });
+    };
+    getDb.mockReturnValue({ $transaction: (run: (client: typeof tx) => unknown) => run(tx) });
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
     const response = await GET();
     expect(response.status).toBe(500);
