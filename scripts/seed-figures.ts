@@ -622,7 +622,8 @@ export function potFigures(theme: (hex: string) => Theme) {
 const withId = (pot: SeedPot) => ({ id: pot.name, name: pot.name });
 
 /** "7.95 %": 4.3's way of writing a share of the bar. */
-export const percentSpaced = (basisPoints: number) => formatPercent(basisPoints).replace("%", " %");
+export const percentSpaced = (basisPoints: number) =>
+  `${formatPercent(basisPoints).slice(0, -1)} %`;
 
 if (import.meta.main) {
   console.log(markdownTable(workedExample()));
