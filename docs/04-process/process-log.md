@@ -6841,16 +6841,24 @@ them too").
   scope "Yalnız changelog"; "§25 ok, Q6 a, BU-Q9 a" — Q6 (a) keeps 2.8's one name at every width,
   BU-Q9 (a) chooses the size from a length table at server render so nothing moves after load.
 - **Disagreements:** none.
-- **Open:**
+- **Answered later the same day:**
   - Overview's donut has no rule for an amount that does not fit its centre (BU-11 is Budgets only,
-    and hotfix 2, #109/#111, added none). Which task takes it is the owner's call (scope).
-  - #113's two questions: keep the five new 2.14 departure rows; keep the two stale rows removed.
-  - #117 and #118 touch the same status lines as the open #107; whichever merges second rebases
-    (`backlog.md` then becomes v1.61).
+    and hotfix 2, #109/#111, added none). The owner: "Backlog-a yaz" — `backlog.md` T-28, in a new
+    section "Outside a release", after T-24, outside Release 2 (#118); `release-2-handoffs.md` H15 (4)
+    names it (#117).
+  - #113's two questions: "#113 1a 2a" (and "Hər ikisi") — the five new 2.14 departure rows stay, the two
+    stale rows stay removed.
+  - Merge order: "#107 əvvəl merge olunacaq" — #107 first; #117, #118 and this pull request, which touch
+    the same files, are rebased on it before they leave draft (`backlog.md` then becomes v1.61).
+- **Exception to v1.9:** Copilot's review stayed at its weekly rate limit (resets 2026-10-12), and every
+  run here ended with "Copilot encountered an error". The owner chose "Onsuz davam" ("go on without
+  it"): #112–#119 leave draft once their required CI is green, without Copilot's review, this time
+  only. The `github-advanced-security` job also fails on GitHub's side (`Model "claude-opus-5" is not
+  available`; CodeQL itself passes); each pull request carries one comment saying so.
 - **Lessons for the process:**
   - Run the designer's *apply* before the spec drafts that cite it, or give the drafts the recorded
     text, not the proposal.
   - A token proposal for a breakpoint needs the CSS check (`@container`/`@media` cannot read custom
     properties) before it is recorded.
-- **Next:** Copilot's review of #112–#118 and this pull request; the owner's merges; then the drawing of
+- **Next:** the owner's merges (#107 first); then the drawing of
   the 33 pending entries in Claude Design (a separate *apply*, approved on its own) before T-17.
