@@ -53,4 +53,13 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | Sign-up | server error (5xx, or an answer the client cannot read) | Something went wrong. Try again |
 | Sign-up | network error (no response) | Can't reach the server. Check your connection and try again |
 
+### R2 additions (2026-10-04, owner-approved with SPEC-write-path, §9 Q5; added by T-17)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Budget | record gone (404) | This budget no longer exists |
+| Pot | record gone (404) | This pot no longer exists |
+| Any write | rate limited (429) | Too many changes. Try again in {N} seconds |
+| Category or theme | already used by another budget or pot | Already used |
+
 `{N}` and `{days}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 day").

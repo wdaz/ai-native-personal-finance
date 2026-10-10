@@ -1,6 +1,6 @@
 /**
  * Every message of the copy appendix in docs/01-requirements/user-stories.md ("Appendix —
- * validation and message copy (R-07)", its "R1 additions" table included). The Definition
+ * validation and message copy (R-07)", its "R1 additions" and "R2 additions" tables included). The Definition
  * of Done makes this the only source of user-visible copy. tests/unit/shared/copy.test.ts
  * renders every entry and compares it with the appendix, row by row and in order. The
  * appendix's placeholders (`<email>`, `<date>`, `{N}`, `{days}`) are parameters here.
@@ -73,4 +73,11 @@ export const COPY = {
   // error only (owner decision); a request that got no answer says so.
   signupFailed: "Something went wrong. Try again",
   signupUnreachable: "Can't reach the server. Check your connection and try again",
+
+  // R2 additions (SPEC-write-path §3, §9 Q5; release-2-handoffs.md H10)
+  budgetGone: "This budget no longer exists",
+  potGone: "This pot no longer exists",
+  writeRateLimited: (seconds: number) =>
+    `Too many changes. Try again in ${count(seconds, "second", "seconds")}`,
+  alreadyUsed: "Already used",
 } as const;

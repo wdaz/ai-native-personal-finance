@@ -15,7 +15,16 @@ describe("errorResponse", () => {
 });
 
 describe("validationErrorResponse", () => {
-  it("is always 400 validation with issues and no message", async () => {
+  it("is 415 when told so (SPEC-write-path 2.6), with the same body", async () => {
+    const response = validationErrorResponse([{ path: [], code: "invalid_format" }], 415);
+    expect(response.status).toBe(415);
+    expect(await response.json()).toEqual({
+      error: "validation",
+      issues: [{ path: [], code: "invalid_format" }],
+    });
+  });
+
+  it("is 400 validation by default, with issues and no message", async () => {
     const response = validationErrorResponse([{ path: ["email"], code: "required" }]);
     expect(response.status).toBe(400);
     const body = (await response.json()) as ErrorEnvelope;
@@ -31,5 +40,15 @@ describe("rateLimitedResponse", () => {
     expect(response.headers.get("Retry-After")).toBe("300");
     const body = (await response.json()) as ErrorEnvelope;
     expect(body).toEqual({ error: "rate_limited", message: "Too many attempts", retryAfter: 300 });
+  });
+});
+
+describe("every helper's answer is no-store (SPEC-write-path 2.2 step 10)", () => {
+  it.each([
+    ["errorResponse", errorResponse(404, "not_found", "Not found")],
+    ["validationErrorResponse", validationErrorResponse([])],
+    ["rateLimitedResponse", rateLimitedResponse("Too many changes", 1)],
+  ])("%s", (_name, response) => {
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
   });
 });
