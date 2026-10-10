@@ -1,0 +1,13 @@
+Violation fixture (tests/unit/seed-figures.test.ts): Lowest's -$100.00 ties taken oldest first.
+
+**4.3 First and last row of each sort** (the whole 49):
+
+| Sort | First | Last |
+|---|---|---|
+| Latest | Savory Bites Bistro, 19 Aug 2026, -$55.50 | Spark Electric Solutions, 2 Jul 2026, -$100.00 |
+| Oldest | Spark Electric Solutions, 2 Jul 2026, -$100.00 | Savory Bites Bistro, 19 Aug 2026, -$55.50 |
+| A to Z | Aqua Flow Utilities, 30 Jul 2026, -$100.00 | Yuna Kim, 10 Jul 2026, -$27.50 |
+| Z to A | Yuna Kim, 29 Jul 2026, -$28.50 | Aqua Flow Utilities, 30 Jul 2026, -$100.00 |
+| Highest | Buzz Marketing Group, 26 Jul 2026, +$3,358.00 | Spark Electric Solutions, 2 Jul 2026, -$100.00 |
+| Lowest | Spark Electric Solutions, 2 Jul 2026, -$100.00 | Buzz Marketing Group, 26 Jul 2026, +$3,358.00 |
+
