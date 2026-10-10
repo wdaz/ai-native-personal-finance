@@ -56,6 +56,7 @@
 ### Process
 
 - [ ] Process-log entry: what was asked, what the agent produced, what it got wrong, what the owner changed, lessons (template `process-log-entry.md`).
+- [ ] `/code-review` (on an Opus model) reviewed the current head; findings fixed or answered, result in the PR description.
 - [ ] Prompts used for the task saved under `docs/04-process/prompts/`.
 - [ ] The pull request that finishes the task also sets the plan's Status line to Done.
 - [ ] The pull request that finishes the task also marks the task's backlog row Done, with the pull request numbers.

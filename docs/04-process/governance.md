@@ -299,16 +299,17 @@ new pull request, or the pull request is first put back into draft (`gh pr ready
 
 **Review before ready** (v1.15, owner decision 2026-10-10: Copilot review turned off for pull
 requests into `develop`; it replaces v1.9 of 2026-10-04, "Copilot is the mandatory reviewer", T-15d).
-Before `gh pr ready`, the agent runs the `/code-review` skill on the pull request, with an Opus
-model ("Code review subagents use Opus 5.5", above), and the review must be of the branch's
+Before `gh pr ready`, the agent runs the `/code-review` skill on the pull request on an Opus
+model: the skill runs in the session's own model, so an agent that is not on Opus dispatches the
+review to a subagent launched with Opus explicitly ("Code review subagents use Opus 5.5", above). The review must be of the branch's
 **current head**: every fix is itself a new push and so a new head, which is reviewed again. Each
 finding is fixed, or answered with its reason in the pull request. An **important** finding is one
 the agent confirms is a defect — a wrong fact or number, a contradiction, a broken command, a
 failing or vacuous test, a missed requirement — whatever severity the review gave it; those are
 always fixed before the pull request leaves draft. A finding that is a matter of taste may be
 declined with a sentence of reasoning. Then the pull request is merge-ready when its required
-checks are green. Copilot is not waited for, and its not having reviewed is not recorded as an
-exception. This changes what the agent does before leaving draft, not what GitHub enforces.
+checks are green. Copilot is not waited for on pull requests into `develop`, and its not having
+reviewed is not recorded as an exception. This changes what the agent does before leaving draft, not what GitHub enforces.
 
 Open at the switch (as written before T-15b; settled above):
 

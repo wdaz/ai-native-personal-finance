@@ -7095,7 +7095,7 @@ them too").
 - **Trigger:** the owner stopped Copilot's review of pull requests into `develop` ("Hazırda develop
   branchinə yaranan pr-lar Copilot review dayandırdım. Bunu iş prosesində nəzərə al" — "I have stopped
   Copilot review for the pull requests opened against develop; take this into account in the process").
-  It had already errored on every run that day (see the entries of #112–#119 and T-19).
+  Earlier entries record it erroring on some runs (#112–#119, T-19); the owner gave no reason here.
 - **Prompt(s):** the owner's thread message; no prompt file.
 - **Produced:** `governance.md` v1.15 — the v1.9 rule "wait for Copilot's review" becomes "Review before
   ready": the `/code-review` skill on an Opus model reviews the current head, real findings are fixed,
@@ -7104,7 +7104,9 @@ them too").
   `.github/CODEOWNERS` say the same. The ruleset names that contain "Copilot" are kept as they are.
 - **What the agent got right:** history (earlier plans, prompts and log entries that mention Copilot) is
   left as written, because it records what was true then.
-- **What the agent got wrong or missed:** nothing found.
+- **What the agent got wrong or missed:** the first draft said the Opus review could be run inline; the
+  skill uses the session's model, so the rule now says to dispatch it to an Opus subagent otherwise. It
+  also first scoped "Copilot is off" to all pull requests; the owner turned it off for `develop` only.
 - **Owner changes and reasoning:** none; the stop is the owner's own choice, not an outage.
 - **Disagreements:** none.
 - **Lessons for the process:** a tool a rule waits for should be named by its role ("the reviewer"), so
