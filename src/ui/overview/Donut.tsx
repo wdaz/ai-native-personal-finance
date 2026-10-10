@@ -15,8 +15,9 @@ const CENTRE = DONUT_SIZE / 2;
 
 /**
  * SPEC-overview §4.4: an SVG donut with an inner ring repeating the same segments in each
- * theme colour at 75 % opacity (v1.3, H18 / S45-5 (b); the opacity lives in the CSS). `total` is the caller's own denominator (Donut-geometry.ts's own docs / T-10 plan
- * D3) — usually `budgets.limit`, all budgets, not just the ones in `items`.
+ * theme colour at 75 % opacity (v1.3, H18 / S45-5 (b); the opacity lives in the CSS).
+ * `total` is the caller's own denominator (`donut-geometry.ts`'s own docs / T-10 plan D3) —
+ * usually `budgets.limit`, all budgets, not just the ones in `items`.
  */
 export function Donut({
   items,
