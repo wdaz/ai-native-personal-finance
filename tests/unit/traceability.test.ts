@@ -7,7 +7,6 @@ import {
   cumulativeStoryIds,
   definedStoryIds,
   listedReleases,
-  NOT_YET_BUILT,
   RELEASE_BEING_BUILT,
   releaseStoryIds,
   run,
@@ -277,7 +276,6 @@ describe("checkTraceability — the failing fixtures (DoD v1.1)", () => {
     expect(checkTraceability({ release: ["US-01", "US-02"], defined, sources })).toEqual({
       missing: [],
       unknown: [],
-      alreadyNamed: [],
     });
   });
 
@@ -293,7 +291,6 @@ describe("checkTraceability — the failing fixtures (DoD v1.1)", () => {
     expect(checkTraceability({ release: ["US-01"], defined, sources })).toEqual({
       missing: [],
       unknown: [],
-      alreadyNamed: [],
     });
   });
 
@@ -435,7 +432,7 @@ describe("testSources and run — against a throwaway repository", () => {
     const root = repository(RELEASE_1, { "unit/some.test.ts": titles(named) });
     const missing = RELEASE_2.filter((id) => !named.includes(id));
     expect(missing).toHaveLength(20);
-    expect(run(root, false, 2, [])).toEqual({
+    expect(run(root, false, 2)).toEqual({
       code: 1,
       out: [],
       err: missing.map((id) => `traceability: ${id} is named in no test title`),
@@ -444,7 +441,7 @@ describe("testSources and run — against a throwaway repository", () => {
 
   it("with Release 2 being built, still requires Release 1's stories", () => {
     const root = repository(RELEASE_1, { "unit/some.test.ts": titles(RELEASE_2) });
-    const result = run(root, false, 2, []);
+    const result = run(root, false, 2);
     expect(result.code).toBe(1);
     expect(result.err).toEqual(
       RELEASE_1.map((id) => `traceability: ${id} is named in no test title`),
@@ -467,67 +464,10 @@ describe("testSources and run — against a throwaway repository", () => {
     const root = repository(RELEASE_1, {
       "unit/all.test.ts": titles([...RELEASE_1, ...RELEASE_2]),
     });
-    expect(run(root, false, 2, [])).toEqual({
+    expect(run(root, false, 2)).toEqual({
       code: 0,
       out: ["traceability: all 41 stories of Releases 1–2 are named in a test title"],
       err: [],
-    });
-  });
-
-  describe("the not-yet-built list (H4 answer (a), ADR-0003 dated line 2026-10-10)", () => {
-    /** The 20 Release 2 ids no test named on 2026-10-06 (the backlog's H4 note). */
-    const UNNAMED_2026_10_06 = RELEASE_2.filter((id) => !["US-11", "US-27", "US-28"].includes(id));
-
-    it("skips a listed id that no title names, and counts the rest", () => {
-      const named = [...RELEASE_1, "US-11", "US-27", "US-28", "US-40"];
-      const root = repository(RELEASE_1, { "unit/some.test.ts": titles(named) });
-      expect(
-        run(
-          root,
-          false,
-          2,
-          UNNAMED_2026_10_06.filter((id) => id !== "US-40"),
-        ),
-      ).toEqual({
-        code: 0,
-        out: [
-          "traceability: all 22 stories of Releases 1–2 are named in a test title; 19 are not built yet",
-        ],
-        err: [],
-      });
-    });
-
-    it("still requires an id that is not on the list", () => {
-      const named = [...RELEASE_1, "US-11", "US-27", "US-28"];
-      const root = repository(RELEASE_1, { "unit/some.test.ts": titles(named) });
-      expect(
-        run(
-          root,
-          false,
-          2,
-          UNNAMED_2026_10_06.filter((id) => id !== "US-40"),
-        ),
-      ).toEqual({
-        code: 1,
-        out: [],
-        err: ["traceability: US-40 is named in no test title"],
-      });
-    });
-
-    it("fails for a listed id that a title already names — the task that names it removes it", () => {
-      const named = [...RELEASE_1, "US-11", "US-27", "US-28", "US-40"];
-      const root = repository(RELEASE_1, { "unit/some.test.ts": titles(named) });
-      expect(run(root, false, 2, UNNAMED_2026_10_06)).toEqual({
-        code: 1,
-        out: [],
-        err: ["traceability: US-40 is already named in a test title; remove it from NOT_YET_BUILT"],
-      });
-    });
-
-    it("only shrinks: every id on it is one of the 20 unnamed on 2026-10-06, each once", () => {
-      expect(UNNAMED_2026_10_06).toHaveLength(20);
-      expect(NOT_YET_BUILT.filter((id) => !UNNAMED_2026_10_06.includes(id))).toEqual([]);
-      expect(new Set(NOT_YET_BUILT).size).toBe(NOT_YET_BUILT.length);
     });
   });
 });
@@ -536,10 +476,9 @@ describe("this repository", () => {
   it("has a title for every story of the release being built and no undefined id", () => {
     const result = checkTraceability({
       release: cumulativeStoryIds(PRD, RELEASE_BEING_BUILT),
-      notYetBuilt: NOT_YET_BUILT,
       defined: definedStoryIds(read("docs/01-requirements/user-stories.md")),
       sources: testSources(repoRoot),
     });
-    expect(result).toEqual({ missing: [], unknown: [], alreadyNamed: [] });
+    expect(result).toEqual({ missing: [], unknown: [] });
   });
 });

@@ -25,17 +25,6 @@ const SKIPS = new Set(["skip", "fixme", "todo"]);
  */
 export const RELEASE_BEING_BUILT = 2;
 
-/**
- * The Release 2 stories no build task has named yet (H4, the owner's answer (a); ADR-0003's dated
- * line 2026-10-10): `run` does not require them. The list only shrinks — the build task whose
- * test first names an id removes it in the same pull request, and an id still listed once a title
- * names it fails the check. Each was one of the 20 ids unnamed on 2026-10-06; T-17 removed US-40; T-18 removed US-09, US-10 and US-12; T-19 removed
- * US-13 and US-19; T-20 removed US-29 and US-30; T-22 removed US-15–US-17 and US-22–US-26; T-23
- * removed US-14, US-18 and US-20; T-25 removed US-21, so the list is empty (T-26 removes it and its
- * upper-bound test).
- */
-export const NOT_YET_BUILT: readonly string[] = [];
-
 /** The generated list of the stories a release first delivers (`--write`), one id per line. */
 export function storyListPath(release: number): string {
   return `docs/03-specs/release-${release}-stories.txt`;
@@ -201,20 +190,16 @@ export function checkTraceability(input: {
   release: string[];
   defined: string[];
   sources: SourceFile[];
-  /** Ids of `release` not required yet (`NOT_YET_BUILT`); one a title names is `alreadyNamed`. */
-  notYetBuilt?: readonly string[];
-}): { missing: string[]; unknown: string[]; alreadyNamed: string[] } {
+}): { missing: string[]; unknown: string[] } {
   const named = new Set<string>();
   for (const file of input.sources) {
     const ids =
       typeof file === "string" ? titleStoryIds(file) : titleStoryIds(file.source, file.path);
     for (const id of ids) named.add(id);
   }
-  const notYetBuilt = input.notYetBuilt ?? [];
   return {
-    missing: input.release.filter((id) => !named.has(id) && !notYetBuilt.includes(id)),
+    missing: input.release.filter((id) => !named.has(id)),
     unknown: [...named].filter((id) => !input.defined.includes(id)).sort(),
-    alreadyNamed: notYetBuilt.filter((id) => named.has(id)),
   };
 }
 
@@ -241,7 +226,6 @@ export function run(
   root: string,
   write = false,
   built = RELEASE_BEING_BUILT,
-  notYetBuilt: readonly string[] = NOT_YET_BUILT,
 ): { code: number; out: string[]; err: string[] } {
   const prd = readFileSync(join(root, "docs/01-requirements/prd.md"), "utf8");
   const lists = listedReleases(prd).map((n) => {
@@ -276,9 +260,8 @@ export function run(
       ),
     };
   }
-  const { missing, unknown, alreadyNamed } = checkTraceability({
+  const { missing, unknown } = checkTraceability({
     release,
-    notYetBuilt,
     defined: definedStoryIds(
       readFileSync(join(root, "docs/01-requirements/user-stories.md"), "utf8"),
     ),
@@ -289,20 +272,16 @@ export function run(
     ...unknown.map(
       (id) => `traceability: ${id} appears in a test title but user-stories.md does not define it`,
     ),
-    ...alreadyNamed.map(
-      (id) => `traceability: ${id} is already named in a test title; remove it from NOT_YET_BUILT`,
-    ),
   ];
   if (err.length > 0) return { code: 1, out: [], err };
-  const skipped = release.filter((id) => notYetBuilt.includes(id)).length;
-  const required = release.length - skipped;
+  const required = release.length;
   const line =
     built === 1
       ? `traceability: all ${required} Release 1 stories are named in a test title`
       : `traceability: all ${required} stories of Releases 1–${built} are named in a test title`;
   return {
     code: 0,
-    out: [skipped === 0 ? line : `${line}; ${skipped} are not built yet`],
+    out: [line],
     err: [],
   };
 }
