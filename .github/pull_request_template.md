@@ -5,7 +5,7 @@
   Base: `develop` for work. Base `main` only for a release (head `develop`) or a hotfix (head
   `hotfix/<name>-main`) (governance.md, "Branches and releases").
   Open the PR as a draft. Take it out of draft only when it is finished, CI is green, and the
-  /code-review skill (on an Opus model) has reviewed the current head and no important finding is left
+  /code-review skill (run by a new Opus subagent) has reviewed the current head and no important finding is left
   unfixed (Copilot review is off for develop): the owner merges every PR that is not a
   draft, and a ready PR gets no more pushes (governance.md, "Branches and releases", "Draft until
   ready").
@@ -56,7 +56,7 @@
 ### Process
 
 - [ ] Process-log entry: what was asked, what the agent produced, what it got wrong, what the owner changed, lessons (template `process-log-entry.md`).
-- [ ] `/code-review` (on an Opus model) reviewed the current head; findings fixed or answered, result in the PR description.
+- [ ] `/code-review` run by a new Opus subagent (not the author's session) reviewed the current head; findings fixed or answered, result in the PR description.
 - [ ] Prompts used for the task saved under `docs/04-process/prompts/`.
 - [ ] The pull request that finishes the task also sets the plan's Status line to Done.
 - [ ] The pull request that finishes the task also marks the task's backlog row Done, with the pull request numbers.

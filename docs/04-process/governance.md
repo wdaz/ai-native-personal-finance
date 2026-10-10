@@ -293,15 +293,18 @@ merges it without a further check. Unfinished work — a plan waiting for answer
 waiting for review fixes or CI, a document waiting for the owner — stays a draft
 (`gh pr create --draft`). The agent takes a pull request out of draft (`gh pr ready`) only when its
 content is finished, every required check is green, the checklist items the agent can tick are
-ticked, **and the `/code-review` skill has reviewed the branch's current head on an Opus model and
+ticked, **and the `/code-review` skill has reviewed the branch's current head by a new Opus subagent and
 no important finding of it is left unfixed** (v1.15, below). A ready pull request gets no more pushes: further work goes in a
 new pull request, or the pull request is first put back into draft (`gh pr ready --undo`).
 
 **Review before ready** (v1.15, owner decision 2026-10-10: Copilot review turned off for pull
 requests into `develop`; it replaces v1.9 of 2026-10-04, "Copilot is the mandatory reviewer", T-15d).
-Before `gh pr ready`, the agent runs the `/code-review` skill on the pull request on an Opus
-model: the skill runs in the session's own model, so an agent that is not on Opus dispatches the
-review to a subagent launched with Opus explicitly ("Code review subagents use Opus 5.5", above). The review must be of the branch's
+Before `gh pr ready`, the agent has the `/code-review` skill run on the pull request by a **new
+subagent** (owner, 2026-10-10: "Onun yerinə code-review skilli üçün yeni subagent istifadə edilir" —
+"instead of it, a new subagent is used for the code-review skill"), launched with an Opus model
+explicitly ("Code review subagents use Opus 5.5", above). The reviewer is fresh: it did not write the
+code and has none of the author's context, so it is independent, which running the skill inline in the
+author's own session is not. The review must be of the branch's
 **current head**: every fix is itself a new push and so a new head, which is reviewed again. Each
 finding is fixed, or answered with its reason in the pull request. An **important** finding is one
 the agent confirms is a defect — a wrong fact or number, a contradiction, a broken command, a

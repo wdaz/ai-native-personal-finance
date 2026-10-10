@@ -7098,14 +7098,14 @@ them too").
   Earlier entries record it erroring on some runs (#112–#119, T-19); the owner gave no reason here.
 - **Prompt(s):** the owner's thread message; no prompt file.
 - **Produced:** `governance.md` v1.15 — the v1.9 rule "wait for Copilot's review" becomes "Review before
-  ready": the `/code-review` skill on an Opus model reviews the current head, real findings are fixed,
+  ready": the `/code-review` skill, run by a new Opus subagent (owner's follow-up message: "Onun yerinə code-review skilli üçün yeni subagent istifadə edilir"), reviews the current head, real findings are fixed,
   and the pull request is merge-ready when its required checks are green; Copilot is not expected and
   its absence is not an exception to record. `.github/pull_request_template.md` and the note in
   `.github/CODEOWNERS` say the same. The ruleset names that contain "Copilot" are kept as they are.
 - **What the agent got right:** history (earlier plans, prompts and log entries that mention Copilot) is
   left as written, because it records what was true then.
 - **What the agent got wrong or missed:** the first draft said the Opus review could be run inline; the
-  skill uses the session's model, so the rule now says to dispatch it to an Opus subagent otherwise. It
+  skill uses the session's model, and the owner then said a new subagent does it, so the rule says that. It
   also first scoped "Copilot is off" to all pull requests; the owner turned it off for `develop` only.
 - **Owner changes and reasoning:** none; the stop is the owner's own choice, not an outage.
 - **Disagreements:** none.
