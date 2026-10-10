@@ -6855,7 +6855,7 @@ them too").
     until they are the entry wins over the drawing.
   - Draft pull requests, one document each: #112 `transactions.md` v1.0.16 (Approved), #113
     `recurring-bills.md` v0.7, #114 `ui-kit.md` v0.8.7 (Approved), #115 `budgets.md` v0.8, #116
-    `pots.md` v0.6, #117 `release-2-handoffs.md` (Approved), #118 `backlog.md` v1.60; this entry.
+    `pots.md` v0.6, #117 `release-2-handoffs.md` (Approved), #118 `backlog.md` v1.61; this entry.
   - No change needed, checked: `write-path.md` (WP-1 is the design catching up with 2.7),
     `overview.md` (BU-8 matches 2.5/2.7), `design-tokens.md` (tokens land with their build tasks,
     H15 (3)/H16 (3)), `webmcp-tools.md` (no gap).
