@@ -106,6 +106,14 @@
   --field-menu-max-height: 300px;
   --duration-modal: 200ms;
 
+  /* Progress bars — design-tokens.md v1.7 (SPEC-pots 2.2, 2.6, 2.11; hand-off H16 (3)) */
+  --radius-50: 4px;
+  --duration-progress: 400ms;
+  /* Pots only: the bar to its text row, and the preview's two segments apart (§19c, §25c) */
+  --spacing-bar-text: 13px;
+  --spacing-25: 2px;
+  --duration-preview: 300ms;
+
   /* Opacity — design-tokens.md v1.6 (the designer's changelog §12a) */
   --opacity-unavailable: 0.25;
 

@@ -106,4 +106,25 @@ Source: `../00-discovery/inputs/design/app-prototype.html` and the challenge des
 | "…" menu | items | Edit Budget · Delete Budget · Edit Pot · Delete Pot |
 | Budgets and Pots | header button (the "+" is not heard) | + Add New Budget · + Add New Pot |
 
+### R2 additions (2026-10-06, owner-approved with SPEC-pots, §9 PO-Q1 and PO-Q4, and the design's strings of its 2.15; added by T-26)
+
+| Context | Condition | Message |
+|---------|-----------|---------|
+| Pots card | labels | Total Saved · Target of {amount} |
+| Pots card | money buttons (the "+" is not heard) | + Add Money · Withdraw |
+| Pots card | money buttons (heard) | Add Money to {name} · Withdraw from {name} |
+| Pot form | add: description · submit | Create a pot to set savings targets. These can help keep you on track as you save for special purchases. · button: Add Pot |
+| Pot form | edit: description | If your saving targets change, feel free to update your pots. |
+| Pot form | fields | Pot Name · e.g. Rainy Days · Target |
+| Pot form | name counter | {N} characters left |
+| Pot form | Theme, every theme used | All themes already have a pot |
+| Money modal | titles | Add to ‘{name}’ · Withdraw from ‘{name}’ |
+| Money modal | add: description | Add money to your pot to keep it separate from your main balance. As soon as you add this money, it will be deducted from your current balance. |
+| Money modal | withdraw: description | Withdraw from your pot to put money back in your main balance. This will reduce the amount you have in this pot. |
+| Money modal | field labels | Amount to Add · Amount to Withdraw |
+| Money modal | preview | New Amount |
+| Money modal | submit | Confirm Addition · Confirm Withdrawal |
+| Pots | load error | Couldn't load your pots · button: Retry |
+| Budgets and Pots forms | shared labels | Save Changes · Theme · e.g. 2000 |
+
 `{N}`, `{days}`, `{total}`, `{n}`, `{m}` and `{count}` are whole numbers; a count of 1 is written in the singular ("1 minute", "1 second", "1 day", "1 transaction", "1 bill"). `{amount}` is a `formatMoney` amount ("$190.00"); `{ordinal day}` a day of the month with its English ordinal ("2nd", "11th", "21st"). `{name}` is a budget's category or a pot's name, as stored.

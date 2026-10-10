@@ -1,6 +1,6 @@
 # Design tokens
 
-Status: **Approved** (v1.6 — 2026-10-10: T-22, hand-off H13 (3) and (6): a "Modals and forms" table with `--color-backdrop`, `--modal-max-width`, `--action-menu-width`, `--field-menu-max-height` and `--duration-modal`, an "Opacity" table with `--opacity-unavailable` (SPEC-ui-kit §9 UK-Q4 (a); the designer's changelog §10, §12a), the destroy button's and the "…" menu Delete item's hover (UK-Q5 (a); the designer's changelog §11), and the `dots-three-outline` icon copied from the designer's export; approved by its pull request's merge under the owner's Release 2 delegation; v1.5 — 2026-10-10: T-19, hand-off H11 (2), (6)–(8): a "Shadow" table with `--shadow-popover` and the owner's note (SPEC-transactions §9 Q2), `--duration-popover` and `--filter-menu-max-height` (the designer's changelog §10, §12b), beige-500 for borders only (the designer's changelog §8a), and the Transactions toolbar's and pagination's five icons, copied from the designer's export; approved by the owner's merge of its pull request; v1.4 — 2026-09-24: Public Sans is served by `next/font/local` from committed files, TD-11, owner decision "a"; v1.3 — 2026-09-23: the close-circle icon, T-08; v1.2 — 2026-09-23: app shell tokens and the sign-out icon, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
+Status: **Approved** (v1.7 — 2026-10-10: T-26, hand-off H16 (3): a "Progress bars" table with `--radius-50`, `--duration-progress`, `--spacing-bar-text`, `--spacing-25` and `--duration-preview` (the designer's changelog §18a, §18c, §19c, §19d, §25c; SPEC-pots PO-Q6 (a), PO-Q10 (a)); approved by its pull request's merge under the owner's Release 2 delegation; v1.6 — 2026-10-10: T-22, hand-off H13 (3) and (6): a "Modals and forms" table with `--color-backdrop`, `--modal-max-width`, `--action-menu-width`, `--field-menu-max-height` and `--duration-modal`, an "Opacity" table with `--opacity-unavailable` (SPEC-ui-kit §9 UK-Q4 (a); the designer's changelog §10, §12a), the destroy button's and the "…" menu Delete item's hover (UK-Q5 (a); the designer's changelog §11), and the `dots-three-outline` icon copied from the designer's export; approved by its pull request's merge under the owner's Release 2 delegation; v1.5 — 2026-10-10: T-19, hand-off H11 (2), (6)–(8): a "Shadow" table with `--shadow-popover` and the owner's note (SPEC-transactions §9 Q2), `--duration-popover` and `--filter-menu-max-height` (the designer's changelog §10, §12b), beige-500 for borders only (the designer's changelog §8a), and the Transactions toolbar's and pagination's five icons, copied from the designer's export; approved by the owner's merge of its pull request; v1.4 — 2026-09-24: Public Sans is served by `next/font/local` from committed files, TD-11, owner decision "a"; v1.3 — 2026-09-23: the close-circle icon, T-08; v1.2 — 2026-09-23: app shell tokens and the sign-out icon, owner decision at the T-07 plan gate; v1.1 — 2026-09-23: auth layout and line tokens, owner decision at the T-06 plan gate; v1.0, owner approval 2026-09-13) · Author(s): Agent (extracted), Owner (approval) · Date: 2026-09-13
 Changelog: v1.4 (2026-09-24, T-13c, owner decision "a" on TD-11) — the Typography section names
 `next/font/local` instead of `next/font/google`. The Google loader downloads the font while
 `next build` runs, and a Google Fonts outage failed CI builds (PR #36). The two files, their
@@ -153,6 +153,18 @@ Source: the designer's changelog §12a (SPEC-ui-kit §9 UK-Q4's last part, answe
 | Token | Value | Use |
 |-------|-------|-----|
 | `--opacity-unavailable` | 0.25 | the theme swatch of an "Already used" option — the swatch alone; its label stays grey-500 and says "Already used" (not Overview's donut tint, a `color-mix`) |
+
+## Progress bars (v1.7)
+
+Source: the designer's changelog §18a (BU-1), §18c (BU-3), §19c (PO-3), §19d (PO-4) and §25c, approved by the owner on 2026-10-10; SPEC-pots 2.2, 2.6, 2.11 (PO-Q6 (a), PO-Q10 (a)). `--radius-50` and `--duration-progress` are shared with Budgets (SPEC-budgets 2.4, BU-Q7) and added by whichever of T-24 and T-26 lands first; the other three are Pots only. Added by T-26 (hand-off H16 (3)). Nothing animates under `prefers-reduced-motion: reduce`.
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--radius-50` | 4px | a progress bar's track and fill (8 px tall: half its height) |
+| `--duration-progress` | 400ms | a card's bar width, ease |
+| `--spacing-bar-text` | 13px | Pots only: a pot's bar to its text row, and the money modal's preview (Budgets keeps 16 px, §25c) |
+| `--spacing-25` | 2px | Pots only: the money modal preview's two segments apart |
+| `--duration-preview` | 300ms | Pots only: the money modal preview's segments, ease |
 
 ## Icons
 

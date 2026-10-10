@@ -158,4 +158,42 @@ export const COPY = {
   /** 2.8: the header buttons' names; the visible "+" before them is drawn `aria-hidden`. */
   addNewBudget: "Add New Budget",
   addNewPot: "Add New Pot",
+
+  // R2 additions (SPEC-pots 2.15, §9 PO-Q1 (a), PO-Q3 (a), PO-Q4 (a); release-2-handoffs.md H16 (1))
+  totalSaved: "Total Saved",
+  /** 2.2: "Target of $2,000.00"; the amount comes formatted (`formatMoney`, PO-Q8 (a) #2). */
+  targetOf: (amount: string) => `Target of ${amount}`,
+  /** 2.2: the money buttons as seen; the "+" before "Add Money" is drawn `aria-hidden`. */
+  addMoney: "Add Money",
+  withdraw: "Withdraw",
+  /** 2.2: the money buttons as heard (PO-Q1 (a) #4–#5). */
+  addMoneyTo: (name: string) => `Add Money to ${name}`,
+  withdrawFrom: (name: string) => `Withdraw from ${name}`,
+  addPotDescription:
+    "Create a pot to set savings targets. These can help keep you on track as you save for special purchases.",
+  editPotDescription: "If your saving targets change, feel free to update your pots.",
+  addPotSubmit: "Add Pot",
+  potName: "Pot Name",
+  potNamePlaceholder: "e.g. Rainy Days",
+  target: "Target",
+  /** US-22 AC1: the name's counter, singular at 1 (PO-Q1 (a) #6). */
+  charactersLeft: (n: number) => `${count(n, "character", "characters")} left`,
+  allThemesUsed: "All themes already have a pot",
+  /** 2.6: the money modals' titles, with the design's curly quotes (U+2018, U+2019). */
+  addToPotTitle: (name: string) => `Add to ‘${name}’`,
+  withdrawFromPotTitle: (name: string) => `Withdraw from ‘${name}’`,
+  addMoneyDescription:
+    "Add money to your pot to keep it separate from your main balance. As soon as you add this money, it will be deducted from your current balance.",
+  withdrawDescription:
+    "Withdraw from your pot to put money back in your main balance. This will reduce the amount you have in this pot.",
+  amountToAdd: "Amount to Add",
+  amountToWithdraw: "Amount to Withdraw",
+  newAmount: "New Amount",
+  confirmAddition: "Confirm Addition",
+  confirmWithdrawal: "Confirm Withdrawal",
+  potsLoadError: "Couldn't load your pots",
+  // Shared with SPEC-budgets 2.17: added by whichever of T-24 and T-26 lands first.
+  saveChanges: "Save Changes",
+  theme: "Theme",
+  amountPlaceholder: "e.g. 2000",
 } as const;
