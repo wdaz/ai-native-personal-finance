@@ -7087,3 +7087,30 @@ them too").
 - **Lessons for the process:** a design change that the code takes before the design draws it should be
   drawn in the same task, now that a cloud session can edit the design.
 - **Next:** keep the design in step with T-20 to T-27 as they land.
+
+## 2026-10-10 — Phase 4 (Release 2): Copilot review is turned off for develop
+
+- **Phase:** 4 (Release 2), process.
+- **Participants:** Owner (Ruslan), Agent (Claude Code, Sonnet 5.5, cloud thread "Copilot review dayandırıldı")
+- **Trigger:** the owner stopped Copilot's review of pull requests into `develop` ("Hazırda develop
+  branchinə yaranan pr-lar Copilot review dayandırdım. Bunu iş prosesində nəzərə al" — "I have stopped
+  Copilot review for the pull requests opened against develop; take this into account in the process").
+  Earlier entries record it erroring on some runs (#112–#119, T-19); the owner gave no reason here.
+- **Prompt(s):** the owner's thread message; no prompt file.
+- **Produced:** `governance.md` v1.15 — the v1.9 rule "wait for Copilot's review" becomes "Review before
+  ready": the `/code-review` skill, run by a new Opus subagent (owner's follow-up message: "Onun yerinə code-review skilli üçün yeni subagent istifadə edilir"), reviews the current head, important findings are fixed,
+  and the pull request leaves draft once the other conditions of "Draft until ready" are met; Copilot is not expected and
+  its absence is not an exception to record. `.github/pull_request_template.md` and the note in
+  `.github/CODEOWNERS` say the same. The ruleset names that contain "Copilot" are kept as they are.
+- **What the agent got right:** history (earlier plans, prompts and log entries that mention Copilot) is
+  left as written, because it records what was true then.
+- **What the agent got wrong or missed:** the first draft said the Opus review could be run inline; the
+  skill uses the session's model, and the owner then said a new subagent does it, so the rule says that. It
+  also first scoped "Copilot is off" to all pull requests; the owner turned it off for `develop` only.
+- **Owner changes and reasoning:** the stop is the owner's own choice, not an outage; his follow-up
+  moved the review from Copilot to a new Opus subagent, and the stop covers `develop` only.
+- **Disagreements:** none.
+- **Lessons for the process:** a tool a rule waits for should be named by its role ("the reviewer"), so
+  that switching it off changes one sentence.
+- **Next:** open: whether the rulesets still carry the `copilot_code_review` rule was not read from GitHub
+  here; the owner's settings decide it.
