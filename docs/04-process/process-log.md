@@ -7286,6 +7286,40 @@ them too").
   `NOT_YET_BUILT` and its upper-bound test is T-26's.
 - **Next:** the merge of this pull request; T-26 after T-22, T-24 and T-25.
 
+## 2026-10-10 — Phase 4 (Release 2): T-24 — Budgets, the page and its four tools
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; the first Release 2 page with writes.
+- **Participants:** Owner (Ruslan, by delegation), the project's coordinator session, Agent (Claude Code,
+  started from the project thread "Release 2 build T-24"; the designer subagent in PROPOSE mode; one read-only
+  review subagent, the `/code-review` skill on Opus).
+- **Trigger:** the coordinator's brief to build T-24 after T-23's merge; T-25 ran at the same time (independent,
+  as the agent told the coordinator).
+- **Prompt(s):** `prompts/2026-10-10-T-24/` (the brief, the designer's proposal, the review brief, report and
+  handling, the screenshots). The plan `plans/2026-10-10-T-24.md` raised one design question (F3).
+- **Produced** (pull requests #132 and #137, `develop`):
+  - #132: `budgets.md` v0.8.1, `delete_budget`'s `busy` words, as the backlog note asked before T-24.
+  - #137: the page, `src/ui/budgets/`, the donut centre's fit table and `Donut`'s Budgets-only opt-in, the
+    bar's and the segments' transition, the content-width layout; the four tools and `BudgetsTools`; H15 (1)
+    and (3) with their mirrors; `budgets.md` v0.8.2; unit, component and E2E tests (33 Budgets E2E tests).
+- **What went well:** T-22's shared parts (modal slot, delete bus, form fields) made the form and the dialog
+  small; `budgetFigures()` of T-23 gave every E2E figure.
+- **What the agent got wrong or missed:** the first card markup put the bars inside the `<dl>` beside the
+  `<dt>`/`<dd>` pairs, which axe reports as an invalid definition list; the E2E caught it and each bar moved
+  into its `<dt>`. Several first E2E expectations were wrong about the page's own text (the date format, the
+  option names' separator, `getTools()` listing by name) and were corrected against the running page.
+- **Found on the way:** the spec's own fit rule moved the seed's "$338.00" to 20 px, against §24a's "seed
+  unchanged" (135.4 px > 128 px); the designer's §31a resolves it. On the app's font the maximum limit takes
+  two lines, not three. `logout.spec.ts`'s back/forward-cache tests fail intermittently on a clean `develop`
+  build too (WebKit in CI on #132, Chromium locally); not this task's.
+- **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
+  (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
+- **Disagreements:** none.
+- **Not done here:** the designer's files (the design thread owns them; §31a is applied there after the
+  coordinator's word); Overview's long-amount rule (T-28); 7.5's 429 and 7.6's 403 run with `page.route` answering in the
+  server's envelope, not with pre-filled rows; the threshold-reset E2E, the full two-order walkthrough of 2.14,
+  the pointer checks and the hover matrix of US-34 beyond its 44 px and 0.25 checks are left to a follow-up.
+- **Next:** the merge of #137; then T-26 (Pots UI).
+
 ## 2026-10-10 — Phase 4 (Release 2): T-26 — Pots, UI and its six tools
 
 - **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcome 2; the last Release 2 page, built while
@@ -7299,7 +7333,7 @@ them too").
   - #136: `recurring-bills.md` v0.7.2 — §7's WebMCP row follows WM-Q3 (a), the precondition the backlog names.
   - The six tools and `PotsTools` (`router.refresh()` after a write tool's success); the page, `PotsBoard`,
     `PotCard`, `PotForm`, `MoneyModal`, `PotsError`, the grid's 644 px container query; the strings
-    (`user-stories.md` v1.9) and tokens (`design-tokens.md` v1.7); `pots.md` §4.7–§4.9 computed by the figures
+    (`user-stories.md` v1.10) and tokens (`design-tokens.md` v1.8); `pots.md` §4.7–§4.9 computed by the figures
     script.
   - E2E: `tests/e2e/pots.spec.ts` (§7's E2E and WebMCP rows); `webmcp.spec.ts`'s placeholder checks replaced by
     WM-Q3 (a)'s poll; `app-shell.spec.ts`'s `/pots` row; the phone keyboard walkthrough now walks the page.
@@ -7313,4 +7347,7 @@ them too").
 - **Owner changes and reasoning:** none in this task; the owner's standing rules of 2026-10-10 applied
   (questions to the coordinator, `/code-review` on Opus with Copilot off, merge on green CI).
 - **Disagreements:** none.
-- **Next:** T-24's merge and the reconciliation of the strings and tokens both tasks add; then T-27.
+- **Merged with T-24 (#137):** the form strings Pots shares and `--radius-50` and `--duration-progress` are
+  T-24's; this task's copy table, token table and versions follow them (`user-stories.md` v1.10,
+  `design-tokens.md` v1.8). `Release2Placeholder.tsx` went with the last placeholder page.
+- **Next:** T-27 (Release 2 closed).

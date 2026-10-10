@@ -9,7 +9,7 @@ import { expect, loginViaApi, resetDemoData, seriousA11yViolations, test } from 
 const PAGES = [
   { path: "/overview", name: "Overview", release2: false },
   { path: "/transactions", name: "Transactions", release2: false },
-  { path: "/budgets", name: "Budgets", release2: true },
+  { path: "/budgets", name: "Budgets", release2: false },
   { path: "/pots", name: "Pots", release2: false },
   { path: "/recurring-bills", name: "Recurring Bills", release2: false },
 ] as const;

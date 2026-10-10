@@ -12,6 +12,12 @@
   flex-shrink: 0;
 }
 
+.stretch {
+  display: block;
+  block-size: auto;
+  align-self: stretch;
+}
+
 .bar[data-theme="Green"] {
   background: var(--color-green);
 }

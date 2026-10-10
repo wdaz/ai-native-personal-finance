@@ -1,3 +1,4 @@
+import { donutCentreFit } from "@/src/shared/budgets";
 import type { Theme } from "@/src/shared/enums";
 import { formatMoney } from "@/src/shared/money";
 import { DONUT_RADIUS, DONUT_SIZE, DONUT_STROKE, donutSegments } from "./donut-geometry";
@@ -23,13 +24,29 @@ export function Donut({
   items,
   total,
   spent,
+  fitCentre = false,
 }: {
   items: readonly { theme: Theme; maximum: number }[];
   total: number;
   spent: number;
+  /**
+   * SPEC-budgets 2.3 (BU-11 (A), the designer's changelog §24a, §25d, §31a): the Budgets page's
+   * opt-in — the spent total steps down through the presets to fit the hole and the limit line
+   * breaks, by `donutCentreFit`'s table, chosen in this render (BU-Q9 (a)). Off on Overview.
+   */
+  fitCentre?: boolean;
 }) {
   const segments = donutSegments(items, total);
-  const label = `Spent ${formatMoney(spent)} of ${formatMoney(total)} limit`;
+  const seen = new Map<string, number>();
+  const keys = segments.map(({ theme }) => {
+    const occurrence = seen.get(theme) ?? 0;
+    seen.set(theme, occurrence + 1);
+    return `${theme}-${occurrence}`;
+  });
+  const spentText = formatMoney(spent);
+  const limitText = formatMoney(total);
+  const label = `Spent ${spentText} of ${limitText} limit`;
+  const fit = fitCentre ? donutCentreFit(spentText, limitText) : null;
 
   return (
     <div className={styles.wrapper}>
@@ -43,11 +60,11 @@ export function Donut({
       >
         <circle className={styles.ring} cx={CENTRE} cy={CENTRE} r={DONUT_RADIUS} />
         {segments.map((segment, index) => (
-          // Keyed by array index, not `segment.theme`: two budgets could in principle share a
-          // theme (nothing here enforces US-15 AC1's "used themes disabled" rule), and a theme
-          // string is not a stable per-segment identity the way the array's own order is.
+          // Keyed by theme (with its occurrence, should two ever share one), so a segment keeps
+          // its element when a budget before it goes: its colour never jumps while its arc
+          // animates (SPEC-budgets 2.3, BU-Q7 (a); T-24 review finding 4).
           <circle
-            key={`inner-${index}`}
+            key={`inner-${keys[index]}`}
             className={styles.innerSegment}
             cx={CENTRE}
             cy={CENTRE}
@@ -63,7 +80,7 @@ export function Donut({
         ))}
         {segments.map((segment, index) => (
           <circle
-            key={`outer-${index}`}
+            key={`outer-${keys[index]}`}
             className={styles.outerSegment}
             cx={CENTRE}
             cy={CENTRE}
@@ -74,10 +91,32 @@ export function Donut({
           />
         ))}
       </svg>
-      <div className={styles.centre}>
-        <p className={`text-preset-1 ${styles.spent}`}>{formatMoney(spent)}</p>
-        <p className={`text-preset-5 ${styles.limit}`}>of {formatMoney(total)} limit</p>
-      </div>
+      {fit === null ? (
+        <div className={styles.centre}>
+          <p className={`text-preset-1 ${styles.spent}`}>{spentText}</p>
+          <p className={`text-preset-5 ${styles.limit}`}>of {limitText} limit</p>
+        </div>
+      ) : (
+        <div className={`${styles.centre} ${styles.fit}`} data-limit-lines={fit.limitLines}>
+          <p className={`${fit.spentPreset} ${styles.spent} ${styles.whole}`}>{spentText}</p>
+          <p className={`text-preset-5 ${styles.limit}`}>
+            {fit.limitLines === 1 ? (
+              <span className={styles.whole}>of {limitText} limit</span>
+            ) : fit.limitLines === 2 ? (
+              <>
+                <span className={styles.line}>of {limitText}</span>
+                <span className={styles.line}>limit</span>
+              </>
+            ) : (
+              <>
+                <span className={styles.line}>of</span>
+                <span className={styles.line}>{limitText}</span>
+                <span className={styles.line}>limit</span>
+              </>
+            )}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

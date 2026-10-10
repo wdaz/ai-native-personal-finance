@@ -52,6 +52,8 @@ const SAMPLES: [string, string][] = [
   ["{amount}", "$190.00"],
   ["{ordinal day}", "2nd"],
   ["{name}", "Savings"],
+  ["{maximum}", "$50.00"],
+  ["{category}", "Dining Out"],
 ];
 const fill = (text: string) => SAMPLES.reduce((out, [from, to]) => out.replaceAll(from, to), text);
 const state = (text: string) => text.replace("Agent tools: ", "");
@@ -217,6 +219,32 @@ const RENDERED: [context: string, keys: Key[], message: string][] = [
     ["addNewBudget", "addNewPot"],
     `+ ${COPY.addNewBudget} · + ${COPY.addNewPot}`,
   ],
+  ["Budgets", ["spendingSummary"], COPY.spendingSummary],
+  ["Budgets summary row", ["budgetOfMaximum"], COPY.budgetOfMaximum("$50.00")],
+  [
+    "Budget card",
+    ["budgetMaximumOf", "budgetSpent", "budgetRemaining"],
+    [COPY.budgetMaximumOf("$50.00"), COPY.budgetSpent, COPY.budgetRemaining].join(" · "),
+  ],
+  ["Budget card panel", ["latestSpending", "seeAll"], `${COPY.latestSpending} · ${COPY.seeAll}`],
+  ['"See All" link', ["seeAllCategory"], COPY.seeAllCategory("Dining Out")],
+  ["Budget card panel", ["budgetNoTransactions"], COPY.budgetNoTransactions],
+  [
+    "Budget forms",
+    ["addBudgetDescription", "editBudgetDescription"],
+    `${COPY.addBudgetDescription} · ${COPY.editBudgetDescription}`,
+  ],
+  [
+    "Budget and Pot forms",
+    ["budgetCategory", "maximumSpend", "theme", "amountPlaceholder"],
+    [COPY.budgetCategory, COPY.maximumSpend, COPY.theme, COPY.amountPlaceholder].join(" · "),
+  ],
+  [
+    "Budget and Pot forms",
+    ["addBudgetSubmit", "saveChanges"],
+    `${COPY.addBudgetSubmit} · ${COPY.saveChanges}`,
+  ],
+  ["Budgets", ["budgetsLoadError", "retry"], `${COPY.budgetsLoadError} · button: ${COPY.retry}`],
   ["Pots card", ["totalSaved", "targetOf"], `${COPY.totalSaved} · ${COPY.targetOf("$190.00")}`],
   ["Pots card", ["addMoney", "withdraw"], `+ ${COPY.addMoney} · ${COPY.withdraw}`],
   [
@@ -256,11 +284,6 @@ const RENDERED: [context: string, keys: Key[], message: string][] = [
     `${COPY.confirmAddition} · ${COPY.confirmWithdrawal}`,
   ],
   ["Pots", ["potsLoadError", "retry"], `${COPY.potsLoadError} · button: ${COPY.retry}`],
-  [
-    "Budgets and Pots forms",
-    ["saveChanges", "theme", "amountPlaceholder"],
-    [COPY.saveChanges, COPY.theme, COPY.amountPlaceholder].join(" · "),
-  ],
 ];
 
 const expected = RENDERED.map(([context, , message]) => [context, message]);

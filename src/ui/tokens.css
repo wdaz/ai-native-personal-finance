@@ -106,16 +106,20 @@
   --field-menu-max-height: 300px;
   --duration-modal: 200ms;
 
-  /* Progress bars — design-tokens.md v1.7 (SPEC-pots 2.2, 2.6, 2.11; hand-off H16 (3)) */
+  /* Opacity — design-tokens.md v1.6 (the designer's changelog §12a) */
+  --opacity-unavailable: 0.25;
+
+  /* Budgets and Pots — design-tokens.md v1.7 (SPEC-budgets §9 BU-Q4 (a), BU-Q7 (a); hand-off
+     H15 (3); names confirmed by the designer's changelog §18a–§18c) */
   --radius-50: 4px;
+  --color-divider-on-beige: rgba(105, 104, 104, 0.15);
   --duration-progress: 400ms;
-  /* Pots only: the bar to its text row, and the preview's two segments apart (§19c, §25c) */
+
+  /* Pots — design-tokens.md v1.8 (SPEC-pots 2.2, 2.6, 2.11; hand-off H16 (3)): the bar to its
+     text row, the preview's two segments apart, and their transition (§19c, §19d, §25c) */
   --spacing-bar-text: 13px;
   --spacing-25: 2px;
   --duration-preview: 300ms;
-
-  /* Opacity — design-tokens.md v1.6 (the designer's changelog §12a) */
-  --opacity-unavailable: 0.25;
 
   /* Breakpoints (see the note at the top of this file) */
   --bp-tablet: 768px;

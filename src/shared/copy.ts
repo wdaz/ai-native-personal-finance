@@ -159,6 +159,32 @@ export const COPY = {
   addNewBudget: "Add New Budget",
   addNewPot: "Add New Pot",
 
+  // R2 additions (SPEC-budgets 2.17, §9 BU-Q1 (a); release-2-handoffs.md H15 (1))
+  spendingSummary: "Spending Summary",
+  /** 2.3: a summary row's right part; the maximum comes formatted (`formatMoney`). */
+  budgetOfMaximum: (maximum: string) => `of ${maximum}`,
+  /** 2.4: under a card's title. */
+  budgetMaximumOf: (maximum: string) => `Maximum of ${maximum}`,
+  budgetSpent: "Spent",
+  budgetRemaining: "Remaining",
+  latestSpending: "Latest Spending",
+  seeAll: "See All",
+  /** 2.5: the "See All" link's name, heard (BU-Q1 (a) #3). */
+  seeAllCategory: (category: string) => `See All ${category} transactions`,
+  budgetNoTransactions: "No transactions in this category yet.",
+  addBudgetDescription:
+    "Choose a category to set a spending budget. These categories can help you monitor spending.",
+  editBudgetDescription: "As your budgets change, feel free to update your spending limits.",
+  budgetCategory: "Budget Category",
+  maximumSpend: "Maximum Spend",
+  /** The Theme field of the Budgets and Pots forms. */
+  theme: "Theme",
+  /** The amount fields' placeholder, Budgets' Maximum Spend and Pots' Target (the design's). */
+  amountPlaceholder: "e.g. 2000",
+  addBudgetSubmit: "Add Budget",
+  /** The edit forms' submit, Budgets and Pots. */
+  saveChanges: "Save Changes",
+  budgetsLoadError: "Couldn't load your budgets",
   // R2 additions (SPEC-pots 2.15, §9 PO-Q1 (a), PO-Q3 (a), PO-Q4 (a); release-2-handoffs.md H16 (1))
   totalSaved: "Total Saved",
   /** 2.2: "Target of $2,000.00"; the amount comes formatted (`formatMoney`, PO-Q8 (a) #2). */
@@ -192,8 +218,4 @@ export const COPY = {
   confirmAddition: "Confirm Addition",
   confirmWithdrawal: "Confirm Withdrawal",
   potsLoadError: "Couldn't load your pots",
-  // Shared with SPEC-budgets 2.17: added by whichever of T-24 and T-26 lands first.
-  saveChanges: "Save Changes",
-  theme: "Theme",
-  amountPlaceholder: "e.g. 2000",
 } as const;

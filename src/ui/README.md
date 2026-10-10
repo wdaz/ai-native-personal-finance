@@ -74,3 +74,10 @@ by `Menu` and `ActionMenu`). `Field` gains `leading`, `placeholder`, `inputMode`
 hover while disabled or `aria-disabled`; `PageHeader` gains `primaryAction` and
 `HeaderAddButton`; `Menu` gains the field variant's options, and its Escape no longer reaches a
 modal under it. `icons/` gains `DotsThreeOutlineIcon` (Phosphor, from the design export).
+
+T-26: `pots/` — `PotCard` (the bar an inline SVG `rect`, its width a presentation attribute, ADR-0006),
+`PotForm` (add and edit; the name's counter as the field's helper), `MoneyModal` (the add and withdraw
+modals with the live preview; the two segments' corners as SPEC-pots 2.6 asks), `PotsError` and
+`AmountText` (an amount that may wrap after its commas). They import no domain code: `PotsBoard` passes
+`potFill`, `moneyPreview`, `isPotNameTaken` and `firstFreeTheme` in (ADR-0002). `Notice` is now visually
+hidden while idle, so the empty live region takes no space in `<main>`'s flow.
