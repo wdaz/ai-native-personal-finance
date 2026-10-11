@@ -9,7 +9,7 @@ import styles from "./PageHeader.module.css";
 /**
  * SPEC-app-shell §2.5: every app page's header — its name as the page's `<h1>` (text preset 1;
  * the page's `metadata.title` is the same name). Below 1024 px the sidebar is gone and its
- * footer actions sit here (§2.4): the agent-tools dot before "Log out" (T-11). `"use client"`:
+ * footer actions sit here (§2.4): the agent-tools icon and count before "Log out" (T-11). `"use client"`:
  * reading the indicator slot needs `useContext` (T-11) — every page still renders this from a
  * Server Component, which Next.js composes with a Client Component the same as any other.
  *

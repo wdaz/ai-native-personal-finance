@@ -16,11 +16,10 @@ A portfolio project with two deliverables:
    the first: it shows how an idea is analysed, specified and built *with*
    LLMs, not just that an app exists.
 
-> Status: **Release 2 is built on `develop`; the Phase 7 retrospective and this section are drafted and
-> wait for the owner's approval** (the roadmap's phase exits are the owner's to record). Release 1 (Overview) runs in production. Release 2 (Transactions, Recurring Bills,
-> Budgets, Pots and 12 more agent tools) is merged into `develop`; its `develop` → `main` release
-> pull request is the owner's to merge. The retrospective is
-> `docs/04-process/retrospective.md` (draft, awaiting the owner). The backlog is
+> Status: **Release 2 is in production; the Phase 7 retrospective and this section are drafted and
+> wait for the owner's approval** (the roadmap's phase exits are the owner's to record). Release 1
+> (Overview) and Release 2 (Transactions, Recurring Bills, Budgets, Pots and 12 more agent tools) run
+> in production. The retrospective is `docs/04-process/retrospective.md` (draft). The backlog is
 > `docs/03-specs/backlog.md`.
 
 ## The story in short
@@ -28,7 +27,7 @@ A portfolio project with two deliverables:
 *What "AI-native" meant here, in numbers read from the repository on 2026-10-11 (sources and caveats:
 `docs/04-process/retrospective.md`, section 1).*
 
-- **38 days, 938 commits, 121 process-log entries.** From the first commit (2026-09-03) to the end of the
+- **38 days, 980 commits, 127 process-log entries.** From the first commit (2026-09-03) to the end of the
   Release 2 build: discovery, requirements, seven ADRs, specs, 35 implementation plans and the app itself.
 - **Documents were the context.** An agent starting a task read `AGENTS.md`, the roadmap, the spec and the plan;
   nothing else was handed over. The owner decided and merged; agents drafted, built, reviewed and logged.

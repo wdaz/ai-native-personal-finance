@@ -3,7 +3,7 @@
 Status: **Draft** (v0.1, 2026-10-11) — for the owner's review; only the owner marks it Approved (`AGENTS.md` §3). ·
 Author(s): Agent (Claude Code, Sonnet 5.5, cloud thread "Phase 7 README") · Date: 2026-10-11
 Phase: 7 (Retrospective and portfolio narrative) · Roadmap outcome 6 (`roadmap.md`, "Release 2 goal") ·
-Evidence base: `docs/04-process/process-log.md` (121 entries) at `origin/develop` `953b9bf`; the log is append-only
+Evidence base: `docs/04-process/process-log.md` (127 entries) at `origin/develop` `5b09601`; the log is append-only
 and is not edited here, except for this task's own entry.
 
 ## How this was made, and how far to trust it
@@ -24,9 +24,9 @@ and is not edited here, except for this task's own entry.
 | Fact | Number | Source |
 |---|---|---|
 | First and latest commit on `develop` | 2026-09-03 · 2026-10-11 (38 days) | `git log origin/develop --format=%ad --date=short` (full clone) |
-| Commits on `develop` | 938 | `git rev-list --count origin/develop` |
+| Commits on `develop` | 980 | `git rev-list --count origin/develop` |
 | Release 1 pull requests (to #81) · Release 2 and after (#84–#139) | 78 merged, 2 closed unmerged (R1 retro) · 54 merged | R1 retro §1; `gh api repos/wdaz/ai-native-personal-finance/pulls?state=all` (first 100 pull requests, #41–#141), `merged_at` set |
-| Process-log entries | 121 before this task's own entry (97 at the Release 1 retro) | `git show origin/develop:docs/04-process/process-log.md \| grep -c "^## "` |
+| Process-log entries | 127 before this task's own entry (97 at the Release 1 retro) | `git show origin/develop:docs/04-process/process-log.md \| grep -c "^## "` |
 | Implementation plans | 35 files | `ls docs/04-process/plans/*.md` |
 | Architecture decision records | 7 (ADR-0001 … 0007), most amended | `ls docs/02-architecture/adr` |
 | User stories traced to a test title | 41 of 41 (Releases 1 and 2) | `npm run traceability` |
@@ -34,10 +34,11 @@ and is not edited here, except for this task's own entry.
 | WebMCP tools registered | 14 (2 in Release 1, 12 in Release 2) | `docs/03-specs/webmcp-tools.md` §4 |
 | API and end-to-end specs | 21 and 17 spec files | `ls tests/api/*.spec.ts tests/e2e/*.spec.ts`; **not run in this session** (no database or browsers), CI is the check |
 
-Where it stands (2026-10-11): production runs Release 1 and its two hotfixes. Release 2 (Transactions, Recurring
-Bills, Budgets, Pots and their agent tools) is built and merged into `develop`; its `develop` → `main` pull request,
-#141, is open and the owner merges it. Everything below about Release 2 is therefore about the **build**, not about
-a release that has run in production.
+Where it stands (2026-10-11): Release 2 (Transactions, Recurring Bills, Budgets, Pots and their agent tools) is in
+production: the owner merged the first `develop` → `main` release pull request, #141, on 2026-10-10 (merge commit
+`c56e874`), and T-27 is done (`backlog.md` v1.74). One Release 2 measurement is not met: `/transactions` LCP was
+3042 ms on the release's Lighthouse run, over NFR-P2, TD-21's case repeating; the owner chose to fix it now as a
+hotfix (`backlog.md` v1.72; this document does not check whether that hotfix has merged).
 
 ## 2. What AI-native meant here, phase by phase
 
@@ -140,23 +141,27 @@ Vercel deploys for `claude/*` branches rather than buying Pro (7046). In the Rel
 3. Was the designer agent worth its round trips (section 3, item 5)?
 4. What would you change if the project were started again?
 
-## 7. Not yet observed
+## 7. What Release 1's "not yet observed" list became
 
-Carried over from `release-1-retrospective.md` §7; nothing in the Release 2 log contradicts them, and none can be
-read before the release pull request #141 is merged:
+`release-1-retrospective.md` §7 listed five things to read at the end of Release 2. T-27 read them, between
+2026-10-10 and 2026-10-11 (`backlog.md` v1.72–v1.74; log lines 7453–7490, the T-27 entries):
 
-1. The `release source` check green on a real `develop` → `main` pull request.
-2. `develop` surviving the release (`delete_branch_on_merge`, the `deletion` rule).
-3. Only a merge commit allowed on `main`.
-4. The headed native WebMCP check (NFR-B2) on the owner's machine, with all 14 tools.
-5. Firefox on the agent's own machine (the log: "Firefox and WebKit E2E ran only in CI", 7186).
-6. New for this document: the Lighthouse rows "(on release)" for Transactions and Budgets, and the claim that every
-   Release 2 story passes its acceptance criteria **in production** (roadmap outcome 2): the stories pass in CI on
-   `develop`; production is the owner's merge of #141.
+1. The `release source` check was green on #141, a real `develop` → `main` pull request. Observed.
+2. `develop` was kept after the merge. Observed.
+3. The release merged with a merge commit. Observed.
+4. The headed native WebMCP check (NFR-B2): the owner ran it on production with Chrome 154 and the flag; "native · 2"
+   on Overview, the tool counts 2 / 1 / 4 / 6 / 1 on the five pages, and `delete_budget` stopped at its confirmation
+   dialog. The other pages' `list_*` calls and Overview's two calls in native mode were not reported. Observed, with
+   that limit.
+5. Firefox on the owner's machine (it did not start on the agent's): after the owner wiped a broken local Firefox
+   profile, 268 passed, 8 skipped, 1 failed; the failure was a test that read `.env.local`'s write limit, fixed in
+   the same pull request. Observed.
+
+What is not met: the `/transactions` LCP (section 1). The roadmap's outcome 2 (every Release 2 story passes in
+production) rests on CI on `develop` and the owner's checks above; no separate production acceptance run was read
+for this document.
 
 ## 8. Next
 
 1. The owner reviews this pull request, answers section 6, and merges it. (The agent does not merge it.)
-2. The owner merges #141 (T-27); the items of section 7 are then read and this retrospective's section 1 updated
-   in a follow-up.
-3. Open tech debt stays as the owner ruled: fixed after all releases.
+2. Open tech debt stays as the owner ruled: fixed after all releases.
