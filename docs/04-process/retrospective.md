@@ -1,6 +1,6 @@
 # Retrospective — the whole project, from the skeleton to the Release 2 build
 
-Status: **Draft** (v0.2, 2026-10-11; Q2–Q4 of section 6 answered, Q1 open) — for the owner's review; only the owner marks it Approved (`AGENTS.md` §3). ·
+Status: **Draft** (v0.3, 2026-10-11; all four questions of section 6 answered) — for the owner's review; only the owner marks it Approved (`AGENTS.md` §3). ·
 Author(s): Agent (Claude Code, Sonnet 5.5, cloud thread "Phase 7 README") · Date: 2026-10-11
 Phase: 7 (Retrospective and portfolio narrative) · Roadmap outcome 6 (`roadmap.md`, "Release 2 goal") ·
 Evidence base: `docs/04-process/process-log.md` (127 entries) at `origin/develop` `5b09601`; the log is append-only
@@ -138,9 +138,9 @@ Vercel deploys for `claude/*` branches rather than buying Pro (7046). In the Rel
 **Questions for the owner, and the answers so far** (2026-10-11, the owner's own words, in Azerbaijani; the agent's
 translation):
 
-1. *Which of Release 2's ten themes (section 4) is wrong or missing?* — Not answered. The owner: "tam aydın deyil"
-   ("not fully clear"). The question named the themes by code (L1 to L10) without saying what each meant; the same
-   mistake as Release 1's theme D. It is asked again here in plain words, one line per theme:
+1. *Which of Release 2's ten themes (section 4) is wrong or missing?* — The owner first said "tam aydın deyil" ("not
+   fully clear"): the question named the themes by code (L1 to L10) without saying what each meant, the same
+   mistake as Release 1's theme D. Asked again in plain words, one line per theme:
    - L1: a document was written from a copy or a summary, not from the original.
    - L2: a plan guessed something (a width, a CI rule) and nobody checked it.
    - L3: the first tests expected the wrong thing, and had to be fixed.
@@ -151,7 +151,10 @@ translation):
    - L8: who may merge drifted from what `governance.md` said (now written down, Q2).
    - L9: the designer agent's tooling lived on one machine and did not reach cloud sessions.
    - L10: the same small UI mistakes (state set in an effect) and design values without a spec check came back.
-   Which of these is wrong, and what is missing?
+
+   The owner: "hamısı ilə razıyam. üzləşdiyimiz çətinliklərdir. və cloud mühütinin üstünlük və çatışmazlıqlarını
+   öyrənmiş olduq" ("I agree with all of them. They are the difficulties we faced, and we have learned the
+   advantages and disadvantages of the cloud environment"). All ten stand as written; none is added.
 2. *Is merge on green written into `governance.md`?* — **Yes**: "Yazılsın" ("let it be written"). Done in this pull
    request as governance v1.16, "Merge on green". The Phase 7 README, `develop` → `main` releases and
    marking a document Approved stay the owner's.
@@ -161,6 +164,39 @@ translation):
    bir başa bağlıdır" ("I would write more precise prompts, and I would start the work inside the project, because the
    earlier format is not as comfortable as the current one; the new version has Claude Code connected to the project
    directly"). Recorded as the owner's; the agent adds nothing to it.
+
+### The cloud environment: what the project learned
+
+The owner asked (2026-10-11, "bu pr daxilində qeyd olunsun", "let it be recorded within this pull request") that
+what was learned about the cloud environment be recorded. The list is from the log and from this thread; it is
+not a measurement, and the owner's own account of the advantages is not yet in it.
+
+**What the log shows it gave:**
+
+- Many tasks in parallel, each in its own thread with its own plan and pull request: 189 commits on `develop` on
+  2026-10-10 alone (`git log origin/develop --format=%ad --date=short`), when T-17 to T-26 were built.
+- Nothing to set up on the owner's machine for the build tasks: a thread starts from the repository and the
+  documents (section 2).
+
+**What the log shows it lacked or cost:**
+
+- **Tools that live on the owner's machine do not reach it.** The designer agent was a local mod and "did not load
+  in sessions started remotely … nor in cloud threads" (log 6748–6750); it still needs Claude Design's tools,
+  which only the owner's sessions have (L9).
+- **Checks that need a real device stayed with the owner:** Firefox and the headed native WebMCP check ("the cloud
+  session has Chromium 141 and no Firefox", 7368), and a screen-reader pass ("no screen reader in the cloud
+  session", 7038). API and end-to-end tests could not run in the session that wrote this document either; CI was
+  the check.
+- **Hosting limits showed up through the cloud's branch volume:** Vercel's Hobby plan refused deployments
+  ("Deployment rate limited — retry in 24 hours", 7044), so `claude/*` branches stopped deploying (ADR-0007
+  amendment, 2026-10-10).
+- **Reviewers and agents sometimes lacked the tool they needed** (a shell, or the Agent tool; L6).
+- **The cloud proxy blocks some GitHub routes:** `gh pr list` and GraphQL calls return 403 in a cloud session, so
+  REST calls are used instead (seen in this thread).
+
+The owner's answer to Q4 is about the same thing from the other side: the earlier way of working (a cloud thread
+started from a prompt) is less comfortable than the current one, in which Claude Code is connected to the project
+directly.
 
 ## 7. What Release 1's "not yet observed" list became
 
