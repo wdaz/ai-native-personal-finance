@@ -22,7 +22,15 @@ export { MAIN_CONTENT_ID } from "./main-content";
  * imports, per ADR-0002. It also re-checks the session when the browser restores the page
  * from its back/forward cache.
  */
-export function Shell({ children, meta }: { children: ReactNode; meta: MetaDto | null }) {
+export function Shell({
+  children,
+  meta,
+  accountEmail,
+}: {
+  children: ReactNode;
+  meta: MetaDto | null;
+  accountEmail: string | null;
+}) {
   // SPEC-auth §2.9, US-03 AC1: a page restored from the back/forward cache asks whether its
   // session still exists (plan D9).
   useEffect(() => recheckSessionOnRestore(window, (path) => window.location.replace(path)), []);
@@ -32,7 +40,7 @@ export function Shell({ children, meta }: { children: ReactNode; meta: MetaDto |
       <a href={`#${MAIN_CONTENT_ID}`} className={styles.skipLink}>
         {COPY.skipToContent}
       </a>
-      <Sidebar />
+      <Sidebar accountEmail={accountEmail} />
       <main id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.main}>
         {meta ? (
           <ResetBanner

@@ -76,6 +76,15 @@ export function demoCredentials(env: Env = process.env): DemoCredentials {
 }
 
 /**
+ * The signed-in account's address for the sidebar's account row (design changelog §35): the one
+ * demo account's `DEMO_EMAIL` (§2.2 of SPEC-auth; `login` only accepts that address). Unset →
+ * `null`: the row then shows no text rather than breaking every page.
+ */
+export function demoEmail(env: Env = process.env): string | null {
+  return env.DEMO_EMAIL || null;
+}
+
+/**
  * SPEC-app-shell §2.1, ADR-0007: Chrome's WebMCP origin-trial token, registered for the
  * production hostname only. Unset, empty or blank → none, and the layout renders no tag.
  */

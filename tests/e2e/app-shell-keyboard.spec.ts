@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import { seedOverviewInput } from "@/scripts/seed-figures";
 import { COPY } from "@/src/shared/copy";
 import { TEST_IDS } from "@/src/shared/test-ids";
@@ -6,6 +7,8 @@ import { expect, loginViaApi, resetDemoData, tabTo, test } from "../fixtures/e2e
 const NAMES = ["Overview", "Transactions", "Budgets", "Pots", "Recurring Bills"] as const;
 const WHITE = "rgb(255, 255, 255)";
 const GREY_900 = "rgb(32, 31, 36)";
+/** The agent-tools indicator is a focus stop (design changelog §37, §38): it shows a tooltip. */
+const indicator = (page: Page) => page.getByRole("status", { name: /^Agent tools/ });
 
 test.beforeEach(async ({ page, request }) => {
   await resetDemoData(request);
@@ -15,7 +18,7 @@ test.beforeEach(async ({ page, request }) => {
 /**
  * US-32 AC3 — the documented keyboard walkthrough of the shell at 1440 px (SPEC-app-shell §7):
  * Tab → "Skip to content" (shown on focus) → Overview → Transactions → Budgets → Pots →
- * Recurring Bills → "Log out" → "Minimize Menu". Every stop shows a solid ring inside the row —
+ * Recurring Bills → the agent-tools indicator → "Minimize Menu" → "Log out". Every stop shows a solid ring inside the row —
  * white on the dark sidebar, grey-900 on the current (beige) item (plan D10). Enter on a nav
  * item navigates.
  */
@@ -39,7 +42,9 @@ test("US-32 AC1 AC3 US-34 AC1 desktop walkthrough: skip link, five nav items, fo
     await tabTo(page, link);
     await expect(link).toHaveCSS("outline-color", name === "Budgets" ? GREY_900 : WHITE);
   }
-  for (const name of ["Log out", COPY.minimizeMenu]) {
+  await tabTo(page, indicator(page));
+  await expect(indicator(page)).toHaveCSS("outline-color", WHITE);
+  for (const name of [COPY.minimizeMenu, "Log out"]) {
     const control = page.getByRole("button", { name });
     await tabTo(page, control);
     await expect(control).toHaveCSS("outline-color", WHITE);
@@ -83,8 +88,9 @@ test("US-35 AC1 AC2 US-32 minimised: Space toggles and focus stays; the tab orde
   await tabTo(page, page.getByRole("link", { name: COPY.skipToContent }));
   const nav = page.getByRole("navigation", { name: "Main" });
   for (const name of NAMES) await tabTo(page, nav.getByRole("link", { name, exact: true }));
-  await tabTo(page, page.getByRole("button", { name: "Log out" }));
+  await tabTo(page, indicator(page));
   await tabTo(page, expand);
+  await tabTo(page, page.getByRole("button", { name: "Log out" }));
 
   await nav.getByRole("link", { name: "Recurring Bills", exact: true }).focus();
   await page.keyboard.press("Enter");
@@ -93,7 +99,7 @@ test("US-35 AC1 AC2 US-32 minimised: Space toggles and focus stays; the tab orde
 
 /**
  * US-32 AC3 — the phone walkthrough (375 px): Tab → "Skip to content" → the reset banner's
- * "Dismiss notice" (it sits above the page header, T-08) → the header's "Add New Pot" and "Log out"
+ * "Dismiss notice" (it sits above the page header, T-08) → the header's "Add New Pot", the agent-tools indicator and "Log out"
  * → each pot's "…", "Add Money" and "Withdraw" (SPEC-pots 2.10, T-26) → the five bottom-bar items.
  * Enter on the last navigates.
  */
@@ -107,6 +113,7 @@ test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the five bot
   await tabTo(page, page.getByRole("link", { name: COPY.skipToContent }));
   await tabTo(page, page.getByRole("button", { name: COPY.dismissNotice }));
   await tabTo(page, page.getByRole("button", { name: COPY.addNewPot }));
+  await tabTo(page, indicator(page));
   await tabTo(page, page.getByRole("main").getByRole("button", { name: "Log out" }));
   for (const { name } of seedOverviewInput().pots) {
     await tabTo(page, page.getByRole("button", { name: `${COPY.potOptions}: ${name}` }));

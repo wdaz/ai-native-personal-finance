@@ -261,7 +261,7 @@ test("US-32 AC1 AC3 keyboard walkthrough: the four card links, each reachable an
 
 /**
  * US-32 AC1 AC3, SPEC-overview §7's literal "skip link → nav → four card links → footer":
- * at ≥1024 px the sidebar's footer (Log out, Minimize Menu) sits *before* `<main>` in the
+ * at ≥1024 px the sidebar's footer (the agent-tools indicator, Minimize Menu, Log out) sits *before* `<main>` in the
  * DOM, so "→ footer" only reads as page-content-then-footer at a width where the footer is
  * the bottom nav bar instead (`Shell` renders it after `<main>`, adversarial review finding
  * 4). This is the full chain `app-shell-keyboard.spec.ts`'s own phone walkthrough
@@ -277,6 +277,7 @@ test("US-32 AC1 AC3 phone walkthrough: skip link, header 'Log out', the four car
 
   await tabTo(page, page.getByRole("link", { name: COPY.skipToContent }));
   await tabTo(page, page.getByRole("button", { name: COPY.dismissNotice }));
+  await tabTo(page, page.getByRole("status", { name: /^Agent tools/ }));
   await tabTo(page, page.getByRole("main").getByRole("button", { name: "Log out" }));
 
   for (const { heading, label } of CARD_LINKS) {
