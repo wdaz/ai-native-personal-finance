@@ -7351,3 +7351,35 @@ them too").
   T-24's; this task's copy table, token table and versions follow them (`user-stories.md` v1.10,
   `design-tokens.md` v1.8). `Release2Placeholder.tsx` went with the last placeholder page.
 - **Next:** T-27 (Release 2 closed).
+
+## 2026-10-11 — Phase 4 (Release 2): T-27 — Release 2 closed, the first `develop` → `main` release
+
+- **Phase:** 4 — build (Release 2), roadmap "Release 2 goal", outcomes 2–5; Release 2's closing task.
+- **Participants:** Owner (Ruslan: merged the release; by delegation otherwise), the project's coordinator session,
+  Agent (Claude Code, started from the project thread for T-27; a fresh `/code-review` subagent on Opus).
+- **Trigger:** the coordinator's brief to build T-27, with T-26 (#139) still running.
+- **Prompt(s):** the plan `plans/2026-10-10-T-27.md`; its gate kept two things for the owner — the release merge and
+  the two checks on the owner's machine.
+- **Produced:** #138 (Lighthouse measures `/budgets` with CLS only through `assertMatrix`; the warm-up fails on a
+  non-200 page; the native runbook's Release 2 step 8 and record table); #141, the release (head `develop`, merged
+  by the owner as `c56e874`); #143 (`main` merged into `develop` for #141's one conflict, `develop`'s side kept);
+  this closing pull request (`tech-debt.md` v1.31, backlog v1.72, the plan's Results).
+- **Read on the release** (the retrospective's §7): 1 `release source` green; 2 `develop` kept; 3 merge commit only
+  (ruleset and the merge's two parents). Not observed: 4 the headed native check and 5 Firefox — the cloud session
+  has Chromium 141 and no Firefox. Lighthouse: Transactions performance 0.94 and CLS ≈ 0, Budgets CLS 0 — the two
+  "(on release)" rows hold; `/transactions` LCP 3042 ms misses NFR-P2 (TD-21's reset-banner render delay,
+  repeating).
+- **What went well:** step A was built and merged while T-26 was still under review, so the release only waited on
+  T-26's merge.
+- **What the agent got wrong or missed:** the first matrix config let a page redirected to `/login` pass
+  unasserted (the review caught it); the release pull request was opened before checking that `main` merges into
+  `develop` cleanly — the hotfix route's "identical change merges cleanly" did not hold for `Donut.module.css`,
+  which T-24 later extended.
+- **Owner changes and reasoning:** the owner merged #141 and opened the network for the Lighthouse artifact
+  ("Hazır").
+- **Disagreements:** none.
+- **Owner decision on TD-21** (2026-10-11, the decision card in T-27's thread): "Fix now" — a hotfix of the reset
+  banner's render delay, outside T-27.
+- **Open:** items 4 and 5 on the owner's machine.
+- **Next:** the TD-21 hotfix, then Phase 7 (the retrospective and the README's portfolio section), which the owner
+  approves.
