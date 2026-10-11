@@ -1,14 +1,15 @@
-import { SessionResponseSchema } from "@/src/shared/schemas";
-
 /**
  * SPEC-auth §2.9, US-03 AC1: a page the browser restores from its back/forward cache sends no
  * request, so the proxy never sees it. The shell asks `GET /api/auth/session` instead.
  * `true` means the session has ended. A failed or unreadable answer keeps the page (plan D9):
  * its next navigation goes through the proxy anyway. Parsing with the shared schema also
- * loads `schemas.ts`, which sets Zod's `jitless` on this client path (TD-5).
+ * loads `schemas.ts`, which sets Zod's `jitless` on this client path (TD-5). It is imported
+ * here, on a restore, not at the top: `Shell` loads this module on every page, and a static
+ * import would put Zod in every page's first-load JavaScript (TD-21).
  */
 export async function sessionHasEnded(fetcher: typeof fetch = fetch): Promise<boolean> {
   try {
+    const { SessionResponseSchema } = await import("@/src/shared/schemas");
     const response = await fetcher("/api/auth/session", { cache: "no-store" });
     const body = SessionResponseSchema.safeParse(await response.json());
     return body.success && !body.data.authenticated;
