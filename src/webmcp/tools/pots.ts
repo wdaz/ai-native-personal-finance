@@ -127,14 +127,6 @@ export const withdrawFromPot = defineTool({
   },
 });
 
-/** The four tools whose success `PotsTools` follows with `router.refresh()` (2.8). */
-export const POT_WRITE_TOOL_NAMES: ReadonlySet<string> = new Set([
-  addPot.name,
-  editPot.name,
-  addMoneyToPot.name,
-  withdrawFromPot.name,
-]);
-
 export const potsTools: ToolDefinition[] = [
   listPots,
   addPot,

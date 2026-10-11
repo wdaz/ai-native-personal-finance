@@ -1,9 +1,10 @@
 "use client";
 
 import { WebMcpTools } from "../WebMcpTools";
-import { PAGE_TOOLS } from "./registry";
+
+const loadTransactionsTools = () => import("./transactions").then((m) => m.transactionsTools);
 
 /** SPEC-transactions 2.14, SPEC-webmcp-tools §2.3: the Transactions page's tool (the Overview pattern). */
 export function TransactionsTools() {
-  return <WebMcpTools tools={PAGE_TOOLS.transactions} />;
+  return <WebMcpTools load={loadTransactionsTools} />;
 }
