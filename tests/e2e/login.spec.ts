@@ -234,3 +234,23 @@ test.describe("after a successful login", () => {
     await expect(page).toHaveURL(`${baseURL}/overview`);
   });
 });
+
+test("US-01 the login page declares the design's favicon, and each file loads without a session (design changelog §3)", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/login");
+  const hrefs = await page
+    .locator('head link[rel="icon"], head link[rel="apple-touch-icon"]')
+    .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+  expect(hrefs.map((href) => href?.split("?")[0])).toEqual([
+    "/favicon.svg",
+    "/favicon-32.png",
+    "/apple-touch-icon.png",
+  ]);
+  for (const href of hrefs) {
+    const response = await request.get(href ?? "");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toMatch(/^image\//);
+  }
+});
