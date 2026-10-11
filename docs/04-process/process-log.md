@@ -7445,4 +7445,7 @@ them too").
 - **Trigger:** the owner: the published version shows no favicon. The design export has had one since its changelog §3, but the repository never shipped it.
 - **Produced:** the design's `favicon.svg`, `favicon-32.png` and `apple-touch-icon.png` in `public/`, declared through `metadata.icons` in `app/layout.tsx`; an E2E check that the login page declares them and that they load without a session.
 - **What the agent got wrong or missed:** nothing found; the files were never carried over from the design when the app was built.
+- **What went well:** the design export already held the files and the changelog said how to link them.
 - **Owner changes and reasoning:** none. **Disagreements:** none.
+- **Lessons:** the design export's images carried a C2PA provenance manifest (about 7 KB each); it is stripped from the copies, so the favicon is a few hundred bytes.
+- **Next:** none.

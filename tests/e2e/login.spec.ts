@@ -235,22 +235,29 @@ test.describe("after a successful login", () => {
   });
 });
 
-test("US-01 the login page declares the design's favicon, and each file loads without a session (design changelog §3)", async ({
+test("the login page declares the design's favicon, and each file loads without a session (design changelog §3)", async ({
   page,
   request,
 }) => {
   await page.goto("/login");
-  const hrefs = await page
+  const links = await page
     .locator('head link[rel="icon"], head link[rel="apple-touch-icon"]')
-    .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
-  expect(hrefs.map((href) => href?.split("?")[0])).toEqual([
-    "/favicon.svg",
-    "/favicon-32.png",
-    "/apple-touch-icon.png",
-  ]);
-  for (const href of hrefs) {
-    const response = await request.get(href ?? "");
-    expect(response.status()).toBe(200);
-    expect(response.headers()["content-type"]).toMatch(/^image\//);
+    .evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        rel: node.getAttribute("rel"),
+        href: (node.getAttribute("href") ?? "").split("?")[0] ?? "",
+      })),
+    );
+  expect(links).toEqual(
+    expect.arrayContaining([
+      { rel: "icon", href: "/favicon.svg" },
+      { rel: "icon", href: "/favicon-32.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+    ]),
+  );
+  for (const { href } of links) {
+    const response = await request.get(href);
+    expect(response.status(), href).toBe(200);
+    expect(response.headers()["content-type"], href).toMatch(/^image\//);
   }
 });
