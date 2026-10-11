@@ -31,3 +31,46 @@
     transition: none;
   }
 }
+
+/*
+ * Design changelog §35: on desktop "Log out" is the account row's button — 44 px square, a 1 px
+ * grey-500 border, radius 8 px, a grey-300 icon that turns white with a grey-300 border on hover.
+ * The focus ring is the sidebar's (white, outside).
+ */
+.accountButton {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: var(--tap-target-min);
+  block-size: var(--tap-target-min);
+  padding: var(--spacing-100);
+  border: var(--border-width) solid var(--color-grey-500);
+  border-radius: var(--radius-100);
+  background: none;
+  color: var(--color-grey-300);
+  cursor: pointer;
+  transition:
+    color var(--duration-hover),
+    border-color var(--duration-hover);
+}
+
+.accountButton:hover:not(:disabled) {
+  border-color: var(--color-grey-300);
+  color: var(--color-white);
+}
+
+.accountButton:focus-visible {
+  outline-color: var(--focus-ring-color-on-dark);
+}
+
+.accountButton:disabled {
+  cursor: progress;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accountButton {
+    transition: none;
+  }
+}

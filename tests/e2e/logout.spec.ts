@@ -15,7 +15,7 @@ test.beforeEach(async ({ page, request }) => {
   await loginViaApi(page);
 });
 
-test("US-03 AC1 'Log out' in the sidebar footer ends the session and lands on the login page", async ({
+test("US-03 AC1 'Log out' in the sidebar's account row ends the session and lands on the login page", async ({
   page,
   baseURL,
 }) => {

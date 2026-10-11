@@ -6,7 +6,7 @@ import { createContext, useContext, type ReactNode } from "react";
  * A plain slot for whatever `app/(app)/layout.tsx` puts in it — no WebMCP knowledge here
  * (ADR-0002: `src/ui` may not import `src/webmcp`). `app/(app)/layout.tsx` is the one layer
  * allowed to import both `src/ui` and `src/webmcp` (plan T-11, Decision D1); it renders
- * `<AgentToolsStatus>` (`src/webmcp`) into these two slots, via `AgentToolsIndicatorProvider`
+ * `<AgentToolsStatus>` (`src/webmcp`) into these three slots, via `AgentToolsIndicatorProvider`
  * below, and `Sidebar`/`PageHeader` place whatever they receive without knowing what it is.
  *
  * The context object itself stays private to this module. A Server Component may render this
@@ -21,6 +21,8 @@ import { createContext, useContext, type ReactNode } from "react";
  */
 export interface AgentToolsIndicatorSlots {
   sidebar: ReactNode;
+  /** The sidebar's indicator while it is minimised: the icon alone (design changelog §38). */
+  rail: ReactNode;
   compact: ReactNode;
 }
 
@@ -28,11 +30,14 @@ const AgentToolsIndicatorContext = createContext<AgentToolsIndicatorSlots | null
 
 export function AgentToolsIndicatorProvider({
   sidebar,
+  rail,
   compact,
   children,
 }: AgentToolsIndicatorSlots & { children: ReactNode }) {
   return (
-    <AgentToolsIndicatorContext value={{ sidebar, compact }}>{children}</AgentToolsIndicatorContext>
+    <AgentToolsIndicatorContext value={{ sidebar, rail, compact }}>
+      {children}
+    </AgentToolsIndicatorContext>
   );
 }
 

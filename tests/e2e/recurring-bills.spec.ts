@@ -540,6 +540,9 @@ test.describe("US-33 the layout by the content width (2.13, §9 RB-Q9 (b))", () 
         element.style.maxInlineSize = "24px";
       });
       await expect(target).toHaveAttribute("tabindex", "0");
+      // The header's indicator is wider than its dot was, so the list can start lower; a scroll
+      // brought on by the tap itself would close the tooltip (2.9), so bring it into view first.
+      await target.scrollIntoViewIfNeeded();
       await target.tap();
       await expect(page.getByRole("tooltip")).toHaveText(FIGURES.longestName);
       await page.getByRole("heading", { name: PAGE_NAMES.recurringBills, level: 1 }).tap();

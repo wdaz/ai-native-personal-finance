@@ -4,6 +4,7 @@ import { COPY } from "@/src/shared/copy";
 import { formatDate } from "@/src/shared/dates";
 import { TEST_IDS } from "@/src/shared/test-ids";
 import { expect, loginViaApi, resetDemoData, seriousA11yViolations, test } from "../fixtures/e2e";
+import { RUN_MODE } from "../fixtures/webmcp";
 
 /** SPEC-app-shell §2.2, §2.5: the five pages, their names (nav label = `<h1>` = title). */
 const PAGES = [
@@ -214,12 +215,18 @@ test.describe("US-34 hover states (SPEC-app-shell §2.2, design-tokens 'Componen
     await expect(current).toHaveCSS("background-color", BEIGE_100);
     await expect(current).toHaveCSS("border-left-color", GREEN);
 
-    for (const name of ["Log out", COPY.minimizeMenu]) {
-      const control = page.getByRole("button", { name });
-      await expect(control).toHaveCSS("color", GREY_300);
-      await control.hover();
-      await expect(control).toHaveCSS("color", WHITE);
-    }
+    const minimize = page.getByRole("button", { name: COPY.minimizeMenu });
+    await expect(minimize).toHaveCSS("color", GREY_300);
+    await minimize.hover();
+    await expect(minimize).toHaveCSS("color", WHITE);
+
+    // Design changelog §35: the account row's button is outlined — grey-500 → grey-300 border.
+    const logOut = page.getByRole("button", { name: "Log out" });
+    await expect(logOut).toHaveCSS("color", GREY_300);
+    await expect(logOut).toHaveCSS("border-top-color", GREY_500);
+    await logOut.hover();
+    await expect(logOut).toHaveCSS("color", WHITE);
+    await expect(logOut).toHaveCSS("border-top-color", GREY_300);
   });
 
   test("US-34 AC1 tablet: a bottom-bar tab turns white; the current one is beige with a green bar", async ({
@@ -384,4 +391,87 @@ test("US-37 AC2 a dismissal lasts only until the next reset: after it, the banne
   await expect(page.getByTestId(TEST_IDS.resetBanner)).toHaveText(
     COPY.resetBanner(resetIntervalDays(), formatDate(at)),
   );
+});
+
+test.describe("Desktop account row (SPEC-app-shell §2.2, design changelog §35)", () => {
+  test("1440 px: 'Signed in as' over the email, a 44 px 'Log out' button below 'Minimize Menu' and a divider", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/overview");
+
+    const side = sidebar(page);
+    await expect(side.getByText("Signed in as")).toBeVisible();
+    const email = side.getByText(process.env.DEMO_EMAIL ?? "demo@example.com", { exact: true });
+    await expect(email).toBeVisible();
+    await expect(side.getByRole("separator")).toBeVisible();
+
+    const logOut = side.getByRole("button", { name: "Log out" });
+    const box = await logOut.boundingBox();
+    const minimize = await side.getByRole("button", { name: COPY.minimizeMenu }).boundingBox();
+    expect(box?.width).toBe(44);
+    expect(box?.height).toBe(44);
+    expect(box!.y).toBeGreaterThan(minimize!.y + minimize!.height);
+  });
+
+  test("minimised (88 px): the text hides and the button stays centred in the rail", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/overview");
+    await page.getByRole("button", { name: COPY.minimizeMenu }).click();
+
+    const side = sidebar(page);
+    await expect(side.getByText("Signed in as")).toHaveCount(0);
+    await expect.poll(async () => (await side.boundingBox())?.width).toBe(88); // after the 200 ms transition
+    const rail = await side.boundingBox();
+    const box = await side.getByRole("button", { name: "Log out" }).boundingBox();
+    expect(box!.x + box!.width / 2).toBeCloseTo(rail!.x + 44, 0);
+  });
+});
+
+test.describe("Agent-tools indicator (SPEC-webmcp-tools §2.7, design changelog §36–§38)", () => {
+  const indicator = (page: Page) => page.getByRole("status", { name: /^Agent tools/ });
+
+  // The texts below are the polyfill build's; the `off` leg's indicator is `unavailable`
+  // (webmcp-off.spec.ts reads it).
+  test.skip(
+    RUN_MODE !== "polyfill",
+    `polyfill-mode tests; this run expects WEBMCP_MODE=${RUN_MODE}`,
+  );
+
+  test("phone and tablet: the robot icon and the tool count in a 44 px-high target; focus shows the full text", async ({
+    page,
+  }) => {
+    for (const width of [375, 768]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/overview");
+      const status = indicator(page);
+      await expect(status).toHaveAccessibleName(COPY.agentToolsPolyfill(2));
+      await expect(status).toHaveText(/^2/); // the count, then the text read aloud
+      await expect(status.locator("svg")).toBeVisible();
+      expect((await status.boundingBox())?.height).toBe(44);
+
+      await status.focus();
+      await expect(page.getByRole("tooltip")).toHaveText(COPY.agentToolsPolyfill(2));
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("tooltip")).toHaveCount(0);
+    }
+  });
+
+  test("desktop: the robot icon and the text in the sidebar; minimised, the icon alone — hover shows the full text", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/overview");
+    const status = indicator(page);
+    await expect(status).toHaveText(COPY.agentToolsPolyfill(2));
+    await expect(status.locator("svg")).toBeVisible();
+
+    await page.getByRole("button", { name: COPY.minimizeMenu }).click();
+    await expect(status).toHaveText("");
+    await expect(status.locator("svg")).toBeVisible();
+    await status.hover();
+    await expect(page.getByRole("tooltip")).toHaveText(COPY.agentToolsPolyfill(2));
+  });
 });
