@@ -1,4 +1,5 @@
-import { WebMcpModeSchema } from "@/src/shared/schemas";
+import { WEBMCP_MODES } from "@/src/shared/env";
+import type { WebMcpMode } from "@/src/shared/schemas";
 import type { AdapterMode, ModelContext, ToolDefinition } from "./types";
 
 export type { AdapterMode };
@@ -14,10 +15,12 @@ type StatusListener = (status: AdapterStatus) => void;
  * `WEBMCP_MODE` is the documented knob, read once client-side as `NEXT_PUBLIC_WEBMCP_MODE`
  * (`next.config.ts`, T-08). Empty/unset → "polyfill", the same rule `configuredWebmcpMode`
  * applies server-side — `tests/unit/next-config.test.ts` already pins the two agreeing.
+ * Checked against `WEBMCP_MODES` by hand, not with `WebMcpModeSchema`: this module is in every
+ * page's first-load JavaScript (the layout's `WebMcpProvider`), and importing the shared schemas
+ * would put Zod there too (TD-21; the tools' own chunks load it after hydration, `WebMcpTools`).
  */
-const configuredMode = WebMcpModeSchema.catch("polyfill").parse(
-  process.env.NEXT_PUBLIC_WEBMCP_MODE,
-);
+const configuredMode: WebMcpMode =
+  WEBMCP_MODES.find((m) => m === process.env.NEXT_PUBLIC_WEBMCP_MODE) ?? "polyfill";
 
 let resolvedMode: AdapterMode | null = configuredMode === "off" ? "unavailable" : null;
 let registeredNames: string[] = [];

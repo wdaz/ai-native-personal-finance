@@ -7384,6 +7384,39 @@ them too").
 - **Next:** the TD-21 hotfix, then Phase 7 (the retrospective and the README's portfolio section), which the owner
   approves.
 
+## 2026-10-11 — Hotfix: `/transactions`' LCP on production (TD-21)
+
+- **Phase:** 4 — build (Release 2), a hotfix after T-27's release (`governance.md`, "Branches and releases").
+- **Participants:** Owner (Ruslan, "Fix now" on the T-27 thread's decision card), the project's coordinator
+  session, Agent (Claude Code, started from the project thread for the hotfix; the `/code-review` skill on Opus).
+- **Trigger:** the production Lighthouse run 38096939569 after the Release 2 deployment failed `/transactions`'
+  LCP assertion: median run 3042 ms against 2500 ms (TD-21, recorded on `/transactions` by T-27's close-out, #145).
+- **Prompt(s):** the coordinator's brief; no question to the owner.
+- **Diagnosis** (the run's artifact, `*.report.json`): the LCP element is the reset banner's text, and the observed
+  paint equals FCP (615–1601 ms), so the page itself paints in time; the failing value is Lighthouse's simulated
+  (lantern) LCP, 2894–3121 ms against a simulated FCP of about 944 ms. Lantern's LCP graph keeps every script that
+  finished downloading before the observed paint, low priority or not. On `/transactions` the document streams for
+  longer than the scripts take (document end 961 ms, scripts done by 904 ms, paint 931 ms), so all of the first-load
+  chunks count; on `/overview` the paint came before they finished, which is why it passed with the same chunks. The
+  largest of them, 92 KB gzip / 396 KB, was mostly Zod, loaded on every page of `(app)` by two shell modules
+  (`src/webmcp/adapter.ts`'s mode parse, `src/ui/session-recheck.ts`'s session schema) and by every page's tools
+  wrapper, which imported the whole tool registry.
+- **Produced** (`hotfix/transactions-lcp` → `develop`, then `hotfix/transactions-lcp-main` → `main`):
+  `adapter.ts` checks `NEXT_PUBLIC_WEBMCP_MODE` against `WEBMCP_MODES` by hand; `session-recheck.ts` imports the
+  schema when a restored page re-checks its session; `WebMcpTools` takes a `load` function and each page's wrapper
+  `import()`s its own `tools/<page>.ts` after hydration (SPEC-webmcp-tools §2.2: nothing of WebMCP blocks first
+  paint); a page left before its tools load registers none; `PotsTools` names its four refreshing tools itself, as
+  `BudgetsTools` does. First-load JavaScript by `next build` (gzip): `/transactions` 294 → 198 KB, `/overview`
+  289 → 191 KB, `/recurring-bills` → 196 KB; the Lighthouse assertion is unchanged.
+- **What the agent got wrong or missed:** the first build after the tools change still shipped Zod; the shell's
+  session re-check was the second path, found by listing which client modules import the schemas.
+- **Owner changes and reasoning:** none; the owner chose "Fix now" over keeping the miss as an exception.
+- **Disagreements:** none.
+- **Not done here:** `/budgets` and `/pots` still load Zod through their own write paths (`apiSend`, the delete
+  flow); `/budgets`' LCP is not asserted. TD-21's status is left to the production run after the `main` merge, and to
+  #145, which owns `tech-debt.md`'s TD-21 text.
+- **Next:** the `main` pull request (the owner merges it), then the production Lighthouse run.
+
 ## 2026-10-11 — Phase 4 (Release 2): sidebar account row and the agent-tools icon (design §35–§38)
 
 - **Phase:** 4 — build (Release 2), roadmap "Release 2 goal": design and code complete each other before the release.
