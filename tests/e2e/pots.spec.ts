@@ -661,8 +661,10 @@ test.describe("write-path 7.5 on this page", () => {
     await expect(dialog(page)).toHaveCount(0);
     // The limiter's key is the address the server saw for that write; fill it up to the limit.
     const { ip } = await db.writeAttempt.findFirstOrThrow({ orderBy: { at: "desc" } });
-    // At least the server's limit: playwright.config.ts starts it with WRITE_RATE_LIMIT_MAX=1000.
-    const max = Number(process.env.WRITE_RATE_LIMIT_MAX ?? 1000);
+    // The server's limit: playwright.config.ts starts it with WRITE_RATE_LIMIT_MAX=1000, whatever
+    // `.env.local` says. Not read from process.env, which holds `.env.local`'s 30 on a local run
+    // (the config loads that file), so 30 rows would stay under the server's 1000 (T-27, item 5).
+    const max = 1000;
     await db.writeAttempt.createMany({
       data: Array.from({ length: max }, () => ({ ip, at: new Date() })),
     });
