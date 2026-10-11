@@ -7468,3 +7468,23 @@ them too").
 - **Owner changes and reasoning:** the owner found and wiped the broken Firefox profile configuration.
 - **Open:** item 4, the headed native check (Chrome ≥ 149 with the flag, `runbooks/webmcp-native-check.md` step 8).
 - **Next:** item 4 when the owner runs it; Phase 7.
+
+## 2026-10-11 — T-27's item 4: the headed native check, and T-27 closed
+
+- **Phase:** 4 — build (Release 2), the last check left to the owner's machine.
+- **Participants:** Owner (Ruslan, ran the check), Agent (Claude Code, the T-27 thread).
+- **What was run:** the runbook's step 8 on the production deployment, not on a local build: Chrome 154 with
+  `chrome://flags/#enable-webmcp-testing`. The app takes the browser's own `document.modelContext` in every configured
+  mode but `off` (`src/webmcp/adapter.ts`), so no `WEBMCP_MODE=native` build was needed. The tools were read and
+  called from the DevTools console (`getTools()`, `executeTool()`), not from the Tool Inspector extension.
+- **Result:** "native · 2" on Overview; the counts 2 / 1 / 4 / 6 / 1 on the five pages, as step 8's table;
+  `list_budgets` returned the budgets; `delete_budget` with a real id stopped at the confirmation dialog, cancelled.
+  The same calls had first been tried in polyfill mode: a wrong page's tool (`get_balance` on Budgets) is not found,
+  and a malformed id is refused with "id: Invalid UUID" — both as designed. Item 4 of the retrospective's §7 is
+  observed; with item 5 (#149) all five are, and T-27 is done.
+- **Not observed:** the other pages' `list_*` calls and Overview's two calls in native mode were not reported.
+- **Owner changes and reasoning:** the owner chose to check on production rather than a local build.
+- **Asked, outside T-27:** a demo where an AI agent calls the tools. `@mcp-b/webmcp-local-relay` needs its embed
+  script, a blob iframe and a localhost WebSocket on the page, all of which the app's CSP (`src/server/csp.ts`)
+  refuses. The owner chose Chrome DevTools MCP (no code change) on the decision card.
+- **Next:** Phase 7.
