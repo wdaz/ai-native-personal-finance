@@ -4,6 +4,7 @@ import { COPY } from "@/src/shared/copy";
 import { formatDate } from "@/src/shared/dates";
 import { TEST_IDS } from "@/src/shared/test-ids";
 import { expect, loginViaApi, resetDemoData, seriousA11yViolations, test } from "../fixtures/e2e";
+import { RUN_MODE } from "../fixtures/webmcp";
 
 /** SPEC-app-shell §2.2, §2.5: the five pages, their names (nav label = `<h1>` = title). */
 const PAGES = [
@@ -431,6 +432,13 @@ test.describe("Desktop account row (SPEC-app-shell §2.2, design changelog §35)
 
 test.describe("Agent-tools indicator (SPEC-webmcp-tools §2.7, design changelog §36–§38)", () => {
   const indicator = (page: Page) => page.getByRole("status", { name: /^Agent tools/ });
+
+  // The texts below are the polyfill build's; the `off` leg's indicator is `unavailable`
+  // (webmcp-off.spec.ts reads it).
+  test.skip(
+    RUN_MODE !== "polyfill",
+    `polyfill-mode tests; this run expects WEBMCP_MODE=${RUN_MODE}`,
+  );
 
   test("phone and tablet: the robot icon and the tool count in a 44 px-high target; focus shows the full text", async ({
     page,

@@ -1,6 +1,8 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.29 — 2026-10-05: **TD-24** opened, the owner's decision at T-15d (Task S1b,
+Status: **Approved** (v1.31 — 2026-10-11: **TD-21** gets the Release 2 measurement (T-27): the same reset-banner render delay now misses NFR-P2's LCP on `/transactions` too, so the case repeats; the owner chose to fix it now (2026-10-11, T-27's thread: "Fix now"), as a hotfix; v1.30 — 2026-10-11: **TD-25** opened, a Dependabot alert fix under the owner's Release 2
+delegation: `package.json` overrides `handlebars` to ^4.7.10 because `eslint-plugin-boundaries` pins 4.7.9; nothing
+else in the file changes; v1.29 — 2026-10-05: **TD-24** opened, the owner's decision at T-15d (Task S1b,
 `ui-kit.md` v0.8, its select fields since v0.8.2, PR #92, whose merge approves this amendment): Release 2's forms
 keep Release 1's validation timing — a field's message stays until the next blur or submit, a select field's blur
 being focus leaving the field as a whole — where the design first cleared it as soon as the person typed (the
@@ -79,10 +81,11 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Closed** | T-13d (PR #47; F-07) |
 | TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Closed** (PR #63, `dd81c44`, 2026-09-26) | `fix/td-19-proxy-transport-forms` (PR #63; T-14 6.5, residual of TD-14) |
 | TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Closed** (PR #64, on its merge) | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
-| TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner) | **Open** — kept as a documented exception (owner, 2026-09-26) | T-14 (8.6) |
+| TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner); since Release 2 (T-27, 2026-10-11) `/transactions` misses it too, 3042 ms, the same banner | **Open** — kept as a documented exception (owner, 2026-09-26); the case repeated at Release 2; the owner chose "Fix now" (2026-10-11), as a hotfix | T-14 (8.6) |
 | TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | nobody yet; moved from T-16 (backlog v1.48) |
 | TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) | nobody yet |
 | TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option | **Open** — fixed after all releases are finished (owner, 2026-10-05) | nobody yet |
+| TD-25 | `package.json` forces `handlebars` ^4.7.10 with `overrides`, because `eslint-plugin-boundaries@7.2.0` pins vulnerable 4.7.9 | **Open** — waits for an `eslint-plugin-boundaries` release that depends on ≥ 4.7.10 | nobody yet |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -960,6 +963,18 @@ of protected pages on Vercel
   server time itself is measured — 1.07–2.96 s to the first byte, NFR-D4's note in `deploy.md`
   step 5 — but not the paint that follows it), and the spread between runs from a runner outside
   Europe.
+- **Third measurement — Release 2** (2026-10-11, T-27: the automatic run after the release pull request #141's
+  production deployment, GitHub Actions run 38096939569, merge commit `c56e874`, the same workflow now measuring
+  `/budgets` too, the artifact read): `/overview` performance 0.86 / 1.00 / 0.97, LCP 2560 / 1083 / 2438 ms
+  (median-run passes); `/transactions` performance 0.95 / 0.94 / 0.94, LCP 2893 / **3042** / 3121 ms (median-run
+  3042 ms — **over the limit; the run's only failed assertion**), CLS ≤ 0.0013; `/budgets` performance 0.93 / 0.94 /
+  0.97, LCP 3121 / 3118 / 2514 ms (not asserted, `budgets.md` §7 sets no LCP), CLS 0. The LCP element on
+  `/transactions` is the same reset-banner paragraph (`p.ResetBanner-module__…__text`), its phases TTFB 644 ms and
+  **render delay 2250 ms** (78 %). Before Release 2, `/transactions` was at 1986–2291 ms (second measurement): the
+  render delay grew with the Release 2 page, and the banner — part of the shared shell — is the element that pays
+  it. Under the owner's rule (T-15c plan Q7 (a): a debt is fixed sooner if the same case repeats) this is a
+  repeat. **Owner decision, 2026-10-11** (T-27's thread, the decision card): "Fix now" — a separate fix on
+  `develop`, reaching production by the hotfix route, which the owner merges.
 - **Owner decision:** 2026-09-26, after the second measurement ("b"): accepted as a **documented
   exception** — NFR-P2's LCP ≤ 2.5 s is not met on `/overview` (about 2.6 s, lab, mobile preset,
   production) and the owner keeps it for now. Options the owner did not take: fix the page in a
@@ -1121,3 +1136,19 @@ of protected pages on Vercel
     person types in its field, and the next blur or submit shows it again for an invalid value.
   - Mark this entry **Closed** with the date and the PR.
 - **Picked up by:** nobody yet; after all releases are finished (owner, 2026-10-05).
+
+## TD-25 — `package.json` forces `handlebars` with `overrides`, because `eslint-plugin-boundaries@7.2.0` pins a vulnerable release
+
+- **Found:** 2026-10-10, Dependabot alerts #4, #5 (critical) and #6 (moderate) on `package-lock.json`:
+  `handlebars` 4.7.9 (GHSA-xw65-4hp5-5hc7, GHSA-8r5x-fm3f-whwj, GHSA-p8wg-vrv2-v86f; fixed in 4.7.10).
+  `eslint-plugin-boundaries@7.2.0` (the newest release) and its `@boundaries/elements@3.1.1` both pin exactly
+  `"handlebars": "4.7.9"`, so a lockfile update cannot move it.
+- **Decision:** `overrides` forces `^4.7.10` (the coordinator under the owner's Release 2 delegation, PR #144).
+- **Risk:** low. `handlebars` is a dev-only dependency of an ESLint plugin; it never ships in the app. The cost is
+  maintenance: the override and its `"//"` note must be removed by hand.
+- **Guarded meanwhile by:** `npm audit` in CI and Dependabot.
+- **Trigger:** an `eslint-plugin-boundaries` release whose dependency tree names `handlebars` ≥ 4.7.10
+  (`npm view eslint-plugin-boundaries dependencies.handlebars`).
+- **Fix:** upgrade the plugin, remove the `handlebars` override and its `"//"` line, and check `npm ls handlebars`
+  and `npm audit` in the same pull request.
+- **Picked up by:** nobody yet.
