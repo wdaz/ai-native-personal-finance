@@ -990,7 +990,9 @@ of protected pages on Vercel
   order on the `(app)` layout and whether the banner is server-rendered (its text is dated, "last
   reset 25 Sep 2026"); then the same run's TBT (62–252 ms, one run over 200). NFR-D4's cold-start
   note is written (2026-09-26, `deploy.md` step 5 and the Record table).
-- **Picked up by:** nobody; kept by the owner's decision (2026-09-26).
+- **Picked up by:** the hotfix `hotfix/transactions-lcp` (#147, 2026-10-11), after the owner's "Fix now":
+  Zod (92 KB gzip) left every `(app)` page's first-load JavaScript, which lantern counted against the LCP. TD-21
+  closes when the production Lighthouse run after the `main` merge passes.
 
 ## TD-22 — `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases
 
