@@ -1,0 +1,51 @@
+name: GitHub release
+
+# governance.md, "Branches and releases" (v1.17): after a release pull request is merged into main,
+# the release is tagged `v<major>.<minor>.<patch>` on main's merge commit and published as a GitHub
+# release, with its notes from docs/04-process/releases/<tag>.md. Run by hand (workflow_dispatch),
+# because the agent's cloud session cannot create tags or releases itself.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag, e.g. v2.0.0 (notes: docs/04-process/releases/<tag>.md)"
+        required: true
+      target:
+        description: "Full SHA of main's merge commit to tag"
+        required: true
+      title:
+        description: "Release title, e.g. Release 2"
+        required: true
+      latest:
+        description: "Mark as the latest release"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: tag and publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check the inputs, then create the tag and the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          TARGET: ${{ inputs.target }}
+          TITLE: ${{ inputs.title }}
+          LATEST: ${{ inputs.latest }}
+        run: |
+          set -eu
+          printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$' || { echo "tag must look like v1.2.3: $TAG"; exit 1; }
+          printf '%s' "$TARGET" | grep -Eq '^[0-9a-f]{40}$' || { echo "target must be a full commit SHA: $TARGET"; exit 1; }
+          git merge-base --is-ancestor "$TARGET" origin/main || { echo "$TARGET is not on main"; exit 1; }
+          NOTES="docs/04-process/releases/$TAG.md"
+          test -f "$NOTES" || { echo "missing $NOTES"; exit 1; }
+          gh release create "$TAG" --target "$TARGET" --title "$TITLE" --notes-file "$NOTES" --latest="$LATEST"
