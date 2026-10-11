@@ -2,12 +2,13 @@ import { headers } from "next/headers";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
 import { getDb } from "@/src/server/db";
-import { webmcpOriginTrialToken } from "@/src/server/env";
+import { demoEmail, webmcpOriginTrialToken } from "@/src/server/env";
 import { LAST_RESET_AT_HEADER, getMeta, parseForwardedResetAt } from "@/src/server/meta";
 import type { MetaDto } from "@/src/shared/schemas";
 import { AgentToolsIndicatorProvider } from "@/src/ui/agent-tools-indicator";
 import { OriginTrialMeta } from "@/src/ui/OriginTrialMeta";
 import { Shell } from "@/src/ui/Shell";
+import { TruncatedText } from "@/src/ui/TruncatedText";
 import { AgentToolsStatus } from "@/src/webmcp/AgentToolsStatus";
 import { WebMcpProvider } from "@/src/webmcp/WebMcpProvider";
 
@@ -22,9 +23,10 @@ import { WebMcpProvider } from "@/src/webmcp/WebMcpProvider";
  * read (`x-last-reset-at`); a missing or malformed value falls back to the database. When it
  * fails the page renders without the reset banner (§3, "meta unavailable"). T-11: `WebMcpProvider`
  * wraps `Shell`, and `<AgentToolsStatus>` (`src/webmcp`) is passed into `src/ui`'s
- * `AgentToolsIndicatorProvider` as the two indicator slots — this is the one layer allowed to
- * import both `src/ui` and `src/webmcp` (ADR-0002; plan T-11 Decision D1), so it is where the
- * two meet, not inside either layer.
+ * `AgentToolsIndicatorProvider` as the three indicator slots, each inside `TruncatedText`'s
+ * tooltip (design changelog §37, §38) — this is the one layer allowed to import both `src/ui`
+ * and `src/webmcp` (ADR-0002; plan T-11 Decision D1), so it is where the two meet, not inside
+ * either layer.
  */
 export default async function AppLayout({ children }: { children: ReactNode }) {
   await connection();
@@ -40,10 +42,13 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <OriginTrialMeta token={webmcpOriginTrialToken()} />
       <WebMcpProvider>
         <AgentToolsIndicatorProvider
-          sidebar={<AgentToolsStatus variant="sidebar" />}
-          compact={<AgentToolsStatus variant="compact" />}
+          sidebar={<AgentToolsStatus variant="sidebar" Tip={TruncatedText} />}
+          rail={<AgentToolsStatus variant="rail" Tip={TruncatedText} />}
+          compact={<AgentToolsStatus variant="compact" Tip={TruncatedText} />}
         >
-          <Shell meta={meta}>{children}</Shell>
+          <Shell meta={meta} accountEmail={demoEmail()}>
+            {children}
+          </Shell>
         </AgentToolsIndicatorProvider>
       </WebMcpProvider>
     </>

@@ -1,7 +1,8 @@
 /*
  * SPEC-app-shell §2.2–2.3 and the design export's sidebar: grey-900, corners 0 16 16 0, the
  * logo block padded 40/32, the nav column with a 24 px right gutter (8 px minimised), 24 px
- * between the blocks and below the last. Hidden below 1024 px (§2.4).
+ * between the blocks and below the last. Hidden below 1024 px (§2.4). The account row (design
+ * changelog §35) closes it, 8 px under "Minimize Menu" and a 24 px-inset divider.
  */
 .sidebar {
   display: none;
@@ -68,16 +69,53 @@
   flex-direction: column;
 }
 
-/* T-11 plan D5: no design source for the collapsed rail's indicator placement — centred in the
-   88 px rail, the same vertical rhythm as the row buttons below it. */
-.indicatorCollapsed {
-  display: flex;
-  justify-content: center;
-  padding-block: var(--spacing-200);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .animated {
     transition: none;
   }
+}
+
+.account {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-100);
+  margin-block-start: calc(-1 * var(--spacing-200));
+}
+
+.separator {
+  block-size: var(--border-width);
+  margin-inline: var(--spacing-300);
+  background: var(--color-grey-500);
+}
+
+.accountRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-150);
+  padding: var(--spacing-100) var(--spacing-200) 0 var(--spacing-400);
+}
+
+/* Minimised: the 44 px button is centred in the 88 px rail (22 px each side). */
+.collapsed .accountRow {
+  padding-inline: 22px;
+}
+
+.identity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.signedInAs {
+  font: var(--text-preset-5);
+  color: var(--color-grey-300);
+}
+
+.email {
+  overflow: hidden;
+  font: var(--text-preset-4-bold);
+  color: var(--color-grey-100);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

@@ -24,7 +24,7 @@ afterEach(() => {
 
 describe("Sidebar (SPEC-app-shell §2.2–2.3, US-35)", () => {
   it("starts expanded: the toggle is 'Minimize Menu', aria-expanded, nothing stored", () => {
-    render(<Sidebar />);
+    render(<Sidebar accountEmail="demo@example.com" />);
     const toggle = screen.getByRole("button", { name: COPY.minimizeMenu });
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(sessionStorage.getItem(SIDEBAR_STORAGE_KEY)).toBeNull();
@@ -32,7 +32,7 @@ describe("Sidebar (SPEC-app-shell §2.2–2.3, US-35)", () => {
   });
 
   it("US-35 AC1 the toggle collapses it: 'Expand Menu', aria-expanded false, pf.sidebar=collapsed", () => {
-    render(<Sidebar />);
+    render(<Sidebar accountEmail="demo@example.com" />);
     fireEvent.click(screen.getByRole("button", { name: COPY.minimizeMenu }));
 
     const toggle = screen.getByRole("button", { name: COPY.expandMenu });
@@ -42,7 +42,7 @@ describe("Sidebar (SPEC-app-shell §2.2–2.3, US-35)", () => {
   });
 
   it("US-35 AC1 and back: the key is removed", () => {
-    render(<Sidebar />);
+    render(<Sidebar accountEmail="demo@example.com" />);
     fireEvent.click(screen.getByRole("button", { name: COPY.minimizeMenu }));
     fireEvent.click(screen.getByRole("button", { name: COPY.expandMenu }));
 
@@ -54,21 +54,21 @@ describe("Sidebar (SPEC-app-shell §2.2–2.3, US-35)", () => {
 
   it("US-35 AC1 restores the stored state without animating it (plan D5)", () => {
     sessionStorage.setItem(SIDEBAR_STORAGE_KEY, "collapsed");
-    render(<Sidebar />);
+    render(<Sidebar accountEmail="demo@example.com" />);
 
     expect(screen.getByRole("button", { name: COPY.expandMenu })).toBeTruthy();
     expect(screen.getByTestId(TEST_IDS.sidebar).className).not.toMatch(/_animated_/);
   });
 
   it("animates a toggle the user made", () => {
-    render(<Sidebar />);
+    render(<Sidebar accountEmail="demo@example.com" />);
     fireEvent.click(screen.getByRole("button", { name: COPY.minimizeMenu }));
     expect(screen.getByTestId(TEST_IDS.sidebar).className).toMatch(/_animated_/);
   });
 
   it("US-35 AC2 collapsed, every page and 'Log out' keep their names", () => {
     sessionStorage.setItem(SIDEBAR_STORAGE_KEY, "collapsed");
-    render(<Sidebar />);
+    render(<Sidebar accountEmail="demo@example.com" />);
 
     for (const name of Object.values(PAGE_NAMES)) {
       expect(screen.getByRole("link", { name })).toBeTruthy();
@@ -78,15 +78,32 @@ describe("Sidebar (SPEC-app-shell §2.2–2.3, US-35)", () => {
   });
 
   it("SPEC-app-shell §2.7 marks the current page from the pathname", () => {
-    render(<Sidebar />);
+    render(<Sidebar accountEmail="demo@example.com" />);
     expect(screen.getByRole("link", { name: "Budgets" }).getAttribute("aria-current")).toBe("page");
     expect(screen.getByRole("link", { name: "Overview" }).getAttribute("aria-current")).toBeNull();
   });
 
-  it("puts 'Log out' before the toggle in its footer (SPEC-app-shell §2.2)", () => {
-    render(<Sidebar />);
-    const logOut = screen.getByRole("button", { name: "Log out" });
+  it("ends with the account row: 'Signed in as', the email with a tooltip, then 'Log out' after the toggle (changelog §35)", () => {
+    render(<Sidebar accountEmail="demo@example.com" />);
     const toggle = screen.getByRole("button", { name: COPY.minimizeMenu });
-    expect(logOut.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const logOut = screen.getByRole("button", { name: "Log out" });
+    expect(toggle.compareDocumentPosition(logOut) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole("separator")).toBeTruthy();
+    expect(screen.getByText("Signed in as")).toBeTruthy();
+    expect(screen.getByText("demo@example.com").getAttribute("title")).toBe("demo@example.com");
+    expect(logOut.getAttribute("title")).toBe("Log out");
+  });
+
+  it("collapsed, the account row keeps only the 'Log out' button", () => {
+    sessionStorage.setItem(SIDEBAR_STORAGE_KEY, "collapsed");
+    render(<Sidebar accountEmail="demo@example.com" />);
+    expect(screen.queryByText("Signed in as")).toBeNull();
+    expect(screen.queryByText("demo@example.com")).toBeNull();
+    expect(screen.getByRole("button", { name: "Log out" })).toBeTruthy();
+  });
+
+  it("shows no email text when the address is unavailable, and still offers 'Log out'", () => {
+    render(<Sidebar accountEmail={null} />);
+    expect(screen.getByRole("button", { name: "Log out" })).toBeTruthy();
   });
 });

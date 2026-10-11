@@ -15,15 +15,19 @@ import { readSidebarCollapsed, subscribeSidebar, writeSidebarCollapsed } from ".
 import styles from "./Sidebar.module.css";
 import controls from "./SidebarControl.module.css";
 
+/** SPEC-app-shell §2.2 — spec text, like "Log out" and the navigation labels (T-07 plan D3). */
+const SIGNED_IN_AS = "Signed in as";
+
 /** The server cannot read sessionStorage; it renders the sidebar expanded (plan D5). */
 const expandedOnTheServer = () => false;
 
 /**
- * The desktop sidebar (SPEC-app-shell §2.2–2.3, ≥ 1024 px): the logo, the five pages, and the
- * footer — "Log out", then the "Minimize Menu" toggle (T-11 puts the agent-tools indicator
- * above them). Minimised (US-35) it is 88 px wide with icons only; every item keeps its name.
+ * The desktop sidebar (SPEC-app-shell §2.2–2.3, ≥ 1024 px): the logo, the five pages, the
+ * footer — the agent-tools indicator (T-11), then the "Minimize Menu" toggle — and, below a
+ * divider, the account row: "Signed in as" the demo email, and the "Log out" icon button (design
+ * changelog §35). Minimised (US-35) it is 88 px wide with icons only; every item keeps its name.
  */
-export function Sidebar() {
+export function Sidebar({ accountEmail }: { accountEmail: string | null }) {
   const pathname = usePathname();
   const indicator = useAgentToolsIndicator();
   const collapsed = useSyncExternalStore(
@@ -59,12 +63,7 @@ export function Sidebar() {
         </ul>
       </nav>
       <div className={styles.footer}>
-        {collapsed ? (
-          <span className={styles.indicatorCollapsed}>{indicator?.compact}</span>
-        ) : (
-          indicator?.sidebar
-        )}
-        <LogoutButton variant="sidebar" collapsed={collapsed} />
+        {collapsed ? indicator?.rail : indicator?.sidebar}
         <button
           type="button"
           className={controls.control}
@@ -78,6 +77,20 @@ export function Sidebar() {
           </span>
           {collapsed ? null : <span>{COPY.minimizeMenu}</span>}
         </button>
+      </div>
+      <div className={styles.account}>
+        <div role="separator" className={styles.separator} />
+        <div className={styles.accountRow}>
+          {collapsed ? null : (
+            <div className={styles.identity}>
+              <span className={styles.signedInAs}>{SIGNED_IN_AS}</span>
+              <span className={styles.email} title={accountEmail ?? undefined}>
+                {accountEmail}
+              </span>
+            </div>
+          )}
+          <LogoutButton variant="account" />
+        </div>
       </div>
     </div>
   );

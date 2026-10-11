@@ -1,26 +1,54 @@
 /*
- * SPEC-webmcp-tools §2.7: "small, non-intrusive" (US-41 AC1). No design source names a size or
- * colour for this indicator (plan D5) — the row reuses the sidebar footer's own text colour and
- * spacing rhythm; the dot is a plain circle, same pattern as an avatar's `border-radius: 50%`
- * (src/ui/overview/TransactionsCard.module.css).
+ * SPEC-webmcp-tools §2.7, US-41; design changelog §36–§38. Desktop: a 24 px robot icon, 16 px
+ * (the menu rows' icon gap) and the text in preset 5, grey-300, in a row padded 8 px × 32 px
+ * like the menu rows' left edge — minimised, the icon alone keeps that left edge, so it sits
+ * where the rows' icons do. Tablet/mobile (the page header): the icon in grey-500 and the count
+ * in preset 5 Bold, grey-900, 4 px apart, in a 44 px-high target padded 8 px on each side.
  */
+.sidebarRoot {
+  color: var(--color-grey-300);
+}
+
+/* The row touches the viewport's edge, so its ring is drawn inside it, as the menu rows' are. */
+.sidebarRoot:focus-visible {
+  outline-color: var(--focus-ring-color-on-dark);
+  outline-offset: calc(-2 * var(--focus-ring-offset));
+}
+
 .row {
   display: flex;
   align-items: center;
-  gap: var(--spacing-150);
+  gap: var(--spacing-200);
   padding: var(--spacing-100) var(--spacing-400);
-  color: var(--color-grey-300);
+}
+
+.row svg {
+  flex-shrink: 0;
 }
 
 .text {
   font: var(--text-preset-5);
+  white-space: nowrap;
 }
 
-.dot {
+.compactRoot {
+  border-radius: var(--radius-100);
+  color: var(--color-grey-500);
+}
+
+.compact {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-50);
+  block-size: var(--tap-target-min);
+  padding-inline: var(--spacing-100);
+}
+
+.compact svg {
   flex-shrink: 0;
-  display: inline-block;
-  inline-size: var(--spacing-100);
-  block-size: var(--spacing-100);
-  border-radius: 50%;
-  background: var(--color-grey-500);
+}
+
+.count {
+  font: var(--text-preset-5-bold);
+  color: var(--color-grey-900);
 }
