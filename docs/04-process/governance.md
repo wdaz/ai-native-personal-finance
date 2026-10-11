@@ -227,8 +227,10 @@ Since T-15b (2026-09-29; plan `plans/2026-09-29-T-15b.md`):
   hotfix to it bumps the patch) and published as a GitHub release whose notes are
   `docs/04-process/releases/<tag>.md`, written in English. The notes file reaches `develop` by a
   pull request; then the workflow `.github/workflows/github-release.yml` is run by hand (`gh workflow
-  run` or Actions → "GitHub release"); it refuses a commit that is not on `main`. Release 1 (`v1.0.0`,
-  T-15a's `cb6f845`) and Release 2 (`v2.0.0`, #153's `2146c12`) were tagged this way on 2026-10-11.
+  run` or Actions → "GitHub release"); it refuses a commit that is not on `main`. An older release
+  tagged after a newer one is run with `latest` off, so it does not become the "Latest" release.
+  Release 1 (`v1.0.0`, T-15a's `cb6f845`) and Release 2 (`v2.0.0`, #153's `2146c12`) are the first
+  two, tagged once the pull request that adds the workflow is merged (2026-10-11).
 - **The owner merges the release and the `hotfix/<name>-main` pull requests into `main`**
   ("Merge on green", v1.16, leaves pull requests into `main` to the owner).
 - **No review gates a merge; the required checks do.** Copilot's review was turned off for
