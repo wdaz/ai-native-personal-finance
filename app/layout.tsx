@@ -20,6 +20,14 @@ const publicSans = localFont({
 export const metadata: Metadata = {
   title: { default: "Personal Finance", template: "Personal Finance - %s" },
   description: "Frontend Mentor Personal Finance App — AI-native SDLC portfolio project",
+  // Design changelog §3: the favicon files of the design export, served from `public/`.
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
