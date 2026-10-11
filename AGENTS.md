@@ -64,7 +64,7 @@ its content.
 | 2 Requirements | Draft PRD sections, user stories with acceptance criteria, non-functional requirements | Decide how a requirement is implemented |
 | 3 Architecture | Draft ADRs with real alternatives, system boundaries, data model, extract design tokens | Mark an ADR *Accepted* (owner only) |
 | 4 Specs & plan | Write feature specs, decompose into tasks, define Definition of Done | Start implementing |
-| 5–6 Build | Implement against an approved spec, write tests that trace to the spec, open PRs | Change a spec silently, skip tests, merge |
+| 5–6 Build | Implement against an approved spec, write tests that trace to the spec, open PRs | Change a spec silently, skip tests, merge (except what governance "Merge on green", v1.16, allows) |
 | 7 Retro | Summarise the process log, propose improvements | Rewrite history |
 
 ## 4. Quality bar for documents

@@ -2,10 +2,11 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { COPY } from "@/src/shared/copy";
+import { TruncatedText } from "@/src/ui/TruncatedText";
 import { AgentToolsStatus } from "@/src/webmcp/AgentToolsStatus";
 import { WebMcpStatusContext, type WebMcpStatus } from "@/src/webmcp/status-context";
 
-function renderWithStatus(status: WebMcpStatus, variant: "sidebar" | "compact") {
+function renderWithStatus(status: WebMcpStatus, variant: "sidebar" | "rail" | "compact") {
   return render(
     <WebMcpStatusContext value={status}>
       <AgentToolsStatus variant={variant} />
@@ -26,27 +27,55 @@ describe("AgentToolsStatus (SPEC-webmcp-tools §2.7, US-41)", () => {
     expect(screen.getByRole("status", { name: text }).textContent).toBe(text);
   });
 
-  it.each<[WebMcpStatus, string]>([
-    [{ mode: "checking", count: 0 }, COPY.agentToolsChecking],
-    [{ mode: "polyfill", count: 3 }, COPY.agentToolsPolyfill(3)],
-  ])("compact variant carries the same text only as its accessible name: %j", (status, text) => {
-    renderWithStatus(status, "compact");
-    const dot = screen.getByRole("status", { name: text });
-    expect(dot.textContent).toBe("");
+  it("rail variant (minimised sidebar): the icon alone, the text only as the accessible name", () => {
+    renderWithStatus({ mode: "polyfill", count: 3 }, "rail");
+    const row = screen.getByRole("status", { name: COPY.agentToolsPolyfill(3) });
+    expect(row.textContent).toBe("");
+    expect(row.querySelector("svg")).not.toBeNull();
   });
 
-  it("every state's title matches SPEC-webmcp-tools §2.7's own table, verbatim", () => {
-    const cases: Array<[WebMcpStatus["mode"], string]> = [
-      ["checking", "Detecting WebMCP support"],
-      ["native", "WebMCP is supported natively by this browser"],
-      ["polyfill", "Provided by a polyfill; no built-in agent yet"],
-      ["unavailable", "WebMCP is disabled or could not load"],
-    ];
-    for (const [mode, title] of cases) {
-      const { unmount } = renderWithStatus({ mode, count: 0 }, "sidebar");
-      expect(screen.getByRole("status").getAttribute("title")).toBe(title);
-      unmount();
-    }
+  it.each<[WebMcpStatus, string, string]>([
+    [{ mode: "polyfill", count: 3 }, COPY.agentToolsPolyfill(3), "3"],
+    [{ mode: "native", count: 0 }, COPY.agentToolsNative(0), "0"],
+    [{ mode: "checking", count: 0 }, COPY.agentToolsChecking, ""],
+    [{ mode: "unavailable", count: 0 }, COPY.agentToolsUnavailable, ""],
+  ])(
+    "compact variant (changelog §37): the icon and the tool count — none while checking or unavailable: %j",
+    (status, name, count) => {
+      renderWithStatus(status, "compact");
+      const indicator = screen.getByRole("status", { name });
+      expect(indicator.textContent).toBe(`${count}${name}`);
+      expect(indicator.querySelector("svg")).not.toBeNull();
+      expect(indicator.getAttribute("tabindex")).toBe("0");
+    },
+  );
+
+  it("with a tooltip component, the indicator is handed it with the full text and `always`", () => {
+    render(
+      <AgentToolsStatus
+        variant="compact"
+        Tip={({ text, always, children, role }) => (
+          <div data-testid="tip" data-text={text} data-always={String(always)} role={role}>
+            {children}
+          </div>
+        )}
+      />,
+    );
+    const tip = screen.getByTestId("tip");
+    expect(tip.getAttribute("data-text")).toBe(COPY.agentToolsChecking);
+    expect(tip.getAttribute("data-always")).toBe("true");
+  });
+
+  it("with the real tooltip: a live status named by the full text, a focus stop, no repeated description", () => {
+    render(
+      <WebMcpStatusContext value={{ mode: "polyfill", count: 2 }}>
+        <AgentToolsStatus variant="compact" Tip={TruncatedText} />
+      </WebMcpStatusContext>,
+    );
+    const status = screen.getByRole("status", { name: COPY.agentToolsPolyfill(2) });
+    expect(status.getAttribute("aria-live")).toBe("polite");
+    expect(status.getAttribute("tabindex")).toBe("0");
+    expect(status.textContent).toContain(COPY.agentToolsPolyfill(2));
   });
 
   it("without a provider, the default context is “checking” — never a crash", () => {

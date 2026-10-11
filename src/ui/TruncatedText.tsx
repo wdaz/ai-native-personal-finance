@@ -7,8 +7,10 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type AriaRole,
   type KeyboardEvent,
   type PointerEvent,
+  type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
 import { cx } from "./cx";
@@ -35,8 +37,29 @@ let closeOpenTooltip: (() => void) | null = null;
  * whole name — opened by 400 ms of hover, focus or a tap, closed 150 ms after the pointer leaves
  * the name and the tooltip, on blur, Escape, a second tap, a tap elsewhere, a scroll or a
  * resize, and never by itself on a timer. The full name stays in the text either way.
+ *
+ * `always` (design changelog §37, §38, the agent-tools indicator): the tooltip belongs to the
+ * element whether or not anything is cut — the root is always a focus stop and a tap or hover
+ * opens it. `children` is then what shows (an icon and a count) while `text` is what the tooltip
+ * says; `role` and `aria-label` name the root for assistive technology.
  */
-export function TruncatedText({ text, className }: { text: string; className?: string }) {
+export function TruncatedText({
+  text,
+  className,
+  always = false,
+  children,
+  role,
+  "aria-label": ariaLabel,
+  "aria-live": ariaLive,
+}: {
+  text: string;
+  className?: string;
+  always?: boolean;
+  children?: ReactNode;
+  role?: AriaRole;
+  "aria-label"?: string;
+  "aria-live"?: "polite" | "assertive" | "off";
+}) {
   const id = useId();
   const rootRef = useRef<HTMLSpanElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
@@ -46,7 +69,8 @@ export function TruncatedText({ text, className }: { text: string; className?: s
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** A pointer press is under way, so the focus it causes is not a keyboard focus. */
   const pressing = useRef(false);
-  const [cut, setCut] = useState(false);
+  const [measuredCut, setCut] = useState(false);
+  const cut = always || measuredCut;
   const [opened, setOpen] = useState(false);
   /** A name that fits again (a wider box) has no tooltip; `measure` also drops `opened` then. */
   const open = opened && cut;
@@ -80,18 +104,18 @@ export function TruncatedText({ text, className }: { text: string; className?: s
   // changes size (a resize, the sidebar, a font that loads late).
   useLayoutEffect(() => {
     const element = textRef.current;
-    if (element === null) return;
+    if (element === null || always) return;
     const measure = () => {
       const isCut = element.scrollWidth > element.clientWidth;
       setCut(isCut);
-      if (!isCut) setOpen(false);
+      if (!isCut && !always) setOpen(false);
     };
     measure();
     if (typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
-  }, [text]);
+  }, [text, always]);
 
   useEffect(() => {
     if (!open) return;
@@ -181,9 +205,12 @@ export function TruncatedText({ text, className }: { text: string; className?: s
   return (
     <span
       ref={rootRef}
-      className={cx(styles.root, cut && styles.cut, className)}
+      className={cx(styles.root, measuredCut && styles.cut, className)}
       tabIndex={cut ? 0 : undefined}
-      aria-describedby={open ? id : undefined}
+      role={role}
+      aria-label={ariaLabel}
+      aria-live={ariaLive}
+      aria-describedby={open && !always ? id : undefined}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
       onPointerDown={onPointerDown}
@@ -196,7 +223,7 @@ export function TruncatedText({ text, className }: { text: string; className?: s
       onKeyDown={onKeyDown}
     >
       <span ref={textRef} className={styles.text}>
-        {text}
+        {children ?? text}
       </span>
       {open
         ? createPortal(

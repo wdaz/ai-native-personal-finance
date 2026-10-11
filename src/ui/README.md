@@ -40,9 +40,11 @@ T-11: `agent-tools-indicator.ts` — a `ReactNode` slot context (`sidebar`/`comp
 `src/webmcp` knowledge; `app/(app)/layout.tsx` is the one file that fills it, from
 `AgentToolsStatus` (`src/webmcp` — this layer may not import that one, ADR-0002). `Sidebar` and
 `PageHeader` each place whichever slot fits their layout; `PageHeader` becomes a Client
-Component for the `useContext` call. `Sidebar.module.css` gains `.indicatorCollapsed`
-(centres the indicator's compact dot in the 88 px collapsed rail — no design source for this
-placement, T-11 plan D5).
+Component for the `useContext` call. Since the designer's changelog §35–§38 the slots are
+`sidebar`, `rail` (the minimised sidebar's icon) and `compact` (the header's icon and count),
+`.indicatorCollapsed` is gone, and `Sidebar` ends with the account row (`.account`: divider,
+"Signed in as" and the email, `LogoutButton variant="account"`). `TruncatedText` gains `always`
+for the indicator's tooltip.
 
 T-19: `Menu` (SPEC-transactions 2.8) — choosing one value from a list: a button trigger with one
 name, "{label}: {current}", a `role="listbox"` panel that holds focus and names its highlighted

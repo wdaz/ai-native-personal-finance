@@ -14,8 +14,8 @@ type the DOM lib does not declare yet); `WebMcpProvider.tsx` (mounted once in
 `app/(app)/layout.tsx`; owns detection + status, exposed via `status-context.ts`'s
 `WebMcpStatusContext`, consumed only inside this layer); `WebMcpTools.tsx` (a page's own
 `{tools}` register-on-mount/unregister-on-unmount); `AgentToolsStatus.tsx` (the four-state
-indicator, SPEC §2.7 — `sidebar`/`compact` variants; rendered from `app/(app)/layout.tsx` into a
-`ReactNode` slot `src/ui/agent-tools-indicator.ts` defines, since `src/ui` may not import this
+indicator, SPEC §2.7 — `sidebar`/`rail`/`compact` variants, the robot icon (`RobotIcon.tsx`), each inside the tooltip `Tip` the layout hands in (design changelog §37, §38); rendered from `app/(app)/layout.tsx` into a
+`ReactNode` slot `src/ui/agent-tools-indicator.tsx` defines, since `src/ui` may not import this
 layer). The R1 tools (`tools/overview.ts`) landed in T-12, below.
 
 `register`/`unregisterAll` use one `AbortController` per registration generation rather than a
