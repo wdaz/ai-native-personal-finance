@@ -7502,3 +7502,4 @@ them too").
 - **Disagreements:** none.
 - **Lessons for the process:** section 6 of the retrospective is written as questions because an agent cannot state the owner's verdict; the owner answers them in review.
 - **Next:** the owner reviews and merges this pull request; after the first push, develop moved on (T-27 closed: #141 merged, all five "not yet observed" items read), so the retrospective's sections 1, 7 and 8 and the README status were rewritten to say Release 2 is in production.
+- **Later (2026-10-11, the owner: the LCP is already fixed):** the retrospective's section 1 and 7 now say the TD-21 hotfix is merged (#147, #148) and the production Lighthouse run after it passed (run 38101233675, read through the REST API; the median LCP value was not re-read).

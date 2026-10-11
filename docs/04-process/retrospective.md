@@ -36,9 +36,10 @@ and is not edited here, except for this task's own entry.
 
 Where it stands (2026-10-11): Release 2 (Transactions, Recurring Bills, Budgets, Pots and their agent tools) is in
 production: the owner merged the first `develop` → `main` release pull request, #141, on 2026-10-10 (merge commit
-`c56e874`), and T-27 is done (`backlog.md` v1.74). One Release 2 measurement is not met: `/transactions` LCP was
-3042 ms on the release's Lighthouse run, over NFR-P2, TD-21's case repeating; the owner chose to fix it now as a
-hotfix (`backlog.md` v1.72; this document does not check whether that hotfix has merged).
+`c56e874`), and T-27 is done (`backlog.md` v1.74). One Release 2 measurement missed at first: `/transactions` LCP was
+3042 ms on the release's Lighthouse run, over NFR-P2, TD-21's case repeating. The owner chose to fix it at once as a
+hotfix (`backlog.md` v1.72); it is merged, #147 into `develop` and #148 into `main` (2026-10-11), and the production
+Lighthouse run after it (Actions run 38101233675, on `main`) passed (`gh api repos/wdaz/ai-native-personal-finance/actions/runs/38101233675`).
 
 ## 2. What AI-native meant here, phase by phase
 
@@ -157,7 +158,7 @@ Vercel deploys for `claude/*` branches rather than buying Pro (7046). In the Rel
    profile, 268 passed, 8 skipped, 1 failed; the failure was a test that read `.env.local`'s write limit, fixed in
    the same pull request. Observed.
 
-What is not met: the `/transactions` LCP (section 1). The roadmap's outcome 2 (every Release 2 story passes in
+Nothing in the list is left open. The `/transactions` LCP that missed at the release (section 1) was fixed by the hotfix. The roadmap's outcome 2 (every Release 2 story passes in
 production) rests on CI on `develop` and the owner's checks above; no separate production acceptance run was read
 for this document.
 
