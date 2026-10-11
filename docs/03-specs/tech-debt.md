@@ -1,6 +1,8 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.29 — 2026-10-05: **TD-24** opened, the owner's decision at T-15d (Task S1b,
+Status: **Approved** (v1.30 — 2026-10-11: **TD-25** opened, a Dependabot alert fix under the owner's Release 2
+delegation: `package.json` overrides `handlebars` to ^4.7.10 because `eslint-plugin-boundaries` pins 4.7.9; nothing
+else in the file changes; v1.29 — 2026-10-05: **TD-24** opened, the owner's decision at T-15d (Task S1b,
 `ui-kit.md` v0.8, its select fields since v0.8.2, PR #92, whose merge approves this amendment): Release 2's forms
 keep Release 1's validation timing — a field's message stays until the next blur or submit, a select field's blur
 being focus leaving the field as a whole — where the design first cleared it as soon as the person typed (the
@@ -83,6 +85,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | nobody yet; moved from T-16 (backlog v1.48) |
 | TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) | nobody yet |
 | TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option | **Open** — fixed after all releases are finished (owner, 2026-10-05) | nobody yet |
+| TD-25 | `package.json` forces `handlebars` ^4.7.10 with `overrides`, because `eslint-plugin-boundaries@7.2.0` pins vulnerable 4.7.9 | **Open** — waits for an `eslint-plugin-boundaries` release that depends on ≥ 4.7.10 | nobody yet |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -1121,3 +1124,19 @@ of protected pages on Vercel
     person types in its field, and the next blur or submit shows it again for an invalid value.
   - Mark this entry **Closed** with the date and the PR.
 - **Picked up by:** nobody yet; after all releases are finished (owner, 2026-10-05).
+
+## TD-25 — `package.json` forces `handlebars` with `overrides`, because `eslint-plugin-boundaries@7.2.0` pins a vulnerable release
+
+- **Found:** 2026-10-10, Dependabot alerts #4, #5 (critical) and #6 (moderate) on `package-lock.json`:
+  `handlebars` 4.7.9 (GHSA-xw65-4hp5-5hc7, GHSA-8r5x-fm3f-whwj, GHSA-p8wg-vrv2-v86f; fixed in 4.7.10).
+  `eslint-plugin-boundaries@7.2.0` (the newest release) and its `@boundaries/elements@3.1.1` both pin exactly
+  `"handlebars": "4.7.9"`, so a lockfile update cannot move it.
+- **Decision:** `overrides` forces `^4.7.10` (the coordinator under the owner's Release 2 delegation, PR #144).
+- **Risk:** low. `handlebars` is a dev-only dependency of an ESLint plugin; it never ships in the app. The cost is
+  maintenance: the override and its `"//"` note must be removed by hand.
+- **Guarded meanwhile by:** `npm audit` in CI and Dependabot.
+- **Trigger:** an `eslint-plugin-boundaries` release whose dependency tree names `handlebars` ≥ 4.7.10
+  (`npm view eslint-plugin-boundaries dependencies.handlebars`).
+- **Fix:** upgrade the plugin, remove the `handlebars` override and its `"//"` line, and check `npm ls handlebars`
+  and `npm audit` in the same pull request.
+- **Picked up by:** nobody yet.
