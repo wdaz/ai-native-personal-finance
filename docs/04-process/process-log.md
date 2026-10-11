@@ -7425,7 +7425,7 @@ them too").
   `npm run db:reset`; then the Firefox binary by hand (`firefox-1543/…/Nightly.app/Contents/MacOS/firefox -no-remote
   -headless -profile <existing folder>`), in `/tmp` and `/private/tmp`.
 - **Result:** every test failed at browser launch; the binary alone exits 1 with "Could not find profile folder" on
-  macOS 27.0.1 (build 26A434). No quarantine flag. Playwright 1.63 expects exactly this Firefox build, so the
+  macOS 27.0.1 (build 26A434), and headed it shows "Profile Missing" instead. No quarantine flag. Playwright 1.63 expects exactly this Firefox build, so the
   install is the right one. Item 5 of the retrospective's §7 is read: Firefox does not start on the owner's
   machine either, and runs only in CI (green on #141).
 - **What the agent got wrong or missed:** the first answers sent the owner through setup steps (`.env.local`, the
