@@ -1,6 +1,6 @@
 # Runbook — headed native WebMCP check
 
-Status: **Draft — not yet run by a person** (T-12, 2026-09-24; step 8 and its record for Release 2, T-27, 2026-10-10) · Author(s): Agent · Executed by:
+Status: **Run once by the owner** (2026-10-11, T-27, on the production deployment; T-12, 2026-09-24; step 8 and its record for Release 2, T-27, 2026-10-10) · Author(s): Agent · Executed by:
 the owner (a headed browser with a flag; no CI job and no agent session can do this — NFR-B2,
 US-38 AC2, ADR-0003 "native mode is a headed runbook step")
 
@@ -58,10 +58,10 @@ browser itself — needs a browser that has it, so it is checked by hand.
 
 | Date | Chrome version | Flag or OT token | Indicator on Overview | Tools listed | Both calls returned | Notes |
 | ---- | -------------- | ---------------- | --------------------- | ------------ | ------------------- | ----- |
-|      |                |                  |                       |              |                     |       |
+| 2026-10-11 | 154 | flag `#enable-webmcp-testing` | native · 2 | 2, as step 6 | not reported | the owner, on the production deployment (no build of step 3: the app takes the browser's `document.modelContext` in any configured mode but `off`); tools read from the DevTools console (`document.modelContext.getTools()`), not the Tool Inspector |
 
 Release 2 (step 8), one row per run:
 
 | Date | Chrome version | Indicator and tools match the table, every page | No tools left after navigation | Each `list_*` returned | `delete_*` stopped at the dialog | Notes |
 | ---- | -------------- | ----------------------------------------------- | ------------------------------ | ---------------------- | -------------------------------- | ----- |
-|      |                |                                                 |                                |                        |                                  |       |
+| 2026-10-11 | 154 | yes (2 / 1 / 4 / 6 / 1) | yes (each page's count was its own) | `list_budgets` yes; the others not reported | yes (`delete_budget`, cancelled) | the owner, production deployment, flag; calls from the DevTools console |

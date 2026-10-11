@@ -543,9 +543,14 @@ test.describe("US-33 the layout by the content width (2.13, §9 RB-Q9 (b))", () 
       // The header's indicator grows when WebMCP settles ("checking" → a state with a count), and
       // the header can wrap, moving the list under a tap already aimed; a scroll brought on by the
       // tap itself would close the tooltip (2.9). So let the indicator settle, then bring the name
-      // into view first.
+      // into view first — in the middle of the screen: at the bottom edge the fixed bottom nav covers
+      // it, the tap retries with a scroll of its own, and Firefox fires that scroll's event after
+      // the tap, which closes the tooltip the tap just opened. Two frames let the scroll's event pass.
       await expect(page.getByRole("status", { name: /^Agent tools: (?!checking)/ })).toBeVisible();
-      await target.scrollIntoViewIfNeeded();
+      await target.evaluate(async (element: HTMLElement) => {
+        element.scrollIntoView({ block: "center" });
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
       await target.tap();
       await expect(page.getByRole("tooltip")).toHaveText(FIGURES.longestName);
       await page.getByRole("heading", { name: PAGE_NAMES.recurringBills, level: 1 }).tap();
