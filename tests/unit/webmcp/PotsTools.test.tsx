@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as adapter from "@/src/webmcp/adapter";
 import { PotsTools, withRefresh } from "@/src/webmcp/tools/PotsTools";
@@ -59,10 +59,10 @@ describe("<PotsTools /> (SPEC-pots 2.8, 2.13; US-40 AC3)", () => {
     expect(onRefresh).not.toHaveBeenCalled();
   });
 
-  it("registers the six tools once; a re-render hands WebMcpTools the same array", () => {
+  it("registers the six tools once; a re-render hands WebMcpTools the same array", async () => {
     const { rerender, unmount } = render(<PotsTools />);
     rerender(<PotsTools />);
-    expect(adapter.register).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(adapter.register).toHaveBeenCalledTimes(1));
     const registered = vi.mocked(adapter.register).mock.calls[0]?.[0] ?? [];
     expect(registered.map((t) => t.name)).toEqual(potsTools.map((t) => t.name));
     unmount();

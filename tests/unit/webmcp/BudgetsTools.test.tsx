@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as adapter from "@/src/webmcp/adapter";
 import { budgetsTools } from "@/src/webmcp/tools/budgets";
@@ -56,10 +56,10 @@ describe("<BudgetsTools /> (SPEC-budgets 2.13; US-40 AC3)", () => {
     expect(sameRemove).toBe(remove);
   });
 
-  it("registers the four tools once, and not again on a re-render", () => {
+  it("registers the four tools once, and not again on a re-render", async () => {
     const { rerender, unmount } = render(<BudgetsTools />);
     rerender(<BudgetsTools />);
-    expect(adapter.register).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(adapter.register).toHaveBeenCalledTimes(1));
     const registered = vi.mocked(adapter.register).mock.calls[0]?.[0] as ToolDefinition[];
     expect(registered.map((t) => t.name)).toEqual(budgetsTools.map((t) => t.name));
     unmount();
