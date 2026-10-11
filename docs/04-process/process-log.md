@@ -7416,3 +7416,20 @@ them too").
   flow); `/budgets`' LCP is not asserted. TD-21's status is left to the production run after the `main` merge, and to
   #145, which owns `tech-debt.md`'s TD-21 text.
 - **Next:** the `main` pull request (the owner merges it), then the production Lighthouse run.
+
+## 2026-10-11 — T-27's item 5: Firefox on the owner's machine
+
+- **Phase:** 4 — build (Release 2), the T-27 thread's follow-up on the checks left to the owner's machine.
+- **Participants:** Owner (Ruslan, ran the commands on a Mac), Agent (Claude Code, the T-27 thread).
+- **What was run:** `npx playwright test --project=firefox` on `develop` after `npm ci`, a filled `.env.local` and
+  `npm run db:reset`; then the Firefox binary by hand (`firefox-1543/…/Nightly.app/Contents/MacOS/firefox -no-remote
+  -headless -profile <existing folder>`), in `/tmp` and `/private/tmp`.
+- **Result:** every test failed at browser launch; the binary alone exits 1 with "Could not find profile folder" on
+  macOS 27.0.1 (build 26A434). No quarantine flag. Playwright 1.63 expects exactly this Firefox build, so the
+  install is the right one. Item 5 of the retrospective's §7 is read: Firefox does not start on the owner's
+  machine either, and runs only in CI (green on #141).
+- **What the agent got wrong or missed:** the first answers sent the owner through setup steps (`.env.local`, the
+  secrets) one error at a time instead of naming them all at once.
+- **Owner changes and reasoning:** none.
+- **Open:** item 4, the headed native check (Chrome ≥ 149 with the flag, `runbooks/webmcp-native-check.md` step 8).
+- **Next:** item 4 when the owner runs it; Phase 7.
