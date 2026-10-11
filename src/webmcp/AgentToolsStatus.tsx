@@ -24,6 +24,7 @@ export type IndicatorTip = (props: {
   always?: boolean;
   role?: AriaRole;
   "aria-label"?: string;
+  "aria-live"?: "polite";
   children?: ReactNode;
 }) => ReactNode;
 
@@ -57,13 +58,25 @@ export function AgentToolsStatus({
   const content =
     variant === "compact" ? (
       <span className={styles.compact}>
-        <RobotIcon />
-        {showsCount ? <span className={styles.count}>{status.count}</span> : null}
+        <span aria-hidden="true" className={styles.icon}>
+          <RobotIcon />
+        </span>
+        {showsCount ? (
+          <span aria-hidden="true" className={styles.count}>
+            {status.count}
+          </span>
+        ) : null}
+        {/* A live region announces changed content, not its name: the full text goes with it. */}
+        <span className={styles.visuallyHidden}>{text}</span>
       </span>
     ) : (
       <span className={styles.row}>
         <RobotIcon />
-        {variant === "sidebar" ? <span className={styles.text}>{text}</span> : null}
+        {variant === "sidebar" ? (
+          <span aria-hidden="true" className={styles.text}>
+            {text}
+          </span>
+        ) : null}
       </span>
     );
   const rootClass = variant === "compact" ? styles.compactRoot : styles.sidebarRoot;
@@ -76,7 +89,14 @@ export function AgentToolsStatus({
     );
   }
   return (
-    <Tip text={text} always role="status" aria-label={text} className={rootClass}>
+    <Tip
+      text={text}
+      always
+      role="status"
+      aria-live="polite"
+      aria-label={text}
+      className={rootClass}
+    >
       {content}
     </Tip>
   );

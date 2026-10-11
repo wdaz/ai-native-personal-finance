@@ -50,6 +50,7 @@ export function TruncatedText({
   children,
   role,
   "aria-label": ariaLabel,
+  "aria-live": ariaLive,
 }: {
   text: string;
   className?: string;
@@ -57,6 +58,7 @@ export function TruncatedText({
   children?: ReactNode;
   role?: AriaRole;
   "aria-label"?: string;
+  "aria-live"?: "polite" | "assertive" | "off";
 }) {
   const id = useId();
   const rootRef = useRef<HTMLSpanElement>(null);
@@ -102,7 +104,7 @@ export function TruncatedText({
   // changes size (a resize, the sidebar, a font that loads late).
   useLayoutEffect(() => {
     const element = textRef.current;
-    if (element === null) return;
+    if (element === null || always) return;
     const measure = () => {
       const isCut = element.scrollWidth > element.clientWidth;
       setCut(isCut);
@@ -203,11 +205,12 @@ export function TruncatedText({
   return (
     <span
       ref={rootRef}
-      className={cx(styles.root, cut && styles.cut, className)}
+      className={cx(styles.root, measuredCut && styles.cut, className)}
       tabIndex={cut ? 0 : undefined}
       role={role}
       aria-label={ariaLabel}
-      aria-describedby={open ? id : undefined}
+      aria-live={ariaLive}
+      aria-describedby={open && !always ? id : undefined}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
       onPointerDown={onPointerDown}

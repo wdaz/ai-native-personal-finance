@@ -90,7 +90,7 @@ describe("Sidebar (SPEC-app-shell §2.2–2.3, US-35)", () => {
     expect(toggle.compareDocumentPosition(logOut) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole("separator")).toBeTruthy();
     expect(screen.getByText("Signed in as")).toBeTruthy();
-    expect(screen.getByText("demo@example.com").getAttribute("title")).toBe("demo@example.com");
+    expect(screen.getByText("demo@example.com")).toBeTruthy();
     expect(logOut.getAttribute("title")).toBe("Log out");
   });
 
@@ -104,6 +104,7 @@ describe("Sidebar (SPEC-app-shell §2.2–2.3, US-35)", () => {
 
   it("shows no email text when the address is unavailable, and still offers 'Log out'", () => {
     render(<Sidebar accountEmail={null} />);
+    expect(screen.queryByText("Signed in as")).toBeNull();
     expect(screen.getByRole("button", { name: "Log out" })).toBeTruthy();
   });
 });

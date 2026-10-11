@@ -13,6 +13,7 @@ import { NAV_ITEMS, isActive } from "./nav";
 import { NavItem } from "./NavItem";
 import { readSidebarCollapsed, subscribeSidebar, writeSidebarCollapsed } from "./sidebar-state";
 import styles from "./Sidebar.module.css";
+import { TruncatedText } from "./TruncatedText";
 import controls from "./SidebarControl.module.css";
 
 /** SPEC-app-shell §2.2 — spec text, like "Log out" and the navigation labels (T-07 plan D3). */
@@ -81,12 +82,10 @@ export function Sidebar({ accountEmail }: { accountEmail: string | null }) {
       <div className={styles.account}>
         <div role="separator" className={styles.separator} />
         <div className={styles.accountRow}>
-          {collapsed ? null : (
+          {collapsed || accountEmail === null ? null : (
             <div className={styles.identity}>
               <span className={styles.signedInAs}>{SIGNED_IN_AS}</span>
-              <span className={styles.email} title={accountEmail ?? undefined}>
-                {accountEmail}
-              </span>
+              <TruncatedText text={accountEmail} className={styles.email} />
             </div>
           )}
           <LogoutButton variant="account" />

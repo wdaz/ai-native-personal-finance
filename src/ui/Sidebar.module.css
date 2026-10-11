@@ -95,9 +95,10 @@
   padding: var(--spacing-100) var(--spacing-200) 0 var(--spacing-400);
 }
 
-/* Minimised: the 44 px button is centred in the 88 px rail (22 px each side). */
+/* Minimised: the 44 px button is centred in the rail, whatever its width (a scrollbar narrows it). */
 .collapsed .accountRow {
-  padding-inline: 22px;
+  justify-content: center;
+  padding-inline: 0;
 }
 
 .identity {
@@ -113,9 +114,6 @@
 }
 
 .email {
-  overflow: hidden;
   font: var(--text-preset-4-bold);
   color: var(--color-grey-100);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }

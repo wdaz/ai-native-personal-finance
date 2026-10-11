@@ -7359,8 +7359,8 @@ them too").
   (Claude Code, started from the project thread; read-only review subagent, the `/code-review` skill on Opus).
 - **Trigger:** the owner's remark that "Log out" sits in an awkward place on desktop, then two more: the "Agent tools"
   line missing from the design, and a dot on mobile that "doesn't say anything".
-- **Prompt(s):** the designer drew three placements; the owner chose option C ("Hesab sətri"); the designer recorded
-  §35, drew the indicator (§36), and after the owner's choices of "İkon + say" and a robot icon on desktop, §37 and §38.
+- **Prompt(s):** the designer drew three placements; the owner chose option C ("account row"); the designer recorded
+  §35, drew the indicator (§36), and after the owner's choices of "icon + count" and a robot icon on desktop, §37 and §38.
 - **Produced:**
   - The sidebar's footer: indicator, "Minimize Menu", divider, account row (`Sidebar.tsx`, `LogoutButton` variant
     `account`, `demoEmail()` in `src/server/env.ts` read by `app/(app)/layout.tsx`).

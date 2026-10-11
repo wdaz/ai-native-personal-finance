@@ -2,6 +2,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { COPY } from "@/src/shared/copy";
+import { TruncatedText } from "@/src/ui/TruncatedText";
 import { AgentToolsStatus } from "@/src/webmcp/AgentToolsStatus";
 import { WebMcpStatusContext, type WebMcpStatus } from "@/src/webmcp/status-context";
 
@@ -43,7 +44,7 @@ describe("AgentToolsStatus (SPEC-webmcp-tools §2.7, US-41)", () => {
     (status, name, count) => {
       renderWithStatus(status, "compact");
       const indicator = screen.getByRole("status", { name });
-      expect(indicator.textContent).toBe(count);
+      expect(indicator.textContent).toBe(`${count}${name}`);
       expect(indicator.querySelector("svg")).not.toBeNull();
       expect(indicator.getAttribute("tabindex")).toBe("0");
     },
@@ -63,6 +64,18 @@ describe("AgentToolsStatus (SPEC-webmcp-tools §2.7, US-41)", () => {
     const tip = screen.getByTestId("tip");
     expect(tip.getAttribute("data-text")).toBe(COPY.agentToolsChecking);
     expect(tip.getAttribute("data-always")).toBe("true");
+  });
+
+  it("with the real tooltip: a live status named by the full text, a focus stop, no repeated description", () => {
+    render(
+      <WebMcpStatusContext value={{ mode: "polyfill", count: 2 }}>
+        <AgentToolsStatus variant="compact" Tip={TruncatedText} />
+      </WebMcpStatusContext>,
+    );
+    const status = screen.getByRole("status", { name: COPY.agentToolsPolyfill(2) });
+    expect(status.getAttribute("aria-live")).toBe("polite");
+    expect(status.getAttribute("tabindex")).toBe("0");
+    expect(status.textContent).toContain(COPY.agentToolsPolyfill(2));
   });
 
   it("without a provider, the default context is “checking” — never a crash", () => {

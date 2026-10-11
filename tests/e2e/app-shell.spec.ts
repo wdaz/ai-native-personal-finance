@@ -403,7 +403,6 @@ test.describe("Desktop account row (SPEC-app-shell §2.2, design changelog §35)
     await expect(side.getByText("Signed in as")).toBeVisible();
     const email = side.getByText(process.env.DEMO_EMAIL ?? "demo@example.com", { exact: true });
     await expect(email).toBeVisible();
-    await expect(email).toHaveAttribute("title", process.env.DEMO_EMAIL ?? "demo@example.com");
     await expect(side.getByRole("separator")).toBeVisible();
 
     const logOut = side.getByRole("button", { name: "Log out" });
@@ -441,7 +440,7 @@ test.describe("Agent-tools indicator (SPEC-webmcp-tools §2.7, design changelog 
       await page.goto("/overview");
       const status = indicator(page);
       await expect(status).toHaveAccessibleName(COPY.agentToolsPolyfill(2));
-      await expect(status).toHaveText("2");
+      await expect(status).toHaveText(/^2/); // the count, then the text read aloud
       await expect(status.locator("svg")).toBeVisible();
       expect((await status.boundingBox())?.height).toBe(44);
 
