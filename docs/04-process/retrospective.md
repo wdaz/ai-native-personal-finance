@@ -1,6 +1,6 @@
 # Retrospective — the whole project, from the skeleton to the Release 2 build
 
-Status: **Draft** (v0.1, 2026-10-11) — for the owner's review; only the owner marks it Approved (`AGENTS.md` §3). ·
+Status: **Draft** (v0.2, 2026-10-11; Q2–Q4 of section 6 answered, Q1 open) — for the owner's review; only the owner marks it Approved (`AGENTS.md` §3). ·
 Author(s): Agent (Claude Code, Sonnet 5.5, cloud thread "Phase 7 README") · Date: 2026-10-11
 Phase: 7 (Retrospective and portfolio narrative) · Roadmap outcome 6 (`roadmap.md`, "Release 2 goal") ·
 Evidence base: `docs/04-process/process-log.md` (127 entries) at `origin/develop` `5b09601`; the log is append-only
@@ -17,7 +17,7 @@ and is not edited here, except for this task's own entry.
 - Counts come from `git`, `gh api` (REST) and `npm` commands written next to each number. A line number is a line
   of `process-log.md` at the commit above.
 - The "What the owner would change" part (section 6) is **not written by the agent**. It lists what the log shows
-  the owner changed, and leaves the owner's own verdict as questions. An agent cannot say what the owner thinks.
+  the owner changed, and leaves the owner's own verdict to the owner: section 6 holds the questions and the owner's answers as given, in the agent's translation. An agent cannot say what the owner thinks.
 
 ## 1. The project in numbers
 
@@ -95,7 +95,7 @@ recurrences** (L1 to L6) and four are new (L7 to L10). Quotes are from `process-
 | L5 | **A test that passed for the wrong reason.** | 6692–6693: "four of them first passed for the wrong reason (the test had no clock, so the approval never took effect and every "refused" assertion held)"; 6674: a guard claimed three tools and covered fewer | B |
 | L6 | **The review process slipped: tools and briefs.** | 6481: workflow agents "had no Agent tool" and could not dispatch reviewers; 6483: two required reviews "ran only after an independent audit found them missing"; 6880: review subagents had no shell | H |
 | L7 | **The required external reviewer (Copilot) was unreliable**, so a rule (v1.9) needed repeated exceptions, until v1.15 turned it off for `develop`. | 6457–6458: on #97, "6 of its 8 Copilot reviews read 'Copilot encountered an error'"; 6789: a weekly rate limit; 7039: "Copilot errored on each run, so the Opus review is the only one" | new |
-| L8 | **Merge authority drifted from what governance says.** | 6485: "An administrator bypass was attempted on #99", refused by the harness; 6490: six amendments of Approved documents merged by the agent on conditional words; 6608: "The merge permissions are in no governance version" — the Decision-rights row still said Agent "Never" | new |
+| L8 | **Merge authority drifted from what governance says** (addressed for merges into `develop` by v1.16 on 2026-10-11, section 5; the bypass and the Approved-document amendments are covered by v1.16's exceptions). | 6485: "An administrator bypass was attempted on #99", refused by the harness; 6490: six amendments of Approved documents merged by the agent on conditional words; 6608: "The merge permissions are in no governance version" — the Decision-rights row still said Agent "Never" | new |
 | L9 | **Agent tooling did not travel.** | 6765: "a check that lives in a local mod does not travel to remote or cloud" sessions; 6784: v1.12 copied the mod's tools without checking what a write needs | new |
 | L10 | **The same UI and design slips repeated across tasks.** | 6821, 7212, 7343: state set in an effect or an updater, refused by the lint rule or by StrictMode; 6873, 6876, 7310: design decisions recorded without a technical or spec check | new |
 
@@ -120,10 +120,11 @@ themselves; the review step did.
 | v1.12, v1.13 | 10-10 | The designer agent moves into the repository (`.claude/agents/designer.md`) and gets Claude Design's `finalize_plan` tool | L9: a mod-held agent did not load remotely |
 | v1.14 | 10-10 | The design folder, not Claude Design, is the design source | Claude Design is no longer updated (owner) |
 | v1.15 | 10-10 | Copilot review off for `develop`; `/code-review` by a fresh Opus subagent before ready | L7 |
-| — | 10-10 | Standing rules (questions go to the coordinator; merge on green CI; at most two work threads) | owner; **recorded in the log and the project's memory, not in a governance version** (6608) |
+| — | 10-10 | Standing rules (questions go to the coordinator; merge on green CI; at most two work threads) | owner; recorded in the log and the project's memory, **not in a governance version** (6608) |
+| v1.16 | 10-11 | "Merge on green" written into governance: the agent merges a ready pull request into `develop` on green CI; releases, Approved-marking and reserved pull requests stay the owner's | the owner's answer to Q2 (section 6) |
 
 Two changes are of a different kind from the rest: the owner moved from approving each pull request to merging
-on green CI for everything up to this retrospective, and kept two decisions for themselves: marking documents
+on green CI for everything up to this retrospective, and kept three decisions for themselves (v1.16): marking documents
 Approved, and merging **this** pull request.
 
 ## 6. What the owner changed, and what is still the owner's to say
@@ -134,13 +135,32 @@ retrospective written as a document of its own (T-15c Q1 (b) over the recommende
 proposes and applies (6760, over the agent's recommendation to keep writes behind the mod's guard, 6763); TD-24, a form's message clearing as the person types, fixed after all releases and not as the design's rule had it (6519–6522); stopping
 Vercel deploys for `claude/*` branches rather than buying Pro (7046). In the Release 2 range, of five non-empty "Disagreements" fields, four begin "none" and only one records a disagreement (6763: the owner chose one designer agent over the agent's recommendation).
 
-**Questions for the owner** (not answered here; answer in the review of this pull request):
+**Questions for the owner, and the answers so far** (2026-10-11, the owner's own words, in Azerbaijani; the agent's
+translation):
 
-1. Which of Release 2's 10 themes (section 4) would you not accept as written, and which is missing?
-2. Merge on green CI saved time in Release 2. Is the rule to be written into `governance.md` (L8), or kept as a
-   Release 2 exception?
-3. Was the designer agent worth its round trips (section 3, item 5)?
-4. What would you change if the project were started again?
+1. *Which of Release 2's ten themes (section 4) is wrong or missing?* — Not answered. The owner: "tam aydın deyil"
+   ("not fully clear"). The question named the themes by code (L1 to L10) without saying what each meant; the same
+   mistake as Release 1's theme D. It is asked again here in plain words, one line per theme:
+   - L1: a document was written from a copy or a summary, not from the original.
+   - L2: a plan guessed something (a width, a CI rule) and nobody checked it.
+   - L3: the first tests expected the wrong thing, and had to be fixed.
+   - L4: only a real browser or database showed the defect (this time before merge).
+   - L5: a test passed for the wrong reason.
+   - L6: the review step slipped: reviewers lacked tools, or a required review ran late.
+   - L7: Copilot, the required reviewer, often failed, so the rule kept needing exceptions.
+   - L8: who may merge drifted from what `governance.md` said (now written down, Q2).
+   - L9: the designer agent's tooling lived on one machine and did not reach cloud sessions.
+   - L10: the same small UI mistakes (state set in an effect) and design values without a spec check came back.
+   Which of these is wrong, and what is missing?
+2. *Is merge on green written into `governance.md`?* — **Yes**: "Yazılsın" ("let it be written"). Done in this pull
+   request as governance v1.16, "Merge on green". The Phase 7 README, `develop` → `main` releases and
+   marking a document Approved stay the owner's.
+3. *Was the designer agent worth its round trips?* — **Yes**: "bəli".
+4. *What would you change if the project were started again?* — "Daha dəqiq promptlar yazardım. Və işi proyekt
+   daxilində başlayardım. Çünki əvvəlki format indiki kimi rahatlıq vermir. Artıq yeni versiya proyekt Claude code
+   bir başa bağlıdır" ("I would write more precise prompts, and I would start the work inside the project, because the
+   earlier format is not as comfortable as the current one; the new version has Claude Code connected to the project
+   directly"). Recorded as the owner's; the agent adds nothing to it.
 
 ## 7. What Release 1's "not yet observed" list became
 
@@ -164,5 +184,5 @@ for this document.
 
 ## 8. Next
 
-1. The owner reviews this pull request, answers section 6, and merges it. (The agent does not merge it.)
+1. The owner reviews this pull request, answers Q1 of section 6, and merges it. (The agent does not merge it.)
 2. Open tech debt stays as the owner ruled: fixed after all releases.

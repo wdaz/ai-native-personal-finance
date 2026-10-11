@@ -39,7 +39,7 @@ A portfolio project with two deliverables:
   tests and drawings hid; shared parts built once made four pages and 12 tools a one-day build.
 - **Where it hurt:** claims were accepted before anything could contradict them (specs from a stale export, plans'
   predictions, tests that passed for the wrong reason), and written rules did not stop the recurrences by
-  themselves; a fresh review did. Merge authority drifted from `governance.md`, and the merge-on-green rule is still in no governance version (retrospective §6, Q2).
+  themselves; a fresh review did. Merge authority drifted from `governance.md`, until v1.16 wrote the merge-on-green rule down.
 - **What the owner changed** is in each process-log entry's "Owner changes" and "Disagreements" fields, and
   summarised in the retrospective, sections 5 and 6.
 
