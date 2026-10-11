@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.31 — 2026-10-11: **TD-21** gets the Release 2 measurement (T-27): the same reset-banner render delay now misses NFR-P2's LCP on `/transactions` too, so the case repeats; the owner's call on fixing it sooner is asked in T-27's thread; v1.30 — 2026-10-11: **TD-25** opened, a Dependabot alert fix under the owner's Release 2
+Status: **Approved** (v1.31 — 2026-10-11: **TD-21** gets the Release 2 measurement (T-27): the same reset-banner render delay now misses NFR-P2's LCP on `/transactions` too, so the case repeats; the owner chose to fix it now (2026-10-11, T-27's thread: "Fix now"), as a hotfix; v1.30 — 2026-10-11: **TD-25** opened, a Dependabot alert fix under the owner's Release 2
 delegation: `package.json` overrides `handlebars` to ^4.7.10 because `eslint-plugin-boundaries` pins 4.7.9; nothing
 else in the file changes; v1.29 — 2026-10-05: **TD-24** opened, the owner's decision at T-15d (Task S1b,
 `ui-kit.md` v0.8, its select fields since v0.8.2, PR #92, whose merge approves this amendment): Release 2's forms
@@ -81,7 +81,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Closed** | T-13d (PR #47; F-07) |
 | TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Closed** (PR #63, `dd81c44`, 2026-09-26) | `fix/td-19-proxy-transport-forms` (PR #63; T-14 6.5, residual of TD-14) |
 | TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Closed** (PR #64, on its merge) | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
-| TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner); since Release 2 (T-27, 2026-10-11) `/transactions` misses it too, 3042 ms, the same banner | **Open** — kept as a documented exception (owner, 2026-09-26); the case repeated at Release 2, the owner's call is pending | T-14 (8.6) |
+| TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner); since Release 2 (T-27, 2026-10-11) `/transactions` misses it too, 3042 ms, the same banner | **Open** — kept as a documented exception (owner, 2026-09-26); the case repeated at Release 2; the owner chose "Fix now" (2026-10-11), as a hotfix | T-14 (8.6) |
 | TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | nobody yet; moved from T-16 (backlog v1.48) |
 | TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) | nobody yet |
 | TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option | **Open** — fixed after all releases are finished (owner, 2026-10-05) | nobody yet |
@@ -973,7 +973,8 @@ of protected pages on Vercel
   **render delay 2250 ms** (78 %). Before Release 2, `/transactions` was at 1986–2291 ms (second measurement): the
   render delay grew with the Release 2 page, and the banner — part of the shared shell — is the element that pays
   it. Under the owner's rule (T-15c plan Q7 (a): a debt is fixed sooner if the same case repeats) this is a
-  repeat; the owner's call is asked in T-27's thread.
+  repeat. **Owner decision, 2026-10-11** (T-27's thread, the decision card): "Fix now" — a separate fix on
+  `develop`, reaching production by the hotfix route, which the owner merges.
 - **Owner decision:** 2026-09-26, after the second measurement ("b"): accepted as a **documented
   exception** — NFR-P2's LCP ≤ 2.5 s is not met on `/overview` (about 2.6 s, lab, mobile preset,
   production) and the owner keeps it for now. Options the owner did not take: fix the page in a

@@ -7378,6 +7378,8 @@ them too").
 - **Owner changes and reasoning:** the owner merged #141 and opened the network for the Lighthouse artifact
   ("Hazır").
 - **Disagreements:** none.
-- **Open:** the owner's call on TD-21 (fix sooner or keep), asked in T-27's thread; items 4 and 5 on the owner's
-  machine.
-- **Next:** Phase 7 (the retrospective and the README's portfolio section), which the owner approves.
+- **Owner decision on TD-21** (2026-10-11, the decision card in T-27's thread): "Fix now" — a hotfix of the reset
+  banner's render delay, outside T-27.
+- **Open:** items 4 and 5 on the owner's machine.
+- **Next:** the TD-21 hotfix, then Phase 7 (the retrospective and the README's portfolio section), which the owner
+  approves.
