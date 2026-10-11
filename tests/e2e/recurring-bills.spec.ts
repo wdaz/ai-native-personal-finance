@@ -540,8 +540,11 @@ test.describe("US-33 the layout by the content width (2.13, §9 RB-Q9 (b))", () 
         element.style.maxInlineSize = "24px";
       });
       await expect(target).toHaveAttribute("tabindex", "0");
-      // The header's indicator is wider than its dot was, so the list can start lower; a scroll
-      // brought on by the tap itself would close the tooltip (2.9), so bring it into view first.
+      // The header's indicator grows when WebMCP settles ("checking" → a state with a count), and
+      // the header can wrap, moving the list under a tap already aimed; a scroll brought on by the
+      // tap itself would close the tooltip (2.9). So let the indicator settle, then bring the name
+      // into view first.
+      await expect(page.getByRole("status", { name: /^Agent tools: (?!checking)/ })).toBeVisible();
       await target.scrollIntoViewIfNeeded();
       await target.tap();
       await expect(page.getByRole("tooltip")).toHaveText(FIGURES.longestName);
