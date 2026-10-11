@@ -28,7 +28,10 @@ export function WebMcpTools({ load }: { load: LoadTools }) {
         if (mounted) void register(tools);
       },
       (error: unknown) => {
-        console.warn("[webmcp] the page's tools failed to load; none are registered", error);
+        // A chunk that fails to load (offline, or a stale chunk after a deployment) leaves the page
+        // without tools and `data-webmcp` unset until the next navigation mounts this again.
+        if (mounted)
+          console.warn("[webmcp] the page's tools failed to load; none are registered", error);
       },
     );
     return () => {

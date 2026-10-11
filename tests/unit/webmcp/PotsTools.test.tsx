@@ -59,7 +59,7 @@ describe("<PotsTools /> (SPEC-pots 2.8, 2.13; US-40 AC3)", () => {
     expect(onRefresh).not.toHaveBeenCalled();
   });
 
-  it("registers the six tools once; a re-render hands WebMcpTools the same array", async () => {
+  it("registers the six tools once; a re-render hands WebMcpTools the same loader", async () => {
     const { rerender, unmount } = render(<PotsTools />);
     rerender(<PotsTools />);
     await waitFor(() => expect(adapter.register).toHaveBeenCalledTimes(1));
