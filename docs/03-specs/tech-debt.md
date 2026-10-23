@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.32 — 2026-10-23: **TD-21 closed** — the hotfix #147 (`develop`) and #148 (`main`), 2026-10-11, took Zod out of every `(app)` page's first-load JavaScript; the production Lighthouse runs after it passed every assertion, LCP included (Actions run 38101233675 on `main` `64e125a`, after #148, and run 38166840352 on `main` `2146c12`, after the Release 2 release #153; both `success`, read through the REST API on 2026-10-23; the per-run values were not re-read — both artifacts have expired, HTTP 410); found stale by the Release 3 planning thread; nothing else in the file changes; v1.31 — 2026-10-11: **TD-21** gets the Release 2 measurement (T-27): the same reset-banner render delay now misses NFR-P2's LCP on `/transactions` too, so the case repeats; the owner chose to fix it now (2026-10-11, T-27's thread: "Fix now"), as a hotfix; v1.30 — 2026-10-11: **TD-25** opened, a Dependabot alert fix under the owner's Release 2
+Status: **Approved** (v1.32 — 2026-10-23: **TD-21 closed** — the hotfix #147 (`develop`) and #148 (`main`), 2026-10-11, took Zod out of every `(app)` page's first-load JavaScript; the production Lighthouse runs after it passed every assertion, LCP included (Actions run 38101233675 on `main` `64e125a`, after #148, and run 38166840352 on `main` `2146c12`, after the Release 2 release #153; both `success`, read through the REST API on 2026-10-23; the per-run values were not re-read — both artifacts have expired, HTTP 410); found stale by the Release 3 planning thread; TD-22…TD-25 are picked up by T-37 (the owner, 2026-10-23: the open debt closes as Release 3's last task — TD-24 fixed, the others re-checked), and TD-3 and TD-13 get the same re-check; nothing else in the file changes; v1.31 — 2026-10-11: **TD-21** gets the Release 2 measurement (T-27): the same reset-banner render delay now misses NFR-P2's LCP on `/transactions` too, so the case repeats; the owner chose to fix it now (2026-10-11, T-27's thread: "Fix now"), as a hotfix; v1.30 — 2026-10-11: **TD-25** opened, a Dependabot alert fix under the owner's Release 2
 delegation: `package.json` overrides `handlebars` to ^4.7.10 because `eslint-plugin-boundaries` pins 4.7.9; nothing
 else in the file changes; v1.29 — 2026-10-05: **TD-24** opened, the owner's decision at T-15d (Task S1b,
 `ui-kit.md` v0.8, its select fields since v0.8.2, PR #92, whose merge approves this amendment): Release 2's forms
@@ -63,7 +63,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 |----|-------|--------|--------------|
 | TD-1 | The CSP nonce reaches Next through an undocumented header copy | **Closed** | T-07 |
 | TD-2 | `middleware.ts` uses a deprecated file convention (`proxy`) | **Closed** | T-13a (PR #44; v1.10) |
-| TD-3 | `/_global-error` is prerendered, without the CSP nonce | **Open — no fix in Next 16.3.5** | T-13b (investigated; v1.16) |
+| TD-3 | `/_global-error` is prerendered, without the CSP nonce | **Open — no fix in Next 16.3.5** | T-13b (investigated; v1.16); T-37 (Release 3 re-check) |
 | TD-4 | Two "submit is focused after an error" E2E assertions prove nothing on Chromium | **Closed** | T-13 |
 | TD-5 | Zod's `jitless` setting rides on importing `src/shared/schemas.ts` | **Closed** | T-11 |
 | TD-6 | `next dev` fills the console with CSP violations (the policy has no dev variant) | **Closed** | `fix/td-6-dev-csp` (PR #23) |
@@ -73,7 +73,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-10 | Nothing stops `APP_ENV=test`, `db:reset` or `test:api` from running against a non-local database | **Closed** | T-13c (PR #39; moved from T-14's T-02 hand-off) |
 | TD-11 | Every `next build` downloads Public Sans from Google Fonts, so a network hiccup fails the build | **Closed** | T-13c (PR #39; v1.11) |
 | TD-12 | Duplicate `pf_session` cookies are read inconsistently between the proxy and the session-probe route | **Closed** | T-13d (PR #47; F-01) |
-| TD-13 | `TRACE` bypasses the proxy entirely on every route: a bare 500 with none of the app's security headers | **Open — no fix possible (Fetch-spec forbidden method, undici/Next)** | T-13d (investigated; F-02) |
+| TD-13 | `TRACE` bypasses the proxy entirely on every route: a bare 500 with none of the app's security headers | **Open — no fix possible (Fetch-spec forbidden method, undici/Next)** | T-13d (investigated; F-02); T-37 (Release 3 re-check) |
 | TD-14 | The proxy's dotted-path exclusion may also skip Next's `.rsc`/`.json` transport forms of protected pages on Vercel | **Closed** (PR #60, `44ff1b6` — measured on Vercel: no data reachable without a session; the residual gap is TD-19) | T-13d (F-03); T-14 (6.5) |
 | TD-15 | `POST /api/auth/logout` has no CSRF check of its own beyond `SameSite=Lax` | **Closed** | T-13d (PR #47; F-04) |
 | TD-16 | `X-Powered-By: Next.js` is sent on every response | **Closed** | T-13d (PR #47; F-05) |
@@ -82,10 +82,10 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Closed** (PR #63, `dd81c44`, 2026-09-26) | `fix/td-19-proxy-transport-forms` (PR #63; T-14 6.5, residual of TD-14) |
 | TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Closed** (PR #64, on its merge) | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
 | TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner); since Release 2 (T-27, 2026-10-11) `/transactions` misses it too, 3042 ms, the same banner | **Closed** (#147, #148, 2026-10-11; production Lighthouse passed, runs 38101233675 and 38166840352; v1.32) | T-14 (8.6) |
-| TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | nobody yet; moved from T-16 (backlog v1.48) |
-| TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) | nobody yet |
-| TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option | **Open** — fixed after all releases are finished (owner, 2026-10-05) | nobody yet |
-| TD-25 | `package.json` forces `handlebars` ^4.7.10 with `overrides`, because `eslint-plugin-boundaries@7.2.0` pins vulnerable 4.7.9 | **Open** — waits for an `eslint-plugin-boundaries` release that depends on ≥ 4.7.10 | nobody yet |
+| TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | T-37 (Release 3 re-check, `backlog.md` v1.75) |
+| TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) | T-37 (Release 3 re-check, `backlog.md` v1.75) |
+| TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option | **Open** — fixed after all releases are finished (owner, 2026-10-05) | T-37 (Release 3, `backlog.md` v1.75) |
+| TD-25 | `package.json` forces `handlebars` ^4.7.10 with `overrides`, because `eslint-plugin-boundaries@7.2.0` pins vulnerable 4.7.9 | **Open** — waits for an `eslint-plugin-boundaries` release that depends on ≥ 4.7.10 | T-37 (Release 3 re-check, `backlog.md` v1.75) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
 
@@ -998,7 +998,7 @@ of protected pages on Vercel
   #153 (run 38166840352, `2146c12`, 2026-10-11): `/overview` and `/transactions` meet NFR-P2's LCP on the median
   run. The values themselves were not re-read: both runs' artifacts have expired (HTTP 410, 2026-10-23). The
   open note of the first-load JavaScript of `/budgets` and `/pots`, which still load Zod through their own write
-  paths (#147's commit `62b90f2`), moves to Release 3's performance budget task (`backlog.md` v1.75, T-32).
+  paths (#147's commit `62b90f2`), moves to Release 3's performance budget task (`backlog.md` v1.75, T-34).
 
 ## TD-22 — `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases
 
