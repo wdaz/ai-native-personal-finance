@@ -7530,7 +7530,7 @@ them too").
 - **Prompt(s):** the coordinator's brief for this thread (no prompt file).
 - **Produced:** `runbooks/deploy.md` step 6.4 and a Record row; `backlog.md` v1.76 (T-29 Done); `roadmap.md` outcome 0 note; a dated update in `webmcp-status.md`. No code change (NFR-W2).
 - **What the agent got right:** a web search suggested the trial was extended, but the agent did not write it down as fact; cloud threads cannot reach developer.chrome.com, so it asked the owner to read the console.
-- **What the agent got wrong or missed:** it could not check production itself (`/api/meta` needs a signed-in session); the owner's check of `originTrial: true` is the evidence.
+- **What the agent got wrong or missed:** it could not check production itself (`/api/meta` needs a signed-in session); the owner's check is the evidence: signed in, `/api/meta` returned `webmcp.originTrial: true` (configured mode `polyfill`) after the redeploy. That flag shows a token is set, not which one; the new expiry is the console's date.
 - **Owner changes and reasoning:** the owner registered the new token in Chrome's console ("Mar 30, 2027"), set it on Vercel Production and redeployed.
 - **Disagreements:** none.
 - **Lessons for the process:** a dated dependency needs a console read by the person who owns the account; the agent's search is only a hint.
