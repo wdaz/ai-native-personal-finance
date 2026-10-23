@@ -1,6 +1,6 @@
 # PRD — AI-Native Personal Finance
 
-Status: **Approved** (v1.3 — amendment 2026-10-04, the owner's decision at the T-15d plan gate, Q2 (a), in effect from the owner's merge of PR #85: §5 Release 2 gains a `Stories:` sentence, the source of `docs/03-specs/release-2-stories.txt`; v1.2 — amendments 2026-09-20: US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2; v1.1 2026-09-13: visual regression removed)
+Status: **Approved** (v1.4 — amendment 2026-10-23, the owner's decisions at the Release 3 planning: §5 Release 3 adds the design alignment and the tech-debt close-out; in effect from the owner's merge of PR #157; v1.3 — amendment 2026-10-04, the owner's decision at the T-15d plan gate, Q2 (a), in effect from the owner's merge of PR #85: §5 Release 2 gains a `Stories:` sentence, the source of `docs/03-specs/release-2-stories.txt`; v1.2 — amendments 2026-09-20: US-35 moved to Release 1; US-04 AC2 and US-37 AC3 verified in Release 2; v1.1 2026-09-13: visual regression removed)
 Author(s): Agent (Claude, draft) · Owner (decisions) · Date: 2026-09-13 · Process log: `../04-process/process-log.md`
 Traces to: `../00-discovery/problem-statement.md` (v1.0), `../00-discovery/inputs/challenge-brief.md`, `../00-discovery/research/webmcp-status.md`
 
@@ -92,6 +92,10 @@ table.
 
 No new stories. Accessibility audit and fixes (NFR-A), performance budget
 (NFR-P), deployment hardening, retrospective and portfolio write-up.
+*Amendment v1.4 (owner, 2026-10-23):* also the design alignment of every page
+with the design export ("dizayn uyğunsuzluqları aradan qaldırılsın") and the
+close-out of the open tech debt as the release's last task. The retrospective
+was written in Phase 7; Release 3 adds an addendum (roadmap, "Release 3 goal").
 
 ## 6. Functional requirements
 
