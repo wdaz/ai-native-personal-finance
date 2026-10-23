@@ -6721,7 +6721,7 @@ them too").
 - **Trigger:** the owner asked for help writing a goal for the project.
 - **Prompt(s):** conversational — "Bu project üçün hədəf yazmaq istəyirəm" ("I want to write a goal for
   this project").
-- **Produced:** `roadmap.md`, new section "Release 2 goal": one goal with a soft target date of
+- **Produced:** `prd.md` v1.4 — §5 Release 3 gains the two owner decisions (scope belongs in the PRD, AGENTS.md §2); `roadmap.md`, new section "Release 2 goal": one goal with a soft target date of
   2026-12-31 and seven outcomes, each tied to a PRD goal (G1–G4) and to a "done when" test.
 - **What the agent got right:** after the owner's correction it read the goals already in the repository
   (`problem-statement.md` §4 S1–S4, `prd.md` §2 G1–G4), saw that they lack a time and an end point, and

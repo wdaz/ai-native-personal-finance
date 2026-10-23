@@ -83,8 +83,8 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Closed** (PR #64, on its merge) | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
 | TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner); since Release 2 (T-27, 2026-10-11) `/transactions` misses it too, 3042 ms, the same banner | **Closed** (#147, #148, 2026-10-11; production Lighthouse passed, runs 38101233675 and 38166840352; v1.32) | T-14 (8.6); the hotfix #147 / #148 |
 | TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | T-37 (Release 3 re-check, `backlog.md` v1.75) |
-| TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) | T-37 (Release 3 re-check, `backlog.md` v1.75) |
-| TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option | **Open** — fixed after all releases are finished (owner, 2026-10-05) | T-37 (Release 3, `backlog.md` v1.75) |
+| TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) — that is Release 3's T-37 (owner, 2026-10-23; v1.32) | T-37 (Release 3 re-check, `backlog.md` v1.75) |
+| TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option | **Open** — fixed after all releases are finished (owner, 2026-10-05) — that is Release 3's T-37 (owner, 2026-10-23; v1.32) | T-37 (Release 3, `backlog.md` v1.75) |
 | TD-25 | `package.json` forces `handlebars` ^4.7.10 with `overrides`, because `eslint-plugin-boundaries@7.2.0` pins vulnerable 4.7.9 | **Open** — waits for an `eslint-plugin-boundaries` release that depends on ≥ 4.7.10 | T-37 (Release 3 re-check, `backlog.md` v1.75) |
 
 ## TD-1 — The CSP nonce reaches Next through an undocumented header copy
@@ -199,6 +199,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
   locally (unstyled where a nonce would be needed) and the cache changes what the *header* says, not
   whether the page works; it was not rendered in a browser. Nothing new to fix; the entry stays Open
   as a Next 16.3.5 limit.
+- **Picked up by (v1.32):** T-37, Release 3's re-check against the current `next` (`backlog.md` v1.75).
 
 ## TD-4 — Two "submit is focused after an error" E2E assertions prove nothing on Chromium
 
@@ -579,6 +580,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 - **Fix:** none available in application code — `TRACE` cannot reach a Next.js App Router route at
   all on this stack, by the Fetch standard's own design. Not carried into T-14 as a deploy check:
   the same undici/Next behaviour applies on Vercel too, since it is not host-specific.
+- **Picked up by (v1.32):** T-37, Release 3's re-check against the current `next` (`backlog.md` v1.75).
 
 ## TD-14 — The proxy's dotted-path exclusion may also skip Next's `.rsc`/`.json` transport forms
 of protected pages on Vercel
@@ -1081,7 +1083,7 @@ of protected pages on Vercel
   - Otherwise: replace the tool that brings it in, or add an `overrides` entry if a patched release
     appears.
   - Mark this entry **Closed** with the date and the PR.
-- **Picked up by:** T-37, Release 3's re-check (`backlog.md` v1.75; v1.32); fixed with the other tech debts when the project is finished (owner).
+- **Picked up by:** T-37, Release 3's re-check (`backlog.md` v1.75; v1.32) — "fixed with the other tech debts when the project is finished" (owner) falls there, since Release 3 is the PRD's last release (owner, 2026-10-23).
 
 ## TD-24 — Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types or chooses a new option
 
@@ -1143,7 +1145,7 @@ of protected pages on Vercel
   - E2E on the login, sign-up, Budgets and Pots forms, on Chromium, Firefox and WebKit: a message is gone as soon as the
     person types in its field, and the next blur or submit shows it again for an invalid value.
   - Mark this entry **Closed** with the date and the PR.
-- **Picked up by:** T-37, Release 3's last build task (`backlog.md` v1.75; v1.32); after all releases are finished (owner, 2026-10-05).
+- **Picked up by:** T-37, Release 3's last build task (`backlog.md` v1.75; v1.32) — the owner's "after all releases are finished" (2026-10-05) falls there, since Release 3 is the PRD's last release (owner, 2026-10-23).
 
 ## TD-25 — `package.json` forces `handlebars` with `overrides`, because `eslint-plugin-boundaries@7.2.0` pins a vulnerable release
 
