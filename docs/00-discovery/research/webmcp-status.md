@@ -36,7 +36,7 @@ agent.
 | F5 | Authors: Brandon Walderman, Leo Lee, Andrew Nolan (Microsoft); David Bokan, Khushal Sagar, Hannah Van Opstal (Google). Repo 3.5k stars, 108 open issues. First published 13 Aug 2025. | Repo README | 2026-09-08 |
 | F6 | Implementation status: **Chrome 149+ origin trial live**, early preview program; **Edge 150+ origin trial live**; Brave experimental in Leo; Firefox under standards-positions review (#1412, bug 2018306); WebKit under review (#670). | [implementation-status.md](https://github.com/webmachinelearning/webmcp/blob/main/implementation-status.md) | 2026-09-08 |
 | F7 | Chrome flag for local testing: `chrome://flags/#enable-webmcp-testing`; "Model Context Tool Inspector" extension for inspecting/calling tools. Tools need an open tab (no headless). Gemini in Chrome as consumer "coming soon". | [ppc.land, 2026-05-19](https://ppc.land/chrome-149-origin-trial-puts-webmcp-in-developers-hands-at-last/) (secondary) | 2026-09-08 |
-| F8 | API moved from `navigator.modelContext` to `document.modelContext` on **21 July 2026**; Chrome 150 deprecates the `navigator` form. Origin trial expected to run through Chrome 156 (~late 2026). As of mid-2026 no mainstream agent (Claude, ChatGPT, Gemini, Perplexity) consumes WebMCP tools; real deployments "round to zero". | [Spronta, July 2026](https://www.spronta.com/blog/state-of-webmcp-july-2026/) (secondary; consistent with F1) | 2026-09-08 |
+| F8 | API moved from `navigator.modelContext` to `document.modelContext` on **21 July 2026**; Chrome 150 deprecates the `navigator` form. Origin trial expected to run through Chrome 156 (~late 2026; superseded 2026-10-23, see Implications 5). As of mid-2026 no mainstream agent (Claude, ChatGPT, Gemini, Perplexity) consumes WebMCP tools; real deployments "round to zero". | [Spronta, July 2026](https://www.spronta.com/blog/state-of-webmcp-july-2026/) (secondary; consistent with F1) | 2026-09-08 |
 | F9 | MCP-B / WebMCP-org ecosystem: `@mcp-b/webmcp-polyfill` (polyfills `document.modelContext`), `@mcp-b/webmcp-types`, `@mcp-b/global` (polyfill + in-page MCP server), `@mcp-b/react-webmcp` and `usewebmcp` (React hooks), `@mcp-b/transports`, `@mcp-b/mcp-iframe`, `@mcp-b/webmcp-local-relay` (bridges page tools to desktop MCP clients such as Claude Code over WebSocket/stdio). "Rook" extension lets an agent call tools. Angular/Next.js mentioned, thin. | [docs.mcp-b.ai](https://docs.mcp-b.ai/) | 2026-09-08 |
 | F10 | WebMCP-org GitHub: `npm-packages` (71★, updated 2026-08-09), `chrome-devtools-quickstart` (Chrome DevTools MCP calling WebMCP tools), `big-calendar` (React/Next.js example with WebMCP), `use-mcp-react`, `docs`. Small, active, single-vendor-ish community. | [github.com/WebMCP-org](https://github.com/WebMCP-org) | 2026-09-08 |
 | F11 | Angular **v22+** ships experimental `provideExperimentalWebMcpTools`, `declareExperimentalWebMcpTool`, `provideExperimentalWebMcpForms` (Signal Forms → tool with inferred schema). Marked experimental, "subject to change even outside major versions"; no bundled polyfill, docs point to `@mcp-b/webmcp-polyfill`; open issue tracking migration to `document.modelContext`; issue #70125 on typing. | [angular.dev/ai/webmcp](https://angular.dev/ai/webmcp), Spronta | 2026-09-08 |
@@ -69,8 +69,9 @@ agent.
    let a tool bypass the same API the UI uses. Destructive tools need an
    explicit confirmation design (NFR).
 5. **Origin trial is a deployment concern (Phase 3).** The public URL must
-   be known to register the OT token; the token expires with Chrome 156
-   (2026-10-23 update: Chrome extended the trial to Chrome 162, ending 2027-03-30; the owner read this in the console).
+   be known to register the OT token; the token expired with Chrome 156
+   (2026-10-23 update: Chrome's console now shows the trial running to Chrome 162, ending
+   2027-03-30 — read by the owner in the origin-trial console; secondary sources agree).
    Plan for the trial ending: the polyfill path must remain the baseline.
 6. **Portfolio framing.** Adoption is near zero (F8); the honest claim is
    "a working, tested WebMCP integration with documented limits", not

@@ -7526,11 +7526,11 @@ them too").
 
 - **Phase:** 6 (Iterate), Release 3, T-29.
 - **Participants:** Owner (Ruslan), the project's coordinator session, Agent (Claude Code, Sonnet 5.5, cloud thread "WebMCP token yenilənməsi").
-- **Trigger:** the production token expired on 2026-11-17 (`runbooks/deploy.md` step 6.4).
+- **Trigger:** the production token was due to expire on 2026-11-17 (`runbooks/deploy.md` step 6.4).
 - **Prompt(s):** the coordinator's brief for this thread (no prompt file).
 - **Produced:** `runbooks/deploy.md` step 6.4 and a Record row; `backlog.md` v1.76 (T-29 Done); `roadmap.md` outcome 0 note; a dated update in `webmcp-status.md`. No code change (NFR-W2).
 - **What the agent got right:** a web search suggested the trial was extended, but the agent did not write it down as fact; cloud threads cannot reach developer.chrome.com, so it asked the owner to read the console.
-- **What the agent got wrong or missed:** it could not check production itself (`/api/meta` needs a signed-in session); the owner's check is the evidence: signed in, `/api/meta` returned `webmcp.originTrial: true` (configured mode `polyfill`) after the redeploy. That flag shows a token is set, not which one; the new expiry is the console's date.
+- **What the agent got wrong or missed:** it could not check production itself (`/api/meta` needs a signed-in session); the owner's check is the only evidence (step 6.3's `<meta>` count, the decoded expiry and the headed native check were not done): signed in, `/api/meta` returned `webmcp.originTrial: true` (configured mode `polyfill`) after the redeploy. That flag shows a token is set, not which one; the new expiry is the console's date.
 - **Owner changes and reasoning:** the owner registered the new token in Chrome's console ("Mar 30, 2027"), set it on Vercel Production and redeployed.
 - **Disagreements:** none.
 - **Lessons for the process:** a dated dependency needs a console read by the person who owns the account; the agent's search is only a hint.
