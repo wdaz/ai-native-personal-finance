@@ -40,7 +40,8 @@ places here were delivered by Phase 7 (outcome 6 of the Release 2 goal); Release
 target date is soft, as Release 2's was: the gate below decides when Release 3 ends.*
 
 **Goal:** by **2026-12-31**, production meets the accessibility requirements (NFR-A, PRD M5) on every page and the performance
-requirements (NFR-P, PRD M6) on every `(app)` page, the score on the two pages M6 names, matches the design export, runs on a hardened deployment, and no tech-debt entry is
+requirements (NFR-P, PRD M6) on every `(app)` page, the score on the two pages M6 names (INP excepted: it stays
+unasserted, the owner's decision of 2026-09-26, `lighthouse.yml`), matches the design export, runs on a hardened deployment, and no tech-debt entry is
 open without a dated reason. Release 3 adds **no stories** (PRD §5): `scripts/traceability.ts` keeps
 `RELEASE_BEING_BUILT = 2`, because a release being built must have a `Stories:` sentence.
 

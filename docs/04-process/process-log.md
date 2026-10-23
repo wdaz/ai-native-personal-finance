@@ -7511,7 +7511,7 @@ them too").
 ## 2026-10-23 — Release 3 planning: the goal, the gate and T-29…T-38
 
 - **Phase:** 4 (Specs & plan), the return trip for Release 3 (roadmap "Release 3 goal").
-- **Participants:** Owner (Ruslan), the project's coordinator session, Agent (Claude Code, cloud thread "Release 3 planlaması"); a fresh Opus subagent ran `/code-review` on the pull request.
+- **Participants:** Owner (Ruslan), the project's coordinator session, Agent (Claude Code, Opus 5.5, cloud thread "Release 3 planlaması"); a fresh Opus subagent ran `/code-review` on each new head, eight rounds, every confirmed finding fixed; Copilot's three comments (it ran although it is off for `develop`) were already fixed by then.
 - **Trigger:** Release 2 has been in production since 2026-10-11 (#153, `v2.0.0`); PRD §5's Release 3 had no roadmap goal and no backlog tasks. The owner said yes to starting the planning ("Bəli", 2026-10-23).
 - **Prompt(s):** the coordinator's brief for this thread (no prompt file).
 - **Produced:** `runbooks/deploy.md` step 5 — a note that a red Lighthouse run is no longer TD-21's exception; `prd.md` v1.4 — §5 Release 3 gains the two owner decisions (scope belongs in the PRD, AGENTS.md §2); `roadmap.md` — "Release 3 goal" (outcomes 0–6, the exit gate, soft date 2026-12-31) and the Status line; `backlog.md` v1.75 — "Release 3 — the tasks", T-29…T-38 with dependencies and notes, T-28 moved in; `tech-debt.md` v1.32 — TD-21 closed.
