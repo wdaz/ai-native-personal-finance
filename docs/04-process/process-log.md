@@ -7521,3 +7521,17 @@ them too").
 - **Disagreements:** none. TD-21's closing rides in this planning pull request (the coordinator's brief asked for one pull request), against AGENTS.md §2's one change per pull request; it is a separate commit-sized hunk of `tech-debt.md` the owner can question on its own. The coordinator's brief expected this pull request to merge on green; it changes four Approved documents (`prd.md`, `roadmap.md`, `backlog.md`, `tech-debt.md`), so under `governance.md` v1.16's first exception the owner merges it.
 - **Lessons for the process:** a dated external dependency (a token's expiry) lived only in a runbook step; a release plan should read the runbooks' dates, not only the specs.
 - **Next:** the owner reviews and merges this pull request; then T-29, with T-30, T-32 or T-34 beside it (at most two at once).
+
+## 2026-10-23 — T-29: WebMCP origin-trial token renewed
+
+- **Phase:** 6 (Iterate), Release 3, T-29.
+- **Participants:** Owner (Ruslan), the project's coordinator session, Agent (Claude Code, Sonnet 5.5, cloud thread "WebMCP token yenilənməsi").
+- **Trigger:** the production token expired on 2026-11-17 (`runbooks/deploy.md` step 6.4).
+- **Prompt(s):** the coordinator's brief for this thread (no prompt file).
+- **Produced:** `runbooks/deploy.md` step 6.4 and a Record row; `backlog.md` v1.76 (T-29 Done); `roadmap.md` outcome 0 note; a dated update in `webmcp-status.md`. No code change (NFR-W2).
+- **What the agent got right:** a web search suggested the trial was extended, but the agent did not write it down as fact; cloud threads cannot reach developer.chrome.com, so it asked the owner to read the console.
+- **What the agent got wrong or missed:** it could not check production itself (`/api/meta` needs a signed-in session); the owner's check of `originTrial: true` is the evidence.
+- **Owner changes and reasoning:** the owner registered the new token in Chrome's console ("Mar 30, 2027"), set it on Vercel Production and redeployed.
+- **Disagreements:** none.
+- **Lessons for the process:** a dated dependency needs a console read by the person who owns the account; the agent's search is only a hint.
+- **Next:** T-30, T-32 or T-34; the next token renewal is due before 2027-03-30.

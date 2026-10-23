@@ -69,7 +69,8 @@ agent.
    let a tool bypass the same API the UI uses. Destructive tools need an
    explicit confirmation design (NFR).
 5. **Origin trial is a deployment concern (Phase 3).** The public URL must
-   be known to register the OT token; the token expires with Chrome 156.
+   be known to register the OT token; the token expires with Chrome 156
+   (2026-10-23 update: Chrome extended the trial to Chrome 162, ending 2027-03-30; the owner read this in the console).
    Plan for the trial ending: the polyfill path must remain the baseline.
 6. **Portfolio framing.** Adoption is near zero (F8); the honest claim is
    "a working, tested WebMCP integration with documented limits", not
