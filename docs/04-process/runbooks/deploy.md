@@ -258,7 +258,9 @@ the commands are:
   gave `/overview` 2593.8 ms again, so the miss repeats; **the owner accepted it as a documented
   exception (2026-09-26, TD-21)** and the assertion stays at 2500 ms, which means **the workflow is
   red after every production deployment** until TD-21 is fixed or the limit is changed — a red run
-  is not a fault (it is not a required check). Read the reports from the run's artifact
+  is not a fault (it is not a required check). *(2026-10-23: TD-21 is closed — the hotfix #147/#148 and the
+  production runs after it passed, `tech-debt.md` v1.32 — so a red run is now a regression to read, not the
+  exception.)* Read the reports from the run's artifact
   (`gh run download <id> -n lighthouse -D <dir>`; the per-run LCP, TBT and the LCP element are in
   the `*.report.json` files).
 - **Cron** (plan 8.4): `GET /api/admin/reset` with `Authorization: Bearer $CRON_SECRET` and no body
