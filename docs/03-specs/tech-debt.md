@@ -1,6 +1,6 @@
 # Tech debt — Release 1
 
-Status: **Approved** (v1.32 — 2026-10-23: **TD-21 closed** — the hotfix #147 (`develop`) and #148 (`main`), 2026-10-11, took Zod out of every `(app)` page's first-load JavaScript; the production Lighthouse runs after it passed every assertion, LCP included (Actions run 38101233675 on `main` `64e125a`, after #148, and run 38166840352 on `main` `2146c12`, after the Release 2 release #153; both `success`, read through the REST API on 2026-10-23; the per-run values were not re-read — both artifacts have expired, HTTP 410); found stale by the Release 3 planning thread; TD-22…TD-25 are picked up by T-37 (the owner, 2026-10-23: the open debt closes as Release 3's last task — TD-24 fixed, the others re-checked), and TD-3 and TD-13 get the same re-check; nothing else in the file changes; v1.31 — 2026-10-11: **TD-21** gets the Release 2 measurement (T-27): the same reset-banner render delay now misses NFR-P2's LCP on `/transactions` too, so the case repeats; the owner chose to fix it now (2026-10-11, T-27's thread: "Fix now"), as a hotfix; v1.30 — 2026-10-11: **TD-25** opened, a Dependabot alert fix under the owner's Release 2
+Status: **Approved** (v1.32 — 2026-10-23: **TD-21 closed** — the hotfix #147 (`develop`) and #148 (`main`), 2026-10-11, took Zod out of every `(app)` page's first-load JavaScript; the production Lighthouse runs after it passed every assertion, LCP included (Actions run 38101233675 on `main` `64e125a`, after #148, and run 38166840352 on `main` `2146c12`, after the Release 2 release #153; both `success`, read through the REST API on 2026-10-23; the per-run values were not re-read — both artifacts have expired, HTTP 410); found stale by the Release 3 planning thread; TD-22…TD-25 are picked up by T-37 (the owner, 2026-10-23: the open debt closes as Release 3's last task — TD-24 fixed, the others re-checked), and TD-3 and TD-13 get the same re-check — in the index table and in each entry's "Picked up by" line; TD-21's table cell names the hotfix; nothing else in the file changes; v1.31 — 2026-10-11: **TD-21** gets the Release 2 measurement (T-27): the same reset-banner render delay now misses NFR-P2's LCP on `/transactions` too, so the case repeats; the owner chose to fix it now (2026-10-11, T-27's thread: "Fix now"), as a hotfix; v1.30 — 2026-10-11: **TD-25** opened, a Dependabot alert fix under the owner's Release 2
 delegation: `package.json` overrides `handlebars` to ^4.7.10 because `eslint-plugin-boundaries` pins 4.7.9; nothing
 else in the file changes; v1.29 — 2026-10-05: **TD-24** opened, the owner's decision at T-15d (Task S1b,
 `ui-kit.md` v0.8, its select fields since v0.8.2, PR #92, whose merge approves this amendment): Release 2's forms
@@ -81,7 +81,7 @@ touches a file an entry names reads the entry first; the task that fixes an entr
 | TD-18 | Successful logins persist an unbounded, never-pruned `LoginAttempt` row | **Closed** | T-13d (PR #47; F-07) |
 | TD-19 | The proxy does not run for Next's `.segments/*` and `.json` transport URLs on Vercel | **Closed** (PR #63, `dd81c44`, 2026-09-26) | `fix/td-19-proxy-transport-forms` (PR #63; T-14 6.5, residual of TD-14) |
 | TD-20 | `pg` treats `sslmode=require` as `verify-full` today; `pg` 9 will not, and Neon's URL carries `sslmode=require` | **Closed** (PR #64, on its merge) | `fix/td-20-pg-sslmode` (PR #64; T-14 6.2, the Vercel build log) |
-| TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner); since Release 2 (T-27, 2026-10-11) `/transactions` misses it too, 3042 ms, the same banner | **Closed** (#147, #148, 2026-10-11; production Lighthouse passed, runs 38101233675 and 38166840352; v1.32) | T-14 (8.6) |
+| TD-21 | The Overview page's LCP misses NFR-P2's 2.5 s on production: 2624 ms, median run of three (Lighthouse mobile, GitHub runner); since Release 2 (T-27, 2026-10-11) `/transactions` misses it too, 3042 ms, the same banner | **Closed** (#147, #148, 2026-10-11; production Lighthouse passed, runs 38101233675 and 38166840352; v1.32) | T-14 (8.6); the hotfix #147 / #148 |
 | TD-22 | `package.json` forces `deepmerge-ts` and `mysql2` with `overrides`, because `prisma@7.10.0` pins vulnerable releases | **Open** — waits for a stable Prisma release | T-37 (Release 3 re-check, `backlog.md` v1.75) |
 | TD-23 | `braces` ≤ 3.0.3 has an advisory (GHSA-vfj7-8cjw-p6xm) and no patched release; three dev tools pull it in | **Open** — fixed with the other debts at the end, sooner if the same case repeats (owner, 2026-10-03) | T-37 (Release 3 re-check, `backlog.md` v1.75) |
 | TD-24 | Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types (the designer's changelog §13a, §16a as first written) or, in `ui-kit.md`'s reading, chooses a new option | **Open** — fixed after all releases are finished (owner, 2026-10-05) | T-37 (Release 3, `backlog.md` v1.75) |
@@ -1037,7 +1037,7 @@ of protected pages on Vercel
   - Upgrade Prisma to that release in its own pull request.
   - Repeat the scratch check above: without the overrides, the audit must read 0.
   - Then remove both `overrides` and the two `"//"` lines that explain them, in the same pull request.
-- **Picked up by:** nobody yet.
+- **Picked up by:** T-37, Release 3's re-check (`backlog.md` v1.75; v1.32).
 
 ## TD-23 — `braces` ≤ 3.0.3 has an advisory and no patched release; three dev tools pull it in
 
@@ -1081,7 +1081,7 @@ of protected pages on Vercel
   - Otherwise: replace the tool that brings it in, or add an `overrides` entry if a patched release
     appears.
   - Mark this entry **Closed** with the date and the PR.
-- **Picked up by:** nobody yet; fixed with the other tech debts when the project is finished (owner).
+- **Picked up by:** T-37, Release 3's re-check (`backlog.md` v1.75; v1.32); fixed with the other tech debts when the project is finished (owner).
 
 ## TD-24 — Every form keeps a field's message until the next blur or submit; the target clears it as soon as the person types or chooses a new option
 
@@ -1143,7 +1143,7 @@ of protected pages on Vercel
   - E2E on the login, sign-up, Budgets and Pots forms, on Chromium, Firefox and WebKit: a message is gone as soon as the
     person types in its field, and the next blur or submit shows it again for an invalid value.
   - Mark this entry **Closed** with the date and the PR.
-- **Picked up by:** nobody yet; after all releases are finished (owner, 2026-10-05).
+- **Picked up by:** T-37, Release 3's last build task (`backlog.md` v1.75; v1.32); after all releases are finished (owner, 2026-10-05).
 
 ## TD-25 — `package.json` forces `handlebars` with `overrides`, because `eslint-plugin-boundaries@7.2.0` pins a vulnerable release
 
@@ -1159,4 +1159,4 @@ of protected pages on Vercel
   (`npm view eslint-plugin-boundaries dependencies.handlebars`).
 - **Fix:** upgrade the plugin, remove the `handlebars` override and its `"//"` line, and check `npm ls handlebars`
   and `npm audit` in the same pull request.
-- **Picked up by:** nobody yet.
+- **Picked up by:** T-37, Release 3's re-check (`backlog.md` v1.75; v1.32).
